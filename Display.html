@@ -30,11 +30,11 @@
 
         #displayVideo {
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 100vh;
             object-fit: contain;
             background: transparent;
             transition: filter 0.3s ease, opacity 0.3s ease;
@@ -97,47 +97,47 @@
             display: none;
         }
 
-        /* Fullscreen styles - maintain centering */
+        /* Fullscreen styles - maintain proper sizing */
         #displayVideo:fullscreen {
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 100vh;
             object-fit: contain;
             background: transparent;
         }
 
         #displayVideo:-webkit-full-screen {
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 100vh;
             object-fit: contain;
             background: transparent;
         }
 
         #displayVideo:-moz-full-screen {
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 100vh;
             object-fit: contain;
             background: transparent;
         }
 
         #displayVideo:-ms-fullscreen {
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 100vh;
             object-fit: contain;
             background: transparent;
         }
@@ -177,6 +177,8 @@
             this.channel = new BroadcastChannel('gitup-live-display');
             this.isConnected = false;
             this.displaySettings = {}; // Store display settings
+            this.pendingIceCandidates = []; // Queue for ICE candidates received before remote description
+            this.hasAnswered = false; // Track if we've already sent an answer
 
             this.init();
         }
@@ -213,7 +215,11 @@
                 }
             }, 5000);
 
-            this.channel.postMessage({type: 'display-ready'});
+            // Delay display-ready signal to ensure window is fully loaded
+            setTimeout(() => {
+                console.log('Display window fully loaded, sending ready signal');
+                this.channel.postMessage({type: 'display-ready'});
+            }, 500);
         }
 
         applyDisplaySettings(settings) {
@@ -222,24 +228,49 @@
             // Apply presentation mode
             switch (settings.presentationMode) {
                 case 'original':
-                    this.video.style.objectFit = 'none';
-                    this.video.style.transform = 'translate(-50%, -50%)';
+                    this.video.style.objectFit = 'contain';
+                    this.video.style.transform = 'translateX(-50%)';
+                    this.video.style.width = 'auto';
+                    this.video.style.height = '100vh';
+                    this.video.style.position = 'absolute';
+                    this.video.style.top = '0';
+                    this.video.style.left = '50%';
                     break;
                 case 'fit':
                     this.video.style.objectFit = 'contain';
-                    this.video.style.transform = 'translate(-50%, -50%)';
+                    this.video.style.transform = 'translateX(-50%)';
+                    this.video.style.width = 'auto';
+                    this.video.style.height = '100vh';
+                    this.video.style.position = 'absolute';
+                    this.video.style.top = '0';
+                    this.video.style.left = '50%';
                     break;
                 case 'fill':
                     this.video.style.objectFit = 'cover';
-                    this.video.style.transform = 'translate(-50%, -50%)';
+                    this.video.style.transform = 'translateX(-50%)';
+                    this.video.style.width = '100vw';
+                    this.video.style.height = '100vh';
+                    this.video.style.position = 'absolute';
+                    this.video.style.top = '0';
+                    this.video.style.left = '50%';
                     break;
                 case 'stretch':
                     this.video.style.objectFit = 'fill';
-                    this.video.style.transform = 'translate(-50%, -50%)';
+                    this.video.style.transform = 'translateX(-50%)';
+                    this.video.style.width = '100vw';
+                    this.video.style.height = '100vh';
+                    this.video.style.position = 'absolute';
+                    this.video.style.top = '0';
+                    this.video.style.left = '50%';
                     break;
                 case 'performance':
                     this.video.style.objectFit = 'cover';
-                    this.video.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                    this.video.style.transform = 'translateX(-50%) scale(1.05)';
+                    this.video.style.width = '100vw';
+                    this.video.style.height = '100vh';
+                    this.video.style.position = 'absolute';
+                    this.video.style.top = '0';
+                    this.video.style.left = '50%';
                     break;
             }
 
@@ -303,7 +334,22 @@
         }
 
         async handleOffer(offer) {
-            try { // Create peer connection
+            try { 
+                // If we already have a peer connection that's working or connecting, ignore new offers
+                if (this.pc && (this.pc.connectionState === 'connected' || this.pc.connectionState === 'connecting')) {
+                    console.log('🚫 Ignoring offer, already have active peer connection. State:', this.pc.connectionState);
+                    return;
+                }
+
+                // If we have an existing failed connection, clean it up first
+                if (this.pc) {
+                    console.log('Cleaning up previous peer connection before creating new one');
+                    this.pc.close();
+                }
+
+                console.log('🔄 Creating new peer connection for offer');
+
+                // Create peer connection
                 this.pc = new RTCPeerConnection({
                     iceServers: [
                         {
@@ -312,14 +358,57 @@
                     ]
                 });
 
+                // Reset answer tracking
+                this.hasAnswered = false;
+                this.pendingIceCandidates = []; // Clear any old ICE candidates
+
                 // Handle incoming stream
                 this.pc.ontrack = (event) => {
-                    console.log('Received track:', event.track.kind);
+                    console.log('🎥 Received track:', event.track.kind);
                     if (event.streams && event.streams[0]) {
-                        this.video.srcObject = event.streams[0];
+                        // Only set video source if we don't already have it or it's different
+                        if (!this.video.srcObject || this.video.srcObject.id !== event.streams[0].id) {
+                            console.log('📺 Setting video srcObject to received stream');
+                            this.video.srcObject = event.streams[0];
+                        
+                            // Ensure video plays
+                            this.video.onloadedmetadata = () => {
+                                console.log('Video metadata loaded, dimensions:', this.video.videoWidth, 'x', this.video.videoHeight);
+                                this.video.play().then(() => {
+                                    console.log('✅ Video started playing successfully');
+                                }).catch(error => {
+                                    console.error('❌ Error starting video playback:', error);
+                                });
+                            };
+
+                            this.video.oncanplay = () => {
+                                console.log('Video can start playing');
+                            };
+
+                            this.video.onplaying = () => {
+                                console.log('🎥 Video is now playing');
+                            };
+
+                            this.video.onerror = (error) => {
+                                console.error('Video error:', error);
+                            };
+
+                            // Force play immediately as well
+                            this.video.play().catch(error => {
+                                console.warn('Initial play attempt failed:', error);
+                            });
+                        } else {
+                            console.log('🔄 Stream already set, skipping duplicate');
+                        }
+                        
                         this.statusDiv.textContent = 'Connected';
                         this.statusDiv.classList.add('connected');
                         this.isConnected = true;
+
+                        // Update mirror background if enabled
+                        if (this.displaySettings.mirrorBackground) {
+                            this.setupMirrorBackground(this.displaySettings.mirrorBackgroundBlur);
+                        }
 
                         // Hide status after 3 seconds
                         setTimeout(() => {
@@ -346,20 +435,58 @@
                 // Handle connection state
                 this.pc.onconnectionstatechange = () => {
                     console.log('Connection state:', this.pc.connectionState);
-                    if (this.pc.connectionState === 'failed') {
-                        this.statusDiv.textContent = 'Connection failed - retrying...';
+                    
+                    if (this.pc.connectionState === 'connected') {
+                        console.log('✅ WebRTC connection established successfully!');
+                        this.statusDiv.textContent = 'Connected';
+                        this.statusDiv.classList.add('connected');
+                        this.isConnected = true;
+                        
+                        // Hide status after connection is stable
+                        setTimeout(() => {
+                            this.statusDiv.classList.add('hidden');
+                        }, 3000);
+                        
+                    } else if (this.pc.connectionState === 'connecting') {
+                        console.log('🔄 Connection in progress...');
+                        this.statusDiv.textContent = 'Connecting...';
                         this.statusDiv.classList.remove('connected');
                         this.statusDiv.classList.remove('hidden');
+                        
+                    } else if (this.pc.connectionState === 'failed') {
+                        console.log('❌ Connection failed');
+                        this.statusDiv.textContent = 'Connection failed';
+                        this.statusDiv.classList.remove('connected');
+                        this.statusDiv.classList.remove('hidden');
+                        this.isConnected = false;
+                        
+                    } else if (this.pc.connectionState === 'disconnected') {
+                        console.log('⚠️ Connection disconnected');
+                        this.statusDiv.textContent = 'Disconnected';
+                        this.statusDiv.classList.remove('connected');
+                        this.statusDiv.classList.remove('hidden');
+                        this.isConnected = false;
                     }
                 };
 
                 // Set remote description and create answer
                 await this.pc.setRemoteDescription(offer);
-                const answer = await this.pc.createAnswer();
-                await this.pc.setLocalDescription(answer);
+                
+                // Process any queued ICE candidates now that we have remote description
+                await this.processPendingIceCandidates();
+                
+                // Only create and send answer if we haven't already
+                if (!this.hasAnswered) {
+                    const answer = await this.pc.createAnswer();
+                    await this.pc.setLocalDescription(answer);
 
-                // Send answer back
-                this.channel.postMessage({type: 'answer', data: answer});
+                    // Send answer back
+                    this.channel.postMessage({type: 'answer', data: answer});
+                    this.hasAnswered = true;
+                    console.log('Answer sent successfully');
+                } else {
+                    console.log('Answer already sent, skipping duplicate');
+                }
 
             } catch (error) {
                 console.error('Error handling offer:', error);
@@ -370,13 +497,35 @@
 
         async handleIceCandidate(candidateData) {
             try {
-                if (this.pc && this.pc.remoteDescription) { // Reconstruct RTCIceCandidate from plain object
+                if (this.pc && this.pc.remoteDescription) { 
+                    // Reconstruct RTCIceCandidate from plain object
                     const candidate = new RTCIceCandidate({candidate: candidateData.candidate, sdpMLineIndex: candidateData.sdpMLineIndex, sdpMid: candidateData.sdpMid, usernameFragment: candidateData.usernameFragment});
                     await this.pc.addIceCandidate(candidate);
+                    console.log('ICE candidate added successfully');
+                } else if (this.pc) {
+                    // Queue the candidate if we don't have remote description yet
+                    console.log('Queueing ICE candidate until remote description is set');
+                    this.pendingIceCandidates.push(candidateData);
+                } else {
+                    console.warn('Cannot add ICE candidate: no peer connection');
                 }
             } catch (error) {
                 console.error('Error adding ICE candidate:', error);
             }
+        }
+
+        async processPendingIceCandidates() {
+            // Process any queued ICE candidates after remote description is set
+            for (const candidateData of this.pendingIceCandidates) {
+                try {
+                    const candidate = new RTCIceCandidate({candidate: candidateData.candidate, sdpMLineIndex: candidateData.sdpMLineIndex, sdpMid: candidateData.sdpMid, usernameFragment: candidateData.usernameFragment});
+                    await this.pc.addIceCandidate(candidate);
+                    console.log('Queued ICE candidate added successfully');
+                } catch (error) {
+                    console.error('Error adding queued ICE candidate:', error);
+                }
+            }
+            this.pendingIceCandidates = [];
         }
 
         // In display.html's applyVideoFilters method:
@@ -432,6 +581,15 @@
             this.statusDiv.classList.remove('connected');
             this.statusDiv.classList.remove('hidden');
             this.isConnected = false;
+            
+            // Clear any pending ICE candidates
+            this.pendingIceCandidates = [];
+            
+            // Reset answer tracking
+            this.hasAnswered = false;
+            
+            // Remove mirror background
+            this.removeMirrorBackground();
         }
     }
 

@@ -279,7 +279,18 @@
                     </div>
                 </div>
 
-                <!-- Aspect Ratio removed - set to auto in code -->
+                <!-- Aspect Ratio -->
+                <div class="control-group">
+                    <div class="group-label">Aspect Ratio</div>
+                    <div class="preset-buttons">
+                        <button class="aspect-ratio-btn active" data-ratio="auto">Auto</button>
+                        <button class="aspect-ratio-btn" data-ratio="16:9">16:9</button>
+                        <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                        <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                        <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                        <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
+                    </div>
+                </div>
 
                 <!-- Quality Settings -->
                 <div class="control-group">
@@ -2317,6 +2328,7 @@
         }
 
         .display-mode-btn,
+        .aspect-ratio-btn,
         .display-preset-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -2330,11 +2342,13 @@
         }
 
         .display-mode-btn:hover,
+        .aspect-ratio-btn:hover,
         .display-preset-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
 
-        .display-mode-btn.active {
+        .display-mode-btn.active,
+        .aspect-ratio-btn.active {
             background: var(--accent-color);
             color: white;
         }
@@ -3984,6 +3998,8 @@
             this.captureCanvas = null;
             this.captureCtx = null;
             this.animationFrame = null;
+            this.pendingIceCandidates = []; // Queue for ICE candidates received before remote description
+            this.hasOffered = false; // Track if we've already sent an offer
 
             // Display settings
             this.displaySettings = this.loadDisplaySettings();
@@ -3998,9 +4014,17 @@
                 switch (type) {
                     case 'display-ready':
                         console.log('Display window ready');
-                        // Always start streaming when display is ready
-                        if (this.isStreaming && !this.pc) { // Check if we don't already have a connection
-                            await this.startStreaming();
+                        // Only start streaming if we're supposed to be streaming and don't have a connection
+                        if (this.isStreaming && (!this.pc || this.pc.connectionState === 'closed' || this.pc.connectionState === 'failed')) {
+                            console.log('Starting streaming after display ready');
+                            try {
+                                await this.startStreaming();
+                            } catch (error) {
+                                console.error('Failed to start streaming:', error);
+                                this.handleStreamingError(error);
+                            }
+                        } else if (this.pc) {
+                            console.log('Peer connection already exists, state:', this.pc.connectionState);
                         }
                         break;
                     case 'answer':
@@ -4019,7 +4043,7 @@
         loadDisplaySettings() {
             const saved = localStorage.getItem('gitup_display_settings');
             return saved ? JSON.parse(saved) : {
-                presentationMode: 'fill', // Changed from 'original' to 'fill'
+                presentationMode: 'fit', // Changed to 'fit' for proper sizing
                 aspectRatio: 'auto',
                 captureResolution: 2560,  // Changed to 2K default
                 captureFrameRate: 60,
@@ -4050,7 +4074,7 @@
 
         reconfigureCapture() { // Update capture canvas size based on resolution
             const width = this.displaySettings.captureResolution;
-            const height = this.calculateHeightForAspectRatio(width, this.displaySettings.aspectRatio);
+            const height = Math.round(width * 9 / 16); // Always use 16:9 for display window compatibility
 
             if (this.captureCanvas) {
                 this.captureCanvas.width = width;
@@ -4137,8 +4161,8 @@
         openDisplayWindow() { // Open display window
             // First, set performance mode for optimal quality
             const performancePreset = {
-                presentationMode: 'fit',  // Changed from 'performance' to 'fit' for better compatibility
-                aspectRatio: 'auto',      // Always use auto for aspect ratio
+                presentationMode: 'fit',  // Use 'fit' for proper video sizing
+                aspectRatio: '16:9',      // Default to 16:9 aspect ratio
                 captureResolution: 2560,  // 2K resolution default
                 captureFrameRate: 60,
                 captureBitrate: 30,
@@ -4163,13 +4187,26 @@
                 return false;
             }
 
+            // Add window focus to ensure it's visible
+            this.displayWindow.focus();
+
             // Monitor window close
             const checkWindow = setInterval(() => {
                 if (this.displayWindow && this.displayWindow.closed) {
                     clearInterval(checkWindow);
+                    console.log('Display window was closed manually');
                     this.stopStreaming();
                 }
             }, 1000);
+
+            // Add timeout for initial connection
+            setTimeout(() => {
+                if (!this.pc && this.isStreaming) {
+                    console.warn('Connection not established within timeout period');
+                    // Send a ping to check if display window is responsive
+                    this.channel.postMessage({type: 'ping'});
+                }
+            }, 5000);
 
             return true;
         }
@@ -4185,6 +4222,12 @@
                 this.stream.getTracks().forEach(track => track.stop());
                 this.stream = null;
             }
+
+            // Clear any pending ICE candidates from previous attempts
+            this.pendingIceCandidates = [];
+            
+            // Reset offer tracking
+            this.hasOffered = false;
 
             // Force cleanup of existing canvases
             if (this.captureCanvas) {
@@ -4270,18 +4313,29 @@
                 // Monitor connection state
                 this.pc.onconnectionstatechange = () => {
                     console.log('PC Connection state:', this.pc.connectionState);
-                    if (this.pc.connectionState === 'failed') {
-                        console.log('Connection failed, may need to restart');
+                    console.log('PC Signaling state:', this.pc.signalingState);
+                    
+                    if (this.pc.connectionState === 'connected') {
+                        console.log('✅ WebRTC connection established successfully!');
+                    } else if (this.pc.connectionState === 'failed') {
+                        console.log('❌ Connection failed, may need to restart');
+                        this.handleStreamingError(new Error('WebRTC connection failed'));
+                    } else if (this.pc.connectionState === 'disconnected') {
+                        console.log('⚠️ Connection disconnected');
                     }
                 };
 
-                // Create and send offer
-                const offer = await this.pc.createOffer();
-                await this.pc.setLocalDescription(offer);
+                // Create and send offer - only if we haven't already
+                if (!this.hasOffered) {
+                    const offer = await this.pc.createOffer();
+                    await this.pc.setLocalDescription(offer);
 
-                this.channel.postMessage({type: 'offer', data: offer});
-
-                console.log('Offer sent successfully');
+                    this.channel.postMessage({type: 'offer', data: offer});
+                    this.hasOffered = true;
+                    console.log('✅ Offer sent successfully');
+                } else {
+                    console.log('Offer already sent, skipping duplicate');
+                }
 
             } catch (error) {
                 console.error('Error starting stream:', error);
@@ -4297,14 +4351,14 @@
                 willReadFrequently: false
             });
 
-            // Use configured resolution and aspect ratio
+            // Use configured resolution but always maintain 16:9 aspect ratio for display compatibility
             const width = this.displaySettings.captureResolution;
-            const height = this.displaySettings.aspectRatio === 'auto' ? Math.round(width * 9 / 16) : this.calculateHeightForAspectRatio(width, this.displaySettings.aspectRatio);
+            const height = Math.round(width * 9 / 16); // Always use 16:9 for display window compatibility
 
             this.captureCanvas.width = width;
             this.captureCanvas.height = height;
 
-            console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height);
+            console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height, '(16:9 aspect ratio for display compatibility)');
         }
 
         startCapture() {
@@ -4633,28 +4687,105 @@
 
         async handleAnswer(answer) {
             try {
-                if (this.pc && this.pc.signalingState === 'have-local-offer') {
+                if (!this.pc) {
+                    console.warn('No peer connection available for answer');
+                    return;
+                }
+
+                console.log('Handling answer, current signaling state:', this.pc.signalingState);
+                console.log('Connection state:', this.pc.connectionState);
+
+                if (this.pc.signalingState === 'have-local-offer') {
                     await this.pc.setRemoteDescription(answer);
                     console.log('Answer set successfully');
+                    
+                    // Process any queued ICE candidates now that we have remote description
+                    await this.processPendingIceCandidates();
+                } else if (this.pc.signalingState === 'stable') {
+                    console.log('Peer connection already stable, ignoring duplicate answer');
+                    // Connection might already be established, check if we have a stream
+                    if (this.pc.connectionState === 'connected') {
+                        console.log('Connection already established successfully');
+                    }
+                } else {
+                    console.warn('Cannot set remote description, unexpected signaling state:', this.pc.signalingState);
                 }
             } catch (error) {
                 console.error('Error handling answer:', error);
+                // If this fails, the connection might be in a bad state - close and retry
+                if (this.pc) {
+                    this.pc.close();
+                    this.pc = null;
+                }
             }
         }
 
         async handleIceCandidate(candidateData) {
             try {
-                if (this.pc && this.pc.remoteDescription) { // Reconstruct RTCIceCandidate from plain object
+                if (this.pc && this.pc.remoteDescription) { 
+                    // Reconstruct RTCIceCandidate from plain object
                     const candidate = new RTCIceCandidate({candidate: candidateData.candidate, sdpMLineIndex: candidateData.sdpMLineIndex, sdpMid: candidateData.sdpMid, usernameFragment: candidateData.usernameFragment});
                     await this.pc.addIceCandidate(candidate);
+                    console.log('ICE candidate added successfully from display window');
+                } else if (this.pc) {
+                    // Queue the candidate if we don't have remote description yet
+                    console.log('Queueing ICE candidate until remote description is set');
+                    this.pendingIceCandidates.push(candidateData);
+                } else {
+                    console.warn('Cannot add ICE candidate: no peer connection');
                 }
             } catch (error) {
                 console.error('Error adding ICE candidate:', error);
             }
         }
 
+        async processPendingIceCandidates() {
+            // Process any queued ICE candidates after remote description is set
+            for (const candidateData of this.pendingIceCandidates) {
+                try {
+                    const candidate = new RTCIceCandidate({candidate: candidateData.candidate, sdpMLineIndex: candidateData.sdpMLineIndex, sdpMid: candidateData.sdpMid, usernameFragment: candidateData.usernameFragment});
+                    await this.pc.addIceCandidate(candidate);
+                    console.log('Queued ICE candidate added successfully');
+                } catch (error) {
+                    console.error('Error adding queued ICE candidate:', error);
+                }
+            }
+            this.pendingIceCandidates = [];
+        }
+
+        handleStreamingError(error) {
+            console.error('Streaming error occurred:', error);
+            
+            // Show user-friendly error message
+            const errorMessage = error.message || 'Unknown connection error';
+            console.warn('Connection error: ' + errorMessage);
+            
+            // Don't automatically retry - this was causing connection loops
+            console.log('❌ Streaming stopped due to error. Manual restart required.');
+            
+            // Reset streaming state without auto-retry
+            this.isStreaming = false;
+            this.hasOffered = false;
+            
+            // Close peer connection but keep display window open
+            if (this.pc) {
+                this.pc.close();
+                this.pc = null;
+            }
+            
+            // Update button state
+            const btn = document.getElementById('liveDisplayBtn');
+            if (btn) {
+                btn.classList.remove('active');
+                btn.textContent = 'Live Display';
+            }
+        }
+
         stopStreaming() {
             this.isStreaming = false;
+
+            // Reset offer tracking
+            this.hasOffered = false;
 
             // Stop capture animation
             if (this.animationFrame) {
@@ -5950,7 +6081,7 @@
             const presets = {
                 cinema: {
                     presentationMode: 'fit',
-                    aspectRatio: 'auto',
+                    aspectRatio: '21:9',
                     captureResolution: 2560,
                     captureFrameRate: 24,
                     captureBitrate: 30,
@@ -5960,7 +6091,7 @@
                 },
                 presentation: {
                     presentationMode: 'fit',
-                    aspectRatio: 'auto',
+                    aspectRatio: '16:9',
                     captureResolution: 2560,
                     captureFrameRate: 30,
                     captureBitrate: 30,
@@ -5969,8 +6100,8 @@
                     mirrorBackground: false
                 },
                 social: {
-                    presentationMode: 'fill',
-                    aspectRatio: 'auto',
+                    presentationMode: 'fit',
+                    aspectRatio: '1:1',
                     captureResolution: 2560,
                     captureFrameRate: 30,
                     captureBitrate: 30,
@@ -5979,7 +6110,7 @@
                     mirrorBackground: false
                 },
                 performance: {
-                    presentationMode: 'performance',
+                    presentationMode: 'fit',
                     aspectRatio: 'auto',
                     captureResolution: 2560,
                     captureFrameRate: 60,
@@ -5989,8 +6120,8 @@
                     mirrorBackground: false
                 },
                 projector: {
-                    presentationMode: 'fill',
-                    aspectRatio: 'auto',
+                    presentationMode: 'fit',
+                    aspectRatio: '4:3',
                     captureResolution: 2560,
                     captureFrameRate: 60,
                     captureBitrate: 30,
@@ -6013,7 +6144,10 @@
                 btn.classList.toggle('active', btn.dataset.mode === settings.presentationMode);
             });
 
-            // Aspect ratio is now always 'auto' - UI removed
+            // Update aspect ratio buttons if they exist
+            document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ratio === settings.aspectRatio);
+            });
 
             // Update capture resolution
             const captureResolution = document.getElementById('captureResolution');
@@ -8121,7 +8255,20 @@ https://rogueamoeba.com/loopback/
                 });
             });
 
-            // Aspect ratio is now always 'auto' - no UI to set up
+            // Aspect ratio buttons
+            document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const ratio = btn.dataset.ratio;
+                    if (this.streamManager) {
+                        this.streamManager.displaySettings.aspectRatio = ratio;
+                        this.streamManager.saveDisplaySettings();
+                        this.streamManager.reconfigureCapture();
+                    }
+                });
+            });
 
             // Capture resolution dropdown
             const captureResolution = document.getElementById('captureResolution');
