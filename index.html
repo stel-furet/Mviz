@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="GitItUp - Advanced Music Visualizer with Live Display and Multiple Visualization Modes">
+    <meta name="description" content="Vizzy - Advanced Music Visualizer with Live Display and Multiple Visualization Modes">
     <meta name="keywords" content="music visualizer, audio visualization, live display, spectrum analyzer, music player">
     <meta name="author" content="GitItUp">
     <meta name="theme-color" content="#2969b0">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="GitItUp - Music Visualizer">
+    <meta property="og:title" content="Vizzy-Music Visualizer">
     <meta property="og:description" content="Advanced music visualizer with live display capabilities">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="GitItUp - Music Visualizer">
+    <meta property="twitter:title" content="Vizzy-Music Visualizer">
     <meta property="twitter:description" content="Advanced music visualizer with live display capabilities">
     
-    <title>GitItUp - Music Visualizer</title>
+    <title>Vizzy-Music Visualizer</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
@@ -355,6 +355,14 @@
                         <button class="display-preset-btn" data-preset="social">Social Media</button>
                         <button class="display-preset-btn" data-preset="performance">Performance</button>
                         <button class="display-preset-btn" data-preset="projector">Projector</button>
+                    </div>
+                </div>
+
+                <!-- Camera & Stream Stats -->
+                <div class="control-group">
+                    <div class="group-label">Stream Statistics</div>
+                    <div id="cameraStatsContainer" class="stats-container">
+                        <div class="stats-placeholder">Camera stream info will appear here when video input is active</div>
                     </div>
                 </div>
             </div>
@@ -2351,6 +2359,44 @@
         .aspect-ratio-btn.active {
             background: var(--accent-color);
             color: white;
+        }
+
+        /* Camera Stats Styles */
+        .stats-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 11px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .stats-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stats-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stats-value {
+            color: var(--accent-color);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stats-placeholder {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            opacity: 0.7;
         }
 
         .quality-select {
@@ -4358,7 +4404,13 @@
             this.captureCanvas.width = width;
             this.captureCanvas.height = height;
 
+            // Store base dimensions for consistent scaling (always base on 2K for visual consistency)
+            this.baseCaptureWidth = 2560;
+            this.baseCaptureHeight = 1440;
+            this.captureScale = width / this.baseCaptureWidth; // Scale factor for quality enhancement
+
             console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height, '(16:9 aspect ratio for display compatibility)');
+            console.log('Capture scale factor:', this.captureScale, 'x for', this.displaySettings.captureResolution + 'px quality');
         }
 
         startCapture() {
@@ -4390,6 +4442,12 @@
                             this.tempVideoCanvas.width = this.captureCanvas.width;
                             this.tempVideoCanvas.height = this.captureCanvas.height;
                             this.tempVideoCtx = this.tempVideoCanvas.getContext('2d');
+                        }
+
+                        // Update temp canvas size if capture canvas changed
+                        if (this.tempVideoCanvas.width !== this.captureCanvas.width || this.tempVideoCanvas.height !== this.captureCanvas.height) {
+                            this.tempVideoCanvas.width = this.captureCanvas.width;
+                            this.tempVideoCanvas.height = this.captureCanvas.height;
                         }
 
                         const videoSource = this.visualizer.captureVideoElement || this.visualizer.videoElement;
@@ -4592,8 +4650,11 @@
                             }
                         }
 
-                        // Draw kaleidoscope video canvas
-                        this.captureCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+                        // Draw kaleidoscope video canvas with proper scaling
+                        this.captureCtx.save();
+                        this.captureCtx.scale(this.captureScale, this.captureScale);
+                        this.captureCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                        this.captureCtx.restore();
 
                         this.captureCtx.restore();
 
@@ -4645,10 +4706,14 @@
                             const isVisible = vizCanvas.style.visibility !== 'hidden' && vizCanvas.style.display !== 'none';
 
                             if (isVisible) {
-                                this.captureCtx.drawImage(vizCanvas, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+                                // Scale the visualization to maintain consistent visual size regardless of capture resolution
+                                this.captureCtx.save();
+                                this.captureCtx.scale(this.captureScale, this.captureScale);
+                                this.captureCtx.drawImage(vizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                                this.captureCtx.restore();
 
                                 if (frameCount % 60 === 0) {
-                                    console.log('Capturing viz from canvas:', vizCanvas.width, 'x', vizCanvas.height);
+                                    console.log('Capturing viz from canvas:', vizCanvas.width, 'x', vizCanvas.height, 'scaled by', this.captureScale + 'x');
                                 }
                             }
                         }
@@ -4663,11 +4728,14 @@
                         this.captureCtx.globalAlpha = 1;
                         this.captureCtx.filter = 'none';
 
-                        // Draw kaleidoscope viz canvas
-                        this.captureCtx.drawImage(this.visualizer.kaleidoscopeVizCanvas, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+                        // Draw kaleidoscope viz canvas with proper scaling
+                        this.captureCtx.save();
+                        this.captureCtx.scale(this.captureScale, this.captureScale);
+                        this.captureCtx.drawImage(this.visualizer.kaleidoscopeVizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                        this.captureCtx.restore();
 
                         if (frameCount % 60 === 0) {
-                            console.log('Captured viz kaleidoscope');
+                            console.log('Captured viz kaleidoscope scaled by', this.captureScale + 'x');
                         }
 
                         this.captureCtx.restore();
@@ -5746,6 +5814,11 @@
                     this.captureVideoElement.muted = true;
                     this.captureVideoElement.playsInline = true;
                     this.captureVideoElement.autoplay = true;
+
+                    // Detect actual camera stream properties
+                    this.captureVideoElement.onloadedmetadata = () => {
+                        this.detectCameraStreamInfo();
+                    };
                     this.captureVideoElement.style.cssText = `
         position: absolute;
         top: -9999px;
@@ -5808,6 +5881,11 @@
                 // Apply settings TO BOTH VIDEO ELEMENTS
                 this.videoElement.srcObject = this.videoStream;
                 this.captureVideoElement.srcObject = this.videoStream;
+
+                // Add stream detection to main video element too
+                this.videoElement.onloadedmetadata = () => {
+                    this.detectCameraStreamInfo();
+                };
 
                 // Wait for video to be ready
                 await new Promise((resolve, reject) => {
@@ -5914,6 +5992,75 @@
                 }
 
                 this.stopVideoInput();
+            }
+        }
+
+        detectCameraStreamInfo() {
+            if (!this.videoStream) return;
+
+            // Get video track information
+            const videoTracks = this.videoStream.getVideoTracks();
+            if (videoTracks.length > 0) {
+                const track = videoTracks[0];
+                const settings = track.getSettings();
+                const capabilities = track.getCapabilities();
+
+                // Store camera info
+                this.cameraInfo = {
+                    label: track.label || 'Unknown Camera',
+                    resolution: `${settings.width || 'Unknown'}x${settings.height || 'Unknown'}`,
+                    frameRate: settings.frameRate || 'Unknown',
+                    facingMode: settings.facingMode || 'Unknown',
+                    capabilities: capabilities
+                };
+
+                // Get actual video element dimensions
+                const videoElement = this.captureVideoElement || this.videoElement;
+                if (videoElement && videoElement.videoWidth > 0) {
+                    this.cameraInfo.actualResolution = `${videoElement.videoWidth}x${videoElement.videoHeight}`;
+                }
+
+                console.log('🎥 Camera Stream Info:', this.cameraInfo);
+
+                // Update stats display if it exists
+                this.updateCameraStats();
+            }
+        }
+
+        updateCameraStats() {
+            const statsContainer = document.getElementById('cameraStatsContainer');
+            if (statsContainer && this.cameraInfo) {
+                const streamManager = this.streamManager;
+                const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
+                const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
+                const frameRate = streamManager ? streamManager.displaySettings.captureFrameRate : 'Unknown';
+
+                statsContainer.innerHTML = `
+                    <div class="stats-row">
+                        <span class="stats-label">Camera:</span>
+                        <span class="stats-value">${this.cameraInfo.label}</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Input Resolution:</span>
+                        <span class="stats-value">${this.cameraInfo.actualResolution || this.cameraInfo.resolution}</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Input Frame Rate:</span>
+                        <span class="stats-value">${this.cameraInfo.frameRate} fps</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Capture Resolution:</span>
+                        <span class="stats-value">${captureRes}px</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Capture Frame Rate:</span>
+                        <span class="stats-value">${frameRate} fps</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Stream Bitrate:</span>
+                        <span class="stats-value">${bitrate} Mbps</span>
+                    </div>
+                `;
             }
         }
 
@@ -8279,6 +8426,11 @@ https://rogueamoeba.com/loopback/
                         this.streamManager.displaySettings.captureResolution = value;
                         this.streamManager.saveDisplaySettings();
                         this.streamManager.reconfigureCapture();
+                        
+                        // Update stats display
+                        if (this.cameraInfo) {
+                            this.updateCameraStats();
+                        }
                     }
                 });
             }
@@ -8292,6 +8444,11 @@ https://rogueamoeba.com/loopback/
                         this.streamManager.displaySettings.captureFrameRate = value;
                         this.streamManager.saveDisplaySettings();
                         this.streamManager.reconfigureCapture();
+                        
+                        // Update stats display
+                        if (this.cameraInfo) {
+                            this.updateCameraStats();
+                        }
                     }
                 });
             }
@@ -8306,6 +8463,11 @@ https://rogueamoeba.com/loopback/
                         this.streamManager.displaySettings.captureBitrate = value;
                         this.streamManager.saveDisplaySettings();
                         this.streamManager.reconfigureCapture();
+                        
+                        // Update stats display
+                        if (this.cameraInfo) {
+                            this.updateCameraStats();
+                        }
                     }
                 });
             }
