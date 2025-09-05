@@ -1,0 +1,417 @@
+<!--Display Window -->
+
+<Head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #displayVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+
+        #connectionStatus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+
+        #connectionStatus.connected {
+            background: rgba(0, 128, 0, 0.7);
+        }
+
+        #connectionStatus.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #fullscreenBtn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(41, 105, 176, 0.9);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        #fullscreenBtn:hover {
+            background: rgba(41, 105, 176, 1);
+            transform: scale(1.05);
+        }
+
+        #fullscreenBtn.hidden {
+            display: none;
+        }
+
+        .fullscreen-mode #fullscreenBtn {
+            display: none;
+        }
+
+        .fullscreen-mode #connectionStatus {
+            display: none;
+        }
+
+        /* Add this CSS to display.html */
+        #displayVideo:fullscreen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #displayVideo:-webkit-full-screen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #displayVideo:-moz-full-screen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #displayVideo:-ms-fullscreen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Hide vignette overlay when video is fullscreen */
+        #displayVideo:fullscreen ~ #vignetteOverlay,
+        #displayVideo:-webkit-full-screen ~ #vignetteOverlay {
+            display: none !important;
+        }
+
+        /* Vignette overlay */
+        #vignetteOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            display: none;
+        }
+    </style>
+</Head>
+
+<video id="displayVideo" autoplay="autoplay" playsinline="playsinline" muted="muted"></video>
+<div id="vignetteOverlay"></div>
+<div id="connectionStatus">Waiting for connection...</div>
+<button id="fullscreenBtn">Enter Fullscreen</button>
+
+<script>
+    class DisplayReceiver {
+        constructor() {
+            this.video = document.getElementById('displayVideo');
+            this.statusDiv = document.getElementById('connectionStatus');
+            this.vignetteOverlay = document.getElementById('vignetteOverlay');
+            this.pc = null;
+            this.channel = new BroadcastChannel('gitup-live-display');
+            this.isConnected = false;
+            this.displaySettings = {}; // Store display settings
+
+            this.init();
+        }
+
+        init() {
+            this.channel.onmessage = async (event) => {
+                const {type, data} = event.data;
+
+                switch (type) {
+                    case 'offer':
+                        await this.handleOffer(data);
+                        break;
+                    case 'ice-candidate':
+                        await this.handleIceCandidate(data);
+                        break;
+                    case 'display-settings':
+                        this.applyDisplaySettings(data);
+                        break;
+                    case 'close':
+                        this.close();
+                        break;
+                    case 'ping':
+                        this.channel.postMessage({type: 'pong'});
+                        break;
+                }
+            };
+
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
+
+            setTimeout(() => {
+                if (this.isConnected) {
+                    this.statusDiv.classList.add('hidden');
+                }
+            }, 5000);
+
+            this.channel.postMessage({type: 'display-ready'});
+        }
+
+        applyDisplaySettings(settings) {
+            this.displaySettings = settings;
+
+            // Apply presentation mode
+            switch (settings.presentationMode) {
+                case 'original':
+                    this.video.style.objectFit = 'none';
+                    this.video.style.transform = 'none';
+                    break;
+                case 'fit':
+                    this.video.style.objectFit = 'contain';
+                    this.video.style.transform = 'none';
+                    break;
+                case 'fill':
+                    this.video.style.objectFit = 'cover';
+                    this.video.style.transform = 'none';
+                    break;
+                case 'stretch':
+                    this.video.style.objectFit = 'fill';
+                    this.video.style.transform = 'none';
+                    break;
+                case 'performance':
+                    this.video.style.objectFit = 'cover';
+                    this.video.style.transform = 'scale(1.05)';
+                    break;
+            }
+
+            // Apply letterbox color
+            document.body.style.backgroundColor = settings.letterboxColor;
+
+            // Apply sharpness filter
+            let filters = [];
+            if (settings.displaySharpness > 0) {
+                const sharpnessValue = settings.displaySharpness / 100;
+                filters.push(`contrast(${
+                    100 + sharpnessValue * 20
+                }%)`);
+                filters.push(`brightness(${
+                    100 + sharpnessValue * 5
+                }%)`);
+            }
+            this.video.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+
+            // Apply mirror background if enabled
+            if (settings.mirrorBackground) {
+                this.setupMirrorBackground(settings.mirrorBackgroundBlur);
+            } else {
+                this.removeMirrorBackground();
+            }
+        }
+
+        setupMirrorBackground(blurAmount) { // Create or update mirror background
+            let mirrorBg = document.getElementById('mirrorBackground');
+            if (! mirrorBg) {
+                mirrorBg = document.createElement('video');
+                mirrorBg.id = 'mirrorBackground';
+                mirrorBg.muted = true;
+                mirrorBg.autoplay = true;
+                mirrorBg.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                filter: blur(${blurAmount}px) brightness(0.3);
+                z-index: -1;
+            `;
+                document.body.insertBefore(mirrorBg, document.body.firstChild);
+            }
+
+            mirrorBg.style.filter = `blur(${blurAmount}px) brightness(0.3)`;
+
+            // Mirror the video stream
+            if (this.video.srcObject) {
+                mirrorBg.srcObject = this.video.srcObject;
+            }
+        }
+
+        removeMirrorBackground() {
+            const mirrorBg = document.getElementById('mirrorBackground');
+            if (mirrorBg) {
+                mirrorBg.remove();
+            }
+        }
+
+        async handleOffer(offer) {
+            try { // Create peer connection
+                this.pc = new RTCPeerConnection({
+                    iceServers: [
+                        {
+                            urls: 'stun:stun.l.google.com:19302'
+                        }
+                    ]
+                });
+
+                // Handle incoming stream
+                this.pc.ontrack = (event) => {
+                    console.log('Received track:', event.track.kind);
+                    if (event.streams && event.streams[0]) {
+                        this.video.srcObject = event.streams[0];
+                        this.statusDiv.textContent = 'Connected';
+                        this.statusDiv.classList.add('connected');
+                        this.isConnected = true;
+
+                        // Hide status after 3 seconds
+                        setTimeout(() => {
+                            this.statusDiv.classList.add('hidden');
+                        }, 3000);
+                    }
+                };
+
+                // Handle ICE candidates
+                this.pc.onicecandidate = (event) => {
+                    if (event.candidate) { // Serialize the ICE candidate to a plain object
+                        this.channel.postMessage({
+                            type: 'ice-candidate-answer',
+                            data: {
+                                candidate: event.candidate.candidate,
+                                sdpMLineIndex: event.candidate.sdpMLineIndex,
+                                sdpMid: event.candidate.sdpMid,
+                                usernameFragment: event.candidate.usernameFragment
+                            }
+                        });
+                    }
+                };
+
+                // Handle connection state
+                this.pc.onconnectionstatechange = () => {
+                    console.log('Connection state:', this.pc.connectionState);
+                    if (this.pc.connectionState === 'failed') {
+                        this.statusDiv.textContent = 'Connection failed - retrying...';
+                        this.statusDiv.classList.remove('connected');
+                        this.statusDiv.classList.remove('hidden');
+                    }
+                };
+
+                // Set remote description and create answer
+                await this.pc.setRemoteDescription(offer);
+                const answer = await this.pc.createAnswer();
+                await this.pc.setLocalDescription(answer);
+
+                // Send answer back
+                this.channel.postMessage({type: 'answer', data: answer});
+
+            } catch (error) {
+                console.error('Error handling offer:', error);
+                this.statusDiv.textContent = 'Connection error';
+                this.statusDiv.classList.remove('connected');
+            }
+        }
+
+        async handleIceCandidate(candidateData) {
+            try {
+                if (this.pc && this.pc.remoteDescription) { // Reconstruct RTCIceCandidate from plain object
+                    const candidate = new RTCIceCandidate({candidate: candidateData.candidate, sdpMLineIndex: candidateData.sdpMLineIndex, sdpMid: candidateData.sdpMid, usernameFragment: candidateData.usernameFragment});
+                    await this.pc.addIceCandidate(candidate);
+                }
+            } catch (error) {
+                console.error('Error adding ICE candidate:', error);
+            }
+        }
+
+        // In display.html's applyVideoFilters method:
+        applyVideoFilters(filters) { // DO NOT APPLY ANY FILTERS - they're already in the stream
+            console.log('Received filter update, but NOT applying (already in stream):', filters);
+            this.videoFilters = filters;
+            // Store for reference only
+
+            // Ensure video element has NO filters
+            this.video.style.filter = 'none';
+            this.video.style.opacity = '1';
+            this.video.style.transform = 'none';
+            this.vignetteOverlay.style.display = 'none';
+        }
+
+
+        enterFullscreen() { // fullscreen just the video element instead of the whole document
+            const videoElement = document.getElementById('displayVideo');
+
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            } else if (videoElement.webkitRequestFullscreen) {
+                videoElement.webkitRequestFullscreen();
+            } else if (videoElement.msRequestFullscreen) {
+                videoElement.msRequestFullscreen();
+            } else if (videoElement.webkitEnterFullscreen) { // iOS specific
+                videoElement.webkitEnterFullscreen();
+            } else { // Fallback to document fullscreen if video fullscreen not supported
+                const element = document.documentElement;
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                }
+            }
+
+            document.body.classList.add('fullscreen-mode');
+        }
+
+        close() {
+            if (this.pc) {
+                this.pc.close();
+                this.pc = null;
+            }
+            this.video.srcObject = null;
+            this.video.style.filter = 'none';
+            this.video.style.opacity = '1';
+            this.video.style.transform = '';
+            this.vignetteOverlay.style.display = 'none';
+            this.statusDiv.textContent = 'Disconnected';
+            this.statusDiv.classList.remove('connected');
+            this.statusDiv.classList.remove('hidden');
+            this.isConnected = false;
+        }
+    }
+
+    // Initialize display receiver
+    const receiver = new DisplayReceiver();
+
+    // Handle fullscreen changes
+    document.addEventListener('fullscreenchange', () => {
+        const isFullscreen = !!document.fullscreenElement;
+        if (isFullscreen) {
+            document.body.classList.add('fullscreen-mode');
+        } else {
+            document.body.classList.remove('fullscreen-mode');
+        }
+    });
+
+    // Prevent right-click context menu
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+</script>
