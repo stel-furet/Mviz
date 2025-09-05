@@ -1,6 +1,17 @@
-<!--Display Window -->
-
-<Head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="GitItUp Display Window - Live Music Visualization Display">
+    <meta name="theme-color" content="#000000">
+    
+    <title>GitItUp Display</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+    
+    <!--Display Window -->
     <style>
         * {
             margin: 0;
@@ -124,8 +135,8 @@
             display: none;
         }
     </style>
-</Head>
-
+</head>
+<body>
 <video id="displayVideo" autoplay="autoplay" playsinline="playsinline" muted="muted"></video>
 <div id="vignetteOverlay"></div>
 <div id="connectionStatus">Waiting for connection...</div>
@@ -415,3 +426,5 @@
     // Prevent right-click context menu
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 </script>
+</body>
+</html>
