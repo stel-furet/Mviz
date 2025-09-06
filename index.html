@@ -108,8 +108,8 @@
 
             <!-- Video Input Toggle -->
             <div class="input-mode-container">
-                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Background">
-                    <span class="video-mode-text">Video Off</span>
+                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Live Video Background">
+                    <span class="video-mode-text">Live Video Off</span>
                 </button>
                 <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
                     <option value="">Select Video Input...</option>
@@ -128,8 +128,8 @@
                     <div class="group-label">Basic</div>
                     <div class="slider-container">
                         <label>Opacity</label>
-                        <input type="range" id="videoOpacitySlider" min="0" max="100" value="50">
-                        <span id="videoOpacityValue">50%</span>
+                        <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
+                        <span id="videoOpacityValue">100%</span>
                     </div>
                     <div class="slider-container">
                         <label>Brightness</label>
@@ -369,6 +369,161 @@
             <!-- End display-settings-panel -->
         </div>
         <!-- End live-display-controls -->
+
+        <!-- Video File Browser Controls -->
+        <div class="video-browser-controls">
+            <button class="dropdown-toggle" id="videoBrowserBtn" title="Browse Video Files">
+                Video
+            </button>
+            <button id="videoBrowserSettingsBtn" class="video-settings-toggle" title="Video Browser Settings">⚙</button>
+
+            <!-- Video Browser Settings Panel -->
+            <div class="video-browser-settings-panel" id="videoBrowserSettingsPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Video File Browser</span>
+                    <button class="close-panel-btn" onclick="videoBrowser.closePanel()">×</button>
+                </div>
+
+                <!-- File Browser Controls -->
+                <div class="control-group">
+                    <div class="group-label">File Source</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="localFilesBtn">Browse Local Files</button>
+                        <button class="effect-toggle-btn" id="googleDriveBtn" disabled>Google Drive (Coming Soon)</button>
+                        <button class="effect-toggle-btn" id="dropboxBtn" disabled>Dropbox (Coming Soon)</button>
+                    </div>
+                </div>
+
+                <!-- Video Playlist -->
+                <div class="control-group">
+                    <div class="group-label">Video Playlist</div>
+                    <div id="videoPlaylistContainer" class="video-playlist-container">
+                        <div class="playlist-placeholder">No videos loaded. Click "Browse Local Files" to get started.</div>
+                    </div>
+                </div>
+
+                <!-- Basic Controls -->
+                <div class="control-group">
+                    <div class="group-label">Basic</div>
+                    <div class="slider-container">
+                        <label>Opacity</label>
+                        <input type="range" id="fileBrowserOpacitySlider" min="0" max="100" value="100">
+                        <span id="fileBrowserOpacityValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Brightness</label>
+                        <input type="range" id="fileBrowserBrightnessSlider" min="0" max="200" value="100">
+                        <span id="fileBrowserBrightnessValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Contrast</label>
+                        <input type="range" id="fileBrowserContrastSlider" min="0" max="200" value="100">
+                        <span id="fileBrowserContrastValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Fade Time</label>
+                        <input type="range" id="fileBrowserFadeSlider" min="0" max="10" step="0.5" value="3">
+                        <span id="fileBrowserFadeValue">3.0s</span>
+                    </div>
+                </div>
+
+                <!-- Color Controls -->
+                <div class="control-group">
+                    <div class="group-label">Color</div>
+                    <div class="slider-container">
+                        <label>Saturation</label>
+                        <input type="range" id="fileBrowserSaturationSlider" min="0" max="200" value="100">
+                        <span id="fileBrowserSaturationValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Hue Rotate</label>
+                        <input type="range" id="fileBrowserHueRotateSlider" min="0" max="360" value="0">
+                        <span id="fileBrowserHueRotateValue">0°</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Grayscale</label>
+                        <input type="range" id="fileBrowserGrayscaleSlider" min="0" max="100" value="0">
+                        <span id="fileBrowserGrayscaleValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Sepia</label>
+                        <input type="range" id="fileBrowserSepiaSlider" min="0" max="100" value="0">
+                        <span id="fileBrowserSepiaValue">0%</span>
+                    </div>
+                </div>
+
+                <!-- Effects -->
+                <div class="control-group">
+                    <div class="group-label">Effects</div>
+                    <div class="slider-container">
+                        <label>Blur</label>
+                        <input type="range" id="fileBrowserBlurSlider" min="0" max="20" value="0">
+                        <span id="fileBrowserBlurValue">0px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Vignette</label>
+                        <input type="range" id="fileBrowserVignetteSlider" min="0" max="100" value="0">
+                        <span id="fileBrowserVignetteValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Posterize</label>
+                        <input type="range" id="fileBrowserPosterizeSlider" min="2" max="16" value="16">
+                        <span id="fileBrowserPosterizeValue">Off</span>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="fileBrowserInvertBtn">Invert: Off</button>
+                        <button class="effect-toggle-btn" id="fileBrowserMirrorBtn">Mirror: Off</button>
+                    </div>
+                </div>
+
+                <!-- Animation -->
+                <div class="control-group">
+                    <div class="group-label">Animation</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="fileBrowserPulseBtn">Pulse: Off</button>
+                    </div>
+                    <div class="slider-container" id="fileBrowserPulseRateContainer" style="display: none;">
+                        <label>Pulse Rate</label>
+                        <input type="range" id="fileBrowserPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
+                        <span id="fileBrowserPulseRateValue">2.0s</span>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="video-preset-btn" data-preset="normal" data-target="fileBrowser">Normal</button>
+                        <button class="video-preset-btn" data-preset="dreamy" data-target="fileBrowser">Dreamy</button>
+                        <button class="video-preset-btn" data-preset="noir" data-target="fileBrowser">Noir</button>
+                        <button class="video-preset-btn" data-preset="cyberpunk" data-target="fileBrowser">Cyberpunk</button>
+                        <button class="video-preset-btn" data-preset="vintage" data-target="fileBrowser">Vintage</button>
+                        <button class="video-preset-btn" data-preset="retro-tv" data-target="fileBrowser">Retro TV</button>
+                        <button class="video-preset-btn" data-preset="underwater" data-target="fileBrowser">Underwater</button>
+                        <button class="video-preset-btn" data-preset="infrared" data-target="fileBrowser">Infrared</button>
+                        <button class="video-preset-btn" data-preset="acid" data-target="fileBrowser">Acid</button>
+                        <button class="video-preset-btn" data-preset="thermal" data-target="fileBrowser">Thermal</button>
+                        <button class="video-preset-btn" data-preset="matrix" data-target="fileBrowser">Matrix</button>
+                        <button class="video-preset-btn" data-preset="glitch" data-target="fileBrowser">Glitch</button>
+                    </div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="control-group">
+                    <div class="group-label">Playback Settings</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="videoLoopBtn">Loop: Off</button>
+                        <button class="effect-toggle-btn" id="videoAutoplayBtn">Autoplay: On</button>
+                    </div>
+                    <div class="slider-container">
+                        <label>Video Volume</label>
+                        <input type="range" id="videoVolumeSlider" min="0" max="100" value="0">
+                        <span id="videoVolumeValue">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End video-browser-controls -->
 
         <!-- Kaleidoscope Controls -->
         <div class="kaleidoscope-controls">
@@ -2313,7 +2468,7 @@
 
 
         .kaleidoscope-video {
-            z-index: 1 !important; /* Video kaleidoscope between video and viz */
+            z-index: 4 !important; /* Video kaleidoscope above all video layers */
         }
 
         .kaleidoscope-viz {
@@ -2397,6 +2552,118 @@
             font-style: italic;
             text-align: center;
             opacity: 0.7;
+        }
+
+        /* Video Browser Controls Styles */
+        .video-browser-controls {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-browser-settings-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 1000;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-playlist-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .playlist-placeholder {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            opacity: 0.7;
+            padding: 20px;
+        }
+
+        .video-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .video-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .video-item.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .video-item-name {
+            font-size: 12px;
+            flex: 1;
+            margin-right: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .video-item-duration {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .video-item-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .video-item-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-secondary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .video-item-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .close-panel-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .close-panel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
         }
 
         .quality-select {
@@ -4414,12 +4681,15 @@
         }
 
         startCapture() {
+            console.log('startCapture() method called');
             let frameCount = 0;
             let pulsePhase = 0; // For pulse animation
 
             const capture = () => {
-                if (!this.isStreaming) 
+                // Continue capturing if streaming OR if file video is playing
+                if (!this.isStreaming && this.visualizer.videoMode !== 'file') {
                     return;
+                }
                 
 
 
@@ -4436,7 +4706,7 @@
                     this.captureCtx.fillRect(0, 0, this.captureCanvas.width, this.captureCanvas.height);
 
                     // Layer 1: Video background - ONLY IF KALEIDOSCOPE VIDEO IS NOT ACTIVE
-                    if (this.visualizer.videoMode === 'camera' && !(this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo)) { // Create temporary canvas for video if needed
+                    if ((this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && !(this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo)) { // Create temporary canvas for video if needed
                         if (!this.tempVideoCanvas) {
                             this.tempVideoCanvas = document.createElement('canvas');
                             this.tempVideoCanvas.width = this.captureCanvas.width;
@@ -4450,9 +4720,32 @@
                             this.tempVideoCanvas.height = this.captureCanvas.height;
                         }
 
-                        const videoSource = this.visualizer.captureVideoElement || this.visualizer.videoElement;
+                        const videoSource = this.visualizer.captureVideoElement || this.visualizer.fileVideoElement || this.visualizer.videoElement;
+                        
+                        // Debug: Log what video elements are available
+                        if (frameCount % 60 === 0) { // Log every 60 frames to avoid spam
+                            console.log('Capture debug - videoMode:', this.visualizer.videoMode);
+                            console.log('Available video elements:', {
+                                captureVideoElement: !!this.visualizer.captureVideoElement,
+                                fileVideoElement: !!this.visualizer.fileVideoElement,
+                                videoElement: !!this.visualizer.videoElement
+                            });
+                            console.log('Selected videoSource:', videoSource ? videoSource.constructor.name : 'none');
+                            if (videoSource) {
+                                console.log('VideoSource details:', {
+                                    readyState: videoSource.readyState,
+                                    dimensions: videoSource.videoWidth + 'x' + videoSource.videoHeight,
+                                    paused: videoSource.paused,
+                                    currentTime: videoSource.currentTime
+                                });
+                            }
+                        }
 
-                        if (videoSource && videoSource.readyState >= 2) { // Clear temp canvas
+                        if (videoSource && videoSource.readyState >= 2) {
+                            if (frameCount % 60 === 0) {
+                                console.log('Video source found for capture:', videoSource.constructor.name, 'ready state:', videoSource.readyState, 'dimensions:', videoSource.videoWidth + 'x' + videoSource.videoHeight);
+                            }
+                            // Clear temp canvas
                             this.tempVideoCtx.clearRect(0, 0, this.tempVideoCanvas.width, this.tempVideoCanvas.height);
 
                             this.tempVideoCtx.save();
@@ -4898,6 +5191,868 @@
     // ****
     // ****
 
+    // Video File Browser Class
+    class VideoBrowser {
+        constructor(visualizer) {
+            this.visualizer = visualizer;
+            this.videoFiles = [];
+            this.currentVideoIndex = -1;
+            this.isLooping = false;
+            this.autoplay = true;
+            this.volume = 0;
+            this.fileInput = null;
+            
+            // Video effects properties
+            this.videoEffects = {
+                opacity: 1.0,
+                brightness: 1.0,
+                contrast: 1.0,
+                saturation: 1.0,
+                hueRotate: 0,
+                grayscale: 0,
+                sepia: 0,
+                blur: 0,
+                vignette: 0,
+                posterize: 16,
+                invert: false,
+                mirror: false,
+                pulse: false,
+                pulseRate: 2.0,
+                fadeTime: 3.0
+            };
+            
+            this.init();
+        }
+
+        init() {
+            // Create hidden file input for local file browsing
+            this.createFileInput();
+            
+            // Wire up event handlers
+            this.setupEventHandlers();
+        }
+
+        createFileInput() {
+            this.fileInput = document.createElement('input');
+            this.fileInput.type = 'file';
+            this.fileInput.accept = 'video/*';
+            this.fileInput.multiple = true;
+            this.fileInput.style.display = 'none';
+            document.body.appendChild(this.fileInput);
+
+            this.fileInput.addEventListener('change', (e) => {
+                this.handleLocalFiles(e.target.files);
+            });
+        }
+
+        setupEventHandlers() {
+            // Local files button
+            const localFilesBtn = document.getElementById('localFilesBtn');
+            if (localFilesBtn) {
+                localFilesBtn.addEventListener('click', () => {
+                    this.fileInput.click();
+                });
+            }
+
+            // Video browser button (main toggle)
+            const videoBrowserBtn = document.getElementById('videoBrowserBtn');
+            if (videoBrowserBtn) {
+                videoBrowserBtn.addEventListener('click', () => {
+                    this.togglePanel();
+                });
+            }
+
+            // Settings gear button
+            const settingsBtn = document.getElementById('videoBrowserSettingsBtn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', () => {
+                    this.togglePanel();
+                });
+            }
+
+            // Loop toggle
+            const loopBtn = document.getElementById('videoLoopBtn');
+            if (loopBtn) {
+                loopBtn.addEventListener('click', () => {
+                    this.toggleLoop();
+                });
+            }
+
+            // Autoplay toggle
+            const autoplayBtn = document.getElementById('videoAutoplayBtn');
+            if (autoplayBtn) {
+                autoplayBtn.addEventListener('click', () => {
+                    this.toggleAutoplay();
+                });
+            }
+
+            // Volume slider
+            const volumeSlider = document.getElementById('videoVolumeSlider');
+            if (volumeSlider) {
+                volumeSlider.addEventListener('input', (e) => {
+                    this.setVolume(parseInt(e.target.value));
+                });
+            }
+
+            // File browser video effect sliders
+            this.setupVideoEffectHandlers();
+        }
+
+        setupVideoEffectHandlers() {
+            // Basic effects
+            const opacitySlider = document.getElementById('fileBrowserOpacitySlider');
+            if (opacitySlider) {
+                opacitySlider.addEventListener('input', (e) => {
+                    this.videoEffects.opacity = e.target.value / 100;
+                    document.getElementById('fileBrowserOpacityValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const brightnessSlider = document.getElementById('fileBrowserBrightnessSlider');
+            if (brightnessSlider) {
+                brightnessSlider.addEventListener('input', (e) => {
+                    this.videoEffects.brightness = e.target.value / 100;
+                    document.getElementById('fileBrowserBrightnessValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const contrastSlider = document.getElementById('fileBrowserContrastSlider');
+            if (contrastSlider) {
+                contrastSlider.addEventListener('input', (e) => {
+                    this.videoEffects.contrast = e.target.value / 100;
+                    document.getElementById('fileBrowserContrastValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const fadeSlider = document.getElementById('fileBrowserFadeSlider');
+            if (fadeSlider) {
+                fadeSlider.addEventListener('input', (e) => {
+                    this.videoEffects.fadeTime = parseFloat(e.target.value);
+                    document.getElementById('fileBrowserFadeValue').textContent = `${e.target.value}s`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            // Color effects
+            const saturationSlider = document.getElementById('fileBrowserSaturationSlider');
+            if (saturationSlider) {
+                saturationSlider.addEventListener('input', (e) => {
+                    this.videoEffects.saturation = e.target.value / 100;
+                    document.getElementById('fileBrowserSaturationValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const hueRotateSlider = document.getElementById('fileBrowserHueRotateSlider');
+            if (hueRotateSlider) {
+                hueRotateSlider.addEventListener('input', (e) => {
+                    this.videoEffects.hueRotate = parseInt(e.target.value);
+                    document.getElementById('fileBrowserHueRotateValue').textContent = `${e.target.value}°`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const grayscaleSlider = document.getElementById('fileBrowserGrayscaleSlider');
+            if (grayscaleSlider) {
+                grayscaleSlider.addEventListener('input', (e) => {
+                    this.videoEffects.grayscale = e.target.value / 100;
+                    document.getElementById('fileBrowserGrayscaleValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const sepiaSlider = document.getElementById('fileBrowserSepiaSlider');
+            if (sepiaSlider) {
+                sepiaSlider.addEventListener('input', (e) => {
+                    this.videoEffects.sepia = e.target.value / 100;
+                    document.getElementById('fileBrowserSepiaValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            // Effect sliders
+            const blurSlider = document.getElementById('fileBrowserBlurSlider');
+            if (blurSlider) {
+                blurSlider.addEventListener('input', (e) => {
+                    this.videoEffects.blur = parseInt(e.target.value);
+                    document.getElementById('fileBrowserBlurValue').textContent = `${e.target.value}px`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const vignetteSlider = document.getElementById('fileBrowserVignetteSlider');
+            if (vignetteSlider) {
+                vignetteSlider.addEventListener('input', (e) => {
+                    this.videoEffects.vignette = e.target.value / 100;
+                    document.getElementById('fileBrowserVignetteValue').textContent = `${e.target.value}%`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            const posterizeSlider = document.getElementById('fileBrowserPosterizeSlider');
+            if (posterizeSlider) {
+                posterizeSlider.addEventListener('input', (e) => {
+                    this.videoEffects.posterize = parseInt(e.target.value);
+                    const displayText = e.target.value == 16 ? 'Off' : e.target.value;
+                    document.getElementById('fileBrowserPosterizeValue').textContent = displayText;
+                    this.applyVideoEffects();
+                });
+            }
+
+            // Toggle buttons
+            const invertBtn = document.getElementById('fileBrowserInvertBtn');
+            if (invertBtn) {
+                invertBtn.addEventListener('click', () => {
+                    this.videoEffects.invert = !this.videoEffects.invert;
+                    invertBtn.textContent = `Invert: ${this.videoEffects.invert ? 'On' : 'Off'}`;
+                    invertBtn.classList.toggle('active', this.videoEffects.invert);
+                    this.applyVideoEffects();
+                });
+            }
+
+            const mirrorBtn = document.getElementById('fileBrowserMirrorBtn');
+            if (mirrorBtn) {
+                mirrorBtn.addEventListener('click', () => {
+                    this.videoEffects.mirror = !this.videoEffects.mirror;
+                    mirrorBtn.textContent = `Mirror: ${this.videoEffects.mirror ? 'On' : 'Off'}`;
+                    mirrorBtn.classList.toggle('active', this.videoEffects.mirror);
+                    this.applyVideoEffects();
+                });
+            }
+
+            const pulseBtn = document.getElementById('fileBrowserPulseBtn');
+            const pulseRateContainer = document.getElementById('fileBrowserPulseRateContainer');
+            if (pulseBtn) {
+                pulseBtn.addEventListener('click', () => {
+                    this.videoEffects.pulse = !this.videoEffects.pulse;
+                    pulseBtn.textContent = `Pulse: ${this.videoEffects.pulse ? 'On' : 'Off'}`;
+                    pulseBtn.classList.toggle('active', this.videoEffects.pulse);
+                    if (pulseRateContainer) {
+                        pulseRateContainer.style.display = this.videoEffects.pulse ? 'block' : 'none';
+                    }
+                    this.applyVideoEffects();
+                });
+            }
+
+            const pulseRateSlider = document.getElementById('fileBrowserPulseRateSlider');
+            if (pulseRateSlider) {
+                pulseRateSlider.addEventListener('input', (e) => {
+                    this.videoEffects.pulseRate = parseFloat(e.target.value);
+                    document.getElementById('fileBrowserPulseRateValue').textContent = `${e.target.value}s`;
+                    this.applyVideoEffects();
+                });
+            }
+
+            // Preset buttons
+            const presetButtons = document.querySelectorAll('button[data-target="fileBrowser"]');
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.applyPreset(btn.dataset.preset);
+                });
+            });
+        }
+
+        togglePanel() {
+            const panel = document.getElementById('videoBrowserSettingsPanel');
+            const btn = document.getElementById('videoBrowserBtn');
+            
+            if (panel && btn) {
+                const isVisible = panel.style.display !== 'none';
+                panel.style.display = isVisible ? 'none' : 'block';
+                btn.classList.toggle('active', !isVisible);
+            }
+        }
+
+        handleLocalFiles(files) {
+            console.log('Loading', files.length, 'video files');
+            
+            // Clear existing files
+            this.videoFiles = [];
+            
+            // Process each file
+            Array.from(files).forEach((file, index) => {
+                if (file.type.startsWith('video/')) {
+                    const videoFile = {
+                        id: Date.now() + index,
+                        name: file.name,
+                        file: file,
+                        url: URL.createObjectURL(file),
+                        duration: null,
+                        size: this.formatFileSize(file.size)
+                    };
+                    
+                    this.videoFiles.push(videoFile);
+                    
+                    // Get video duration
+                    this.getVideoDuration(videoFile);
+                }
+            });
+            
+            this.updatePlaylist();
+            
+            // Auto-select first video if autoplay is on
+            if (this.autoplay && this.videoFiles.length > 0) {
+                this.selectVideo(0);
+            }
+        }
+
+        getVideoDuration(videoFile) {
+            const video = document.createElement('video');
+            video.src = videoFile.url;
+            
+            video.onloadedmetadata = () => {
+                videoFile.duration = this.formatDuration(video.duration);
+                this.updatePlaylist();
+            };
+        }
+
+        formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        formatFileSize(bytes) {
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            if (bytes === 0) return '0 B';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        updatePlaylist() {
+            const container = document.getElementById('videoPlaylistContainer');
+            if (!container) return;
+
+            if (this.videoFiles.length === 0) {
+                container.innerHTML = '<div class="playlist-placeholder">No videos loaded. Click "Browse Local Files" to get started.</div>';
+                return;
+            }
+
+            container.innerHTML = this.videoFiles.map((video, index) => {
+                const isCurrentAndPlaying = index === this.currentVideoIndex && 
+                    this.visualizer.fileVideoElement && 
+                    !this.visualizer.fileVideoElement.paused;
+                
+                // Debug logging for button state
+                if (index === this.currentVideoIndex) {
+                    console.log('Playlist update for current video:', {
+                        index,
+                        currentVideoIndex: this.currentVideoIndex,
+                        hasFileVideoElement: !!this.visualizer.fileVideoElement,
+                        videoPaused: this.visualizer.fileVideoElement ? this.visualizer.fileVideoElement.paused : 'no video',
+                        isCurrentAndPlaying
+                    });
+                }
+                
+                return `
+                    <div class="video-item ${index === this.currentVideoIndex ? 'active' : ''}" data-index="${index}">
+                        <div class="video-item-name" title="${video.name}">${video.name}</div>
+                        <div class="video-item-duration">${video.duration || 'Loading...'}</div>
+                        <div class="video-item-actions">
+                            <button class="video-item-btn play-btn" onclick="videoBrowser.${isCurrentAndPlaying ? 'pauseVideo' : 'selectVideo'}(${index})">
+                                ${isCurrentAndPlaying ? 'Pause' : 'Play'}
+                            </button>
+                            <button class="video-item-btn remove-btn" onclick="videoBrowser.removeVideo(${index})">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        selectVideo(index) {
+            if (index < 0 || index >= this.videoFiles.length) return;
+            
+            this.currentVideoIndex = index;
+            const videoFile = this.videoFiles[index];
+            
+            console.log('Selecting video:', videoFile.name);
+            
+            // Load the video file as video source (similar to camera input)
+            this.loadVideoFile(videoFile);
+            
+            this.updatePlaylist();
+        }
+
+        pauseVideo(index) {
+            console.log('pauseVideo called for index:', index, 'currentIndex:', this.currentVideoIndex);
+            if (this.visualizer.fileVideoElement && index === this.currentVideoIndex) {
+                const video = this.visualizer.fileVideoElement;
+                console.log('Video element found, currently paused:', video.paused);
+                
+                if (video.paused) {
+                    console.log('Playing video...');
+                    video.play().then(() => {
+                        console.log('Video play successful');
+                        this.updatePlaylist();
+                    }).catch(err => {
+                        console.error('Video play failed:', err);
+                    });
+                } else {
+                    console.log('Pausing video...');
+                    video.pause();
+                    this.updatePlaylist();
+                }
+            } else {
+                console.warn('pauseVideo: No valid video element or index mismatch');
+            }
+        }
+
+        async loadVideoFile(videoFile) {
+            try {
+                // Stop any existing video input first
+                if (this.visualizer.videoMode === 'camera') {
+                    this.visualizer.stopVideoInput(false);
+                }
+
+                // Create video element for the file
+                if (!this.visualizer.fileVideoElement) {
+                    this.visualizer.fileVideoElement = document.createElement('video');
+                    this.visualizer.fileVideoElement.style.cssText = `
+                        position: absolute;
+                        top: -9999px;
+                        left: -9999px;
+                        width: 1px;
+                        height: 1px;
+                        opacity: 0;
+                        pointer-events: none;
+                    `;
+                    document.body.appendChild(this.visualizer.fileVideoElement);
+                }
+
+                // Set up video element
+                const video = this.visualizer.fileVideoElement;
+                video.src = videoFile.url;
+                video.loop = this.isLooping;
+                video.volume = this.volume;
+                video.muted = false; // Allow audio for file videos
+
+                // Wait for video to be ready
+                await new Promise((resolve, reject) => {
+                    video.onloadeddata = () => {
+                        console.log('Video loaded successfully:', video.videoWidth + 'x' + video.videoHeight, 'ready state:', video.readyState);
+                        resolve();
+                    };
+                    video.onerror = (e) => {
+                        console.error('Video load error:', e);
+                        reject(e);
+                    };
+                    setTimeout(() => reject(new Error('Video load timeout')), 5000); // Timeout after 5 seconds
+                });
+
+                // Apply video to visualizer
+                this.visualizer.fileVideoElement = video;
+                this.visualizer.videoMode = 'file';
+                
+                console.log('File video element assigned:', this.visualizer.fileVideoElement);
+                console.log('Video mode set to:', this.visualizer.videoMode);
+                
+                // Show video in UI  
+                const container = document.getElementById('visualizationContainer');
+                if (container) {
+                    container.classList.add('video-active');
+                    
+                    // Add the video element to the visualization container for display
+                    // Style it to fill the container
+                    video.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: contain;
+                        z-index: 2;
+                        pointer-events: none;
+                    `;
+                    
+                    // Remove any existing file video from display
+                    const existingFileVideo = container.querySelector('.file-video-display');
+                    if (existingFileVideo) {
+                        existingFileVideo.remove();
+                    }
+                    
+                    // Add class to identify this as display video
+                    video.classList.add('file-video-display');
+                    
+                    // Add video to container for display
+                    container.appendChild(video);
+                    
+                    console.log('Video element added to visualization container for display');
+                    console.log('Container children count:', container.children.length);
+                    console.log('Video in DOM:', document.contains(video));
+                    console.log('Video dimensions:', video.videoWidth + 'x' + video.videoHeight);
+                    console.log('Video current time:', video.currentTime, 'duration:', video.duration);
+                }
+
+                // Add event listeners for better video handling
+                video.addEventListener('loadeddata', () => {
+                    console.log('Video loadeddata event fired');
+                    this.updatePlaylist();
+                });
+                
+                video.addEventListener('play', () => {
+                    console.log('Video play event fired');
+                    this.updatePlaylist();
+                });
+                
+                video.addEventListener('pause', () => {
+                    console.log('Video pause event fired');
+                    this.updatePlaylist();
+                });
+
+                if (this.autoplay) {
+                    video.play().then(() => {
+                        console.log('Autoplay successful');
+                        this.updatePlaylist();
+                    }).catch(err => {
+                        console.log('Autoplay failed (expected):', err.message);
+                        this.updatePlaylist();
+                    });
+                }
+
+                // Start capture system for video display (even without Live Display)
+                if (this.visualizer.streamManager && !this.visualizer.streamManager.isStreaming) {
+                    console.log('Starting capture system for file video display');
+                    this.visualizer.streamManager.setupCaptureCanvas();
+                    this.visualizer.streamManager.startCapture();
+                }
+
+                // Update UI to show video is active
+                this.updateVideoStatus(true, videoFile.name);
+
+                console.log('Video file loaded successfully:', videoFile.name);
+
+            } catch (error) {
+                console.error('Failed to load video file:', error);
+                this.visualizer.showError(`Failed to load video: ${videoFile.name}`);
+            }
+        }
+
+        removeVideo(index) {
+            if (index < 0 || index >= this.videoFiles.length) return;
+            
+            const videoFile = this.videoFiles[index];
+            
+            // Clean up URL
+            URL.revokeObjectURL(videoFile.url);
+            
+            // Remove from array
+            this.videoFiles.splice(index, 1);
+            
+            // Adjust current index
+            if (this.currentVideoIndex === index) {
+                this.currentVideoIndex = -1;
+                this.stopCurrentVideo();
+            } else if (this.currentVideoIndex > index) {
+                this.currentVideoIndex--;
+            }
+            
+            this.updatePlaylist();
+        }
+
+        stopCurrentVideo() {
+            if (this.visualizer.fileVideoElement) {
+                this.visualizer.fileVideoElement.pause();
+                this.visualizer.fileVideoElement.src = '';
+            }
+            
+            this.visualizer.videoMode = 'off';
+            
+            // Stop capture system if it was only running for file video (not Live Display)
+            if (this.visualizer.streamManager && !this.visualizer.streamManager.isStreaming) {
+                console.log('Stopping capture system for file video');
+                if (this.visualizer.streamManager.animationFrame) {
+                    cancelAnimationFrame(this.visualizer.streamManager.animationFrame);
+                    this.visualizer.streamManager.animationFrame = null;
+                }
+            }
+            
+            const container = document.getElementById('visualizationContainer');
+            if (container) {
+                container.classList.remove('video-active');
+                
+                // Remove video element from display
+                const displayVideo = container.querySelector('.file-video-display');
+                if (displayVideo) {
+                    displayVideo.remove();
+                    console.log('Video element removed from visualization container');
+                }
+            }
+            
+            this.updateVideoStatus(false);
+        }
+
+        updateVideoStatus(isActive, fileName = '') {
+            const btn = document.getElementById('videoBrowserBtn');
+            if (btn) {
+                btn.classList.toggle('active', isActive);
+                btn.textContent = isActive ? `Video: ${fileName.substring(0, 10)}...` : 'Video';
+            }
+        }
+
+        toggleLoop() {
+            this.isLooping = !this.isLooping;
+            const btn = document.getElementById('videoLoopBtn');
+            if (btn) {
+                btn.textContent = `Loop: ${this.isLooping ? 'On' : 'Off'}`;
+                btn.classList.toggle('active', this.isLooping);
+            }
+            
+            // Apply to current video
+            if (this.visualizer.fileVideoElement) {
+                this.visualizer.fileVideoElement.loop = this.isLooping;
+            }
+        }
+
+        toggleAutoplay() {
+            this.autoplay = !this.autoplay;
+            const btn = document.getElementById('videoAutoplayBtn');
+            if (btn) {
+                btn.textContent = `Autoplay: ${this.autoplay ? 'On' : 'Off'}`;
+                btn.classList.toggle('active', this.autoplay);
+            }
+        }
+
+        setVolume(volume) {
+            this.volume = volume / 100;
+            const valueSpan = document.getElementById('videoVolumeValue');
+            if (valueSpan) {
+                valueSpan.textContent = `${volume}%`;
+            }
+            
+            // Apply to current video
+            if (this.visualizer.fileVideoElement) {
+                this.visualizer.fileVideoElement.volume = this.volume;
+            }
+        }
+
+        applyVideoEffects() {
+            if (!this.visualizer.fileVideoElement) {
+                console.warn('No file video element found, skipping effects application');
+                return;
+            }
+
+            const video = this.visualizer.fileVideoElement;
+            const effects = this.videoEffects;
+            
+            // Safety check: make sure we're targeting the file video, not live video
+            if (video === this.visualizer.videoElement) {
+                console.error('ERROR: File video effects trying to target live video element!');
+                return;
+            }
+
+            // Build CSS filter string
+            const filters = [];
+            
+            if (effects.brightness !== 1.0) filters.push(`brightness(${effects.brightness})`);
+            if (effects.contrast !== 1.0) filters.push(`contrast(${effects.contrast})`);
+            if (effects.saturation !== 1.0) filters.push(`saturate(${effects.saturation})`);
+            if (effects.hueRotate !== 0) filters.push(`hue-rotate(${effects.hueRotate}deg)`);
+            if (effects.grayscale > 0) filters.push(`grayscale(${effects.grayscale})`);
+            if (effects.sepia > 0) filters.push(`sepia(${effects.sepia})`);
+            if (effects.blur > 0) filters.push(`blur(${effects.blur}px)`);
+            if (effects.invert) filters.push('invert(1)');
+
+            // Apply filters
+            video.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+            
+            // Apply opacity
+            video.style.opacity = effects.opacity;
+            
+            // Apply transform for mirror
+            if (effects.mirror) {
+                video.style.transform = 'scaleX(-1)';
+            } else {
+                video.style.transform = 'scaleX(1)';
+            }
+
+            // Apply pulse animation
+            if (effects.pulse) {
+                video.style.animation = `pulse ${effects.pulseRate}s ease-in-out infinite alternate`;
+            } else {
+                video.style.animation = 'none';
+            }
+
+            // Apply transition for fade time
+            video.style.transition = `opacity ${effects.fadeTime}s ease`;
+
+            console.log('Applied effects to FILE VIDEO (fileVideoElement):', effects);
+        }
+
+        applyPreset(presetName) {
+            console.log('Applying FILE VIDEO preset:', presetName);
+            
+            // Reset to defaults first
+            this.videoEffects = {
+                opacity: 1.0,
+                brightness: 1.0,
+                contrast: 1.0,
+                saturation: 1.0,
+                hueRotate: 0,
+                grayscale: 0,
+                sepia: 0,
+                blur: 0,
+                vignette: 0,
+                posterize: 16,
+                invert: false,
+                mirror: false,
+                pulse: false,
+                pulseRate: 2.0,
+                fadeTime: 3.0
+            };
+
+            // Apply preset values
+            switch (presetName) {
+                case 'dreamy':
+                    this.videoEffects.brightness = 1.2;
+                    this.videoEffects.contrast = 0.8;
+                    this.videoEffects.saturation = 1.3;
+                    this.videoEffects.blur = 2;
+                    break;
+                case 'noir':
+                    this.videoEffects.grayscale = 1.0;
+                    this.videoEffects.contrast = 1.5;
+                    this.videoEffects.brightness = 0.9;
+                    break;
+                case 'cyberpunk':
+                    this.videoEffects.saturation = 1.5;
+                    this.videoEffects.hueRotate = 180;
+                    this.videoEffects.contrast = 1.3;
+                    break;
+                case 'vintage':
+                    this.videoEffects.sepia = 0.8;
+                    this.videoEffects.brightness = 1.1;
+                    this.videoEffects.contrast = 1.2;
+                    break;
+                case 'retro-tv':
+                    this.videoEffects.contrast = 1.4;
+                    this.videoEffects.saturation = 1.2;
+                    this.videoEffects.posterize = 8;
+                    break;
+                case 'underwater':
+                    this.videoEffects.hueRotate = 200;
+                    this.videoEffects.saturation = 1.4;
+                    this.videoEffects.blur = 1;
+                    break;
+                case 'infrared':
+                    this.videoEffects.hueRotate = 90;
+                    this.videoEffects.invert = true;
+                    this.videoEffects.contrast = 1.5;
+                    break;
+                case 'acid':
+                    this.videoEffects.saturation = 2.0;
+                    this.videoEffects.hueRotate = 120;
+                    this.videoEffects.contrast = 1.3;
+                    break;
+                case 'thermal':
+                    this.videoEffects.grayscale = 1.0;
+                    this.videoEffects.hueRotate = 30;
+                    this.videoEffects.contrast = 1.6;
+                    break;
+                case 'matrix':
+                    this.videoEffects.hueRotate = 120;
+                    this.videoEffects.saturation = 0.5;
+                    this.videoEffects.contrast = 1.4;
+                    break;
+                case 'glitch':
+                    this.videoEffects.saturation = 1.8;
+                    this.videoEffects.contrast = 1.5;
+                    this.videoEffects.posterize = 4;
+                    break;
+                default: // normal
+                    // Already reset to defaults
+                    break;
+            }
+
+            // Update all UI elements
+            this.updateUIFromEffects();
+            
+            // Apply the effects
+            this.applyVideoEffects();
+        }
+
+        updateUIFromEffects() {
+            const effects = this.videoEffects;
+            
+            // Update sliders
+            document.getElementById('fileBrowserOpacitySlider').value = Math.round(effects.opacity * 100);
+            document.getElementById('fileBrowserOpacityValue').textContent = `${Math.round(effects.opacity * 100)}%`;
+            
+            document.getElementById('fileBrowserBrightnessSlider').value = Math.round(effects.brightness * 100);
+            document.getElementById('fileBrowserBrightnessValue').textContent = `${Math.round(effects.brightness * 100)}%`;
+            
+            document.getElementById('fileBrowserContrastSlider').value = Math.round(effects.contrast * 100);
+            document.getElementById('fileBrowserContrastValue').textContent = `${Math.round(effects.contrast * 100)}%`;
+            
+            document.getElementById('fileBrowserSaturationSlider').value = Math.round(effects.saturation * 100);
+            document.getElementById('fileBrowserSaturationValue').textContent = `${Math.round(effects.saturation * 100)}%`;
+            
+            document.getElementById('fileBrowserHueRotateSlider').value = effects.hueRotate;
+            document.getElementById('fileBrowserHueRotateValue').textContent = `${effects.hueRotate}°`;
+            
+            document.getElementById('fileBrowserGrayscaleSlider').value = Math.round(effects.grayscale * 100);
+            document.getElementById('fileBrowserGrayscaleValue').textContent = `${Math.round(effects.grayscale * 100)}%`;
+            
+            document.getElementById('fileBrowserSepiaSlider').value = Math.round(effects.sepia * 100);
+            document.getElementById('fileBrowserSepiaValue').textContent = `${Math.round(effects.sepia * 100)}%`;
+            
+            document.getElementById('fileBrowserBlurSlider').value = effects.blur;
+            document.getElementById('fileBrowserBlurValue').textContent = `${effects.blur}px`;
+            
+            document.getElementById('fileBrowserPosterizeSlider').value = effects.posterize;
+            document.getElementById('fileBrowserPosterizeValue').textContent = effects.posterize === 16 ? 'Off' : effects.posterize;
+            
+            document.getElementById('fileBrowserFadeSlider').value = effects.fadeTime;
+            document.getElementById('fileBrowserFadeValue').textContent = `${effects.fadeTime}s`;
+            
+            document.getElementById('fileBrowserPulseRateSlider').value = effects.pulseRate;
+            document.getElementById('fileBrowserPulseRateValue').textContent = `${effects.pulseRate}s`;
+            
+            // Update toggle buttons
+            const invertBtn = document.getElementById('fileBrowserInvertBtn');
+            invertBtn.textContent = `Invert: ${effects.invert ? 'On' : 'Off'}`;
+            invertBtn.classList.toggle('active', effects.invert);
+            
+            const mirrorBtn = document.getElementById('fileBrowserMirrorBtn');
+            mirrorBtn.textContent = `Mirror: ${effects.mirror ? 'On' : 'Off'}`;
+            mirrorBtn.classList.toggle('active', effects.mirror);
+            
+            const pulseBtn = document.getElementById('fileBrowserPulseBtn');
+            pulseBtn.textContent = `Pulse: ${effects.pulse ? 'On' : 'Off'}`;
+            pulseBtn.classList.toggle('active', effects.pulse);
+            
+            const pulseRateContainer = document.getElementById('fileBrowserPulseRateContainer');
+            pulseRateContainer.style.display = effects.pulse ? 'block' : 'none';
+        }
+
+        closePanel() {
+            const panel = document.getElementById('videoBrowserSettingsPanel');
+            const btn = document.getElementById('videoBrowserBtn');
+            
+            if (panel && btn) {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+            }
+        }
+
+        // Check if video browser should be disabled (when live video is active)
+        updateAvailability() {
+            const isLiveVideoActive = this.visualizer.videoMode === 'camera';
+            const btn = document.getElementById('videoBrowserBtn');
+            
+            if (btn) {
+                btn.disabled = isLiveVideoActive;
+                btn.style.opacity = isLiveVideoActive ? '0.5' : '1';
+                btn.title = isLiveVideoActive ? 'Video browser disabled while Live Video is active' : 'Browse Video Files';
+            }
+        }
+    }
+
+    // ****
+    // ****
+
     // GitItUp Visualizer Class with Audio Input and Morph Support
     class GitItUpVisualizer {
         constructor() {
@@ -4951,7 +6106,7 @@
             this.videoStream = null;
             this.videoElement = null;
             this.availableVideoDevices = [];
-            this.videoOpacity = 0.5;
+            this.videoOpacity = 1.0;
             this.videoFadeTime = 3; // seconds
             this.videoFadeTimeout = null;
             this.currentVideoDeviceId = null;
@@ -5459,6 +6614,12 @@
                 await this.initAudioMotion();
 
                 this.streamManager = new StreamManager(this);
+                
+                // Initialize video browser
+                this.videoBrowser = new VideoBrowser(this);
+                
+                // Set global reference for onclick handlers
+                window.videoBrowser = this.videoBrowser;
 
                 this.setBackgroundColor(this.backgroundColor);
 
@@ -5681,7 +6842,7 @@
 
             } else { // Turn off video
                 this.stopVideoInput();
-                btnText.textContent = 'Video Off';
+                btnText.textContent = 'Live Video Off';
                 btn.classList.remove('video-active');
                 deviceSelect.style.display = 'none';
                 controlsPanel.style.display = 'none';
@@ -5858,9 +7019,9 @@
                         this.audioMotion.canvas.style.background = 'transparent';
                         this.audioMotion.canvas.style.backgroundColor = 'transparent';
 
-                        // Set z-index to ensure canvas is above video
+                        // Set z-index to ensure canvas is above video layers
                         this.audioMotion.canvas.style.position = 'absolute';
-                        this.audioMotion.canvas.style.zIndex = '1';
+                        this.audioMotion.canvas.style.zIndex = '3';
                     }
 
                     // Force the AudioMotion background to be transparent
@@ -5941,9 +7102,14 @@
                 const controlsPanel = document.getElementById('videoControlsPanel');
 
                 btn.classList.add('video-active');
-                btnText.textContent = 'Video On';
+                btnText.textContent = 'Live Video On';
                 this.videoMode = 'camera';
                 this.currentVideoDeviceId = deviceId;
+                
+                // Update video browser availability
+                if (this.videoBrowser) {
+                    this.videoBrowser.updateAvailability();
+                }
 
                 // Video Settings Button (only add if not already present)
                 if (!document.getElementById('videoSettingsBtn')) {
@@ -6198,7 +7364,7 @@
                     btn.classList.remove('video-active');
                 }
                 if (btnText) {
-                    btnText.textContent = 'Video Off';
+                    btnText.textContent = 'Live Video Off';
                 }
                 if (deviceSelect) {
                     deviceSelect.style.display = 'none';
@@ -6208,6 +7374,11 @@
                 }
 
                 this.videoMode = 'off';
+                
+                // Update video browser availability
+                if (this.videoBrowser) {
+                    this.videoBrowser.updateAvailability();
+                }
                 this.currentVideoDeviceId = null;
             }
 
@@ -6443,7 +7614,7 @@
             // Apply combined filters
             this.videoElement.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
 
-            console.log('Applied filters to main window video:', this.videoElement.style.filter);
+            console.log('Applied filters to LIVE VIDEO (videoElement):', this.videoElement.style.filter);
 
             // Apply vignette overlay
             this.applyVignette();
@@ -7555,12 +8726,15 @@ https://rogueamoeba.com/loopback/
             }
 
             // Apply kaleidoscope to VIDEO if enabled
-            if (this.kaleidoscopeApplyToVideo && this.videoMode === 'camera') { // Try both video elements - prefer captureVideoElement for clean source
+            if (this.kaleidoscopeApplyToVideo && (this.videoMode === 'camera' || this.videoMode === 'file')) { // Try video elements - prefer captureVideoElement for clean source, then fileVideoElement
                 let videoSource = null;
 
                 if (this.captureVideoElement && this.captureVideoElement.readyState >= 2) {
                     videoSource = this.captureVideoElement;
                     console.log('Using captureVideoElement for kaleidoscope');
+                } else if (this.fileVideoElement && this.fileVideoElement.readyState >= 2) {
+                    videoSource = this.fileVideoElement;
+                    console.log('Using fileVideoElement for kaleidoscope');
                 } else if (this.videoElement && this.videoElement.readyState >= 2) {
                     videoSource = this.videoElement;
                     console.log('Using videoElement for kaleidoscope');
@@ -8880,7 +10054,7 @@ https://rogueamoeba.com/loopback/
                     if (this.videoMode === 'camera') { // If video is on, turn it OFF (not toggle panel)
                         this.stopVideoInput();
                         const btnText = videoInputBtn.querySelector('.video-mode-text');
-                        btnText.textContent = 'Video Off';
+                        btnText.textContent = 'Live Video Off';
                         videoInputBtn.classList.remove('video-active');
                         document.getElementById('videoDeviceSelect').style.display = 'none';
                         document.getElementById('videoControlsPanel').style.display = 'none';
