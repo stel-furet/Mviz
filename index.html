@@ -2314,7 +2314,7 @@
 
 
         .kaleidoscope-video {
-            z-index: 4 !important; /* Video kaleidoscope above all video layers */
+            z-index: 2 !important; /* Video kaleidoscope above video but below viz */
         }
 
         .kaleidoscope-viz {
@@ -6476,6 +6476,11 @@
 
             // Apply pulse animation
             this.applyPulse();
+            
+            // Also update kaleidoscope filters if it's active
+            if (this.kaleidoscopeEnabled && this.kaleidoscopeApplyToVideo) {
+                this.applyFiltersToKaleidoscopeContext();
+            }
         }
 
         applyVignette() {
@@ -7304,7 +7309,7 @@ https://rogueamoeba.com/loopback/
                 this.kaleidoscopeVideoCanvas = document.createElement('canvas');
                 this.kaleidoscopeVideoCanvas.className = 'kaleidoscope-canvas kaleidoscope-video';
                 this.kaleidoscopeVideoCanvas.style.display = 'none';
-                this.kaleidoscopeVideoCanvas.style.zIndex = '1'; // Behind viz
+                this.kaleidoscopeVideoCanvas.style.zIndex = '2'; // Above video but below viz
                 container.appendChild(this.kaleidoscopeVideoCanvas);
                 this.kaleidoscopeVideoCtx = this.kaleidoscopeVideoCanvas.getContext('2d');
             }
@@ -7407,6 +7412,11 @@ https://rogueamoeba.com/loopback/
             }
             if (this.kaleidoscopeVizCanvas) {
                 this.kaleidoscopeVizCanvas.style.display = 'none';
+            }
+            
+            // Show the original visualization canvas when kaleidoscope is stopped
+            if (this.audioMotion && this.audioMotion.canvas) {
+                this.audioMotion.canvas.style.visibility = 'visible';
             }
 
             // Restore video opacity if needed
@@ -7519,6 +7529,66 @@ https://rogueamoeba.com/loopback/
             }
         }
 
+        applyFiltersToKaleidoscopeContext() {
+            if (!this.kaleidoscopeVideoCtx) return;
+            
+            // Apply the same filters to the kaleidoscope canvas context
+            let filters = [];
+
+            // Apply posterize FIRST with much stronger effect (same logic as applyVideoFilters)
+            if (this.videoPosterize < 16) {
+                const steps = this.videoPosterize;
+                const posterizeAmount = (16 - steps) / 16;
+
+                filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+                filters.push(`brightness(${95}%)`);
+                filters.push(`saturate(${200}%)`);
+
+                if (steps < 8) {
+                    filters.push(`contrast(${150}%)`);
+                }
+            }
+
+            // Then apply other adjustments
+            if (this.videoBrightness !== 100 && this.videoPosterize >= 16) {
+                filters.push(`brightness(${this.videoBrightness}%)`);
+            }
+            if (this.videoContrast !== 100 && this.videoPosterize >= 16) {
+                filters.push(`contrast(${this.videoContrast}%)`);
+            }
+            if (this.videoSaturation !== 100 && this.videoPosterize >= 16) {
+                filters.push(`saturate(${this.videoSaturation}%)`);
+            }
+            if (this.videoHueRotate !== 0) {
+                filters.push(`hue-rotate(${this.videoHueRotate}deg)`);
+            }
+            if (this.videoGrayscale > 0) {
+                filters.push(`grayscale(${this.videoGrayscale}%)`);
+            }
+            if (this.videoSepia > 0) {
+                filters.push(`sepia(${this.videoSepia}%)`);
+            }
+            if (this.videoBlur > 0) {
+                filters.push(`blur(${this.videoBlur}px)`);
+            }
+            if (this.videoInvert) {
+                filters.push('invert(100%)');
+            }
+
+            // Apply combined filters to the kaleidoscope canvas
+            this.kaleidoscopeVideoCanvas.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+            
+            // Apply pulse animation if enabled
+            if (this.videoPulse) {
+                this.kaleidoscopeVideoCanvas.classList.add('pulse-active');
+                this.kaleidoscopeVideoCanvas.style.setProperty('--pulse-duration', `${this.videoPulseRate}s`);
+            } else {
+                this.kaleidoscopeVideoCanvas.classList.remove('pulse-active');
+            }
+            
+            console.log('Applied filters to kaleidoscope canvas:', this.kaleidoscopeVideoCanvas.style.filter);
+        }
+        
         applyKaleidoscopeEffect() {
             if (!this.kaleidoscopeVideoCanvas || !this.kaleidoscopeVizCanvas) {
                 console.error('Kaleidoscope canvases not initialized');
@@ -7599,6 +7669,12 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeVideoCtx.clearRect(0, 0, width, height);
 
                     console.log('Drawing video kaleidoscope with', this.kaleidoscopeSegments, 'segments');
+                    
+                    // Apply video filters to kaleidoscope canvas
+                    this.applyFiltersToKaleidoscopeContext();
+                    
+                    // Apply video opacity to kaleidoscope canvas
+                    this.kaleidoscopeVideoCanvas.style.opacity = this.videoOpacity.toString();
 
                     // Draw multiple rings for VIDEO
                     for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
@@ -7652,6 +7728,14 @@ https://rogueamoeba.com/loopback/
                             // Set opacity based on ring number for better visibility
                             this.kaleidoscopeVideoCtx.globalAlpha = 1 - (ring * 0.15);
 
+                            // Apply mirror transformation if needed
+                            if (this.videoMirror === 'horizontal' || this.videoMirror === 'both') {
+                                this.kaleidoscopeVideoCtx.scale(-1, 1);
+                            }
+                            if (this.videoMirror === 'vertical' || this.videoMirror === 'both') {
+                                this.kaleidoscopeVideoCtx.scale(1, -1);
+                            }
+                            
                             // Draw segment
                             if (i % 2 === 0) {
                                 this.kaleidoscopeVideoCtx.drawImage(videoSource, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -7686,8 +7770,10 @@ https://rogueamoeba.com/loopback/
 
                 console.log('Drawing viz kaleidoscope');
 
-                // IMPORTANT: Keep the original viz canvas visible but draw it through kaleidoscope
-                // Don't hide it as that breaks the capture
+                // Hide the original visualization canvas when kaleidoscope is active
+                if (this.audioMotion.canvas) {
+                    this.audioMotion.canvas.style.visibility = 'hidden';
+                }
 
                 // Draw multiple rings for VISUALIZATION
                 for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
@@ -7754,6 +7840,10 @@ https://rogueamoeba.com/loopback/
                 console.log('Viz kaleidoscope drawn successfully');
             } else {
                 this.kaleidoscopeVizCanvas.style.display = 'none';
+                // Show the original visualization canvas when kaleidoscope is not active
+                if (this.audioMotion && this.audioMotion.canvas) {
+                    this.audioMotion.canvas.style.visibility = 'visible';
+                }
             }
         }
         setKaleidoscopeSegments(value) {
