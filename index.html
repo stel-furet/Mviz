@@ -114,6 +114,14 @@
                 <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
                     <option value="">Select Video Input...</option>
                 </select>
+                <div class="video-file-info" id="videoFileInfo" style="display: none;">
+                    <span class="video-file-name" id="videoFileName">No file selected</span>
+                    <div class="video-file-controls-inline">
+                        <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
+                        <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
+                    </div>
+                </div>
+                <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
             </div>
 
             <!-- Video controls panel -->
@@ -1623,6 +1631,55 @@
             font-size: 12px;
             min-width: 200px;
         }
+
+        /* Video file controls */
+        .video-file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .video-file-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-primary);
+        }
+
+        .video-file-controls-inline {
+            display: flex;
+            gap: 4px;
+        }
+
+        .video-file-control-btn {
+            background: var(--hover-color);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-file-control-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+
+        .video-file-control-btn.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--text-primary);
+        }
+
 
         #displaySettingsBtn {
             display: inline-flex !important;
@@ -4445,14 +4502,13 @@
                             this.tempVideoCanvas.height = this.captureCanvas.height;
                         }
 
-                        const videoSource = this.visualizer.captureVideoElement || this.visualizer.fileVideoElement || this.visualizer.videoElement;
+                        const videoSource = this.visualizer.captureVideoElement || this.visualizer.videoElement;
                         
                         // Debug: Log what video elements are available
                         if (frameCount % 60 === 0) { // Log every 60 frames to avoid spam
                             console.log('Capture debug - videoMode:', this.visualizer.videoMode);
                             console.log('Available video elements:', {
                                 captureVideoElement: !!this.visualizer.captureVideoElement,
-                                fileVideoElement: !!this.visualizer.fileVideoElement,
                                 videoElement: !!this.visualizer.videoElement
                             });
                             console.log('Selected videoSource:', videoSource ? videoSource.constructor.name : 'none');
@@ -4967,7 +5023,7 @@
             this.energyCheckInterval = null;
 
             // Video background properties
-            this.videoMode = 'off'; // 'off', 'camera'
+            this.videoMode = 'off'; // 'off', 'camera', 'file'
             this.videoStream = null;
             this.videoElement = null;
             this.availableVideoDevices = [];
@@ -4975,6 +5031,11 @@
             this.videoFadeTime = 3; // seconds
             this.videoFadeTimeout = null;
             this.currentVideoDeviceId = null;
+            
+            // Video file properties
+            this.videoFile = null;
+            this.videoFileLoop = true;
+            this.videoFileMuted = true;
 
             // Kaleidoscope properties
             this.kaleidoscopeEnabled = false;
@@ -5668,18 +5729,36 @@
                     device.deviceId.substr(0, 5)
                 }`;
 
-                // Add icons for common camera types
-                if (displayName.toLowerCase().includes('obs')) {
+                // Add icons for common camera types including Continuity Camera
+                if (displayName.toLowerCase().includes('iphone') || 
+                    displayName.toLowerCase().includes('ipad') ||
+                    displayName.toLowerCase().includes('continuity')) {
+                    displayName = '📱 ' + displayName + ' (Continuity Camera)';
+                } else if (displayName.toLowerCase().includes('obs')) {
                     displayName = '🎬 ' + displayName;
                 } else if (displayName.toLowerCase().includes('virtual')) {
                     displayName = '💻 ' + displayName;
                 } else if (displayName.toLowerCase().includes('back') || displayName.toLowerCase().includes('rear')) {
-                    displayName = '📱 ' + displayName;
+                    displayName = '📷 ' + displayName;
                 } else {
                     displayName = '📹 ' + displayName;
                 } option.textContent = displayName;
                 select.appendChild(option);
             });
+
+            // Add separator
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '──────────────';
+            select.appendChild(separator);
+
+            // Add video from file option
+            const fileOption = document.createElement('option');
+            fileOption.value = 'file';
+            fileOption.textContent = '📁 Video from file' + (this.videoFile ? ` (${this.videoFile.name})` : '');
+            select.appendChild(fileOption);
+            
+            console.log('Video device list updated. Total options:', select.options.length);
         }
 
         async toggleVideoInput() {
@@ -5691,13 +5770,8 @@
             if (this.videoMode === 'off') { // Show device selector
                 await this.initializeVideoInput();
 
-                if (this.availableVideoDevices.length === 0) {
-                    this.showError('No video input devices found');
-                    return;
-                }
-
                 deviceSelect.style.display = 'block';
-                btnText.textContent = 'Select Camera';
+                btnText.textContent = 'Select Video Source';
                 this.videoMode = 'selecting';
 
             } else { // Turn off video
@@ -5736,12 +5810,24 @@
                     // Clear the video source but keep the element
                     if (this.videoElement) {
                         this.videoElement.srcObject = null;
+                    this.videoElement.src = '';
                     }
                     if (this.captureVideoElement) {
                         this.captureVideoElement.srcObject = null;
                     }
                 } else { // Normal stop for initial setup
                     this.stopVideoInput(false);
+                }
+
+                // Get device info to check if it's a Continuity Camera
+                let isContinuityCamera = false;
+                if (deviceId && this.availableVideoDevices) {
+                    const device = this.availableVideoDevices.find(d => d.deviceId === deviceId);
+                    if (device && device.label) {
+                        isContinuityCamera = device.label.toLowerCase().includes('iphone') || 
+                                           device.label.toLowerCase().includes('ipad') ||
+                                           device.label.toLowerCase().includes('continuity');
+                    }
                 }
 
                 // Determine optimal resolution
@@ -5751,12 +5837,12 @@
                             exact: deviceId
                         } : undefined,
                         width: {
-                            ideal: 3840,
-                            max: 3840
-                        }, // 4K max
+                            ideal: isContinuityCamera ? 1920 : 3840,  // Continuity Camera works better at 1080p
+                            max: isContinuityCamera ? 1920 : 3840
+                        },
                         height: {
-                            ideal: 2160,
-                            max: 2160
+                            ideal: isContinuityCamera ? 1080 : 2160,
+                            max: isContinuityCamera ? 1080 : 2160
                         },
                         frameRate: {
                             ideal: 30
@@ -5764,10 +5850,11 @@
                     }
                 };
 
-                // Try 4K first, fallback to 1080p
+                // Try requested resolution, with appropriate fallbacks
                 try {
                     this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
                 } catch (e) {
+                    if (!isContinuityCamera) {
                     console.log('4K not available, trying 1080p');
                     constraints.video.width = {
                         ideal: 1920
@@ -5775,7 +5862,30 @@
                     constraints.video.height = {
                         ideal: 1080
                     };
+                        try {
+                            this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                        } catch (e2) {
+                            // Final fallback - let browser choose best resolution
+                            console.log('1080p not available, using default resolution');
+                            delete constraints.video.width;
+                            delete constraints.video.height;
                     this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                        }
+                    } else {
+                        // For Continuity Camera, try lower resolution if 1080p fails
+                        console.log('Continuity Camera: trying 720p');
+                        constraints.video.width = { ideal: 1280 };
+                        constraints.video.height = { ideal: 720 };
+                        try {
+                            this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                        } catch (e2) {
+                            // Final fallback for Continuity Camera
+                            console.log('Continuity Camera: using default resolution');
+                            delete constraints.video.width;
+                            delete constraints.video.height;
+                            this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                        }
+                    }
                 }
 
                 // Get container reference
@@ -5985,6 +6095,8 @@
                 if (deviceSelect) {
                     deviceSelect.value = deviceId;
                     deviceSelect.style.display = 'block';
+                    // Update the list to refresh file name if needed
+                    this.updateVideoDeviceList();
                 }
 
                 // Add cleanup listener for unexpected stream end
@@ -6028,12 +6140,27 @@
                 const capabilities = track.getCapabilities();
 
                 // Store camera info
+                let cameraLabel = track.label || 'Unknown Camera';
+                let isContinuity = false;
+                
+                // Check if this is a Continuity Camera
+                if (cameraLabel.toLowerCase().includes('iphone') || 
+                    cameraLabel.toLowerCase().includes('ipad') ||
+                    cameraLabel.toLowerCase().includes('continuity')) {
+                    isContinuity = true;
+                    // Add indicator if not already present
+                    if (!cameraLabel.includes('(Continuity Camera)')) {
+                        cameraLabel = `📱 ${cameraLabel} (Continuity Camera)`;
+                    }
+                }
+                
                 this.cameraInfo = {
-                    label: track.label || 'Unknown Camera',
+                    label: cameraLabel,
                     resolution: `${settings.width || 'Unknown'}x${settings.height || 'Unknown'}`,
                     frameRate: settings.frameRate || 'Unknown',
                     facingMode: settings.facingMode || 'Unknown',
-                    capabilities: capabilities
+                    capabilities: capabilities,
+                    isContinuity: isContinuity
                 };
 
                 // Get actual video element dimensions
@@ -6062,6 +6189,12 @@
                         <span class="stats-label">Camera:</span>
                         <span class="stats-value">${this.cameraInfo.label}</span>
                     </div>
+                    ${this.cameraInfo.isContinuity ? `
+                    <div class="stats-row" style="color: var(--accent-color);">
+                        <span class="stats-label">Type:</span>
+                        <span class="stats-value">Apple Continuity Camera</span>
+                    </div>
+                    ` : ''}
                     <div class="stats-row">
                         <span class="stats-label">Input Resolution:</span>
                         <span class="stats-value">${this.cameraInfo.actualResolution || this.cameraInfo.resolution}</span>
@@ -6077,6 +6210,322 @@
                     <div class="stats-row">
                         <span class="stats-label">Capture Frame Rate:</span>
                         <span class="stats-value">${frameRate} fps</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Stream Bitrate:</span>
+                        <span class="stats-value">${bitrate} Mbps</span>
+                    </div>
+                `;
+            }
+        }
+
+        async startVideoFile(file) {
+            try {
+                // Check if we're switching sources
+                const isSourceSwitch = this.videoElement && (this.videoStream || this.videoFile);
+
+                if (isSourceSwitch) {
+                    // Store current opacity for smooth transition
+                    const currentOpacity = this.videoElement.style.opacity || this.videoOpacity;
+
+                    // Start fade out
+                    this.videoElement.style.transition = `opacity 0.5s linear`;
+                    this.videoElement.style.opacity = '0';
+
+                    // Wait for fade out to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Stop the old source without removing elements
+                    this.stopVideoInput(false);
+                } else {
+                    // Normal stop for initial setup
+                    this.stopVideoInput(false);
+                }
+
+                // Store the file
+                this.videoFile = file;
+
+                // Get container reference
+                const container = document.getElementById('visualizationContainer');
+
+                // Create backdrop if needed
+                if (!document.getElementById('videoBackdrop')) {
+                    const backdrop = document.createElement('div');
+                    backdrop.id = 'videoBackdrop';
+                    backdrop.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: ${this.backgroundColor};
+                        z-index: 0;
+                    `;
+                    container.insertBefore(backdrop, container.firstChild);
+                }
+
+                // Create or reuse DISPLAY video element
+                if (!this.videoElement) {
+                    this.videoElement = document.createElement('video');
+                    this.videoElement.id = 'bgVideo';
+                    this.videoElement.muted = this.videoFileMuted;
+                    this.videoElement.playsInline = true;
+                    this.videoElement.autoplay = true;
+                    this.videoElement.loop = this.videoFileLoop;
+
+                    this.videoElement.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        z-index: 1;
+                        opacity: 0;
+                        transition: opacity ${this.videoFadeTime}s linear;
+                        pointer-events: none;
+                    `;
+
+                    const backdrop = document.getElementById('videoBackdrop');
+                    container.insertBefore(this.videoElement, backdrop.nextSibling);
+                } else {
+                    // Update settings for existing element
+                    this.videoElement.muted = this.videoFileMuted;
+                    this.videoElement.loop = this.videoFileLoop;
+                }
+
+                // Set video source
+                const url = URL.createObjectURL(file);
+                this.videoElement.src = url;
+                this.videoElement.loop = this.videoFileLoop;
+                this.videoElement.muted = this.videoFileMuted;
+
+                // Make containers transparent if not already done (same as camera video)
+                if (!container.classList.contains('video-active')) {
+                    const mainArea = document.querySelector('.main-area');
+                    const visualizer = document.getElementById('visualizer');
+
+                    // Add class for CSS rules
+                    container.classList.add('video-active');
+
+                    // Force transparent backgrounds
+                    container.style.backgroundColor = 'transparent';
+                    mainArea.style.backgroundColor = 'transparent';
+                    visualizer.style.backgroundColor = 'transparent';
+
+                    // Ensure visualizer has proper positioning
+                    visualizer.style.position = 'absolute';
+                    visualizer.style.zIndex = '1';
+
+                    // Ensure canvas itself is transparent
+                    if (this.audioMotion && this.audioMotion.canvas) {
+                        this.audioMotion.canvas.style.background = 'transparent';
+                        this.audioMotion.canvas.style.backgroundColor = 'transparent';
+
+                        // Set z-index to ensure canvas is above video layers
+                        this.audioMotion.canvas.style.position = 'absolute';
+                        this.audioMotion.canvas.style.zIndex = '3';
+                    }
+
+                    // Force the AudioMotion background to be transparent
+                    if (this.audioMotion) {
+                        this.originalBackgroundColor = this.audioMotion.backgroundColor;
+
+                        // Set transparent background in AudioMotion
+                        this.audioMotion.backgroundColor = 'transparent';
+                        this.audioMotion.showBgColor = false;
+
+                        // Force a redraw
+                        if (this.audioMotion.ctx) {
+                            this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
+                        }
+                    }
+                }
+
+                // Wait for metadata and play
+                await new Promise((resolve, reject) => {
+                    let resolved = false;
+                    const timeout = setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            reject(new Error('Video load timeout'));
+                        }
+                    }, 10000);
+
+                    this.videoElement.onloadedmetadata = () => {
+                        if (!resolved) {
+                            resolved = true;
+                            clearTimeout(timeout);
+                            this.videoElement.play().then(() => {
+                                this.applyVideoFilters();
+                                this.detectVideoFileInfo();
+                                
+                                // Fade in after short delay
+                                setTimeout(() => {
+                                    if (this.videoElement) {
+                                        this.videoElement.style.opacity = this.videoOpacity.toString();
+                                    }
+                                }, 100);
+                                
+                                resolve();
+                            }).catch(reject);
+                        }
+                    };
+
+                    this.videoElement.onerror = () => {
+                        if (!resolved) {
+                            resolved = true;
+                            clearTimeout(timeout);
+                            reject(new Error('Failed to load video'));
+                        }
+                    };
+                });
+
+                // Update UI
+                const btn = document.getElementById('videoInputBtn');
+                const btnText = btn.querySelector('.video-mode-text');
+                const deviceSelect = document.getElementById('videoDeviceSelect');
+
+                btn.classList.add('video-active');
+                btnText.textContent = 'Video File Active';
+                this.videoMode = 'file';
+                
+                // Hide dropdown and show file info
+                deviceSelect.style.display = 'none';
+                
+                const fileInfo = document.getElementById('videoFileInfo');
+                const fileName = document.getElementById('videoFileName');
+                if (fileInfo && fileName) {
+                    fileInfo.style.display = 'flex';
+                    fileName.textContent = file.name;
+                }
+
+                // Show controls panel
+                const controlsPanel = document.getElementById('videoControlsPanel');
+                controlsPanel.style.display = 'block';
+
+                // Add settings button if not exists
+                if (!document.getElementById('videoSettingsBtn')) {
+                    const settingsBtn = document.createElement('button');
+                    settingsBtn.id = 'videoSettingsBtn';
+                    settingsBtn.innerHTML = '⚙';
+                    settingsBtn.className = 'video-settings-toggle';
+                    settingsBtn.onclick = () => {
+                        const panel = document.getElementById('videoControlsPanel');
+                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    };
+                    btn.parentNode.appendChild(settingsBtn);
+                }
+
+                // If stream manager active, rebuild capture
+                if (this.streamManager && this.streamManager.isStreaming) {
+                    this.streamManager.reconfigureCapture();
+                }
+
+                console.log('Video file started:', file.name);
+                
+                // Debug video visibility after a short delay
+                setTimeout(() => {
+                    this.debugVideoVisibility();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error starting video file:', error);
+                this.showError(`Failed to load video: ${error.message}`);
+                this.stopVideoInput();
+            }
+        }
+        
+        debugVideoVisibility() {
+            const videoElement = this.videoElement;
+            const container = document.getElementById('visualizationContainer');
+            const mainArea = document.querySelector('.main-area');
+            const visualizer = document.getElementById('visualizer');
+            
+            console.log('=== VIDEO DEBUG INFO ===');
+            console.log('Video Mode:', this.videoMode);
+            console.log('Video Element exists:', !!videoElement);
+            
+            if (videoElement) {
+                const rect = videoElement.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(videoElement);
+                
+                console.log('Video Element:');
+                console.log('  - Position:', computedStyle.position);
+                console.log('  - Z-index:', computedStyle.zIndex);
+                console.log('  - Opacity:', computedStyle.opacity);
+                console.log('  - Display:', computedStyle.display);
+                console.log('  - Width:', computedStyle.width);
+                console.log('  - Height:', computedStyle.height);
+                console.log('  - Filter:', computedStyle.filter);
+                console.log('  - BoundingRect:', rect);
+                console.log('  - Src:', videoElement.src);
+                console.log('  - ReadyState:', videoElement.readyState);
+                console.log('  - Paused:', videoElement.paused);
+                console.log('  - Current Time:', videoElement.currentTime);
+            }
+            
+            console.log('\nContainer backgrounds:');
+            console.log('  - Visualization Container BG:', container.style.backgroundColor);
+            console.log('  - Main Area BG:', mainArea.style.backgroundColor);
+            console.log('  - Visualizer BG:', visualizer.style.backgroundColor);
+            
+            console.log('\nAudioMotion Canvas:');
+            if (this.audioMotion && this.audioMotion.canvas) {
+                const canvasStyle = window.getComputedStyle(this.audioMotion.canvas);
+                console.log('  - Z-index:', canvasStyle.zIndex);
+                console.log('  - Position:', canvasStyle.position);
+                console.log('  - Visibility:', canvasStyle.visibility);
+                console.log('  - Display:', canvasStyle.display);
+            }
+            
+            console.log('=== END DEBUG INFO ===');
+        }
+
+        detectVideoFileInfo() {
+            if (this.videoElement && this.videoMode === 'file') {
+                const videoInfo = {
+                    name: this.videoFile?.name || 'Unknown',
+                    resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
+                    duration: this.videoElement.duration,
+                    loop: this.videoFileLoop
+                };
+
+                console.log('📹 Video File Info:', videoInfo);
+
+                // Update stats if needed
+                this.updateVideoFileStats(videoInfo);
+            }
+        }
+
+        updateVideoFileStats(videoInfo) {
+            const statsContainer = document.getElementById('cameraStatsContainer');
+            if (statsContainer && videoInfo) {
+                const streamManager = this.streamManager;
+                const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
+                const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
+                const frameRate = streamManager ? streamManager.displaySettings.captureFrameRate : 'Unknown';
+
+                statsContainer.innerHTML = `
+                    <div class="stats-row">
+                        <span class="stats-label">File:</span>
+                        <span class="stats-value" style="overflow: hidden; text-overflow: ellipsis;">${videoInfo.name}</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Resolution:</span>
+                        <span class="stats-value">${videoInfo.resolution}</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Duration:</span>
+                        <span class="stats-value">${Math.round(videoInfo.duration)}s</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Loop:</span>
+                        <span class="stats-value">${videoInfo.loop ? 'On' : 'Off'}</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stats-label">Capture Resolution:</span>
+                        <span class="stats-value">${captureRes}px</span>
                     </div>
                     <div class="stats-row">
                         <span class="stats-label">Stream Bitrate:</span>
@@ -6148,6 +6597,7 @@
                         this.captureVideoElement = null;
                     }
 
+
                     // Remove backdrop
                     const backdrop = document.getElementById('videoBackdrop');
                     if (backdrop && backdrop.parentNode) {
@@ -6189,6 +6639,7 @@
                     this.captureVideoElement = null;
                 }
 
+
                 const backdrop = document.getElementById('videoBackdrop');
                 if (backdrop && backdrop.parentNode) {
                     backdrop.parentNode.removeChild(backdrop);
@@ -6224,7 +6675,15 @@
                 }
                 if (deviceSelect) {
                     deviceSelect.style.display = 'none';
+                    deviceSelect.value = '';
                 }
+                
+                // Hide file info
+                const fileInfo = document.getElementById('videoFileInfo');
+                if (fileInfo) {
+                    fileInfo.style.display = 'none';
+                }
+                
                 if (controlsPanel) {
                     controlsPanel.style.display = 'none';
                 }
@@ -6232,6 +6691,7 @@
                 this.videoMode = 'off';
                 
                 this.currentVideoDeviceId = null;
+                this.videoFile = null;
             }
 
             const settingsBtn = document.getElementById('videoSettingsBtn');
@@ -7588,7 +8048,7 @@ https://rogueamoeba.com/loopback/
             
             console.log('Applied filters to kaleidoscope canvas:', this.kaleidoscopeVideoCanvas.style.filter);
         }
-        
+
         applyKaleidoscopeEffect() {
             if (!this.kaleidoscopeVideoCanvas || !this.kaleidoscopeVizCanvas) {
                 console.error('Kaleidoscope canvases not initialized');
@@ -7648,15 +8108,12 @@ https://rogueamoeba.com/loopback/
             }
 
             // Apply kaleidoscope to VIDEO if enabled
-            if (this.kaleidoscopeApplyToVideo && (this.videoMode === 'camera' || this.videoMode === 'file')) { // Try video elements - prefer captureVideoElement for clean source, then fileVideoElement
+            if (this.kaleidoscopeApplyToVideo && (this.videoMode === 'camera' || this.videoMode === 'file')) {
                 let videoSource = null;
 
                 if (this.captureVideoElement && this.captureVideoElement.readyState >= 2) {
                     videoSource = this.captureVideoElement;
                     console.log('Using captureVideoElement for kaleidoscope');
-                } else if (this.fileVideoElement && this.fileVideoElement.readyState >= 2) {
-                    videoSource = this.fileVideoElement;
-                    console.log('Using fileVideoElement for kaleidoscope');
                 } else if (this.videoElement && this.videoElement.readyState >= 2) {
                     videoSource = this.videoElement;
                     console.log('Using videoElement for kaleidoscope');
@@ -7735,7 +8192,7 @@ https://rogueamoeba.com/loopback/
                             if (this.videoMirror === 'vertical' || this.videoMirror === 'both') {
                                 this.kaleidoscopeVideoCtx.scale(1, -1);
                             }
-                            
+
                             // Draw segment
                             if (i % 2 === 0) {
                                 this.kaleidoscopeVideoCtx.drawImage(videoSource, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -8981,6 +9438,39 @@ https://rogueamoeba.com/loopback/
                 });
             }
 
+            // Inline video file controls
+            const videoFileLoopBtn = document.getElementById('videoFileLoopBtn');
+            if (videoFileLoopBtn) {
+                videoFileLoopBtn.addEventListener('click', () => {
+                    this.videoFileLoop = !this.videoFileLoop;
+                    videoFileLoopBtn.classList.toggle('active', this.videoFileLoop);
+                    
+                    // Update loop setting on video elements
+                    if (this.videoElement && this.videoMode === 'file') {
+                        this.videoElement.loop = this.videoFileLoop;
+                    }
+                    
+                    // Update stats if visible
+                    if (this.videoMode === 'file') {
+                        this.detectVideoFileInfo();
+                    }
+                });
+            }
+
+            const videoFileMuteBtn = document.getElementById('videoFileMuteBtn');
+            if (videoFileMuteBtn) {
+                videoFileMuteBtn.addEventListener('click', () => {
+                    this.videoFileMuted = !this.videoFileMuted;
+                    videoFileMuteBtn.textContent = this.videoFileMuted ? 'Muted' : 'Sound';
+                    videoFileMuteBtn.classList.toggle('active', this.videoFileMuted);
+                    
+                    // Update mute setting on video elements
+                    if (this.videoElement && this.videoMode === 'file') {
+                        this.videoElement.muted = this.videoFileMuted;
+                    }
+                });
+            }
+
             // Preset buttons
             // Live video presets (exclude file browser presets)
             document.querySelectorAll('.video-preset-btn:not([data-target="fileBrowser"])').forEach(btn => {
@@ -8995,7 +9485,7 @@ https://rogueamoeba.com/loopback/
             const videoInputBtn = document.getElementById('videoInputBtn');
             if (videoInputBtn) {
                 videoInputBtn.addEventListener('click', () => {
-                    if (this.videoMode === 'camera') { // If video is on, turn it OFF (not toggle panel)
+                    if (this.videoMode === 'camera' || this.videoMode === 'file') { // If video is on, turn it OFF (not toggle panel)
                         this.stopVideoInput();
                         const btnText = videoInputBtn.querySelector('.video-mode-text');
                         btnText.textContent = 'Live Video Off';
@@ -9012,9 +9502,40 @@ https://rogueamoeba.com/loopback/
             const videoDeviceSelect = document.getElementById('videoDeviceSelect');
             if (videoDeviceSelect) {
                 videoDeviceSelect.addEventListener('change', async (e) => {
-                    const deviceId = e.target.value;
-                    if (deviceId) { // If video is already active, this will switch to the new source
-                        await this.startVideoInput(deviceId);
+                    const value = e.target.value;
+                    if (value === 'file') {
+                        // Trigger file input
+                        const fileInput = document.getElementById('videoFileInput');
+                        if (fileInput) {
+                            fileInput.click();
+                        }
+                    } else if (value) {
+                        // Start camera input
+                        await this.startVideoInput(value);
+                    }
+                });
+            }
+
+            // Video file input handler
+            const videoFileInput = document.getElementById('videoFileInput');
+            if (videoFileInput) {
+                videoFileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.type.startsWith('video/')) {
+                        console.log('Selected video file:', file.name, file.type);
+                        await this.startVideoFile(file);
+                        // Update the dropdown to show the file name
+                        this.updateVideoDeviceList();
+                        const deviceSelect = document.getElementById('videoDeviceSelect');
+                        if (deviceSelect) {
+                            deviceSelect.value = 'file';
+                        }
+                        // Reset file input for reselection
+                        e.target.value = '';
+                    } else if (file) {
+                        this.showError('Please select a valid video file');
+                        // Reset the file input
+                        e.target.value = '';
                     }
                 });
             }
