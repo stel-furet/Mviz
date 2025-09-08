@@ -106,6 +106,111 @@
                 </select>
             </div>
 
+            <!-- Record Controls -->
+            <div class="record-controls">
+                <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
+                    <span class="record-text">Record</span>
+                    <span class="record-timer" style="display: none;">00:00</span>
+                </button>
+                <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
+
+                <!-- Record Settings Panel -->
+                <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
+                    <div class="panel-header">
+                        <span>Recording Settings</span>
+                        <button class="panel-close-btn" id="recordSettingsClose">×</button>
+                    </div>
+
+                    <!-- Resolution -->
+                    <div class="control-group">
+                        <div class="group-label">Resolution</div>
+                        <select id="recordResolutionSelect" class="control-select">
+                            <option value="canvas">Canvas Size</option>
+                            <option value="720p">720p (1280×720)</option>
+                            <option value="1080p" selected>1080p (1920×1080)</option>
+                            <option value="4k">4K (3840×2160)</option>
+                        </select>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="group-label">Aspect Ratio</div>
+                        <div class="preset-buttons">
+                            <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                            <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                            <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                            <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                        </div>
+                    </div>
+
+                    <!-- Frame Rate -->
+                    <div class="control-group">
+                        <div class="group-label">Frame Rate</div>
+                        <div class="preset-buttons">
+                            <button class="framerate-btn active" data-fps="30">30 FPS</button>
+                            <button class="framerate-btn" data-fps="60">60 FPS</button>
+                        </div>
+                    </div>
+
+                    <!-- Video Quality -->
+                    <div class="control-group">
+                        <div class="group-label">Video Quality</div>
+                        <select id="recordVideoQualitySelect" class="control-select">
+                            <option value="auto" selected>Auto</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <!-- Audio Quality -->
+                    <div class="control-group">
+                        <div class="group-label">Audio Quality</div>
+                        <select id="recordAudioQualitySelect" class="control-select">
+                            <option value="auto" selected>Auto</option>
+                            <option value="high">High (320 kbps)</option>
+                            <option value="medium">Medium (192 kbps)</option>
+                            <option value="low">Low (128 kbps)</option>
+                        </select>
+                    </div>
+
+                    <!-- File Settings -->
+                    <div class="control-group">
+                        <div class="group-label">File Settings</div>
+                        <div class="file-location-display" id="recordFileLocation">
+                            📥 Downloads folder
+                        </div>
+                        <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
+                        <div class="input-container">
+                            <label>Filename</label>
+                            <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
+                            <span class="file-extension">.webm</span>
+                        </div>
+                    </div>
+
+                    <!-- Recording Info -->
+                    <div class="control-group">
+                        <div class="group-label">Recording Info</div>
+                        <div class="recording-info">
+                            <div class="info-item">
+                                <span class="info-label">Output:</span>
+                                <span id="recordingOutput">1920×1080 @ 30fps</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Format:</span>
+                                <span id="recordingFormat">WebM (VP9/Opus)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Est. Size:</span>
+                                <span id="recordingEstSize">~50 MB/min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End record-settings-panel -->
+            </div>
+            <!-- End record-controls -->
+
             <!-- Video Input Toggle -->
             <div class="input-mode-container">
                 <button class="input-mode-btn" id="videoInputBtn" title="Toggle Live Video Background">
@@ -377,7 +482,6 @@
             <!-- End display-settings-panel -->
         </div>
         <!-- End live-display-controls -->
-
 
         <!-- Kaleidoscope Controls -->
         <div class="kaleidoscope-controls">
@@ -2378,6 +2482,169 @@
             z-index: 3 !important; /* Viz kaleidoscope on top */
         }
 
+        /* Record Controls Styles */
+        .record-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+
+        #recordBtn {
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #recordBtn.recording {
+            background: #ff3030 !important;
+            color: white !important;
+            animation: pulse-record 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-record {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .record-timer {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* Record Settings Panel */
+        .record-settings-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 1000;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .aspect-ratio-btn, .framerate-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            margin: 2px;
+        }
+
+        .aspect-ratio-btn:hover, .framerate-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .aspect-ratio-btn.active, .framerate-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .control-select {
+            width: 100%;
+            padding: 8px;
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .control-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .control-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .control-input {
+            flex: 1;
+            padding: 8px;
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 4px 0 0 4px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .file-extension {
+            padding: 8px 12px;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .input-container label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .file-location-display {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .recording-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
         /* Display Settings Panel Styles */
         .display-settings-panel {
             position: absolute;
@@ -4081,6 +4348,857 @@
     // ****
     // ****
 
+    // RecordManager Class - Handles video/audio recording
+    class RecordManager {
+        constructor(visualizer) {
+            this.visualizer = visualizer;
+            this.isRecording = false;
+            this.mediaRecorder = null;
+            this.recordedChunks = [];
+            this.recordingStartTime = null;
+            this.timerInterval = null;
+            this.compositeCanvas = null;
+            this.compositeCtx = null;
+            this.animationFrame = null;
+            this.saveLocation = null;
+            
+            // Recording settings
+            this.resolution = '1080p';
+            this.aspectRatio = '16:9';
+            this.frameRate = 30;
+            this.videoQuality = 'auto';
+            this.audioQuality = 'auto';
+            this.customFilename = 'Vizzy_Recording';
+            
+            // Resolution presets
+            this.resolutionPresets = {
+                'canvas': { width: 0, height: 0 }, // Will be set dynamically
+                '720p': { width: 1280, height: 720 },
+                '1080p': { width: 1920, height: 1080 },
+                '4k': { width: 3840, height: 2160 }
+            };
+            
+            // Quality presets
+            this.videoQualityPresets = {
+                'auto': 5000000, // 5 Mbps
+                'high': 8000000, // 8 Mbps
+                'medium': 3000000, // 3 Mbps
+                'low': 1500000 // 1.5 Mbps
+            };
+            
+            this.audioQualityPresets = {
+                'auto': 192000, // 192 kbps
+                'high': 320000, // 320 kbps
+                'medium': 192000, // 192 kbps
+                'low': 128000 // 128 kbps
+            };
+            
+            this.loadSettings();
+            console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
+            this.initializeUI();
+        }
+        
+        loadSettings() {
+            try {
+                const saved = localStorage.getItem('gitup_record_settings');
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    this.resolution = settings.resolution || '1080p';
+                    this.aspectRatio = settings.aspectRatio || '16:9';
+                    this.frameRate = settings.frameRate || 30;
+                    this.videoQuality = settings.videoQuality || 'auto';
+                    this.audioQuality = settings.audioQuality || 'auto';
+                    this.customFilename = settings.customFilename || 'Vizzy_Recording';
+                    this.saveLocation = settings.saveLocation || null;
+                }
+            } catch (e) {
+                console.error('Error loading recording settings:', e);
+            }
+        }
+        
+        saveSettings() {
+            try {
+                const settings = {
+                    resolution: this.resolution,
+                    aspectRatio: this.aspectRatio,
+                    frameRate: this.frameRate,
+                    videoQuality: this.videoQuality,
+                    audioQuality: this.audioQuality,
+                    customFilename: this.customFilename,
+                    saveLocation: this.saveLocation
+                };
+                localStorage.setItem('gitup_record_settings', JSON.stringify(settings));
+            } catch (e) {
+                console.error('Error saving recording settings:', e);
+            }
+        }
+        
+        initializeUI() {
+            // Record button click handler
+            const recordBtn = document.getElementById('recordBtn');
+            if (recordBtn) {
+                recordBtn.addEventListener('click', () => {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    } else {
+                        this.startRecording();
+                    }
+                });
+            }
+            
+            // Settings button click handler
+            const settingsBtn = document.getElementById('recordSettingsBtn');
+            const settingsPanel = document.getElementById('recordSettingsPanel');
+            const closeBtn = document.getElementById('recordSettingsClose');
+            
+            if (settingsBtn && settingsPanel) {
+                settingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = settingsPanel.style.display !== 'none';
+                    settingsPanel.style.display = isVisible ? 'none' : 'block';
+                });
+            }
+            
+            if (closeBtn && settingsPanel) {
+                closeBtn.addEventListener('click', () => {
+                    settingsPanel.style.display = 'none';
+                });
+            }
+            
+            // Close panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (settingsPanel && !settingsPanel.contains(e.target) && 
+                    !settingsBtn.contains(e.target)) {
+                    settingsPanel.style.display = 'none';
+                }
+            });
+            
+            this.initializeSettingsControls();
+            this.updateUI();
+        }
+        
+        initializeSettingsControls() {
+            // Resolution select
+            const resolutionSelect = document.getElementById('recordResolutionSelect');
+            if (resolutionSelect) {
+                resolutionSelect.value = this.resolution;
+                resolutionSelect.addEventListener('change', (e) => {
+                    this.resolution = e.target.value;
+                    this.updateUI();
+                    this.saveSettings();
+                });
+            }
+            
+            // Aspect ratio buttons
+            document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+                // Set initial active state based on current aspect ratio
+                if (btn.dataset.ratio === this.aspectRatio) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+                
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.aspectRatio = btn.dataset.ratio;
+                    console.log('Aspect ratio changed to:', this.aspectRatio);
+                    this.updateUI();
+                    this.saveSettings();
+                });
+            });
+            
+            // Frame rate buttons
+            document.querySelectorAll('.framerate-btn').forEach(btn => {
+                // Set initial active state based on current frame rate
+                if (parseInt(btn.dataset.fps) === this.frameRate) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+                
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.framerate-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.frameRate = parseInt(btn.dataset.fps);
+                    console.log('Frame rate changed to:', this.frameRate);
+                    this.updateUI();
+                    this.saveSettings();
+                });
+            });
+            
+            // Quality selects
+            const videoQualitySelect = document.getElementById('recordVideoQualitySelect');
+            const audioQualitySelect = document.getElementById('recordAudioQualitySelect');
+            
+            if (videoQualitySelect) {
+                videoQualitySelect.value = this.videoQuality;
+                videoQualitySelect.addEventListener('change', (e) => {
+                    this.videoQuality = e.target.value;
+                    this.updateUI();
+                    this.saveSettings();
+                });
+            }
+            
+            if (audioQualitySelect) {
+                audioQualitySelect.value = this.audioQuality;
+                audioQualitySelect.addEventListener('change', (e) => {
+                    this.audioQuality = e.target.value;
+                    this.updateUI();
+                    this.saveSettings();
+                });
+            }
+            
+            // Filename input
+            const filenameInput = document.getElementById('recordFilenameInput');
+            if (filenameInput) {
+                filenameInput.value = this.customFilename;
+                filenameInput.addEventListener('input', (e) => {
+                    this.customFilename = e.target.value || 'Vizzy_Recording';
+                    this.saveSettings();
+                });
+            }
+            
+            // Choose location button
+            const chooseLocationBtn = document.getElementById('recordChooseLocationBtn');
+            if (chooseLocationBtn) {
+                chooseLocationBtn.addEventListener('click', () => {
+                    this.chooseFileLocation();
+                });
+            }
+        }
+        
+        updateUI() {
+            // Update recording info display
+            const dimensions = this.getRecordingDimensions();
+            const outputDisplay = document.getElementById('recordingOutput');
+            const estSizeDisplay = document.getElementById('recordingEstSize');
+            
+            if (outputDisplay) {
+                outputDisplay.textContent = `${dimensions.width}×${dimensions.height} @ ${this.frameRate}fps`;
+            }
+            
+            if (estSizeDisplay) {
+                const estimatedMBPerMin = this.estimateFileSize();
+                estSizeDisplay.textContent = `~${estimatedMBPerMin} MB/min`;
+            }
+            
+            // Update file location display
+            const locationDisplay = document.getElementById('recordFileLocation');
+            if (locationDisplay) {
+                locationDisplay.textContent = this.saveLocation ? 
+                    `📁 ${this.saveLocation}` : '📥 Downloads folder';
+            }
+        }
+        
+        getRecordingDimensions() {
+            let targetWidth, targetHeight;
+            
+            if (this.resolution === 'canvas') {
+                // Use current canvas dimensions
+                const canvas = this.visualizer.audioMotion?.canvas;
+                if (canvas) {
+                    targetWidth = canvas.width;
+                    targetHeight = canvas.height;
+                } else {
+                    targetWidth = 1920;
+                    targetHeight = 1080;
+                }
+            } else {
+                const preset = this.resolutionPresets[this.resolution];
+                targetWidth = preset.width;
+                targetHeight = preset.height;
+            }
+            
+            console.log(`Recording dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
+            console.log(`Current aspect ratio setting: ${this.aspectRatio}`);
+            
+            // Apply aspect ratio
+            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+            const targetAspect = ratioW / ratioH;
+            const currentAspect = targetWidth / targetHeight;
+            
+            console.log(`Target aspect: ${targetAspect} (${ratioW}:${ratioH}), Current aspect: ${currentAspect}`);
+            
+            if (currentAspect > targetAspect) {
+                // Too wide, adjust width
+                targetWidth = Math.round(targetHeight * targetAspect);
+                console.log(`Adjusted width to fit aspect ratio: ${targetWidth}x${targetHeight}`);
+            } else if (currentAspect < targetAspect) {
+                // Too tall, adjust height
+                targetHeight = Math.round(targetWidth / targetAspect);
+                console.log(`Adjusted height to fit aspect ratio: ${targetWidth}x${targetHeight}`);
+            } else {
+                console.log(`Aspect ratio already matches: ${targetWidth}x${targetHeight}`);
+            }
+            
+            return { width: targetWidth, height: targetHeight };
+        }
+        
+        estimateFileSize() {
+            const dimensions = this.getRecordingDimensions();
+            const videoBitrate = this.videoQualityPresets[this.videoQuality] || 5000000;
+            const audioBitrate = this.audioQualityPresets[this.audioQuality] || 192000;
+            
+            // Calculate total bitrate and convert to MB per minute
+            const totalBitrate = videoBitrate + audioBitrate;
+            const mbPerSecond = totalBitrate / 8 / 1024 / 1024; // Convert bits to MB
+            const mbPerMinute = Math.round(mbPerSecond * 60);
+            
+            return mbPerMinute;
+        }
+        
+        async chooseFileLocation() {
+            try {
+                if ('showDirectoryPicker' in window) {
+                    const directoryHandle = await window.showDirectoryPicker();
+                    this.saveLocation = directoryHandle.name;
+                    this.directoryHandle = directoryHandle;
+                    this.updateUI();
+                    this.saveSettings();
+                } else {
+                    alert('File picker not supported in this browser. Files will be saved to Downloads folder.');
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error choosing location:', err);
+                }
+            }
+        }
+        
+        async startRecording() {
+            if (this.isRecording) return;
+            
+            try {
+                console.log('Starting recording...');
+                this.isRecording = true;
+                this.recordingStartTime = Date.now();
+                this.recordedChunks = [];
+                
+                // Update UI
+                const recordBtn = document.getElementById('recordBtn');
+                const recordText = recordBtn.querySelector('.record-text');
+                const recordTimer = recordBtn.querySelector('.record-timer');
+                
+                recordBtn.classList.add('recording');
+                recordText.style.display = 'none';
+                recordTimer.style.display = 'inline';
+                
+                // Start timer
+                this.updateTimer();
+                this.timerInterval = setInterval(() => this.updateTimer(), 100);
+                
+                // Create composite canvas
+                await this.setupCompositeCanvas();
+                
+                // Get video stream
+                const videoStream = this.compositeCanvas.captureStream(this.frameRate);
+                
+                // Get audio stream
+                const audioStream = await this.getAudioStream();
+                
+                // Combine streams
+                const combinedStream = new MediaStream();
+                videoStream.getVideoTracks().forEach(track => combinedStream.addTrack(track));
+                if (audioStream) {
+                    audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
+                }
+                
+                // Setup MediaRecorder
+                const mimeType = 'video/webm;codecs=vp9,opus';
+                const videoBitrate = this.videoQualityPresets[this.videoQuality];
+                
+                this.mediaRecorder = new MediaRecorder(combinedStream, {
+                    mimeType: mimeType,
+                    videoBitsPerSecond: videoBitrate
+                });
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.recordedChunks.push(event.data);
+                    }
+                };
+                
+                this.mediaRecorder.onstop = () => {
+                    this.saveRecording();
+                };
+                
+                this.mediaRecorder.start(1000); // Record in 1 second chunks
+                
+                // Start compositing loop
+                this.startCompositing();
+                
+                console.log('Recording started successfully');
+                
+            } catch (err) {
+                console.error('Error starting recording:', err);
+                alert('Failed to start recording: ' + err.message);
+                this.stopRecording();
+            }
+        }
+        
+        async setupCompositeCanvas() {
+            const dimensions = this.getRecordingDimensions();
+            
+            this.compositeCanvas = document.createElement('canvas');
+            this.compositeCanvas.width = dimensions.width;
+            this.compositeCanvas.height = dimensions.height;
+            this.compositeCtx = this.compositeCanvas.getContext('2d');
+            
+            console.log(`Created composite canvas: ${dimensions.width}x${dimensions.height}`);
+        }
+        
+        startCompositing() {
+            const composite = () => {
+                if (!this.isRecording) return;
+                
+                this.compositeFrame();
+                this.animationFrame = requestAnimationFrame(composite);
+            };
+            composite();
+        }
+        
+        compositeFrame() {
+            if (!this.compositeCtx) return;
+            
+            const { width, height } = this.compositeCanvas;
+            
+            // Clear canvas with black background
+            this.compositeCtx.fillStyle = '#000000';
+            this.compositeCtx.fillRect(0, 0, width, height);
+            
+            // Debug logging for kaleidoscope state
+            if (this.visualizer.kaleidoscopeEnabled) {
+                console.log('Kaleidoscope enabled - ApplyToVideo:', this.visualizer.kaleidoscopeApplyToVideo, 
+                           'ApplyToViz:', this.visualizer.kaleidoscopeApplyToViz);
+                if (this.visualizer.kaleidoscopeVideoCanvas) {
+                    console.log('Kaleidoscope video canvas display:', this.visualizer.kaleidoscopeVideoCanvas.style.display,
+                               'opacity:', this.visualizer.kaleidoscopeVideoCanvas.style.opacity);
+                }
+            }
+            
+            // Get source canvas (main visualization canvas)
+            let sourceCanvas = null;
+            
+            // Determine which canvas to capture based on current state
+            if (this.visualizer.kaleidoscopeEnabled) {
+                if (this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas) {
+                    sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+                } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
+                    sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
+                } else if (this.visualizer.audioMotion?.canvas) {
+                    sourceCanvas = this.visualizer.audioMotion.canvas;
+                }
+            } else if (this.visualizer.audioMotion?.canvas) {
+                sourceCanvas = this.visualizer.audioMotion.canvas;
+            }
+            
+            if (!sourceCanvas) {
+                console.warn('No source canvas found for recording');
+                return;
+            }
+            
+            // Draw video background if active
+            if (this.visualizer.videoElement && 
+                (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
+                this.visualizer.videoElement.readyState >= 2) {
+                
+                // Check if kaleidoscope is applied to video
+                if (this.visualizer.kaleidoscopeEnabled && 
+                    this.visualizer.kaleidoscopeApplyToVideo && 
+                    this.visualizer.kaleidoscopeVideoCanvas &&
+                    this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
+                    
+                    // Draw kaleidoscope video canvas instead of raw video
+                    console.log('Drawing kaleidoscope video canvas for recording');
+                    const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                    if (kaleidoscopeOpacity > 0) {
+                        this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        this.drawScaledCanvas(this.visualizer.kaleidoscopeVideoCanvas);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                } else {
+                    // Draw regular video with effects
+                    const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
+                    if (opacity > 0) {
+                        this.compositeCtx.globalAlpha = opacity;
+                        this.drawScaledVideo();
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                }
+            }
+            
+            // Draw visualization on top
+            this.drawScaledVisualization(sourceCanvas);
+        }
+        
+        drawScaledVideo() {
+            const video = this.visualizer.videoElement;
+            const { width, height } = this.compositeCanvas;
+            
+            if (!video || video.readyState < 2) return;
+            
+            // Create temporary canvas for video effects processing
+            if (!this.tempVideoCanvas) {
+                this.tempVideoCanvas = document.createElement('canvas');
+                this.tempVideoCtx = this.tempVideoCanvas.getContext('2d');
+            }
+            
+            // Set temp canvas size to match composite canvas
+            this.tempVideoCanvas.width = width;
+            this.tempVideoCanvas.height = height;
+            
+            // Calculate scaling to fit with letterboxing
+            const videoAspect = video.videoWidth / video.videoHeight;
+            const canvasAspect = width / height;
+            
+            let drawWidth, drawHeight, drawX, drawY;
+            
+            if (videoAspect > canvasAspect) {
+                // Video is wider, fit to width
+                drawWidth = width;
+                drawHeight = width / videoAspect;
+                drawX = 0;
+                drawY = (height - drawHeight) / 2;
+            } else {
+                // Video is taller, fit to height
+                drawHeight = height;
+                drawWidth = height * videoAspect;
+                drawX = (width - drawWidth) / 2;
+                drawY = 0;
+            }
+            
+            // Apply video effects to temp canvas context
+            this.tempVideoCtx.save();
+            
+            // Build filter string like the StreamManager does
+            const filters = [];
+            
+            // Apply posterize FIRST with stronger effect
+            if (this.visualizer.videoPosterize < 16) {
+                const steps = this.visualizer.videoPosterize;
+                const posterizeAmount = (16 - steps) / 16;
+                filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+                filters.push(`brightness(${95}%)`);
+                filters.push(`saturate(${200}%)`);
+                if (steps < 8) {
+                    filters.push(`contrast(${150}%)`);
+                }
+            }
+            
+            // Apply other video adjustments
+            if (this.visualizer.videoBrightness !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`brightness(${this.visualizer.videoBrightness}%)`);
+            }
+            if (this.visualizer.videoContrast !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`contrast(${this.visualizer.videoContrast}%)`);
+            }
+            if (this.visualizer.videoSaturation !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`saturate(${this.visualizer.videoSaturation}%)`);
+            }
+            if (this.visualizer.videoHueRotate !== 0) {
+                filters.push(`hue-rotate(${this.visualizer.videoHueRotate}deg)`);
+            }
+            if (this.visualizer.videoGrayscale > 0) {
+                filters.push(`grayscale(${this.visualizer.videoGrayscale}%)`);
+            }
+            if (this.visualizer.videoSepia > 0) {
+                filters.push(`sepia(${this.visualizer.videoSepia}%)`);
+            }
+            if (this.visualizer.videoBlur > 0) {
+                filters.push(`blur(${this.visualizer.videoBlur}px)`);
+            }
+            if (this.visualizer.videoInvert) {
+                filters.push('invert(100%)');
+            }
+            
+            // Apply filters to temp canvas
+            this.tempVideoCtx.filter = filters.length > 0 ? filters.join(' ') : 'none';
+            this.tempVideoCtx.globalAlpha = 1;
+            
+            // Clear temp canvas
+            this.tempVideoCtx.clearRect(0, 0, width, height);
+            
+            // Draw video to temp canvas with effects
+            this.tempVideoCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+            
+            this.tempVideoCtx.restore();
+            
+            // Calculate pulse scale if enabled
+            let scale = 1;
+            if (this.visualizer.videoPulse) {
+                const pulseDuration = this.visualizer.videoPulseRate * 1000; // Convert to ms
+                const pulsePhase = (Date.now() % pulseDuration) / pulseDuration;
+                scale = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.02); // 2% scale variation
+            }
+            
+            // Apply mirror transformations if enabled
+            this.compositeCtx.save();
+            
+            if (this.visualizer.videoMirror) {
+                this.compositeCtx.scale(-1, 1);
+                this.compositeCtx.translate(-width, 0);
+            }
+            
+            // Apply pulse scaling
+            if (scale !== 1) {
+                this.compositeCtx.translate(width / 2, height / 2);
+                this.compositeCtx.scale(scale, scale);
+                this.compositeCtx.translate(-width / 2, -height / 2);
+            }
+            
+            // Draw processed video from temp canvas to composite canvas
+            this.compositeCtx.drawImage(this.tempVideoCanvas, 0, 0);
+            
+            this.compositeCtx.restore();
+            
+            // Apply vignette effect if enabled
+            if (this.visualizer.videoVignette > 0) {
+                this.compositeCtx.save();
+                const intensity = this.visualizer.videoVignette / 100;
+                const size = (100 - this.visualizer.videoVignette) / 100;
+                
+                const gradient = this.compositeCtx.createRadialGradient(
+                    width / 2, height / 2, Math.min(width, height) * size * 0.5,
+                    width / 2, height / 2, Math.max(width, height) * 0.7
+                );
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                gradient.addColorStop(1, `rgba(0, 0, 0, ${intensity})`);
+                
+                this.compositeCtx.fillStyle = gradient;
+                this.compositeCtx.fillRect(0, 0, width, height);
+                this.compositeCtx.restore();
+            }
+        }
+        
+        drawScaledCanvas(canvas) {
+            const { width, height } = this.compositeCanvas;
+            
+            if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+            
+            // Calculate scaling to fit with letterboxing
+            const canvasAspect = canvas.width / canvas.height;
+            const targetAspect = width / height;
+            
+            let drawWidth, drawHeight, drawX, drawY;
+            
+            if (canvasAspect > targetAspect) {
+                // Canvas is wider, fit to width
+                drawWidth = width;
+                drawHeight = width / canvasAspect;
+                drawX = 0;
+                drawY = (height - drawHeight) / 2;
+            } else {
+                // Canvas is taller, fit to height
+                drawHeight = height;
+                drawWidth = height * canvasAspect;
+                drawX = (width - drawWidth) / 2;
+                drawY = 0;
+            }
+            
+            this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
+        }
+        
+        drawScaledVisualization(sourceCanvas) {
+            const { width, height } = this.compositeCanvas;
+            
+            // Calculate scaling to fit with letterboxing
+            const sourceAspect = sourceCanvas.width / sourceCanvas.height;
+            const canvasAspect = width / height;
+            
+            let drawWidth, drawHeight, drawX, drawY;
+            
+            if (sourceAspect > canvasAspect) {
+                // Source is wider, fit to width
+                drawWidth = width;
+                drawHeight = width / sourceAspect;
+                drawX = 0;
+                drawY = (height - drawHeight) / 2;
+            } else {
+                // Source is taller, fit to height
+                drawHeight = height;
+                drawWidth = height * sourceAspect;
+                drawX = (width - drawWidth) / 2;
+                drawY = 0;
+            }
+            
+            this.compositeCtx.drawImage(sourceCanvas, drawX, drawY, drawWidth, drawHeight);
+        }
+        
+        async getAudioStream() {
+            try {
+                // Check if using live audio input
+                if (this.visualizer.audioStream) {
+                    console.log('Using live audio input for recording');
+                    return this.visualizer.audioStream.clone();
+                }
+                
+                // Get audio from AudioMotion's audio context
+                const audioMotion = this.visualizer.audioMotion;
+                if (!audioMotion || !audioMotion.audioCtx) {
+                    console.warn('No AudioMotion context available');
+                    return null;
+                }
+                
+                const audioCtx = audioMotion.audioCtx;
+                const destination = audioCtx.createMediaStreamDestination();
+                
+                // Create a gain node to tap the audio
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 1.0;
+                
+                // Connect audio source through gain node to destination
+                if (audioMotion.source) {
+                    try {
+                        audioMotion.source.connect(gainNode);
+                        gainNode.connect(destination);
+                        console.log('Audio stream created successfully');
+                        return destination.stream;
+                    } catch (e) {
+                        console.error('Error connecting audio:', e);
+                    }
+                }
+                
+                // Fallback: try to capture from the current audio element
+                if (this.visualizer.audio && this.visualizer.audio.src) {
+                    console.log('Capturing audio from media element');
+                    const source = this.visualizer.audio._audioSourceNode;
+                    if (source) {
+                        source.connect(gainNode);
+                        gainNode.connect(destination);
+                        return destination.stream;
+                    }
+                }
+                
+                console.warn('No audio source found for recording');
+                return null;
+                
+            } catch (err) {
+                console.error('Error getting audio stream:', err);
+                return null;
+            }
+        }
+        
+        updateTimer() {
+            if (!this.isRecording || !this.recordingStartTime) return;
+            
+            const elapsed = Date.now() - this.recordingStartTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            let timeString;
+            if (hours > 0) {
+                timeString = `${hours}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+            } else {
+                timeString = `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+            }
+            
+            const recordTimer = document.querySelector('.record-timer');
+            if (recordTimer) {
+                recordTimer.textContent = timeString;
+            }
+        }
+        
+        stopRecording() {
+            if (!this.isRecording) return;
+            
+            console.log('Stopping recording...');
+            this.isRecording = false;
+            
+            // Stop timer
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+            
+            // Stop animation frame
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
+            
+            // Stop media recorder
+            if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                this.mediaRecorder.stop();
+            }
+            
+            // Clean up temporary canvases
+            this.tempVideoCanvas = null;
+            this.tempVideoCtx = null;
+            this.compositeCanvas = null;
+            this.compositeCtx = null;
+            
+            // Update UI
+            const recordBtn = document.getElementById('recordBtn');
+            const recordText = recordBtn.querySelector('.record-text');
+            const recordTimer = recordBtn.querySelector('.record-timer');
+            
+            recordBtn.classList.remove('recording');
+            recordText.style.display = 'inline';
+            recordTimer.style.display = 'none';
+            recordTimer.textContent = '00:00';
+            
+            console.log('Recording stopped');
+        }
+        
+        async saveRecording() {
+            if (this.recordedChunks.length === 0) {
+                console.warn('No recorded data to save');
+                return;
+            }
+            
+            try {
+                const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const filename = `${this.customFilename}_${timestamp}.webm`;
+                
+                if (this.directoryHandle && 'showDirectoryPicker' in window) {
+                    // Save to chosen directory
+                    try {
+                        const fileHandle = await this.directoryHandle.getFileHandle(filename, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        
+                        console.log(`Recording saved to ${this.saveLocation}/${filename}`);
+                        alert(`Recording saved successfully to ${this.saveLocation}/${filename}`);
+                    } catch (err) {
+                        console.error('Error saving to chosen directory:', err);
+                        this.fallbackDownload(blob, filename);
+                    }
+                } else {
+                    // Fallback to downloads folder
+                    this.fallbackDownload(blob, filename);
+                }
+                
+            } catch (err) {
+                console.error('Error saving recording:', err);
+                alert('Error saving recording: ' + err.message);
+            }
+            
+            // Clear recorded chunks
+            this.recordedChunks = [];
+        }
+        
+        fallbackDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log(`Recording downloaded as ${filename}`);
+            alert(`Recording saved to Downloads folder as ${filename}`);
+        }
+    }
+
+    // ****
+    // ****
+
     // Fixed better canvas capture
     class StreamManager {
         constructor(visualizer) {
@@ -5540,7 +6658,7 @@
                 await this.initAudioMotion();
 
                 this.streamManager = new StreamManager(this);
-                
+                this.recordManager = new RecordManager(this);
 
                 this.setBackgroundColor(this.backgroundColor);
 
