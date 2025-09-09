@@ -323,6 +323,14 @@
                     </div>
                 </div>
 
+                <!-- Visualization Aspect Ratio -->
+                <div class="control-group">
+                    <div class="group-label">Visualization</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
+                    </div>
+                </div>
+
                 <!-- Presets -->
                 <div class="control-group">
                     <div class="group-label">Presets</div>
@@ -4798,38 +4806,64 @@
                 return;
             }
             
-            // Draw video background if active
+            // Calculate shared letterboxing dimensions for both video and visualization
+            let sharedDrawWidth, sharedDrawHeight, sharedDrawX, sharedDrawY;
+            
             if (this.visualizer.videoElement && 
                 (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
                 this.visualizer.videoElement.readyState >= 2) {
                 
-                // Check if kaleidoscope is applied to video
+                // Use video dimensions to calculate shared letterboxing
+                const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+                const canvasAspect = width / height;
+                
+                if (videoAspect > canvasAspect) {
+                    // Video is wider, fit to width
+                    sharedDrawWidth = width;
+                    sharedDrawHeight = width / videoAspect;
+                    sharedDrawX = 0;
+                    sharedDrawY = (height - sharedDrawHeight) / 2;
+                } else {
+                    // Video is taller, fit to height
+                    sharedDrawHeight = height;
+                    sharedDrawWidth = height * videoAspect;
+                    sharedDrawX = (width - sharedDrawWidth) / 2;
+                    sharedDrawY = 0;
+                }
+                
+                console.log(`Shared letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+                
+                // Draw video background with shared dimensions
                 if (this.visualizer.kaleidoscopeEnabled && 
                     this.visualizer.kaleidoscopeApplyToVideo && 
                     this.visualizer.kaleidoscopeVideoCanvas &&
                     this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
                     
-                    // Draw kaleidoscope video canvas instead of raw video
-                    console.log('Drawing kaleidoscope video canvas for recording');
+                    // Draw kaleidoscope video canvas
                     const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
                     if (kaleidoscopeOpacity > 0) {
                         this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                        this.drawScaledCanvas(this.visualizer.kaleidoscopeVideoCanvas);
+                        this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                         this.compositeCtx.globalAlpha = 1;
                     }
                 } else {
-                    // Draw regular video with effects
+                    // Draw regular video with effects using shared dimensions
                     const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                     if (opacity > 0) {
                         this.compositeCtx.globalAlpha = opacity;
-                        this.drawScaledVideo();
+                        this.drawVideoWithEffects(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                         this.compositeCtx.globalAlpha = 1;
                     }
                 }
+                
+                // Draw visualization using the same shared dimensions
+                console.log(`Drawing visualization with shared dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+                this.compositeCtx.drawImage(sourceCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                
+            } else {
+                // No video - draw visualization with standard letterboxing
+                this.drawScaledVisualization(sourceCanvas);
             }
-            
-            // Draw visualization on top
-            this.drawScaledVisualization(sourceCanvas);
         }
         
         drawScaledVideo() {
@@ -4971,12 +5005,138 @@
             }
         }
         
+        drawVideoWithEffects(drawX, drawY, drawWidth, drawHeight) {
+            const video = this.visualizer.videoElement;
+            const { width, height } = this.compositeCanvas;
+            
+            if (!video || video.readyState < 2) return;
+            
+            // Create temporary canvas for video effects processing
+            if (!this.tempVideoCanvas) {
+                this.tempVideoCanvas = document.createElement('canvas');
+                this.tempVideoCtx = this.tempVideoCanvas.getContext('2d');
+            }
+            
+            // Set temp canvas size to match composite canvas
+            this.tempVideoCanvas.width = width;
+            this.tempVideoCanvas.height = height;
+            
+            // Apply video effects to temp canvas context
+            this.tempVideoCtx.save();
+            
+            // Build filter string like the StreamManager does
+            const filters = [];
+            
+            // Apply posterize FIRST with stronger effect
+            if (this.visualizer.videoPosterize < 16) {
+                const steps = this.visualizer.videoPosterize;
+                const posterizeAmount = (16 - steps) / 16;
+                filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+                filters.push(`brightness(${95}%)`);
+                filters.push(`saturate(${200}%)`);
+                if (steps < 8) {
+                    filters.push(`contrast(${150}%)`);
+                }
+            }
+            
+            // Apply other video adjustments
+            if (this.visualizer.videoBrightness !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`brightness(${this.visualizer.videoBrightness}%)`);
+            }
+            if (this.visualizer.videoContrast !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`contrast(${this.visualizer.videoContrast}%)`);
+            }
+            if (this.visualizer.videoSaturation !== 100 && this.visualizer.videoPosterize >= 16) {
+                filters.push(`saturate(${this.visualizer.videoSaturation}%)`);
+            }
+            if (this.visualizer.videoHueRotate !== 0) {
+                filters.push(`hue-rotate(${this.visualizer.videoHueRotate}deg)`);
+            }
+            if (this.visualizer.videoGrayscale > 0) {
+                filters.push(`grayscale(${this.visualizer.videoGrayscale}%)`);
+            }
+            if (this.visualizer.videoSepia > 0) {
+                filters.push(`sepia(${this.visualizer.videoSepia}%)`);
+            }
+            if (this.visualizer.videoBlur > 0) {
+                filters.push(`blur(${this.visualizer.videoBlur}px)`);
+            }
+            if (this.visualizer.videoInvert) {
+                filters.push('invert(100%)');
+            }
+            
+            // Apply filters to temp canvas
+            this.tempVideoCtx.filter = filters.length > 0 ? filters.join(' ') : 'none';
+            this.tempVideoCtx.globalAlpha = 1;
+            
+            // Clear temp canvas
+            this.tempVideoCtx.clearRect(0, 0, width, height);
+            
+            // Draw video to temp canvas with effects at specified dimensions
+            this.tempVideoCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+            
+            this.tempVideoCtx.restore();
+            
+            // Calculate pulse scale if enabled
+            let scale = 1;
+            if (this.visualizer.videoPulse) {
+                const pulseDuration = this.visualizer.videoPulseRate * 1000;
+                const pulsePhase = (Date.now() % pulseDuration) / pulseDuration;
+                scale = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.02);
+            }
+            
+            // Apply mirror transformations if enabled
+            this.compositeCtx.save();
+            
+            if (this.visualizer.videoMirror) {
+                this.compositeCtx.scale(-1, 1);
+                this.compositeCtx.translate(-width, 0);
+            }
+            
+            // Apply pulse scaling
+            if (scale !== 1) {
+                this.compositeCtx.translate(width / 2, height / 2);
+                this.compositeCtx.scale(scale, scale);
+                this.compositeCtx.translate(-width / 2, -height / 2);
+            }
+            
+            // Draw processed video from temp canvas to composite canvas
+            this.compositeCtx.drawImage(this.tempVideoCanvas, 0, 0);
+            
+            this.compositeCtx.restore();
+            
+            // Apply vignette effect if enabled
+            if (this.visualizer.videoVignette > 0) {
+                this.compositeCtx.save();
+                const intensity = this.visualizer.videoVignette / 100;
+                const size = (100 - this.visualizer.videoVignette) / 100;
+                
+                const gradient = this.compositeCtx.createRadialGradient(
+                    width / 2, height / 2, Math.min(width, height) * size * 0.5,
+                    width / 2, height / 2, Math.max(width, height) * 0.7
+                );
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                gradient.addColorStop(1, `rgba(0, 0, 0, ${intensity})`);
+                
+                this.compositeCtx.fillStyle = gradient;
+                this.compositeCtx.fillRect(0, 0, width, height);
+                this.compositeCtx.restore();
+            }
+        }
+        
         drawScaledCanvas(canvas) {
             const { width, height } = this.compositeCanvas;
             
             if (!canvas || canvas.width === 0 || canvas.height === 0) return;
             
-            // Calculate scaling to fit with letterboxing
+            // For kaleidoscope canvases, use full dimensions (they're already sized to match the container)
+            if (canvas === this.visualizer.kaleidoscopeVideoCanvas || canvas === this.visualizer.kaleidoscopeVizCanvas) {
+                console.log('Drawing kaleidoscope canvas at full size');
+                this.compositeCtx.drawImage(canvas, 0, 0, width, height);
+                return;
+            }
+            
+            // For other canvases, calculate scaling to fit with letterboxing
             const canvasAspect = canvas.width / canvas.height;
             const targetAspect = width / height;
             
@@ -5002,7 +5162,7 @@
         drawScaledVisualization(sourceCanvas) {
             const { width, height } = this.compositeCanvas;
             
-            // Calculate scaling to fit with letterboxing
+            // Use standard letterboxing for visualization
             const sourceAspect = sourceCanvas.width / sourceCanvas.height;
             const canvasAspect = width / height;
             
@@ -5022,6 +5182,7 @@
                 drawY = 0;
             }
             
+            console.log(`Drawing visualization: ${drawWidth}x${drawHeight} at ${drawX},${drawY}`);
             this.compositeCtx.drawImage(sourceCanvas, drawX, drawY, drawWidth, drawHeight);
         }
         
@@ -5047,16 +5208,35 @@
                 const gainNode = audioCtx.createGain();
                 gainNode.gain.value = 1.0;
                 
-                // Connect audio source through gain node to destination
+                // Connect all available audio sources to capture everything
+                let hasAudioSource = false;
+                
+                // Connect playlist/live audio if available
                 if (audioMotion.source) {
                     try {
                         audioMotion.source.connect(gainNode);
-                        gainNode.connect(destination);
-                        console.log('Audio stream created successfully');
-                        return destination.stream;
+                        hasAudioSource = true;
+                        console.log('Connected AudioMotion source to recording');
                     } catch (e) {
-                        console.error('Error connecting audio:', e);
+                        console.error('Error connecting AudioMotion source:', e);
                     }
+                }
+                
+                // Also connect video audio if available (can be simultaneous with playlist)
+                if (this.visualizer.videoAudioGain) {
+                    try {
+                        this.visualizer.videoAudioGain.connect(gainNode);
+                        hasAudioSource = true;
+                        console.log('Connected video audio to recording');
+                    } catch (e) {
+                        console.error('Error connecting video audio:', e);
+                    }
+                }
+                
+                if (hasAudioSource) {
+                    gainNode.connect(destination);
+                    console.log('Audio stream created successfully with all available sources');
+                    return destination.stream;
                 }
                 
                 // Fallback: try to capture from the current audio element
@@ -6154,6 +6334,9 @@
             this.videoFile = null;
             this.videoFileLoop = true;
             this.videoFileMuted = true;
+            this.videoAudioSource = null;
+            this.videoAudioGain = null;
+            this.matchVisualizationAspect = true; // Match visualization to video aspect ratio
 
             // Kaleidoscope properties
             this.kaleidoscopeEnabled = false;
@@ -6902,6 +7085,181 @@
             }
         }
 
+        updateVisualizationAspectRatio() {
+            console.log('=== updateVisualizationAspectRatio called ===');
+            console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
+            console.log('videoElement exists:', !!this.videoElement);
+            console.log('audioMotion exists:', !!this.audioMotion);
+            console.log('videoMode:', this.videoMode);
+
+            if (!this.matchVisualizationAspect || !this.videoElement || !this.audioMotion) {
+                console.log('Early return - missing required components');
+                return;
+            }
+
+            try {
+                // Get video dimensions
+                const videoWidth = this.videoElement.videoWidth;
+                const videoHeight = this.videoElement.videoHeight;
+                
+                console.log('Raw video dimensions:', videoWidth, 'x', videoHeight);
+                console.log('Video readyState:', this.videoElement.readyState);
+                console.log('Video currentTime:', this.videoElement.currentTime);
+                
+                if (!videoWidth || !videoHeight) {
+                    console.warn('Video dimensions not available yet - scheduling retry');
+                    // Try again in a bit
+                    setTimeout(() => this.updateVisualizationAspectRatio(), 500);
+                    return;
+                }
+
+                const videoAspect = videoWidth / videoHeight;
+                console.log(`✓ Video aspect ratio: ${videoWidth}x${videoHeight} (${videoAspect.toFixed(3)})`);
+
+                // Get current canvas dimensions
+                const currentWidth = this.audioMotion.canvas.width;
+                const currentHeight = this.audioMotion.canvas.height;
+                const currentAspect = currentWidth / currentHeight;
+
+                console.log(`✓ Current canvas aspect ratio: ${currentWidth}x${currentHeight} (${currentAspect.toFixed(3)})`);
+
+                // Only resize if aspect ratios are significantly different (avoid tiny adjustments)
+                const aspectDiff = Math.abs(videoAspect - currentAspect);
+                console.log('Aspect ratio difference:', aspectDiff);
+                
+                if (aspectDiff < 0.01) {
+                    console.log('✓ Aspect ratios already match, no resize needed');
+                    return;
+                }
+
+                // Calculate new canvas dimensions maintaining current height
+                const newWidth = Math.round(currentHeight * videoAspect);
+                
+                console.log(`🔄 Resizing visualization canvas: ${currentWidth}x${currentHeight} → ${newWidth}x${currentHeight}`);
+                
+                // Resize the AudioMotion canvas
+                this.audioMotion.canvas.width = newWidth;
+                this.audioMotion.canvas.height = currentHeight;
+                
+                console.log('Canvas resized, triggering AudioMotion handleResize...');
+                
+                // Trigger AudioMotion to handle the resize
+                if (this.audioMotion.handleResize) {
+                    this.audioMotion.handleResize();
+                    console.log('✓ AudioMotion handleResize called');
+                } else {
+                    console.log('⚠ AudioMotion handleResize not available, using fallback');
+                    // Fallback: manually trigger resize handling
+                    const container = document.getElementById('visualizer');
+                    if (container) {
+                        container.style.width = newWidth + 'px';
+                        container.style.height = currentHeight + 'px';
+                        console.log('✓ Container resized manually');
+                    }
+                }
+
+                console.log('✅ Visualization canvas resized to match video aspect ratio');
+
+            } catch (error) {
+                console.error('❌ Error updating visualization aspect ratio:', error);
+            }
+        }
+
+        restoreOriginalAspectRatio() {
+            if (!this.audioMotion) return;
+
+            try {
+                // Get the container's natural dimensions
+                const container = document.getElementById('visualizer');
+                if (container) {
+                    const rect = container.getBoundingClientRect();
+                    const containerWidth = rect.width || 800;
+                    const containerHeight = rect.height || 400;
+
+                    console.log(`Restoring original canvas dimensions: ${containerWidth}x${containerHeight}`);
+
+                    this.audioMotion.canvas.width = containerWidth;
+                    this.audioMotion.canvas.height = containerHeight;
+
+                    if (this.audioMotion.handleResize) {
+                        this.audioMotion.handleResize();
+                    }
+                }
+            } catch (error) {
+                console.error('Error restoring original aspect ratio:', error);
+            }
+        }
+
+        async connectVideoAudio() {
+            try {
+                if (!this.videoElement || !this.audioMotion || !this.audioMotion.audioCtx) {
+                    console.warn('Cannot connect video audio: missing video element or audio context');
+                    return;
+                }
+
+                // Disconnect any existing video audio connection
+                this.disconnectVideoAudio();
+
+                const audioCtx = this.audioMotion.audioCtx;
+                
+                // Resume audio context if needed
+                if (audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+
+                // Create audio source from video element
+                this.videoAudioSource = audioCtx.createMediaElementSource(this.videoElement);
+                
+                // Create gain node for mute control
+                this.videoAudioGain = audioCtx.createGain();
+                
+                // Set initial gain based on mute state
+                this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
+                
+                // Connect: videoElement -> audioSource -> gainNode -> destination
+                this.videoAudioSource.connect(this.videoAudioGain);
+                this.videoAudioGain.connect(audioCtx.destination);
+                
+                // Connect to analyzer for visualization
+                // Note: This will work alongside playlist audio if both are playing
+                this.videoAudioGain.connect(this.audioMotion.analyser);
+                
+                // Connect to stereo analyzer if available
+                if (this.audioMotion.analyserRight && 
+                    (this.audioMotion.channelLayout === 'dual-vertical' || this.audioMotion.channelLayout === 'dual-horizontal')) {
+                    // For stereo, we need a splitter
+                    if (this.audioMotion.splitter) {
+                        this.videoAudioGain.connect(this.audioMotion.splitter);
+                        this.audioMotion.splitter.connect(this.audioMotion.analyser, 0);
+                        this.audioMotion.splitter.connect(this.audioMotion.analyserRight, 1);
+                    } else {
+                        this.videoAudioGain.connect(this.audioMotion.analyser);
+                    }
+                }
+                
+                console.log('Video audio connected to AudioMotion with gain control');
+                
+            } catch (error) {
+                console.error('Failed to connect video audio:', error);
+            }
+        }
+
+        disconnectVideoAudio() {
+            try {
+                if (this.videoAudioSource) {
+                    this.videoAudioSource.disconnect();
+                    this.videoAudioSource = null;
+                }
+                if (this.videoAudioGain) {
+                    this.videoAudioGain.disconnect();
+                    this.videoAudioGain = null;
+                }
+                console.log('Video audio disconnected');
+            } catch (error) {
+                console.error('Error disconnecting video audio:', error);
+            }
+        }
+
         async startVideoInput(deviceId) {
             try { // Check if we're switching sources
                 const isSourceSwitch = this.videoElement && this.videoStream;
@@ -7175,6 +7533,12 @@
 
                 this.updateDisplayFilters();
 
+                // Update visualization aspect ratio to match video
+                if (this.matchVisualizationAspect) {
+                    // Small delay to ensure video dimensions are available
+                    setTimeout(() => this.updateVisualizationAspectRatio(), 200);
+                }
+
                 // Smooth fade in after video is fully ready
                 await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -7386,7 +7750,7 @@
                 if (!this.videoElement) {
                     this.videoElement = document.createElement('video');
                     this.videoElement.id = 'bgVideo';
-                    this.videoElement.muted = this.videoFileMuted;
+                    this.videoElement.muted = false; // Keep unmuted, control via gain node
                     this.videoElement.playsInline = true;
                     this.videoElement.autoplay = true;
                     this.videoElement.loop = this.videoFileLoop;
@@ -7408,7 +7772,7 @@
                     container.insertBefore(this.videoElement, backdrop.nextSibling);
                 } else {
                     // Update settings for existing element
-                    this.videoElement.muted = this.videoFileMuted;
+                    this.videoElement.muted = false; // Keep unmuted, control via gain node
                     this.videoElement.loop = this.videoFileLoop;
                 }
 
@@ -7416,7 +7780,7 @@
                 const url = URL.createObjectURL(file);
                 this.videoElement.src = url;
                 this.videoElement.loop = this.videoFileLoop;
-                this.videoElement.muted = this.videoFileMuted;
+                this.videoElement.muted = false; // Keep unmuted, control via gain node
 
                 // Make containers transparent if not already done (same as camera video)
                 if (!container.classList.contains('video-active')) {
@@ -7498,6 +7862,15 @@
                         }
                     };
                 });
+                
+                // Connect video audio to AudioMotion after video is loaded
+                await this.connectVideoAudio();
+
+                // Update visualization aspect ratio to match video
+                if (this.matchVisualizationAspect) {
+                    // Small delay to ensure video dimensions are available
+                    setTimeout(() => this.updateVisualizationAspectRatio(), 200);
+                }
 
                 // Update UI
                 const btn = document.getElementById('videoInputBtn');
@@ -7657,6 +8030,14 @@
             if (this.videoFadeTimeout) {
                 clearTimeout(this.videoFadeTimeout);
                 this.videoFadeTimeout = null;
+            }
+            
+            // Disconnect video audio
+            this.disconnectVideoAudio();
+
+            // Restore original aspect ratio when video stops (unless it's just a source switch)
+            if (updateUI && this.matchVisualizationAspect) {
+                this.restoreOriginalAspectRatio();
             }
 
             // If this is a source switch, do a quick fade and cleanup
@@ -10582,10 +10963,28 @@ https://rogueamoeba.com/loopback/
                     videoFileMuteBtn.textContent = this.videoFileMuted ? 'Muted' : 'Sound';
                     videoFileMuteBtn.classList.toggle('active', this.videoFileMuted);
                     
-                    // Update mute setting on video elements
-                    if (this.videoElement && this.videoMode === 'file') {
-                        this.videoElement.muted = this.videoFileMuted;
+                    // Update gain node instead of video element muted property
+                    if (this.videoAudioGain) {
+                        this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
+                        console.log('Video audio gain set to:', this.videoFileMuted ? 0 : 1);
                     }
+                });
+            }
+
+            // Match Visualization Aspect Ratio toggle
+            const matchVisualizationAspectBtn = document.getElementById('matchVisualizationAspectBtn');
+            if (matchVisualizationAspectBtn) {
+                matchVisualizationAspectBtn.addEventListener('click', () => {
+                    this.matchVisualizationAspect = !this.matchVisualizationAspect;
+                    matchVisualizationAspectBtn.textContent = this.matchVisualizationAspect ? 'Match Video Aspect: On' : 'Match Video Aspect: Off';
+                    matchVisualizationAspectBtn.classList.toggle('active', this.matchVisualizationAspect);
+                    
+                    // Apply aspect ratio matching if video is active
+                    if ((this.videoMode === 'camera' || this.videoMode === 'file') && this.videoElement) {
+                        this.updateVisualizationAspectRatio();
+                    }
+                    
+                    console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
                 });
             }
 
