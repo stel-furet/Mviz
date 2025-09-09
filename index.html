@@ -155,11 +155,519 @@
 <header class="header">
     <button class="info-button" id="infoBtn" title="About GitItUp">i</button>
     <div class="header-content">
-        <div
-            class="header-left">
-            <!-- Playlist Dropdown (restored) -->
-            <div class="dropdown playlist-dropdown">
-                <div class="dropdown-label">Playlist</div>
+        <div class="header-left">
+            
+            <!-- AUDIO SECTION -->
+            <div class="header-section">
+                <div class="section-label">Audio</div>
+                <div class="section-content">
+                    <!-- Live Audio (renamed from Audio Input) -->
+                    <div class="input-mode-container">
+                        <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
+                            <span class="input-mode-text">Live Audio</span>
+                        </button>
+                        <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
+                            <option value="">Select Audio Input...</option>
+                        </select>
+                    </div>
+
+                    <!-- Playlist -->
+                    <div class="dropdown playlist-dropdown">
+                        <div class="dropdown-label">Playlist</div>
+                        <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
+                        <div class="dropdown-content" id="playlistDropdown">
+                            <!-- Playlist content will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Hidden playlist data for backward compatibility -->
+                    <div id="playlistData" style="display: none;">
+                        <!-- Will be populated by PlaylistManager -->
+                    </div>
+
+                    <!-- Hidden file inputs -->
+                    <input type="file" id="playlistImportInput" accept=".json" style="display: none;">
+                </div>
+            </div>
+
+            <!-- SECTION DIVIDER -->
+            <div class="section-divider"></div>
+
+            <!-- VIDEO SECTION -->
+            <div class="header-section">
+                <div class="section-label">Video</div>
+                <div class="section-content">
+                    <!-- Live Source (renamed from Video Input) -->
+                    <div class="input-mode-container">
+                        <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Source">
+                            <span class="video-mode-text">Live Source</span>
+                        </button>
+                        <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
+                            <option value="">Select Video Input...</option>
+                        </select>
+                        <div class="video-file-info" id="videoFileInfo" style="display: none;">
+                            <span class="video-file-name" id="videoFileName">No file selected</span>
+                            <div class="video-file-controls-inline">
+                                <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
+                                <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
+                            </div>
+                        </div>
+                        <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
+                    </div>
+                    
+                    <!-- Video Settings Button -->
+                    <button id="videoSettingsBtn" class="video-settings-toggle" title="Video Settings">⚙</button>
+
+                    <!-- Video controls panel -->
+                    <div class="video-controls-panel" id="videoControlsPanel" style="display: none;">
+                        <div class="panel-header">
+                            <span>Video Settings</span>
+                            <button class="panel-close-btn" id="videoControlsClose">×</button>
+                        </div>
+
+                        <!-- Basic Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Basic</div>
+                            <div class="slider-container">
+                                <label>Opacity</label>
+                                <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
+                                <span id="videoOpacityValue">100%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Brightness</label>
+                                <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
+                                <span id="videoBrightnessValue">100%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Contrast</label>
+                                <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
+                                <span id="videoContrastValue">100%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Fade Time</label>
+                                <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
+                                <span id="videoFadeValue">3.0s</span>
+                            </div>
+                        </div>
+
+                        <!-- Color Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Color</div>
+                            <div class="slider-container">
+                                <label>Saturation</label>
+                                <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
+                                <span id="videoSaturationValue">100%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Hue Rotate</label>
+                                <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
+                                <span id="videoHueRotateValue">0°</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Grayscale</label>
+                                <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
+                                <span id="videoGrayscaleValue">0%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Sepia</label>
+                                <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
+                                <span id="videoSepiaValue">0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Effects -->
+                        <div class="control-group">
+                            <div class="group-label">Effects</div>
+                            <div class="slider-container">
+                                <label>Blur</label>
+                                <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
+                                <span id="videoBlurValue">0px</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Vignette</label>
+                                <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
+                                <span id="videoVignetteValue">0%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Posterize</label>
+                                <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
+                                <span id="videoPosterizeValue">Off</span>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
+                                <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
+                            </div>
+                        </div>
+
+                        <!-- Animation -->
+                        <div class="control-group">
+                            <div class="group-label">Animation</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
+                            </div>
+                            <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
+                                <label>Pulse Rate</label>
+                                <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
+                                <span id="videoPulseRateValue">2.0s</span>
+                            </div>
+                        </div>
+
+                        <!-- Visualization Aspect Ratio -->
+                        <div class="control-group">
+                            <div class="group-label">Visualization</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
+                            </div>
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="control-group">
+                            <div class="group-label">Presets</div>
+                            <div class="preset-buttons">
+                                <button class="video-preset-btn" data-preset="normal">Normal</button>
+                                <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
+                                <button class="video-preset-btn" data-preset="noir">Noir</button>
+                                <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
+                                <button class="video-preset-btn" data-preset="vintage">Vintage</button>
+                                <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
+                                <button class="video-preset-btn" data-preset="underwater">Underwater</button>
+                                <button class="video-preset-btn" data-preset="infrared">Infrared</button>
+                                <button class="video-preset-btn" data-preset="acid">Acid</button>
+                                <button class="video-preset-btn" data-preset="thermal">Thermal</button>
+                                <button class="video-preset-btn" data-preset="matrix">Matrix</button>
+                                <button class="video-preset-btn" data-preset="glitch">Glitch</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION DIVIDER -->
+            <div class="section-divider"></div>
+
+            <!-- VISUALIZATIONS SECTION -->
+            <div class="header-section">
+                <div class="section-label">Visualizations</div>
+                <div class="section-content">
+                    <!-- Spectrum (renamed from Visualization) -->
+                    <div class="dropdown">
+                        <div class="dropdown-label">Spectrum</div>
+                        <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
+                        <div class="dropdown-content" id="vizModeDropdown">
+                            <div class="dropdown-item active" data-mode="0">Spectrum</div>
+                            <div class="dropdown-item" data-mode="1">Mirror Wave</div>
+                            <div class="dropdown-item" data-mode="2">Classic LED</div>
+                            <div class="dropdown-item" data-mode="3">Stereo</div>
+                            <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
+                            <div class="dropdown-item" data-mode="5">Energy</div>
+                            <div class="dropdown-item" data-mode="6">Mirror</div>
+                        </div>
+                    </div>
+
+                    <!-- Morph -->
+                    <div class="morph-controls">
+                        <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
+                            <span class="morph-btn-text">Start Morph</span>
+                        </button>
+                        <select class="morph-speed-select" id="morphSpeedSelect">
+                            <option value="slow">Slow</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="fast">Fast</option>
+                            <option value="ultra">Ultra</option>
+                            <option value="energy">Energy</option>
+                        </select>
+                        <div class="energy-container" id="energyContainer" style="display: none;">
+                            <div class="energy-label">Energy</div>
+                            <div class="energy-bar">
+                                <div class="energy-indicator" id="energyIndicator"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Schemes -->
+                    <div class="dropdown">
+                        <div class="dropdown-label">Color Scheme</div>
+                        <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
+                        <div class="dropdown-content" id="colorSchemeDropdown">
+                            <div class="dropdown-item active" data-scheme="default">Default</div>
+                            <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
+                            <div class="dropdown-item" data-scheme="luigi">Luigi</div>
+                            <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
+                            <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
+                        </div>
+                    </div>
+
+                    <!-- Random -->
+                    <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
+
+                    <!-- Viz Toggle -->
+                    <button class="dropdown-toggle viz-toggle-btn" id="vizToggleBtn" title="Toggle Visualization">ON</button>
+
+                    <!-- Presets -->
+                    <div class="presets-container">
+                        <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
+                            <option value="">Load Preset...</option>
+                        </select>
+                        <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
+                        <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
+                        <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
+                        <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
+                    </div>
+
+                    <!-- Horizontal Divider -->
+                    <div class="horizontal-divider"></div>
+
+                    <!-- Kaleidoscope -->
+                    <div class="kaleidoscope-controls">
+                        <button class="dropdown-toggle kaleidoscope-btn" id="kaleidoscopeBtn" title="Kaleidoscope">
+                            <span class="kaleidoscope-btn-text">Kaleidoscope Off</span>
+                        </button>
+
+                        <!-- Kaleidoscope settings panel -->
+                        <div class="kaleidoscope-panel" id="kaleidoscopePanel" style="display: none;">
+                            <div class="panel-header">
+                                <span>Kaleidoscope Settings</span>
+                                <button class="panel-close-btn" id="kaleidoscopeCloseBtn">×</button>
+                            </div>
+                            <!-- Kaleidoscope settings content will be moved here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION DIVIDER -->
+            <div class="section-divider"></div>
+
+            <!-- OUTPUT SECTION -->
+            <div class="header-section">
+                <div class="section-label">Output</div>
+                <div class="section-content">
+                    <!-- Live Display -->
+                    <button class="dropdown-toggle" id="liveDisplayBtn" title="Open Live Display Window">
+                        Live Display
+                    </button>
+                    <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
+
+                    <!-- Display Settings Panel -->
+                    <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
+                        <div class="panel-header">
+                            <span>Display Settings</span>
+                            <button class="panel-close-btn" id="displaySettingsClose">×</button>
+                        </div>
+                        <!-- Display settings content will be moved here -->
+                    </div>
+
+                    <!-- Record -->
+                    <div class="record-controls">
+                        <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
+                            <span class="record-text">Record</span>
+                            <span class="record-timer" style="display: none;">00:00</span>
+                        </button>
+                        <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
+
+                        <!-- Record Settings Panel -->
+                        <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
+                            <div class="panel-header">
+                                <span>Recording Settings</span>
+                                <button class="panel-close-btn" id="recordSettingsClose">×</button>
+                            </div>
+
+                            <!-- Resolution -->
+                            <div class="control-group">
+                                <div class="group-label">Resolution</div>
+                                <select id="recordResolutionSelect" class="control-select">
+                                    <option value="canvas">Canvas Size</option>
+                                    <option value="720p">720p (1280×720)</option>
+                                    <option value="1080p" selected>1080p (1920×1080)</option>
+                                    <option value="4k">4K (3840×2160)</option>
+                                </select>
+                            </div>
+
+                            <!-- Aspect Ratio -->
+                            <div class="control-group">
+                                <div class="group-label">Aspect Ratio</div>
+                                <div class="preset-buttons">
+                                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                                </div>
+                            </div>
+
+                            <!-- Frame Rate -->
+                            <div class="control-group">
+                                <div class="group-label">Frame Rate</div>
+                                <div class="preset-buttons">
+                                    <button class="framerate-btn active" data-fps="30">30 FPS</button>
+                                    <button class="framerate-btn" data-fps="60">60 FPS</button>
+                                </div>
+                            </div>
+
+                            <!-- Video Quality -->
+                            <div class="control-group">
+                                <div class="group-label">Video Quality</div>
+                                <select id="recordVideoQualitySelect" class="control-select">
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+
+                            <!-- Audio Quality -->
+                            <div class="control-group">
+                                <div class="group-label">Audio Quality</div>
+                                <select id="recordAudioQualitySelect" class="control-select">
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="high">High (320 kbps)</option>
+                                    <option value="medium">Medium (192 kbps)</option>
+                                    <option value="low">Low (128 kbps)</option>
+                                </select>
+                            </div>
+
+                            <!-- File Settings -->
+                            <div class="control-group">
+                                <div class="group-label">File Settings</div>
+                                <div class="file-location-display" id="recordFileLocation">
+                                    📥 Downloads folder
+                                </div>
+                                <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
+                                <div class="input-container">
+                                    <label>Filename</label>
+                                    <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
+                                    <span class="file-extension">.webm</span>
+                                </div>
+                            </div>
+
+                            <!-- Recording Info -->
+                            <div class="control-group">
+                                <div class="group-label">Recording Info</div>
+                                <div class="recording-info">
+                                    <div class="info-item">
+                                        <span class="info-label">Output:</span>
+                                        <span id="recordingOutput">1920×1080 @ 30fps</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Format:</span>
+                                        <span id="recordingFormat">WebM (VP9/Opus)</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Est. Size:</span>
+                                        <span id="recordingEstSize">~50 MB/min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End record-settings-panel -->
+                    </div>
+                    <!-- End record-controls -->
+                </div>
+            </div>
+        </div>
+        <!-- End header-left -->
+
+    </div>
+    <!-- End header-content -->
+</header>
+<div class="app-container">
+
+    <main class="main-area">
+        <div class="visualization-container" id="visualizationContainer">
+            <div id="visualizer"></div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div>Loading audio visualizer...</div>
+            </div>
+
+            <!-- Fullscreen controls -->
+            <div class="fullscreen-controls" id="fullscreenControls" style="display: none;">
+                <!-- Fullscreen Exit Button -->
+                <button class="fullscreen-exit-btn" id="fullscreenExitBtn" title="Exit Fullscreen">✕</button>
+
+                <!-- Dropdowns -->
+                <div class="fs-section fs-dropdowns">
+                    <!-- Playlist -->
+                    <select class="fs-select" id="fsPlaylistSelect">
+                        <option value="">Select Track...</option>
+                    </select>
+
+                    <!-- Color Scheme -->
+                    <select class="fs-select" id="fsColorSchemeSelect">
+                        <option value="default">Default</option>
+                        <option value="earthtones">Earthtones</option>
+                        <option value="luigi">Luigi</option>
+                        <option value="metal">Heavy Metal</option>
+                        <option value="psychedelic">Psychedelic</option>
+                    </select>
+
+                    <!-- Visualization Mode -->
+                    <select class="fs-select" id="fsVizModeSelect">
+                        <option value="0">Spectrum</option>
+                        <option value="1">Mirror Wave</option>
+                        <option value="2">Classic LED</option>
+                        <option value="3">Stereo</option>
+                        <option value="4">Radial Spectrum</option>
+                        <option value="5">Energy</option>
+                        <option value="6">Mirror</option>
+                    </select>
+                </div>
+
+                <!-- Controls -->
+                <div class="fs-section fs-controls">
+                    <!-- Viz Toggle -->
+                    <button class="fs-btn viz-toggle" id="fsVizToggleBtn">ON</button>
+
+                    <!-- Random -->
+                    <button class="fs-btn random-btn" id="fsRandomBtn">Random</button>
+
+                    <!-- Morph -->
+                    <button class="fs-btn morph-btn" id="fsMorphBtn">
+                        <span class="morph-text">Start Morph</span>
+                    </button>
+
+                    <!-- Kaleidoscope -->
+                    <button class="fs-btn kaleidoscope-btn" id="fsKaleidoscopeBtn">
+                        <span class="kaleidoscope-text">Kaleidoscope Off</span>
+                    </button>
+                </div>
+
+                <!-- Track Info -->
+                <div class="fs-section fs-track-info">
+                    <div class="fs-track-title" id="fsTrackTitle">No track selected</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer with transport controls -->
+    <footer class="footer">
+        <div class="transport-controls">
+            <button class="transport-btn" id="prevBtn" title="Previous Track">⏮</button>
+            <button class="transport-btn play-pause-btn" id="playBtn" title="Play/Pause">▶</button>
+            <button class="transport-btn" id="nextBtn" title="Next Track">⏭</button>
+            
+            <div class="track-info">
+                <div class="track-title" id="trackTitle">Select a track</div>
+                <div class="track-time">
+                    <span id="currentTime">0:00</span>
+                    <div class="progress-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                    </div>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="volume-controls">
+                <button class="volume-btn" id="muteBtn" title="Mute">🔊</button>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            </div>
+        </div>
+    </footer>
+</div>
+
+    <style>
                 <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
                 <div class="dropdown-content" id="playlistDropdown">
                     <!-- Playlist Actions -->
@@ -203,57 +711,7 @@
                 </div>
             </div>
 
-            <!-- Hidden playlist data for backward compatibility -->
-            <div id="playlistData" style="display: none;">
-                <!-- Will be populated by PlaylistManager -->
-            </div>
 
-            <!-- Audio Input Toggle -->
-            <div class="input-mode-container">
-                <button class="input-mode-btn" id="inputModeBtn" title="Toggle Audio Input">
-                    <span class="input-mode-text">Audio Input</span>
-                </button>
-                <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
-                    <option value="">Select Audio Input...</option>
-                </select>
-            </div>
-
-            <!-- Hidden file inputs -->
-            <input type="file" id="playlistImportInput" accept=".json" style="display: none;">
-
-            <!-- Color Scheme Dropdown -->
-            <div class="dropdown">
-                <div class="dropdown-label">Color Scheme</div>
-                <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
-                <div class="dropdown-content" id="colorSchemeDropdown">
-                    <div class="dropdown-item active" data-scheme="default">Default</div>
-                    <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
-                    <div class="dropdown-item" data-scheme="luigi">Luigi</div>
-                    <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
-                    <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
-                </div>
-            </div>
-
-            <!-- Visualization Mode Dropdown -->
-            <div class="dropdown">
-                <div class="dropdown-label">Visualization</div>
-                <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
-                <div class="dropdown-content" id="vizModeDropdown">
-                    <div class="dropdown-item active" data-mode="0">Spectrum</div>
-                    <div class="dropdown-item" data-mode="1">Mirror Wave</div>
-                    <div class="dropdown-item" data-mode="2">Classic LED</div>
-                    <div class="dropdown-item" data-mode="3">Stereo</div>
-                    <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
-                    <div class="dropdown-item" data-mode="5">Energy</div>
-                    <div class="dropdown-item" data-mode="6">Mirror</div>
-                </div>
-            </div>
-
-            <!-- Viz Toggle -->
-            <button class="dropdown-toggle viz-toggle-btn" id="vizToggleBtn" title="Toggle Visualization">ON</button>
-
-            <!-- Random Visualization Button -->
-            <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
 
             <!-- Record Controls -->
             <div class="record-controls">
@@ -357,168 +815,11 @@
                     </div>
                 </div>
                 <!-- End record-settings-panel -->
-            </div>
-            <!-- End record-controls -->
-
-            <!-- Video Input Toggle -->
-            <div class="input-mode-container">
-                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Background">
-                    <span class="video-mode-text">Video Input</span>
-                </button>
-                <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
-                    <option value="">Select Video Input...</option>
-                </select>
-                <div class="video-file-info" id="videoFileInfo" style="display: none;">
-                    <span class="video-file-name" id="videoFileName">No file selected</span>
-                    <div class="video-file-controls-inline">
-                        <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
-                        <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
                     </div>
-                </div>
-                <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
-            </div>
-
-            <!-- Video controls panel -->
-            <div class="video-controls-panel" id="videoControlsPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Video Settings</span>
-                    <button class="panel-close-btn" id="videoControlsClose">×</button>
-                </div>
-
-                <!-- Basic Controls -->
-                <div class="control-group">
-                    <div class="group-label">Basic</div>
-                    <div class="slider-container">
-                        <label>Opacity</label>
-                        <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
-                        <span id="videoOpacityValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Brightness</label>
-                        <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
-                        <span id="videoBrightnessValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Contrast</label>
-                        <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
-                        <span id="videoContrastValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Fade Time</label>
-                        <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
-                        <span id="videoFadeValue">3.0s</span>
-                    </div>
-                </div>
-
-                <!-- Color Controls -->
-                <div class="control-group">
-                    <div class="group-label">Color</div>
-                    <div class="slider-container">
-                        <label>Saturation</label>
-                        <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
-                        <span id="videoSaturationValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Hue Rotate</label>
-                        <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
-                        <span id="videoHueRotateValue">0°</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Grayscale</label>
-                        <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
-                        <span id="videoGrayscaleValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Sepia</label>
-                        <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
-                        <span id="videoSepiaValue">0%</span>
-                    </div>
-                </div>
-
-                <!-- Effects -->
-                <div class="control-group">
-                    <div class="group-label">Effects</div>
-                    <div class="slider-container">
-                        <label>Blur</label>
-                        <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
-                        <span id="videoBlurValue">0px</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Vignette</label>
-                        <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
-                        <span id="videoVignetteValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Posterize</label>
-                        <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
-                        <span id="videoPosterizeValue">Off</span>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
-                        <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
-                    </div>
-                </div>
-
-                <!-- Animation -->
-                <div class="control-group">
-                    <div class="group-label">Animation</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
-                    </div>
-                    <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
-                        <label>Pulse Rate</label>
-                        <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
-                        <span id="videoPulseRateValue">2.0s</span>
-                    </div>
-                </div>
-
-                <!-- Visualization Aspect Ratio -->
-                <div class="control-group">
-                    <div class="group-label">Visualization</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
-                    </div>
-                </div>
-
-                <!-- Presets -->
-                <div class="control-group">
-                    <div class="group-label">Presets</div>
-                    <div class="preset-buttons">
-                        <button class="video-preset-btn" data-preset="normal">Normal</button>
-                        <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
-                        <button class="video-preset-btn" data-preset="noir">Noir</button>
-                        <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
-                        <button class="video-preset-btn" data-preset="vintage">Vintage</button>
-                        <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
-                        <button class="video-preset-btn" data-preset="underwater">Underwater</button>
-                        <button class="video-preset-btn" data-preset="infrared">Infrared</button>
-                        <button class="video-preset-btn" data-preset="acid">Acid</button>
-                        <button class="video-preset-btn" data-preset="thermal">Thermal</button>
-                        <button class="video-preset-btn" data-preset="matrix">Matrix</button>
-                        <button class="video-preset-btn" data-preset="glitch">Glitch</button>
-                    </div>
+                    <!-- End record-controls -->
                 </div>
             </div>
 
-            <!-- Morph Controls -->
-            <div class="morph-controls">
-                <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
-                    <span class="morph-btn-text">Start Morph</span>
-                </button>
-                <select class="morph-speed-select" id="morphSpeedSelect">
-                    <option value="slow">Slow</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="fast">Fast</option>
-                    <option value="ultra">Ultra</option>
-                    <option value="energy">Energy</option>
-                </select>
-                <div class="energy-container" id="energyContainer" style="display: none;">
-                    <div class="energy-label">Energy</div>
-                    <div class="energy-bar">
-                        <div class="energy-indicator" id="energyIndicator"></div>
-                    </div>
-                </div>
-            </div>
         </div>
         <!-- End header-left -->
 
@@ -726,16 +1027,6 @@
         </div>
         <!-- End kaleidoscope-controls -->
 
-        <!-- Presets Container -->
-        <div class="presets-container">
-            <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
-                <option value="">Load Preset...</option>
-            </select>
-            <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
-            <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
-            <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
-            <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
-        </div>
     </div>
     <!-- End header-content -->
     <style>
@@ -793,10 +1084,48 @@
 
         .header-left {
             display: flex;
-            align-items: center;
-            gap: 20px;
+            align-items: flex-start;
+            gap: 0;
             flex-wrap: wrap;
+        }
 
+        /* Header Section Styles */
+        .header-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+
+        .section-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .section-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-divider {
+            width: 1px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0 8px;
+        }
+
+        .horizontal-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 8px 0;
         }
 
         .logo {
@@ -9283,7 +9612,7 @@
 
             } else { // Turn off video
                 this.stopVideoInput();
-                btnText.textContent = 'Video Input';
+                btnText.textContent = 'Live Source';
                 btn.classList.remove('video-active');
                 deviceSelect.style.display = 'none';
                 controlsPanel.style.display = 'none';
@@ -10649,7 +10978,7 @@
                     btn.classList.remove('video-active');
                 }
                 if (btnText) {
-                    btnText.textContent = 'Video Input';
+                    btnText.textContent = 'Live Source';
                 }
                 if (deviceSelect) {
                     deviceSelect.style.display = 'none';
@@ -13487,7 +13816,7 @@ https://rogueamoeba.com/loopback/
                     if (this.videoMode === 'camera' || this.videoMode === 'file') { // If video is on, turn it OFF (not toggle panel)
                         this.stopVideoInput();
                         const btnText = videoInputBtn.querySelector('.video-mode-text');
-                        btnText.textContent = 'Video Input';
+                        btnText.textContent = 'Live Source';
                         videoInputBtn.classList.remove('video-active');
                         document.getElementById('videoDeviceSelect').style.display = 'none';
                         document.getElementById('videoControlsPanel').style.display = 'none';
