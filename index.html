@@ -25,6 +25,131 @@
     
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://content.app-sources.com">
+    
+    <!-- Music Metadata Library - Embedded lightweight parser -->
+    <script>
+        // Lightweight ID3 tag parser for MP3 files
+        window.lightweightMetadata = {
+            async parseFile(file) {
+                try {
+                    if (file.name.toLowerCase().endsWith('.mp3')) {
+                        return await this.parseMP3(file);
+                    }
+                    return null; // Use fallback for other formats
+                } catch (error) {
+                    console.warn('Lightweight metadata parsing failed:', error);
+                    return null;
+                }
+            },
+            
+            async parseMP3(file) {
+                const buffer = await file.arrayBuffer();
+                const view = new DataView(buffer);
+                
+                // Look for ID3v2 tag at beginning of file
+                if (view.getUint8(0) === 0x49 && view.getUint8(1) === 0x44 && view.getUint8(2) === 0x33) {
+                    return this.parseID3v2(view);
+                }
+                
+                // Look for ID3v1 tag at end of file
+                if (buffer.byteLength > 128) {
+                    const id3v1Offset = buffer.byteLength - 128;
+                    if (view.getUint8(id3v1Offset) === 0x54 && view.getUint8(id3v1Offset + 1) === 0x41 && view.getUint8(id3v1Offset + 2) === 0x47) {
+                        return this.parseID3v1(view, id3v1Offset);
+                    }
+                }
+                
+                return null;
+            },
+            
+            parseID3v2(view) {
+                try {
+                    const version = view.getUint8(3);
+                    const flags = view.getUint8(5);
+                    const size = this.getSynchsafeInt(view, 6);
+                    
+                    let offset = 10;
+                    const metadata = {};
+                    
+                    while (offset < size + 10) {
+                        if (offset + 4 >= view.byteLength) break;
+                        
+                        const frameId = String.fromCharCode(
+                            view.getUint8(offset),
+                            view.getUint8(offset + 1),
+                            view.getUint8(offset + 2),
+                            view.getUint8(offset + 3)
+                        );
+                        
+                        const frameSize = version === 4 ? this.getSynchsafeInt(view, offset + 4) : 
+                                         (view.getUint8(offset + 4) << 24) | (view.getUint8(offset + 5) << 16) | 
+                                         (view.getUint8(offset + 6) << 8) | view.getUint8(offset + 7);
+                        
+                        if (frameSize === 0 || offset + 10 + frameSize > view.byteLength) break;
+                        
+                        const frameData = this.getFrameData(view, offset + 10, frameSize);
+                        
+                        switch (frameId) {
+                            case 'TIT2': metadata.title = frameData; break;
+                            case 'TPE1': metadata.artist = frameData; break;
+                            case 'TALB': metadata.album = frameData; break;
+                        }
+                        
+                        offset += 10 + frameSize;
+                    }
+                    
+                    return metadata;
+                } catch (error) {
+                    console.warn('ID3v2 parsing error:', error);
+                    return null;
+                }
+            },
+            
+            parseID3v1(view, offset) {
+                try {
+                    return {
+                        title: this.getString(view, offset + 3, 30).trim(),
+                        artist: this.getString(view, offset + 33, 30).trim(),
+                        album: this.getString(view, offset + 63, 30).trim()
+                    };
+                } catch (error) {
+                    console.warn('ID3v1 parsing error:', error);
+                    return null;
+                }
+            },
+            
+            getSynchsafeInt(view, offset) {
+                return (view.getUint8(offset) << 21) | (view.getUint8(offset + 1) << 14) | 
+                       (view.getUint8(offset + 2) << 7) | view.getUint8(offset + 3);
+            },
+            
+            getFrameData(view, offset, size) {
+                // Skip encoding byte
+                let start = offset + 1;
+                let data = '';
+                
+                for (let i = start; i < offset + size && i < view.byteLength; i++) {
+                    const byte = view.getUint8(i);
+                    if (byte === 0) break; // Null terminator
+                    data += String.fromCharCode(byte);
+                }
+                
+                return data;
+            },
+            
+            getString(view, offset, length) {
+                let result = '';
+                for (let i = 0; i < length && offset + i < view.byteLength; i++) {
+                    const byte = view.getUint8(offset + i);
+                    if (byte === 0) break;
+                    result += String.fromCharCode(byte);
+                }
+                return result;
+            }
+        };
+        
+        console.log('✓ Lightweight metadata parser loaded');
+    </script>
 </head>
 <body>
 <header class="header">
@@ -32,35 +157,68 @@
     <div class="header-content">
         <div
             class="header-left">
-            <!-- Playlist Dropdown -->
+            <!-- Playlist Dropdown (restored) -->
             <div class="dropdown playlist-dropdown">
                 <div class="dropdown-label">Playlist</div>
                 <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
-                <div class="dropdown-content" id="playlistDropdown"></div>
+                <div class="dropdown-content" id="playlistDropdown">
+                    <!-- Playlist Actions -->
+                    <div class="playlist-actions-dropdown">
+                        <button class="playlist-scan-btn" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
+                        <button class="playlist-import-btn" id="playlistImportBtn" title="Import Playlist">📥</button>
+                        <button class="playlist-export-btn" id="playlistExportBtn" title="Export Playlist">📤</button>
+                    </div>
+                    
+                    <!-- Scanning Progress (hidden by default) -->
+                    <div class="playlist-progress" id="playlistProgress" style="display: none;">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span class="progress-text" id="progressText">Scanning music folder...</span>
+                            <span class="progress-count" id="progressCount">0/0 files</span>
+                            <span class="progress-eta" id="progressEta">Est: calculating...</span>
+                        </div>
+                        <button class="progress-cancel-btn" id="progressCancelBtn">Cancel</button>
+                    </div>
+                    
+                    <!-- Playlist Stats -->
+                    <div class="playlist-stats" id="playlistStats">
+                        <span class="playlist-track-count" id="playlistTrackCount">No tracks loaded</span>
+                        <span class="playlist-duration" id="playlistDuration">0:00:00</span>
+                    </div>
+                    
+                    <!-- Tracks Container -->
+                    <div class="playlist-tracks-container" id="playlistTracksContainer">
+                        <div class="playlist-tracks" id="playlistTracks">
+                            <!-- Artist groups will be populated here -->
+                            <div class="empty-playlist">
+                                <div class="empty-playlist-icon">🎵</div>
+                                <div class="empty-playlist-text">No music loaded</div>
+                                <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Hidden playlist data - edit this to manage your playlist -->
-            <div
-                id="playlistData" style="display: none;">
-                <!-- Album Cover -->
-                <div class="playlist-data-item" data-type="album" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Images/LNK_Sugar_Cover-5027211.jpg" data-name="Love & Kicks 2022"></div>
-
-                <!-- Songs -->
-                <div class="playlist-data-item" data-type="track" data-name="Track 1 - Lo-Fi Betty's" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/LoFiBettys-5655825.wav" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/LNK_Lo-Fi_Bettys_Cover_lo-res-5640117.png"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 2 - Dangerous" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/Dangerous-5655825.wav" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/dangerous_Cover-5657169.png"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 3 - Control" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/Control-5655825.wav" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/LNK_Control_Cover_lo-res-5640126.png"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 4 - Sugar" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/Sugar-5655825.wav" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/Sugar_-_Single_420px-5657091.png"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 5 - Betty's Again" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/BettysAgain-5655825.wav" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/HNM_Cover_lo-res-5640241.png"></div>
-
-                <!-- Another Album Cover (you can add anywhere) -->
-                <div class="playlist-data-item" data-type="album" data-image="https://content.app-sources.com/s/29846253619892314/uploads/Cover_Art/LA_Trash_Cover_THMB-5657675.png" data-name="LA Trash 2024"></div>
-
-                <div class="playlist-data-item" data-type="track" data-name="Track 1 - Automatic" data-url="https://content.app-sources.com/s/810881111918650241/uploads/mp3/Automatic_MP3_Master-5094199.mp3" data-image="https://content.app-sources.com/s/810881111918650241/uploads/Images/Icon-3589409.jpg"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 2 - Dirty Bad Things" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/Dirty_Bad_Things_EXPLICIT_MP3_Master-5657992.mp3" data-image="https://content.app-sources.com/s/810881111918650241/uploads/Images/Icon-3589409.jpg"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 3 - The Bitter End" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/The_Bitter_End_MASTER-5658080.wav" data-image="https://content.app-sources.com/s/810881111918650241/uploads/Images/Icon-3589409.jpg"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 4 - LA Trash" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/LA_Trash_MASTER_16bit-5658132.wav" data-image="https://content.app-sources.com/s/810881111918650241/uploads/Images/Icon-3589409.jpg"></div>
-                <div class="playlist-data-item" data-type="track" data-name="Track 5 - Aspirin" data-url="https://content.app-sources.com/s/29846253619892314/uploads/Songs/Aspirin_MASTER-5658183.wav" data-image="https://content.app-sources.com/s/810881111918650241/uploads/Images/Icon-3589409.jpg"></div>
+            <!-- Hidden playlist data for backward compatibility -->
+            <div id="playlistData" style="display: none;">
+                <!-- Will be populated by PlaylistManager -->
             </div>
+
+            <!-- Audio Input Toggle -->
+            <div class="input-mode-container">
+                <button class="input-mode-btn" id="inputModeBtn" title="Toggle Audio Input">
+                    <span class="input-mode-text">Audio Input</span>
+                </button>
+                <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
+                    <option value="">Select Audio Input...</option>
+                </select>
+            </div>
+
+            <!-- Hidden file inputs -->
+            <input type="file" id="playlistImportInput" accept=".json" style="display: none;">
 
             <!-- Color Scheme Dropdown -->
             <div class="dropdown">
@@ -95,16 +253,6 @@
 
             <!-- Random Visualization Button -->
             <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
-
-            <!-- Audio Input Toggle -->
-            <div class="input-mode-container">
-                <button class="input-mode-btn" id="inputModeBtn" title="Toggle Audio Input">
-                    <span class="input-mode-text">Live Audio</span>
-                </button>
-                <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
-                    <option value="">Select Audio Input...</option>
-                </select>
-            </div>
 
             <!-- Record Controls -->
             <div class="record-controls">
@@ -213,8 +361,8 @@
 
             <!-- Video Input Toggle -->
             <div class="input-mode-container">
-                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Live Video Background">
-                    <span class="video-mode-text">Live Video Off</span>
+                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Background">
+                    <span class="video-mode-text">Video Input</span>
                 </button>
                 <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
                     <option value="">Select Video Input...</option>
@@ -2653,6 +2801,324 @@
             font-weight: 500;
         }
 
+        /* Playlist Actions in Dropdown */
+        .playlist-actions-dropdown {
+            display: flex !important;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ensure playlist dropdown content is properly sized */
+        .playlist-dropdown .dropdown-content {
+            min-width: 400px;
+            max-width: 500px;
+            min-height: 200px;
+            padding: 12px;
+            left: 0;
+            right: auto;
+            transform: none;
+        }
+
+        /* Fix positioning for playlist dropdown */
+        .playlist-dropdown {
+            position: relative;
+        }
+
+        .playlist-dropdown .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .playlist-dropdown .dropdown-content.show {
+            display: block;
+        }
+
+        .playlist-actions {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .playlist-scan-btn, .playlist-import-btn, .playlist-export-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .playlist-scan-btn:hover, .playlist-import-btn:hover, .playlist-export-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .playlist-progress {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color) 0%, #4CAF50 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .progress-cancel-btn {
+            background: #ff4444;
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .playlist-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .dropdown-content .playlist-stats {
+            margin: 8px 0;
+            display: flex !important;
+        }
+
+        .dropdown-content .playlist-tracks-container {
+            display: block !important;
+        }
+
+        .dropdown-content .empty-playlist {
+            display: flex !important;
+        }
+
+        /* Prevent dropdown close on internal clicks */
+        .playlist-dropdown .dropdown-content * {
+            pointer-events: auto;
+        }
+
+        .track-selector {
+            margin-bottom: 16px;
+        }
+
+        .playlist-tracks-container {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            margin-top: 8px;
+        }
+
+        .dropdown-content .playlist-tracks-container {
+            max-height: 200px; /* Smaller in dropdown */
+        }
+
+        .playlist-tracks {
+            padding: 8px;
+        }
+
+        .empty-playlist {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dropdown-content .empty-playlist {
+            padding: 15px;
+            min-height: 80px;
+        }
+
+        .empty-playlist-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-playlist-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-playlist-subtext {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .artist-group {
+            margin-bottom: 16px;
+        }
+
+        .artist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .artist-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .artist-track-count {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .artist-tracks {
+            padding-left: 12px;
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .track-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .track-item.active {
+            background: rgba(41, 105, 176, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        .track-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .track-artwork {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            margin-right: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-details {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .track-artist, .track-album, .track-duration {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .track-item:hover .track-actions {
+            opacity: 1;
+        }
+
+        .track-play-btn, .track-remove-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-secondary);
+            width: 24px;
+            height: 24px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .track-play-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .track-remove-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
         /* Display Settings Panel Styles */
         .display-settings-panel {
             position: absolute;
@@ -4349,6 +4815,874 @@
             this.disconnectInput();
             if (this.canvas && this.canvas.parentNode) {
                 this.canvas.parentNode.removeChild(this.canvas);
+            }
+        }
+    }
+
+    // ****
+    // ****
+
+    // PlaylistManager Class - Handles dynamic playlist creation and management
+    class PlaylistManager {
+        constructor(visualizer) {
+            this.visualizer = visualizer;
+            this.currentPlaylist = null;
+            this.isScanning = false;
+            this.scanCancelled = false;
+            this.supportedFormats = ['mp3', 'wav', 'flac', 'm4a', 'aac', 'ogg'];
+            this.maxFiles = 250;
+            this.defaultArtwork = this.generateDefaultArtwork();
+            
+            // Load cached playlist
+            this.loadCachedPlaylist();
+            
+            // Test default artwork generation
+            console.log('Default artwork generated:', this.defaultArtwork.substring(0, 50) + '...');
+            
+            // Check music-metadata library availability
+            this.checkMetadataLibrary();
+            
+            // Add test method for debugging
+            window.testMetadataExtraction = (file) => this.extractMetadata(file);
+            
+            // Debug playlist dropdown content
+            setTimeout(() => {
+                const dropdown = document.getElementById('playlistDropdown');
+                if (dropdown) {
+                    console.log('Playlist dropdown found, content:', dropdown.innerHTML.length, 'characters');
+                    if (dropdown.innerHTML.length < 100) {
+                        console.warn('Playlist dropdown appears empty, populating with default content...');
+                        this.populatePlaylistDropdown();
+                    }
+                } else {
+                    console.error('Playlist dropdown element not found!');
+                }
+            }, 500);
+        }
+        
+        generateDefaultArtwork() {
+            // Create 240x240 default artwork - grey background with "no music" icon
+            const canvas = document.createElement('canvas');
+            canvas.width = 240;
+            canvas.height = 240;
+            const ctx = canvas.getContext('2d');
+            
+            // Grey background
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 240, 240);
+            
+            // Darker grey border
+            ctx.strokeStyle = '#606060';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, 236, 236);
+            
+            // Draw "no music" symbol (musical note with slash)
+            ctx.save();
+            ctx.translate(120, 120); // Center
+            
+            // Musical note (simplified)
+            ctx.fillStyle = '#404040';
+            ctx.beginPath();
+            // Note stem
+            ctx.rect(15, -40, 8, 60);
+            // Note head
+            ctx.ellipse(0, 20, 20, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Red slash
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-35, -35);
+            ctx.lineTo(35, 35);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // Convert to JPG data URL
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+        
+        populatePlaylistDropdown() {
+            const dropdown = document.getElementById('playlistDropdown');
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = `
+                <!-- Panel Header with Close Button -->
+                <div class="panel-header">
+                    <span>Playlist Manager</span>
+                    <button class="panel-close-btn" id="playlistPanelClose">×</button>
+                </div>
+                
+                <!-- Playlist Actions -->
+                <div class="playlist-actions-dropdown">
+                    <button class="playlist-scan-btn" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
+                    <button class="playlist-import-btn" id="playlistImportBtn" title="Import Playlist">📥</button>
+                    <button class="playlist-export-btn" id="playlistExportBtn" title="Export Playlist">📤</button>
+                </div>
+                
+                <!-- Scanning Progress (hidden by default) -->
+                <div class="playlist-progress" id="playlistProgress" style="display: none;">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span class="progress-text" id="progressText">Scanning music folder...</span>
+                        <span class="progress-count" id="progressCount">0/0 files</span>
+                        <span class="progress-eta" id="progressEta">Est: calculating...</span>
+                    </div>
+                    <button class="progress-cancel-btn" id="progressCancelBtn">Cancel</button>
+                </div>
+                
+                <!-- Playlist Stats -->
+                <div class="playlist-stats" id="playlistStats">
+                    <span class="playlist-track-count" id="playlistTrackCount">No tracks loaded</span>
+                    <span class="playlist-duration" id="playlistDuration">0:00:00</span>
+                </div>
+                
+                <!-- Tracks Container -->
+                <div class="playlist-tracks-container" id="playlistTracksContainer">
+                    <div class="playlist-tracks" id="playlistTracks">
+                        <!-- Artist groups will be populated here -->
+                        <div class="empty-playlist">
+                            <div class="empty-playlist-icon">🎵</div>
+                            <div class="empty-playlist-text">No music loaded</div>
+                            <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            console.log('Playlist dropdown content populated');
+            
+            // Re-initialize event handlers after populating content
+            this.visualizer.initializePlaylistUI();
+        }
+        
+        checkMetadataLibrary() {
+            // Use our embedded lightweight metadata parser
+            if (typeof window.lightweightMetadata !== 'undefined') {
+                this.musicMetadata = window.lightweightMetadata;
+                console.log('✓ Lightweight metadata parser ready (supports MP3 ID3 tags)');
+                return;
+            }
+            
+            // Fallback if even our embedded parser isn't ready
+            console.warn('⚠ Metadata parser not ready - using filename-only fallback');
+            this.musicMetadata = null;
+        }
+        
+        loadCachedPlaylist() {
+            try {
+                const cached = localStorage.getItem('vizzy_current_playlist');
+                if (cached) {
+                    this.currentPlaylist = JSON.parse(cached);
+                    console.log('Loaded cached playlist:', this.currentPlaylist.tracks?.length || 0, 'tracks');
+                }
+            } catch (error) {
+                console.error('Error loading cached playlist:', error);
+                this.currentPlaylist = null;
+            }
+        }
+        
+        savePlaylist() {
+            try {
+                if (this.currentPlaylist) {
+                    // Save current playlist
+                    localStorage.setItem('vizzy_current_playlist', JSON.stringify(this.currentPlaylist));
+                    
+                    // Save to playlist cache with folder hash
+                    const folderHash = this.generateFolderHash(this.currentPlaylist.folderPath);
+                    const cacheKey = `vizzy_playlist_cache_${folderHash}`;
+                    localStorage.setItem(cacheKey, JSON.stringify(this.currentPlaylist));
+                    
+                    // Update cache index
+                    this.updateCacheIndex(folderHash, this.currentPlaylist.folderPath);
+                    
+                    console.log('Playlist saved to cache');
+                }
+            } catch (error) {
+                console.error('Error saving playlist:', error);
+            }
+        }
+        
+        generateFolderHash(folderPath) {
+            // Generate hash from folder path for caching
+            if (!folderPath) return 'default';
+            return btoa(folderPath).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+        }
+        
+        updateCacheIndex(folderHash, folderPath) {
+            try {
+                let cacheIndex = {};
+                const existing = localStorage.getItem('vizzy_playlist_cache_index');
+                if (existing) {
+                    cacheIndex = JSON.parse(existing);
+                }
+                
+                cacheIndex[folderHash] = {
+                    folderPath: folderPath,
+                    lastAccessed: Date.now(),
+                    trackCount: this.currentPlaylist.tracks?.length || 0
+                };
+                
+                localStorage.setItem('vizzy_playlist_cache_index', JSON.stringify(cacheIndex));
+            } catch (error) {
+                console.error('Error updating cache index:', error);
+            }
+        }
+        
+        loadCachedPlaylistByFolder(folderPath) {
+            try {
+                const folderHash = this.generateFolderHash(folderPath);
+                const cacheKey = `vizzy_playlist_cache_${folderHash}`;
+                const cached = localStorage.getItem(cacheKey);
+                
+                if (cached) {
+                    const playlist = JSON.parse(cached);
+                    console.log(`Found cached playlist for folder: ${playlist.tracks?.length || 0} tracks`);
+                    return playlist;
+                }
+            } catch (error) {
+                console.error('Error loading cached playlist by folder:', error);
+            }
+            return null;
+        }
+        
+        formatDuration(seconds) {
+            if (!seconds || seconds === 0) return "0:00";
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        isAudioFile(file) {
+            const extension = file.name.split('.').pop()?.toLowerCase();
+            return this.supportedFormats.includes(extension);
+        }
+        
+        async scanFolder() {
+            try {
+                console.log('Starting folder scan...');
+                
+                // Check if File System Access API is available
+                if (!('showDirectoryPicker' in window)) {
+                    alert('Folder selection not supported in this browser. Please use Chrome, Edge, or another Chromium-based browser.');
+                    return;
+                }
+                
+                // Show directory picker
+                const directoryHandle = await window.showDirectoryPicker();
+                console.log('Folder selected:', directoryHandle.name);
+                
+                // Show warning about playlist replacement
+                const confirmed = confirm(
+                    "⚠️ Current playlist will be replaced!\n\n" +
+                    "Your current playlist will be lost. Consider exporting it first for later use.\n\n" +
+                    "Continue with folder scan?"
+                );
+                
+                if (!confirmed) {
+                    console.log('Folder scan cancelled by user');
+                    return;
+                }
+                
+                // Start scanning process
+                this.isScanning = true;
+                this.scanCancelled = false;
+                this.showProgress();
+                
+                // Scan folder for audio files
+                const files = await this.scanDirectoryForAudioFiles(directoryHandle);
+                
+                if (this.scanCancelled) {
+                    console.log('Scan cancelled during file discovery');
+                    this.hideProgress();
+                    return;
+                }
+                
+                console.log(`Found ${files.length} audio files`);
+                
+                // Check file limit
+                if (files.length > this.maxFiles) {
+                    const confirmed = confirm(
+                        `Found ${files.length} audio files, but limit is ${this.maxFiles}.\n\n` +
+                        `Only the first ${this.maxFiles} files will be processed. Continue?`
+                    );
+                    
+                    if (!confirmed) {
+                        this.hideProgress();
+                        return;
+                    }
+                    
+                    files.splice(this.maxFiles); // Keep only first maxFiles
+                }
+                
+                // Process files with progress tracking
+                const tracks = await this.processFilesWithProgress(files);
+                
+                if (this.scanCancelled) {
+                    console.log('Scan cancelled during processing');
+                    this.hideProgress();
+                    return;
+                }
+                
+                // Build playlist
+                this.currentPlaylist = {
+                    name: directoryHandle.name,
+                    folderPath: directoryHandle.name,
+                    lastScanned: Date.now(),
+                    tracks: tracks.filter(track => track !== null) // Remove failed tracks
+                };
+                
+                // Save and display
+                this.savePlaylist();
+                
+                console.log(`✅ Playlist created with ${this.currentPlaylist.tracks.length} tracks`);
+                console.log('First few tracks:', this.currentPlaylist.tracks.slice(0, 3).map(t => `${t.title} by ${t.artist}`));
+                
+                // Update visualizer playlist first
+                this.visualizer.updatePlaylistFromManager(this.currentPlaylist);
+                
+                // Then update the display
+                this.displayPlaylist();
+                this.hideProgress();
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Folder selection cancelled by user');
+                } else {
+                    console.error('Error during folder scan:', error);
+                    alert('Error scanning folder: ' + error.message);
+                }
+                this.hideProgress();
+            } finally {
+                this.isScanning = false;
+            }
+        }
+        
+        async scanDirectoryForAudioFiles(directoryHandle) {
+            const files = [];
+            
+            try {
+                for await (const entry of directoryHandle.values()) {
+                    if (entry.kind === 'file') {
+                        const file = await entry.getFile();
+                        if (this.isAudioFile(file)) {
+                            files.push(file);
+                        }
+                    }
+                    
+                    // Check for cancellation
+                    if (this.scanCancelled) break;
+                }
+            } catch (error) {
+                console.error('Error scanning directory:', error);
+                throw new Error('Failed to scan directory. Please check folder permissions.');
+            }
+            
+            return files;
+        }
+        
+        async processFilesWithProgress(files) {
+            const tracks = [];
+            const totalFiles = files.length;
+            const startTime = Date.now();
+            
+            this.updateProgress(0, totalFiles, 'Processing files...');
+            
+            // Process files in chunks to maintain UI responsiveness
+            const chunkSize = 5;
+            for (let i = 0; i < files.length; i += chunkSize) {
+                if (this.scanCancelled) break;
+                
+                const chunk = files.slice(i, i + chunkSize);
+                
+                // Process chunk in parallel
+                const chunkPromises = chunk.map(async (file, index) => {
+                    try {
+                        this.updateProgress(i + index, totalFiles, `Processing: ${file.name}`);
+                        return await this.extractMetadata(file);
+                    } catch (error) {
+                        console.warn(`Skipping file ${file.name}:`, error);
+                        return null;
+                    }
+                });
+                
+                const chunkResults = await Promise.all(chunkPromises);
+                tracks.push(...chunkResults);
+                
+                // Update progress
+                const processed = Math.min(i + chunkSize, totalFiles);
+                const elapsed = Date.now() - startTime;
+                const eta = totalFiles > processed ? (elapsed / processed) * (totalFiles - processed) : 0;
+                
+                this.updateProgress(processed, totalFiles, `Processed ${processed}/${totalFiles} files`, eta);
+                
+                // Yield to UI thread
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            return tracks;
+        }
+        
+        showProgress() {
+            const progress = document.getElementById('playlistProgress');
+            if (progress) {
+                progress.style.display = 'block';
+            }
+        }
+        
+        hideProgress() {
+            const progress = document.getElementById('playlistProgress');
+            if (progress) {
+                progress.style.display = 'none';
+            }
+        }
+        
+        updateProgress(current, total, text, etaMs = 0) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressCount = document.getElementById('progressCount');
+            const progressEta = document.getElementById('progressEta');
+            
+            if (progressBar) {
+                const percentage = total > 0 ? (current / total) * 100 : 0;
+                progressBar.style.width = `${percentage}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = text;
+            }
+            
+            if (progressCount) {
+                progressCount.textContent = `${current}/${total} files`;
+            }
+            
+            if (progressEta && etaMs > 0) {
+                const etaSeconds = Math.round(etaMs / 1000);
+                const mins = Math.floor(etaSeconds / 60);
+                const secs = etaSeconds % 60;
+                progressEta.textContent = `Est: ${mins}:${secs.toString().padStart(2, '0')}`;
+            } else if (progressEta) {
+                progressEta.textContent = etaMs === 0 && current === total ? 'Complete!' : 'Est: calculating...';
+            }
+        }
+        
+        cancelScan() {
+            this.scanCancelled = true;
+            this.isScanning = false;
+            console.log('Playlist scan cancelled by user');
+            
+            // Hide progress
+            const progress = document.getElementById('playlistProgress');
+            if (progress) {
+                progress.style.display = 'none';
+            }
+        }
+        
+        async extractMetadata(file) {
+            try {
+                console.log(`Extracting metadata from: ${file.name}`);
+                
+                const track = {
+                    id: this.generateTrackId(file),
+                    filename: file.name,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified
+                };
+                
+                // Try metadata extraction if parser available
+                if (this.musicMetadata) {
+                    try {
+                        const metadata = await this.musicMetadata.parseFile(file);
+                        
+                        if (metadata && (metadata.title || metadata.artist || metadata.album)) {
+                            track.title = metadata.title || this.extractTitleFromFilename(file.name);
+                            track.artist = metadata.artist || "Unknown";
+                            track.album = metadata.album || "Unknown";
+                            track.duration = 0; // Will be calculated via Web Audio API
+                            track.artwork = this.defaultArtwork; // Use default for now
+                            
+                            console.log(`✓ Metadata extracted: "${track.title}" by ${track.artist} (${track.album})`);
+                        } else {
+                            this.applyFallbackMetadata(track, file);
+                        }
+                        
+                    } catch (metadataError) {
+                        console.warn(`Metadata parsing failed for ${file.name}:`, metadataError);
+                        this.applyFallbackMetadata(track, file);
+                    }
+                } else {
+                    // Fallback metadata extraction
+                    this.applyFallbackMetadata(track, file);
+                }
+                
+                // Get duration using Web Audio API if not available from metadata
+                if (!track.duration || track.duration === 0) {
+                    track.duration = await this.getDurationFromAudio(file);
+                }
+                
+                // Create object URL for playback
+                track.url = URL.createObjectURL(file);
+                
+                return track;
+                
+            } catch (error) {
+                console.error(`Failed to process ${file.name}:`, error);
+                return null; // Skip this file
+            }
+        }
+        
+        generateTrackId(file) {
+            // Generate unique ID based on filename and modification time
+            return btoa(`${file.name}_${file.lastModified}_${file.size}`).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+        }
+        
+        extractTitleFromFilename(filename) {
+            // Remove extension and clean up filename for title
+            return filename
+                .replace(/\.(mp3|wav|flac|m4a|aac|ogg)$/i, '')
+                .replace(/[-_]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim() || 'Unknown';
+        }
+        
+        applyFallbackMetadata(track, file) {
+            track.title = this.extractTitleFromFilename(file.name);
+            track.artist = "Unknown";
+            track.album = "Unknown";
+            track.duration = 0; // Will be calculated separately
+            track.artwork = this.defaultArtwork;
+            
+            console.log(`Using fallback metadata for: ${track.title}`);
+        }
+        
+        
+        async resizeArtwork(blob) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 240;
+                    canvas.height = 240;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw image scaled to 240x240
+                    ctx.drawImage(img, 0, 0, 240, 240);
+                    
+                    // Convert to JPG data URL
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    resolve(dataUrl);
+                };
+                img.onerror = () => resolve(null);
+                img.src = URL.createObjectURL(blob);
+            });
+        }
+        
+        async getDurationFromAudio(file) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const arrayBuffer = await file.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                audioContext.close();
+                
+                return audioBuffer.duration;
+            } catch (error) {
+                console.warn(`Duration extraction failed for ${file.name}:`, error);
+                return 0;
+            }
+        }
+        
+        displayPlaylist() {
+            console.log('=== displayPlaylist called ===');
+            console.log('currentPlaylist exists:', !!this.currentPlaylist);
+            console.log('tracks exist:', !!this.currentPlaylist?.tracks);
+            console.log('tracks length:', this.currentPlaylist?.tracks?.length || 0);
+            
+            // Ensure dropdown content is populated first
+            this.ensureDropdownContent();
+            
+            if (!this.currentPlaylist || !this.currentPlaylist.tracks) {
+                console.log('Displaying empty playlist');
+                this.displayEmptyPlaylist();
+                return;
+            }
+            
+            console.log('Updating playlist stats...');
+            // Update stats
+            this.updatePlaylistStats();
+            
+            console.log('Grouping tracks by artist...');
+            // Group tracks by artist
+            const artistGroups = this.groupTracksByArtist(this.currentPlaylist.tracks);
+            console.log('Artist groups:', Object.keys(artistGroups));
+            
+            console.log('Rendering artist groups...');
+            // Display tracks
+            this.renderArtistGroups(artistGroups);
+            
+            console.log('Updating track dropdown...');
+            // Update dropdown for backward compatibility
+            this.updateTrackDropdown();
+            
+            console.log('✅ displayPlaylist completed');
+        }
+        
+        ensureDropdownContent() {
+            const dropdown = document.getElementById('playlistDropdown');
+            const tracksContainer = document.getElementById('playlistTracks');
+            
+            if (!tracksContainer && dropdown) {
+                console.log('Dropdown content missing, populating...');
+                this.populatePlaylistDropdown();
+                
+                // Re-initialize UI handlers after populating
+                this.visualizer.initializePlaylistUI();
+            } else if (tracksContainer) {
+                console.log('Dropdown content already exists');
+            } else {
+                console.error('Dropdown element not found!');
+            }
+        }
+        
+        displayEmptyPlaylist() {
+            const tracksContainer = document.getElementById('playlistTracks');
+            if (tracksContainer) {
+                tracksContainer.innerHTML = `
+                    <div class="empty-playlist">
+                        <div class="empty-playlist-icon">🎵</div>
+                        <div class="empty-playlist-text">No music loaded</div>
+                        <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                    </div>
+                `;
+            }
+            
+            // Update stats
+            const trackCount = document.getElementById('playlistTrackCount');
+            const duration = document.getElementById('playlistDuration');
+            if (trackCount) trackCount.textContent = 'No tracks loaded';
+            if (duration) duration.textContent = '0:00:00';
+        }
+        
+        updatePlaylistStats() {
+            const tracks = this.currentPlaylist.tracks || [];
+            const totalDuration = tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
+            
+            const trackCount = document.getElementById('playlistTrackCount');
+            const duration = document.getElementById('playlistDuration');
+            
+            if (trackCount) {
+                trackCount.textContent = `${tracks.length} track${tracks.length !== 1 ? 's' : ''}`;
+            }
+            
+            if (duration) {
+                const hours = Math.floor(totalDuration / 3600);
+                const mins = Math.floor((totalDuration % 3600) / 60);
+                const secs = Math.floor(totalDuration % 60);
+                
+                if (hours > 0) {
+                    duration.textContent = `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    duration.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+            }
+        }
+        
+        groupTracksByArtist(tracks) {
+            const groups = {};
+            
+            tracks.forEach(track => {
+                const artist = track.artist || 'Unknown';
+                if (!groups[artist]) {
+                    groups[artist] = [];
+                }
+                groups[artist].push(track);
+            });
+            
+            // Sort artists alphabetically
+            const sortedArtists = Object.keys(groups).sort();
+            const sortedGroups = {};
+            
+            sortedArtists.forEach(artist => {
+                // Sort tracks within artist alphabetically by title
+                groups[artist].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                sortedGroups[artist] = groups[artist];
+            });
+            
+            return sortedGroups;
+        }
+        
+        renderArtistGroups(artistGroups) {
+            console.log('=== renderArtistGroups called ===');
+            const tracksContainer = document.getElementById('playlistTracks');
+            console.log('tracksContainer found:', !!tracksContainer);
+            
+            if (!tracksContainer) {
+                console.error('playlistTracks container not found!');
+                return;
+            }
+            
+            let html = '';
+            console.log('Processing', Object.keys(artistGroups).length, 'artist groups');
+            
+            Object.entries(artistGroups).forEach(([artist, tracks]) => {
+                html += `
+                    <div class="artist-group">
+                        <div class="artist-header">
+                            <span class="artist-name">${this.escapeHtml(artist)}</span>
+                            <span class="artist-track-count">(${tracks.length} track${tracks.length !== 1 ? 's' : ''})</span>
+                        </div>
+                        <div class="artist-tracks">
+                `;
+                
+                tracks.forEach(track => {
+                    html += `
+                        <div class="track-item" data-track-id="${track.id}" draggable="true">
+                            <img class="track-artwork" src="${track.artwork}" alt="Album artwork" />
+                            <div class="track-info">
+                                <div class="track-title">${this.escapeHtml(track.title)}</div>
+                                <div class="track-details">
+                                    <span class="track-artist">${this.escapeHtml(track.artist)}</span>
+                                    <span class="track-album">${this.escapeHtml(track.album)}</span>
+                                    <span class="track-duration">${this.formatDuration(track.duration)}</span>
+                                </div>
+                            </div>
+                            <div class="track-actions">
+                                <button class="track-play-btn" title="Play Track">▶</button>
+                                <button class="track-remove-btn" title="Remove Track">×</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            console.log('Generated HTML length:', html.length);
+            console.log('Setting innerHTML...');
+            tracksContainer.innerHTML = html;
+            console.log('HTML set, container now has', tracksContainer.children.length, 'children');
+            
+            // Initialize track event handlers
+            this.initializeTrackHandlers();
+            console.log('Track handlers initialized');
+        }
+        
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        initializeTrackHandlers() {
+            // Track play buttons
+            document.querySelectorAll('.track-play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const trackItem = btn.closest('.track-item');
+                    const trackId = trackItem?.dataset.trackId;
+                    if (trackId) {
+                        this.playTrack(trackId);
+                    }
+                });
+            });
+            
+            // Track remove buttons
+            document.querySelectorAll('.track-remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const trackItem = btn.closest('.track-item');
+                    const trackId = trackItem?.dataset.trackId;
+                    if (trackId) {
+                        this.removeTrack(trackId);
+                    }
+                });
+            });
+            
+            // Track item clicks (for selection)
+            document.querySelectorAll('.track-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const trackId = item.dataset.trackId;
+                    if (trackId) {
+                        this.selectTrack(trackId);
+                    }
+                });
+            });
+        }
+        
+        updateTrackDropdown() {
+            // Update the track selection dropdown (the "Select Track" button)
+            const playlistToggle = document.getElementById('playlistToggle');
+            if (!playlistToggle || !this.currentPlaylist) return;
+            
+            // Update button text to show current track or track count
+            const trackCount = this.currentPlaylist.tracks.length;
+            if (trackCount > 0) {
+                playlistToggle.textContent = `${trackCount} tracks loaded`;
+            } else {
+                playlistToggle.textContent = 'Select Track';
+            }
+            
+            console.log('Track selection button updated');
+        }
+        
+        playTrack(trackId) {
+            const track = this.findTrackById(trackId);
+            if (track && this.visualizer) {
+                console.log(`Playing track: ${track.title} by ${track.artist}`);
+                this.visualizer.playTrackById(trackId);
+            }
+        }
+        
+        selectTrack(trackId) {
+            // Update visual selection
+            document.querySelectorAll('.track-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const trackItem = document.querySelector(`[data-track-id="${trackId}"]`);
+            if (trackItem) {
+                trackItem.classList.add('active');
+            }
+            
+            console.log(`Selected track: ${trackId}`);
+        }
+        
+        removeTrack(trackId) {
+            if (!this.currentPlaylist) return;
+            
+            const confirmed = confirm('Remove this track from the playlist?');
+            if (!confirmed) return;
+            
+            this.currentPlaylist.tracks = this.currentPlaylist.tracks.filter(track => track.id !== trackId);
+            this.savePlaylist();
+            this.displayPlaylist();
+            
+            console.log(`Removed track: ${trackId}`);
+        }
+        
+        findTrackById(trackId) {
+            if (!this.currentPlaylist) return null;
+            return this.currentPlaylist.tracks.find(track => track.id === trackId);
+        }
+        
+        exportPlaylist() {
+            console.log('PlaylistManager.exportPlaylist() - To be implemented in Phase 1E');
+            alert('Export functionality will be available in Phase 1E');
+        }
+        
+        importPlaylist(file) {
+            console.log('PlaylistManager.importPlaylist() - To be implemented in Phase 1E');
+            if (file) {
+                alert(`Import functionality will be available in Phase 1E. Selected: ${file.name}`);
             }
         }
     }
@@ -6842,6 +8176,10 @@
 
                 this.streamManager = new StreamManager(this);
                 this.recordManager = new RecordManager(this);
+                this.playlistManager = new PlaylistManager(this);
+                
+                // Initialize playlist UI handlers
+                this.initializePlaylistUI();
 
                 this.setBackgroundColor(this.backgroundColor);
 
@@ -6983,7 +8321,7 @@
                 }
             } else {
                 this.stopLiveInput();
-                btnText.textContent = 'Playlist';
+                btnText.textContent = 'Audio Input';
                 btn.classList.remove('live-mode');
                 deviceSelect.style.display = 'none';
                 this.inputMode = 'playlist';
@@ -7077,7 +8415,7 @@
 
             } else { // Turn off video
                 this.stopVideoInput();
-                btnText.textContent = 'Live Video Off';
+                btnText.textContent = 'Video Input';
                 btn.classList.remove('video-active');
                 deviceSelect.style.display = 'none';
                 controlsPanel.style.display = 'none';
@@ -7257,6 +8595,169 @@
                 console.log('Video audio disconnected');
             } catch (error) {
                 console.error('Error disconnecting video audio:', error);
+            }
+        }
+
+        initializePlaylistUI() {
+            // Prevent dropdown from closing when clicking inside playlist content
+            const playlistDropdown = document.getElementById('playlistDropdown');
+            if (playlistDropdown) {
+                playlistDropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Click inside playlist dropdown - preventing close');
+                });
+            }
+            
+            // Close button handler
+            const closeBtn = document.getElementById('playlistPanelClose');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closePlaylistPanel();
+                    console.log('Playlist panel closed via close button');
+                });
+            }
+            
+            // Playlist scan button
+            const scanBtn = document.getElementById('playlistScanBtn');
+            if (scanBtn) {
+                scanBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Playlist scan button clicked');
+                    if (this.playlistManager) {
+                        this.playlistManager.scanFolder();
+                    }
+                });
+            }
+            
+            // Playlist import button
+            const importBtn = document.getElementById('playlistImportBtn');
+            const importInput = document.getElementById('playlistImportInput');
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Playlist import button clicked');
+                    importInput.click();
+                });
+                
+                importInput.addEventListener('change', (e) => {
+                    const file = e.target.files?.[0];
+                    if (file && this.playlistManager) {
+                        this.playlistManager.importPlaylist(file);
+                    }
+                    e.target.value = ''; // Reset input
+                });
+            }
+            
+            // Playlist export button
+            const exportBtn = document.getElementById('playlistExportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Playlist export button clicked');
+                    if (this.playlistManager) {
+                        this.playlistManager.exportPlaylist();
+                    }
+                });
+            }
+            
+            // Progress cancel button
+            const cancelBtn = document.getElementById('progressCancelBtn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Progress cancel button clicked');
+                    if (this.playlistManager) {
+                        this.playlistManager.cancelScan();
+                    }
+                });
+            }
+        }
+
+        closePlaylistPanel() {
+            const playlistDropdown = document.getElementById('playlistDropdown');
+            if (playlistDropdown) {
+                playlistDropdown.style.display = 'none';
+                
+                // Also remove the 'show' class if it exists
+                playlistDropdown.classList.remove('show');
+                
+                // Find the parent dropdown and reset its state
+                const parentDropdown = playlistDropdown.closest('.dropdown');
+                if (parentDropdown) {
+                    const toggle = parentDropdown.querySelector('.dropdown-toggle');
+                    if (toggle) {
+                        toggle.classList.remove('active');
+                    }
+                }
+            }
+        }
+
+        updatePlaylistFromManager(playlist) {
+            if (!playlist || !playlist.tracks) {
+                console.warn('Invalid playlist provided to updatePlaylistFromManager');
+                return;
+            }
+            
+            // Convert PlaylistManager format to visualizer format
+            this.playlist = playlist.tracks.map((track, index) => ({
+                name: track.title,
+                url: track.url,
+                image: track.artwork,
+                artist: track.artist,
+                album: track.album,
+                duration: track.duration
+            }));
+            
+            // Update current track index if needed
+            if (this.currentTrackIndex >= this.playlist.length) {
+                this.currentTrackIndex = 0;
+            }
+            
+            // Update UI
+            this.updatePlaylistDropdown();
+            this.updateTrackInfo();
+            
+            console.log(`✅ Visualizer playlist updated with ${this.playlist.length} tracks`);
+        }
+        
+        playTrackById(trackId) {
+            console.log('=== playTrackById called ===');
+            console.log('trackId:', trackId);
+            console.log('playlistManager exists:', !!this.playlistManager);
+            
+            if (!this.playlistManager) {
+                console.error('PlaylistManager not available');
+                return;
+            }
+            
+            const track = this.playlistManager.findTrackById(trackId);
+            console.log('Found track:', track ? `${track.title} by ${track.artist}` : 'null');
+            
+            if (!track) {
+                console.error('Track not found for ID:', trackId);
+                return;
+            }
+            
+            // Find index in current playlist
+            console.log('Current playlist length:', this.playlist?.length || 0);
+            console.log('Looking for URL:', track.url);
+            
+            const index = this.playlist.findIndex(t => t.url === track.url);
+            console.log('Found index:', index);
+            
+            if (index >= 0) {
+                console.log(`Playing track at index ${index}: ${track.title}`);
+                // Use selectTrack to load the track, then force playback
+                this.selectTrack(index).then(() => {
+                    console.log('Track selected, starting playback...');
+                    this.play(); // Force playback to start
+                }).catch(error => {
+                    console.error('Error selecting/playing track:', error);
+                });
+            } else {
+                console.error('Track URL not found in visualizer playlist');
+                console.log('Available URLs:', this.playlist.map(t => t.url));
             }
         }
 
@@ -7554,7 +9055,7 @@
                 const controlsPanel = document.getElementById('videoControlsPanel');
 
                 btn.classList.add('video-active');
-                btnText.textContent = 'Live Video On';
+                btnText.textContent = 'Camera Active';
                 this.videoMode = 'camera';
                 this.currentVideoDeviceId = deviceId;
                 
@@ -7878,7 +9379,7 @@
                 const deviceSelect = document.getElementById('videoDeviceSelect');
 
                 btn.classList.add('video-active');
-                btnText.textContent = 'Video File Active';
+                btnText.textContent = 'File Active';
                 this.videoMode = 'file';
                 
                 // Hide dropdown and show file info
@@ -8170,7 +9671,7 @@
                     btn.classList.remove('video-active');
                 }
                 if (btnText) {
-                    btnText.textContent = 'Live Video Off';
+                    btnText.textContent = 'Video Input';
                 }
                 if (deviceSelect) {
                     deviceSelect.style.display = 'none';
@@ -8931,7 +10432,7 @@
                 const btn = document.getElementById('inputModeBtn');
                 const btnText = btn.querySelector('.input-mode-text');
                 btn.classList.add('live-mode');
-                btnText.textContent = 'LIVE';
+                btnText.textContent = 'LIVE INPUT';
                 this.inputMode = 'microphone';
 
                 document.getElementById('trackTitle').textContent = 'Live Audio Input';
@@ -10265,10 +11766,13 @@ https://rogueamoeba.com/loopback/
             setupDropdown('vizModeToggle', 'vizModeDropdown');
             setupDropdown('playlistToggle', 'playlistDropdown');
 
-            // Close dropdowns when clicking outside
+            // Close dropdowns when clicking outside (except playlist dropdown)
             document.addEventListener('click', () => {
                 document.querySelectorAll('.dropdown-content').forEach(d => {
-                    d.classList.remove('show');
+                    // Skip playlist dropdown - it has its own close button
+                    if (d.id !== 'playlistDropdown') {
+                        d.classList.remove('show');
+                    }
                 });
             });
 
@@ -11005,7 +12509,7 @@ https://rogueamoeba.com/loopback/
                     if (this.videoMode === 'camera' || this.videoMode === 'file') { // If video is on, turn it OFF (not toggle panel)
                         this.stopVideoInput();
                         const btnText = videoInputBtn.querySelector('.video-mode-text');
-                        btnText.textContent = 'Live Video Off';
+                        btnText.textContent = 'Video Input';
                         videoInputBtn.classList.remove('video-active');
                         document.getElementById('videoDeviceSelect').style.display = 'none';
                         document.getElementById('videoControlsPanel').style.display = 'none';
@@ -11667,11 +13171,16 @@ https://rogueamoeba.com/loopback/
                 // *end evenlisteners
                 updatePlaylistDropdown() {
                     const dropdown = document.getElementById('playlistDropdown');
-                    if (! dropdown) 
-                        return;
+                    if (!dropdown) return;
                     
-
-
+                    // Check if we have new playlist content - if so, don't overwrite it
+                    const hasNewContent = dropdown.querySelector('.playlist-actions-dropdown');
+                    if (hasNewContent) {
+                        console.log('Preserving new playlist content, skipping old dropdown update');
+                        return;
+                    }
+                    
+                    // Only clear and populate if using old hardcoded system
                     dropdown.innerHTML = '';
 
                     const playlistData = document.querySelectorAll('#playlistData .playlist-data-item');
