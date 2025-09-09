@@ -3162,6 +3162,12 @@
             background: rgba(41, 105, 176, 0.2);
         }
 
+        .track-item.drop-not-allowed {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            cursor: not-allowed;
+        }
+
         .artist-tracks.drag-over {
             background: rgba(41, 105, 176, 0.1);
             border: 2px dashed var(--accent-color);
@@ -6124,7 +6130,7 @@
                 item.addEventListener('dragend', (e) => {
                     item.classList.remove('dragging');
                     document.querySelectorAll('.track-item').forEach(i => {
-                        i.classList.remove('drag-over');
+                        i.classList.remove('drag-over', 'drop-not-allowed');
                     });
                     document.querySelectorAll('.artist-tracks').forEach(a => {
                         a.classList.remove('drag-over');
@@ -6136,16 +6142,29 @@
                 // Drag over
                 item.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
                     
                     if (draggedElement && item !== draggedElement) {
-                        item.classList.add('drag-over');
+                        // Check if this is the currently playing track
+                        const targetTrackId = item.dataset.trackId;
+                        const targetTrack = this.findTrackById(targetTrackId);
+                        const isTargetPlaying = this.visualizer.audio && 
+                                               this.visualizer.audio.src && 
+                                               targetTrack && 
+                                               this.visualizer.audio.src === targetTrack.url;
+                        
+                        if (isTargetPlaying) {
+                            e.dataTransfer.dropEffect = 'none';
+                            item.classList.add('drop-not-allowed');
+                        } else {
+                            e.dataTransfer.dropEffect = 'move';
+                            item.classList.add('drag-over');
+                        }
                     }
                 });
                 
                 // Drag leave
                 item.addEventListener('dragleave', (e) => {
-                    item.classList.remove('drag-over');
+                    item.classList.remove('drag-over', 'drop-not-allowed');
                 });
                 
                 // Drop
@@ -6159,12 +6178,24 @@
                     console.log(`Drop: ${droppedTrackId} onto ${targetTrackId}`);
                     
                     if (droppedTrackId && targetTrackId && droppedTrackId !== targetTrackId) {
+                        // Check if target is currently playing
+                        const targetTrack = this.findTrackById(targetTrackId);
+                        const isTargetPlaying = this.visualizer.audio && 
+                                               this.visualizer.audio.src && 
+                                               targetTrack && 
+                                               this.visualizer.audio.src === targetTrack.url;
+                        
+                        if (isTargetPlaying) {
+                            console.log('Preventing drop on currently playing track to avoid playback errors');
+                            return;
+                        }
+                        
                         this.reorderTracks(droppedTrackId, targetTrackId);
                     }
                     
                     // Clean up visual feedback
                     document.querySelectorAll('.track-item').forEach(i => {
-                        i.classList.remove('drag-over', 'dragging');
+                        i.classList.remove('drag-over', 'dragging', 'drop-not-allowed');
                     });
                 });
             });
@@ -6249,12 +6280,40 @@
             // Mark playlist as having custom order
             this.currentPlaylist.hasCustomOrder = true;
             
+            // Update current track index in visualizer if the playing track was moved
+            if (this.visualizer.audio && this.visualizer.audio.src) {
+                const currentPlayingUrl = this.visualizer.audio.src;
+                console.log('Checking if playing track was moved...');
+                console.log('Current audio URL:', currentPlayingUrl);
+                
+                // Find the track that's currently playing
+                const newIndex = this.currentPlaylist.tracks.findIndex(track => track.url === currentPlayingUrl);
+                console.log('New index for playing track:', newIndex);
+                console.log('Old current track index:', this.visualizer.currentTrackIndex);
+                
+                if (newIndex >= 0 && newIndex !== this.visualizer.currentTrackIndex) {
+                    console.log(`🔄 Updating current track index from ${this.visualizer.currentTrackIndex} to ${newIndex} after reorder`);
+                    this.visualizer.currentTrackIndex = newIndex;
+                    
+                    // Also update the track info display to reflect the new position
+                    this.visualizer.updateTrackInfo();
+                } else if (newIndex === -1) {
+                    console.error('Currently playing track not found in reordered playlist!');
+                } else {
+                    console.log('Playing track index unchanged');
+                }
+            }
+            
             console.log(`✅ Track reordered successfully - custom order enabled`);
             
             // Save and update display
             this.savePlaylist();
             this.displayPlaylist();
+            
+            // Update visualizer playlist but preserve current playing state
+            this.visualizer._preservePlayingState = true;
             this.visualizer.updatePlaylistFromManager(this.currentPlaylist);
+            this.visualizer._preservePlayingState = false;
         }
         
         resetToAlphabetical() {
@@ -9538,13 +9597,15 @@
                 return;
             }
             
-            // Clear current playing track when loading new playlist
-            if (this.audio) {
-                this.audio.pause();
-                this.audio.src = '';
+            // Clear current playing track when loading new playlist (unless preserving state)
+            if (!this._preservePlayingState) {
+                if (this.audio) {
+                    this.audio.pause();
+                    this.audio.src = '';
+                }
+                this.currentTrackIndex = 0;
+                this.isPlaying = false;
             }
-            this.currentTrackIndex = 0;
-            this.isPlaying = false;
             
             // Convert PlaylistManager format to visualizer format
             this.playlist = playlist.tracks.map((track, index) => {
@@ -9570,6 +9631,16 @@
             // Update current track index if needed
             if (this.currentTrackIndex >= this.playlist.length) {
                 this.currentTrackIndex = 0;
+            }
+            
+            // If a track is currently playing, find its new index after playlist update
+            if (this.audio && this.audio.src) {
+                const currentUrl = this.audio.src;
+                const newIndex = this.playlist.findIndex(track => track.url === currentUrl);
+                if (newIndex >= 0 && newIndex !== this.currentTrackIndex) {
+                    console.log(`Updating current track index from ${this.currentTrackIndex} to ${newIndex} after playlist update`);
+                    this.currentTrackIndex = newIndex;
+                }
             }
             
             // Update UI
