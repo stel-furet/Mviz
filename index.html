@@ -172,127 +172,6 @@
 
 
 
-            <!-- Video controls panel -->
-            <div class="video-controls-panel" id="videoControlsPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Video Settings</span>
-                    <button class="panel-close-btn" id="videoControlsClose">×</button>
-                </div>
-
-                <!-- Basic Controls -->
-                <div class="control-group">
-                    <div class="group-label">Basic</div>
-                    <div class="slider-container">
-                        <label>Opacity</label>
-                        <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
-                        <span id="videoOpacityValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Brightness</label>
-                        <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
-                        <span id="videoBrightnessValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Contrast</label>
-                        <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
-                        <span id="videoContrastValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Fade Time</label>
-                        <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
-                        <span id="videoFadeValue">3.0s</span>
-                    </div>
-                </div>
-
-                <!-- Color Controls -->
-                <div class="control-group">
-                    <div class="group-label">Color</div>
-                    <div class="slider-container">
-                        <label>Saturation</label>
-                        <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
-                        <span id="videoSaturationValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Hue Rotate</label>
-                        <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
-                        <span id="videoHueRotateValue">0°</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Grayscale</label>
-                        <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
-                        <span id="videoGrayscaleValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Sepia</label>
-                        <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
-                        <span id="videoSepiaValue">0%</span>
-                    </div>
-                </div>
-
-                <!-- Effects -->
-                <div class="control-group">
-                    <div class="group-label">Effects</div>
-                    <div class="slider-container">
-                        <label>Blur</label>
-                        <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
-                        <span id="videoBlurValue">0px</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Vignette</label>
-                        <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
-                        <span id="videoVignetteValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Posterize</label>
-                        <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
-                        <span id="videoPosterizeValue">Off</span>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
-                        <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
-                    </div>
-                </div>
-
-                <!-- Animation -->
-                <div class="control-group">
-                    <div class="group-label">Animation</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
-                    </div>
-                    <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
-                        <label>Pulse Rate</label>
-                        <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
-                        <span id="videoPulseRateValue">2.0s</span>
-                    </div>
-                </div>
-
-                <!-- Visualization Aspect Ratio -->
-                <div class="control-group">
-                    <div class="group-label">Visualization</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
-                    </div>
-                </div>
-
-                <!-- Presets -->
-                <div class="control-group">
-                    <div class="group-label">Presets</div>
-                    <div class="preset-buttons">
-                        <button class="video-preset-btn" data-preset="normal">Normal</button>
-                        <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
-                        <button class="video-preset-btn" data-preset="noir">Noir</button>
-                        <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
-                        <button class="video-preset-btn" data-preset="vintage">Vintage</button>
-                        <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
-                        <button class="video-preset-btn" data-preset="underwater">Underwater</button>
-                        <button class="video-preset-btn" data-preset="infrared">Infrared</button>
-                        <button class="video-preset-btn" data-preset="acid">Acid</button>
-                        <button class="video-preset-btn" data-preset="thermal">Thermal</button>
-                        <button class="video-preset-btn" data-preset="matrix">Matrix</button>
-                        <button class="video-preset-btn" data-preset="glitch">Glitch</button>
-                    </div>
-                </div>
-            </div>
 
         </div>
         <!-- End header-left -->
@@ -472,6 +351,136 @@
                     </div>
                 </div>
                 <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
+                
+                <!-- Video Settings Panel -->
+                <div class="video-controls-panel" id="videoControlsPanel" style="display: none;">
+                    <div class="panel-header">
+                        <span>Video Settings</span>
+                        <button class="panel-close-btn" id="videoControlsClose">×</button>
+                    </div>
+
+                    <!-- Basic Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Basic</div>
+                        <div class="slider-container">
+                            <label>Opacity</label>
+                            <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
+                            <span id="videoOpacityValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Brightness</label>
+                            <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
+                            <span id="videoBrightnessValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Contrast</label>
+                            <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
+                            <span id="videoContrastValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Fade Time</label>
+                            <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
+                            <span id="videoFadeValue">3.0s</span>
+                        </div>
+                    </div>
+
+                    <!-- Color Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Color</div>
+                        <div class="slider-container">
+                            <label>Saturation</label>
+                            <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
+                            <span id="videoSaturationValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Hue Rotate</label>
+                            <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
+                            <span id="videoHueRotateValue">0°</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Grayscale</label>
+                            <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
+                            <span id="videoGrayscaleValue">0%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Sepia</label>
+                            <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
+                            <span id="videoSepiaValue">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Effects -->
+                    <div class="control-group">
+                        <div class="group-label">Effects</div>
+                        <div class="slider-container">
+                            <label>Blur</label>
+                            <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
+                            <span id="videoBlurValue">0px</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Vignette</label>
+                            <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
+                            <span id="videoVignetteValue">0%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Posterize</label>
+                            <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
+                            <span id="videoPosterizeValue">Off</span>
+                        </div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
+                            <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
+                        </div>
+                    </div>
+
+                    <!-- Animation -->
+                    <div class="control-group">
+                        <div class="group-label">Animation</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
+                        </div>
+                        <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
+                            <label>Pulse Rate</label>
+                            <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
+                            <span id="videoPulseRateValue">2.0s</span>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="group-label">Visualization</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
+                        </div>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="control-group">
+                        <div class="group-label">Presets</div>
+                        <div class="preset-buttons">
+                            <button class="video-preset-btn" data-preset="normal">Normal</button>
+                            <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
+                            <button class="video-preset-btn" data-preset="noir">Noir</button>
+                            <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
+                            <button class="video-preset-btn" data-preset="vintage">Vintage</button>
+                            <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
+                            <button class="video-preset-btn" data-preset="underwater">Underwater</button>
+                            <button class="video-preset-btn" data-preset="infrared">Infrared</button>
+                            <button class="video-preset-btn" data-preset="acid">Acid</button>
+                            <button class="video-preset-btn" data-preset="thermal">Thermal</button>
+                            <button class="video-preset-btn" data-preset="matrix">Matrix</button>
+                            <button class="video-preset-btn" data-preset="glitch">Glitch</button>
+                        </div>
+                    </div>
+
+                    <!-- Camera & Stream Stats -->
+                    <div class="control-group">
+                        <div class="group-label">Stream Statistics</div>
+                        <div id="cameraStatsContainer" class="stats-container">
+                            <div class="stats-placeholder">Camera stream info will appear here when video input is active</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1532,15 +1541,16 @@
         /* Video Input Controls */
         .video-controls-panel {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 5px);
             left: 0;
             background: var(--secondary-bg, #1a1a1a);
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
-            padding: 12px;
-            margin-top: 4px;
-            z-index: 1000;
-            min-width: 200px;
+            padding: 16px;
+            z-index: 6000;
+            min-width: 280px;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .slider-container {
@@ -2251,6 +2261,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
         }
 
         .input-mode-btn {
@@ -11487,10 +11498,7 @@
                     settingsBtn.id = 'videoSettingsBtn';
                     settingsBtn.innerHTML = '⚙';
                     settingsBtn.className = 'video-settings-toggle';
-                    settingsBtn.onclick = () => {
-                        const panel = document.getElementById('videoControlsPanel');
-                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-                    };
+                    settingsBtn.title = 'Video Settings';
                     btn.parentNode.appendChild(settingsBtn);
                 }
 
@@ -11823,10 +11831,7 @@
                     settingsBtn.id = 'videoSettingsBtn';
                     settingsBtn.innerHTML = '⚙';
                     settingsBtn.className = 'video-settings-toggle';
-                    settingsBtn.onclick = () => {
-                        const panel = document.getElementById('videoControlsPanel');
-                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-                    };
+                    settingsBtn.title = 'Video Settings';
                     btn.parentNode.appendChild(settingsBtn);
                 }
 
@@ -14251,6 +14256,18 @@ https://rogueamoeba.com/loopback/
                     document.getElementById('videoControlsPanel').style.display = 'none';
                 });
             }
+            
+            // Video settings button (for dynamically created button)
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.id === 'videoSettingsBtn') {
+                    e.stopPropagation();
+                    const panel = document.getElementById('videoControlsPanel');
+                    if (panel) {
+                        const isVisible = panel.style.display !== 'none';
+                        panel.style.display = isVisible ? 'none' : 'block';
+                    }
+                }
+            });
             // Pulse controls
             const videoPulseRateSlider = document.getElementById('videoPulseRateSlider');
             if (videoPulseRateSlider) {
