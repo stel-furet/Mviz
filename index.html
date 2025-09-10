@@ -417,6 +417,7 @@
         <button class="tab-item" id="audioTab" data-section="audio">Audio</button>
         <button class="tab-item" id="videoTab" data-section="video">Video</button>
         <button class="tab-item" id="visualizationsTab" data-section="visualizations">Visualizations</button>
+        <button class="tab-item" id="autopilotTab" data-section="autopilot">Autopilot</button>
         <button class="tab-item" id="outputTab" data-section="output">Output</button>
     </div>
     
@@ -636,6 +637,91 @@
                         <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-panel" id="autopilotPanel">
+    <div class="panel-content">
+        <!-- AI AUTOPILOT Section -->
+        <div class="autopilot-section">
+            <div class="dropdown-label">AI Autopilot</div>
+            <div class="control-with-settings">
+                <button class="dropdown-toggle" id="aiAutopilotBtn" title="Activate AI Autopilot">
+                    Activate
+                </button>
+                <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
+            </div>
+
+            <!-- AI Autopilot Settings Panel -->
+            <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>AI Autopilot Settings</span>
+                    <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
+                </div>
+
+                <!-- Autopilot Scope -->
+                <div class="control-group">
+                    <div class="group-label">Autopilot Scope</div>
+                    <div class="preset-buttons">
+                        <button class="scope-btn active" data-scope="bars">Bars</button>
+                        <button class="scope-btn" data-scope="radial">Radial</button>
+                        <button class="scope-btn" data-scope="energy">Energy</button>
+                        <button class="scope-btn" data-scope="all">All</button>
+                    </div>
+                </div>
+
+                <!-- Color Schemes Toggle -->
+                <div class="control-group">
+                    <div class="group-label">Color Automation</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn active" id="autoColorSchemesBtn">Auto Color Schemes: On</button>
+                    </div>
+                </div>
+
+                <!-- Change Timing -->
+                <div class="control-group">
+                    <div class="group-label">Change Timing</div>
+                    <div class="preset-buttons">
+                        <button class="timing-btn active" data-timing="instant">Instant</button>
+                        <button class="timing-btn" data-timing="smooth">Smooth</button>
+                        <button class="timing-btn" data-timing="slow">Slow</button>
+                        <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
+                    </div>
+                </div>
+
+                <!-- Sensitivity -->
+                <div class="control-group">
+                    <div class="group-label">Sensitivity</div>
+                    <div class="preset-buttons">
+                        <button class="sensitivity-btn" data-sensitivity="low">Low</button>
+                        <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
+                        <button class="sensitivity-btn" data-sensitivity="high">High</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DMX COPILOT Section -->
+        <div class="autopilot-section">
+            <div class="dropdown-label">DMX Copilot</div>
+            <div class="control-with-settings">
+                <button class="dropdown-toggle" id="dmxCopilotBtn" title="Activate DMX CoPilot">
+                    Activate
+                </button>
+                <button id="dmxCopilotSettingsBtn" class="video-settings-toggle" title="DMX CoPilot Settings">⚙</button>
+            </div>
+        </div>
+
+        <!-- MIDI COPILOT Section -->
+        <div class="autopilot-section">
+            <div class="dropdown-label">MIDI Copilot</div>
+            <div class="control-with-settings">
+                <button class="dropdown-toggle" id="midiCopilotBtn" title="Activate MIDI CoPilot">
+                    Activate
+                </button>
+                <button id="midiCopilotSettingsBtn" class="video-settings-toggle" title="MIDI CoPilot Settings">⚙</button>
             </div>
         </div>
     </div>
@@ -1013,6 +1099,68 @@
             margin-top: 8px;
             align-self: flex-start;
             margin-left: 0;
+        }
+
+        /* Autopilot Section Styling */
+        .autopilot-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+        }
+
+        .autopilot-section .dropdown-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .autopilot-section .control-with-settings {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Autopilot Settings Panel */
+        .autopilot-settings-panel {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 6000;
+            min-width: 280px;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Autopilot setting button styles */
+        .scope-btn, .timing-btn, .sensitivity-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .scope-btn:hover, .timing-btn:hover, .sensitivity-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .scope-btn.active, .timing-btn.active, .sensitivity-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
         }
 
         /* Presets Container */
@@ -5446,6 +5594,504 @@
     // ****
     // ****
 
+    // AI Autopilot System for Live Performance Visualization Management
+    class AIAutopilot {
+        constructor(visualizer) {
+            this.visualizer = visualizer;
+            this.isActive = false;
+            
+            // Autopilot settings
+            this.scope = 'all'; // 'bars', 'radial', 'energy', 'all'
+            this.autoColorSchemes = true;
+            this.changeTiming = 'instant'; // 'instant', 'smooth', 'slow', 'beat-synced'
+            this.sensitivity = 'medium'; // 'low', 'medium', 'high'
+            
+            // Initialize components
+            this.audioAnalyzer = new AudioAnalyzer(visualizer.audioMotion);
+            this.decisionEngine = new DecisionEngine(this);
+            
+            // Autopilot state
+            this.lastModeChange = 0;
+            this.currentMode = 0;
+            this.modeHistory = [];
+            this.energyHistory = [];
+            
+            // Define visualization mode groups
+            this.modeGroups = {
+                bars: [0, 2, 3], // Spectrum, Classic LED, Stereo
+                radial: [4], // Radial Spectrum
+                energy: [5], // Energy
+                all: [0, 1, 2, 3, 4, 5, 6] // All modes
+            };
+            
+            console.log('🤖 AI Autopilot initialized');
+        }
+        
+        activate() {
+            if (this.isActive) return;
+            
+            this.isActive = true;
+            this.audioAnalyzer.start();
+            this.decisionEngine.start();
+            
+            // Reset history
+            this.modeHistory = [this.visualizer.currentMode];
+            
+            console.log('🤖 AI Autopilot activated');
+            this.updateUI();
+        }
+        
+        recordModeChange(newMode) {
+            this.modeHistory.push(newMode);
+            // Keep only recent history (last 10 changes)
+            if (this.modeHistory.length > 10) {
+                this.modeHistory = this.modeHistory.slice(-10);
+            }
+        }
+        
+        deactivate() {
+            if (!this.isActive) return;
+            
+            this.isActive = false;
+            this.audioAnalyzer.stop();
+            this.decisionEngine.stop();
+            
+            console.log('🤖 AI Autopilot deactivated');
+            this.updateUI();
+        }
+        
+        updateUI() {
+            const btn = document.getElementById('aiAutopilotBtn');
+            if (btn) {
+                if (this.isActive) {
+                    btn.textContent = 'Deactivate';
+                    btn.classList.add('active');
+                } else {
+                    btn.textContent = 'Activate';
+                    btn.classList.remove('active');
+                }
+            }
+        }
+        
+        setIntensity(level) {
+            this.intensity = level;
+            console.log(`🎛️ Autopilot intensity set to: ${level}`);
+        }
+    }
+
+    // Audio Analysis Engine for AI Autopilot
+    class AudioAnalyzer {
+        constructor(audioMotion) {
+            this.audioMotion = audioMotion;
+            this.isRunning = false;
+            this.analysisFrame = null;
+            
+            // Analysis parameters
+            this.beatThreshold = 1.15; // More sensitive beat detection
+            this.energySmoothing = 0.9;  // Smoother energy for better beat detection
+            this.tempoWindow = 120; // frames for tempo analysis
+            
+            // Current analysis data
+            this.currentEnergy = 0;
+            this.smoothedEnergy = 0;
+            this.beatDetected = false;
+            this.currentTempo = 0;
+            
+            // History for analysis
+            this.energyHistory = new Array(60).fill(0); // 1 second at 60fps
+            this.beatHistory = [];
+            this.tempoHistory = [];
+            
+            console.log('🎵 Audio Analyzer initialized');
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
+            
+            // Debug the audioMotion connection
+            console.log('🔍 AudioMotion debug:', {
+                audioMotion: !!this.audioMotion,
+                analyser: !!(this.audioMotion && this.audioMotion.analyser),
+                frequencyBinCount: this.audioMotion?.analyser?.frequencyBinCount
+            });
+            
+            this.analyze();
+            console.log('🎵 Audio analysis started');
+        }
+        
+        stop() {
+            this.isRunning = false;
+            if (this.analysisFrame) {
+                cancelAnimationFrame(this.analysisFrame);
+                this.analysisFrame = null;
+            }
+            console.log('🎵 Audio analysis stopped');
+        }
+        
+        analyze() {
+            if (!this.isRunning) return;
+            
+            try {
+                // Get current audio data
+                if (this.audioMotion && this.audioMotion.analyser) {
+                    this.extractAudioFeatures();
+                    this.detectBeats();
+                    this.calculateTempo();
+                    this.updateEnergyHistory();
+                    
+                    // Debug output every 60 frames (1 second)
+                    if (this.analysisFrame && this.analysisFrame % 60 === 0) {
+                        console.log(`🎵 Analysis: Energy=${this.currentEnergy.toFixed(3)}, Beat=${this.beatDetected}, Tempo=${this.currentTempo}, Freq=${this.dominantFreq}`);
+                    }
+                } else {
+                    // Debug: Check why audio data isn't available
+                    if (this.analysisFrame && this.analysisFrame % 300 === 0) { // Every 5 seconds
+                        console.warn('⚠️ AudioMotion or analyser not available:', {
+                            audioMotion: !!this.audioMotion,
+                            analyser: !!(this.audioMotion && this.audioMotion.analyser)
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Audio analysis error:', error);
+            }
+            
+            this.analysisFrame = requestAnimationFrame(() => this.analyze());
+        }
+        
+        extractAudioFeatures() {
+            // Extract energy and frequency data
+            const analyser = this.audioMotion.analyser;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Calculate overall energy (RMS)
+            let totalEnergy = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                totalEnergy += dataArray[i] * dataArray[i];
+            }
+            this.currentEnergy = Math.sqrt(totalEnergy / dataArray.length) / 255;
+            
+            // Smooth energy for stability
+            this.smoothedEnergy = this.smoothedEnergy * this.energySmoothing + 
+                                 this.currentEnergy * (1 - this.energySmoothing);
+            
+            // Frequency band analysis
+            this.analyzeFrequencyBands(dataArray);
+            
+            // Spectral flux for better beat detection
+            this.calculateSpectralFlux(dataArray);
+        }
+        
+        analyzeFrequencyBands(dataArray) {
+            const binCount = dataArray.length;
+            const bassEnd = Math.floor(binCount * 0.1);     // 0-10% (bass)
+            const midEnd = Math.floor(binCount * 0.5);      // 10-50% (mids) 
+            const trebleEnd = binCount;                     // 50-100% (treble)
+            
+            // Calculate energy in each band
+            let bassEnergy = 0, midEnergy = 0, trebleEnergy = 0;
+            
+            for (let i = 0; i < bassEnd; i++) {
+                bassEnergy += dataArray[i] * dataArray[i];
+            }
+            for (let i = bassEnd; i < midEnd; i++) {
+                midEnergy += dataArray[i] * dataArray[i];
+            }
+            for (let i = midEnd; i < trebleEnd; i++) {
+                trebleEnergy += dataArray[i] * dataArray[i];
+            }
+            
+            // Normalize by band size
+            this.bassEnergy = Math.sqrt(bassEnergy / bassEnd) / 255;
+            this.midEnergy = Math.sqrt(midEnergy / (midEnd - bassEnd)) / 255;
+            this.trebleEnergy = Math.sqrt(trebleEnergy / (trebleEnd - midEnd)) / 255;
+            
+            // Determine dominant frequency
+            this.dominantFreq = 'mid';
+            if (this.bassEnergy > this.midEnergy && this.bassEnergy > this.trebleEnergy) {
+                this.dominantFreq = 'bass';
+            } else if (this.trebleEnergy > this.midEnergy && this.trebleEnergy > this.bassEnergy) {
+                this.dominantFreq = 'treble';
+            }
+        }
+        
+        calculateSpectralFlux(dataArray) {
+            // Store previous frame for flux calculation
+            if (!this.previousSpectrum) {
+                this.previousSpectrum = new Uint8Array(dataArray.length);
+                this.spectralFlux = 0;
+                return;
+            }
+            
+            // Calculate spectral flux (change between frames)
+            let flux = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const diff = dataArray[i] - this.previousSpectrum[i];
+                flux += diff > 0 ? diff : 0; // Only positive changes (onset)
+            }
+            
+            this.spectralFlux = flux / dataArray.length / 255;
+            
+            // Update previous spectrum
+            this.previousSpectrum.set(dataArray);
+        }
+        
+        detectBeats() {
+            // Enhanced beat detection using both energy and spectral flux
+            const energyIncrease = this.currentEnergy / (this.smoothedEnergy + 0.001);
+            const fluxThreshold = 0.05; // More sensitive flux detection
+            
+            // Beat detected if energy spike OR significant spectral change
+            this.beatDetected = (energyIncrease > this.beatThreshold) || 
+                               (this.spectralFlux > fluxThreshold);
+            
+            if (this.beatDetected) {
+                const now = Date.now();
+                const lastBeat = this.beatHistory[this.beatHistory.length - 1] || 0;
+                
+                // Prevent beats too close together (minimum 100ms apart)
+                if (now - lastBeat > 100) {
+                    this.beatHistory.push(now);
+                    // Keep only recent beats (last 10 seconds)
+                    this.beatHistory = this.beatHistory.filter(time => now - time < 10000);
+                    
+                    // Log beat detection for debugging (every 4 beats)
+                    if (this.beatHistory.length % 4 === 0) {
+                        console.log(`🥁 Beat detected - Energy: ${energyIncrease.toFixed(2)}, Flux: ${this.spectralFlux.toFixed(3)}, BPM: ${this.currentTempo}`);
+                    }
+                }
+            }
+        }
+        
+        calculateTempo() {
+            if (this.beatHistory.length < 4) return;
+            
+            // Calculate intervals between recent beats
+            const intervals = [];
+            for (let i = 1; i < Math.min(this.beatHistory.length, 8); i++) {
+                const interval = this.beatHistory[i] - this.beatHistory[i-1];
+                // Filter out unrealistic intervals (too fast/slow)
+                if (interval > 200 && interval < 2000) { // 30-300 BPM range
+                    intervals.push(interval);
+                }
+            }
+            
+            if (intervals.length > 0) {
+                // Find most common interval (tempo)
+                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                this.currentTempo = Math.round(60000 / avgInterval); // Convert to BPM
+                
+                // Clamp to realistic range
+                this.currentTempo = Math.max(60, Math.min(200, this.currentTempo));
+            }
+        }
+        
+        updateEnergyHistory() {
+            this.energyHistory.shift();
+            this.energyHistory.push(this.currentEnergy);
+        }
+        
+        // Public getters for decision engine
+        getEnergy() { return this.smoothedEnergy; }
+        getBeat() { return this.beatDetected; }
+        getTempo() { return this.currentTempo; }
+        getEnergyTrend() {
+            const recent = this.energyHistory.slice(-30); // Last 0.5 seconds
+            const older = this.energyHistory.slice(-60, -30); // Previous 0.5 seconds
+            const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+            const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+            return recentAvg - olderAvg; // Positive = increasing energy
+        }
+    }
+
+    // Decision Engine for AI Autopilot
+    class DecisionEngine {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.visualizer = autopilot.visualizer;
+            this.audioAnalyzer = autopilot.audioAnalyzer;
+            
+            this.isRunning = false;
+            this.decisionFrame = null;
+            this.lastDecision = 0;
+            this.decisionCooldown = 2000; // Minimum 2 seconds between major changes
+            
+            // Available visualization modes
+            this.visualizationModes = [
+                { id: 0, name: 'Spectrum', energy: 'any', tempo: 'any' },
+                { id: 1, name: 'Mirror Wave', energy: 'medium', tempo: 'medium' },
+                { id: 2, name: 'Classic LED', energy: 'low', tempo: 'slow' },
+                { id: 3, name: 'Stereo', energy: 'any', tempo: 'any' },
+                { id: 4, name: 'Radial Spectrum', energy: 'high', tempo: 'fast' },
+                { id: 5, name: 'Energy', energy: 'high', tempo: 'any' },
+                { id: 6, name: 'Mirror', energy: 'medium', tempo: 'any' }
+            ];
+            
+            console.log('🧠 Decision Engine initialized');
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
+            this.makeDecisions();
+            console.log('🧠 Decision Engine started');
+        }
+        
+        stop() {
+            this.isRunning = false;
+            if (this.decisionFrame) {
+                cancelAnimationFrame(this.decisionFrame);
+                this.decisionFrame = null;
+            }
+            console.log('🧠 Decision Engine stopped');
+        }
+        
+        makeDecisions() {
+            if (!this.isRunning) return;
+            
+            try {
+                const now = Date.now();
+                
+                // Only make decisions periodically to avoid chaos
+                if (now - this.lastDecision > this.decisionCooldown) {
+                    this.evaluateVisualizationChange();
+                }
+                
+            } catch (error) {
+                console.error('Decision engine error:', error);
+            }
+            
+            this.decisionFrame = requestAnimationFrame(() => this.makeDecisions());
+        }
+        
+        evaluateVisualizationChange() {
+            const energy = this.audioAnalyzer.getEnergy();
+            const beat = this.audioAnalyzer.getBeat();
+            const dominantFreq = this.audioAnalyzer.dominantFreq;
+            const energyTrend = this.audioAnalyzer.getEnergyTrend();
+            const tempo = this.audioAnalyzer.getTempo();
+            
+            // Intelligent mode selection based on multiple factors
+            let targetMode = this.selectOptimalMode(energy, dominantFreq, tempo, energyTrend);
+            
+            // Only switch on beats and if mode is significantly different
+            const shouldSwitch = beat && 
+                               targetMode !== this.visualizer.currentMode && 
+                               this.shouldSwitchMode(targetMode, energy);
+            
+            if (shouldSwitch) {
+                this.visualizer.setVisualizationMode(targetMode);
+                this.autopilot.recordModeChange(targetMode);
+                this.lastDecision = Date.now();
+                
+                // Log detailed switch reasoning
+                console.log(`🎨 Autopilot: ${this.getModeName(this.visualizer.currentMode)} → ${this.getModeName(targetMode)}`);
+                console.log(`   Energy: ${energy.toFixed(2)}, Freq: ${dominantFreq}, BPM: ${tempo}, Trend: ${energyTrend.toFixed(3)}`);
+                
+                // Evaluate additional automation
+                this.evaluateColorSchemeChange(energy, dominantFreq);
+                this.evaluateKaleidoscopeActivation(energy, beat);
+            }
+        }
+        
+        selectOptimalMode(energy, dominantFreq, tempo, energyTrend) {
+            // Get available modes based on scope setting
+            const availableModes = this.autopilot.modeGroups[this.autopilot.scope];
+            
+            // Multi-factor mode selection with realistic energy thresholds
+            let candidateModes = [];
+            
+            // Very high energy
+            if (energy > 0.4 && energyTrend > 0.02) {
+                candidateModes = availableModes.filter(mode => [4, 5].includes(mode)); // Radial, Energy
+            }
+            // High energy
+            else if (energy > 0.3) {
+                candidateModes = availableModes.filter(mode => [1, 5, 4].includes(mode)); // Mirror Wave, Energy, Radial
+            }
+            // Medium energy
+            else if (energy > 0.2) {
+                candidateModes = availableModes.filter(mode => [3, 6, 0].includes(mode)); // Stereo, Mirror, Spectrum
+            }
+            // Rising energy
+            else if (energyTrend > 0.01) {
+                candidateModes = availableModes.filter(mode => [1, 0].includes(mode)); // Mirror Wave, Spectrum
+            }
+            // Low energy
+            else if (energy > 0.1) {
+                candidateModes = availableModes.filter(mode => [0, 2].includes(mode)); // Spectrum, Classic LED
+            }
+            // Very low energy
+            else {
+                candidateModes = availableModes.filter(mode => [2].includes(mode)); // Classic LED
+            }
+            
+            // If no candidates match scope, use any available mode
+            if (candidateModes.length === 0) {
+                candidateModes = availableModes;
+            }
+            
+            // Select random mode from candidates for variety
+            return candidateModes[Math.floor(Math.random() * candidateModes.length)];
+        }
+        
+        shouldSwitchMode(targetMode, energy) {
+            // Prevent rapid switching only in very low energy situations
+            if (energy < 0.05) return false;
+            
+            // Prevent switching back to recent modes too quickly
+            const recentModes = this.autopilot.modeHistory.slice(-2); // Allow more variety
+            if (recentModes.includes(targetMode)) return false;
+            
+            return true;
+        }
+        
+        getModeName(modeId) {
+            const mode = this.visualizationModes.find(m => m.id === modeId);
+            return mode ? mode.name : `Mode ${modeId}`;
+        }
+        
+        evaluateColorSchemeChange(energy, dominantFreq) {
+            // Only change colors if auto color schemes is enabled
+            if (!this.autopilot.autoColorSchemes) return;
+            
+            // More responsive color scheme automation
+            if (dominantFreq === 'bass' && energy > 0.15) {
+                // Bass-heavy = darker schemes
+                this.visualizer.setColorScheme('metal');
+                console.log('🎨 Color: Bass-heavy → Metal');
+            } else if (dominantFreq === 'treble' && energy > 0.15) {
+                // Treble-heavy = brighter schemes  
+                this.visualizer.setColorScheme('psychedelic');
+                console.log('🎨 Color: Treble-heavy → Psychedelic');
+            } else if (energy > 0.2) {
+                // Medium energy = vibrant schemes
+                this.visualizer.setColorScheme('luigi');
+                console.log('🎨 Color: Medium energy → Luigi');
+            } else {
+                // Low energy = calm schemes
+                this.visualizer.setColorScheme('earthtones');
+                console.log('🎨 Color: Low energy → Earthtones');
+            }
+        }
+        
+        evaluateKaleidoscopeActivation(energy, beat) {
+            // Auto-activate kaleidoscope for high energy sections
+            if (energy > 0.8 && beat && !this.visualizer.kaleidoscopeEnabled) {
+                this.visualizer.toggleKaleidoscope();
+                console.log('🔮 Autopilot activated kaleidoscope (high energy)');
+            } else if (energy < 0.4 && this.visualizer.kaleidoscopeEnabled) {
+                this.visualizer.toggleKaleidoscope();
+                console.log('🔮 Autopilot deactivated kaleidoscope (low energy)');
+            }
+        }
+    }
+
+    // ****
+    // ****
+
     // PlaylistManager Class - Handles dynamic playlist creation and management
     class PlaylistManager {
         constructor(visualizer) {
@@ -5524,7 +6170,7 @@
                 const tabHeader = document.getElementById('tabHeader');
                 if (tabHeader) tabHeader.style.display = 'flex';
                 
-                ['audio', 'video', 'visualizations', 'output'].forEach(section => {
+                ['audio', 'video', 'visualizations', 'autopilot', 'output'].forEach(section => {
                     const panel = document.getElementById(`${section}Panel`);
                     const tab = document.getElementById(`${section}Tab`);
                     if (panel) panel.classList.add('show');
@@ -5532,6 +6178,18 @@
                 });
                 
                 console.log('All tabs activated for testing - check functionality');
+            };
+            
+            window.testAutopilotTab = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                const autopilotPanel = document.getElementById('autopilotPanel');
+                const autopilotTab = document.getElementById('autopilotTab');
+                
+                if (tabHeader) tabHeader.style.display = 'flex';
+                if (autopilotPanel) autopilotPanel.classList.add('show');
+                if (autopilotTab) autopilotTab.classList.add('active');
+                
+                console.log('Autopilot tab test activated');
             };
             
             window.testVisualizationsTab = () => {
@@ -8532,8 +9190,8 @@
                 // Start capturing
                 this.startCapture();
 
-                // Get stream from capture canvas with configured frame rate
-                this.stream = this.captureCanvas.captureStream(this.displaySettings.captureFrameRate);
+                // Get stream from capture canvas (try without frame rate parameter)
+                this.stream = this.captureCanvas.captureStream();
 
                 console.log('Stream created with tracks:', this.stream.getTracks().length);
 
@@ -9724,6 +10382,7 @@
                 this.streamManager = new StreamManager(this);
                 this.recordManager = new RecordManager(this);
                 this.playlistManager = new PlaylistManager(this);
+                this.aiAutopilot = new AIAutopilot(this);
                 
                 // Initialize playlist UI handlers
                 this.initializePlaylistUI();
@@ -10246,6 +10905,111 @@
                     }
                 });
             }
+            
+            // AI Autopilot button
+            const aiAutopilotBtn = document.getElementById('aiAutopilotBtn');
+            if (aiAutopilotBtn) {
+                // Remove any existing listeners to prevent duplicates
+                const newAIBtn = aiAutopilotBtn.cloneNode(true);
+                aiAutopilotBtn.parentNode.replaceChild(newAIBtn, aiAutopilotBtn);
+                
+                newAIBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('AI Autopilot button clicked');
+                    if (this.aiAutopilot) {
+                        if (this.aiAutopilot.isActive) {
+                            this.aiAutopilot.deactivate();
+                        } else {
+                            this.aiAutopilot.activate();
+                        }
+                    }
+                });
+            }
+            
+            // AI Autopilot settings button
+            const aiAutopilotSettingsBtn = document.getElementById('aiAutopilotSettingsBtn');
+            if (aiAutopilotSettingsBtn) {
+                aiAutopilotSettingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('AI Autopilot settings button clicked');
+                    const panel = document.getElementById('aiAutopilotSettingsPanel');
+                    if (panel) {
+                        const isVisible = panel.style.display !== 'none';
+                        panel.style.display = isVisible ? 'none' : 'block';
+                        console.log('Settings panel', isVisible ? 'closed' : 'opened');
+                    } else {
+                        console.error('AI Autopilot settings panel not found');
+                    }
+                });
+            }
+            
+            // AI Autopilot settings panel close button
+            const aiSettingsClose = document.getElementById('aiAutopilotSettingsClose');
+            if (aiSettingsClose) {
+                aiSettingsClose.addEventListener('click', () => {
+                    const panel = document.getElementById('aiAutopilotSettingsPanel');
+                    if (panel) panel.style.display = 'none';
+                });
+            }
+            
+            // Scope buttons
+            document.querySelectorAll('.scope-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const scope = e.target.dataset.scope;
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.scope = scope;
+                        console.log(`🎯 Autopilot scope set to: ${scope}`);
+                        
+                        // Update button states
+                        document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                });
+            });
+            
+            // Auto color schemes toggle
+            const autoColorBtn = document.getElementById('autoColorSchemesBtn');
+            if (autoColorBtn) {
+                autoColorBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.autoColorSchemes = !this.aiAutopilot.autoColorSchemes;
+                        const isOn = this.aiAutopilot.autoColorSchemes;
+                        e.target.textContent = `Auto Color Schemes: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            // Timing buttons
+            document.querySelectorAll('.timing-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const timing = e.target.dataset.timing;
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.changeTiming = timing;
+                        console.log(`⏱️ Change timing set to: ${timing}`);
+                        
+                        // Update button states
+                        document.querySelectorAll('.timing-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                });
+            });
+            
+            // Sensitivity buttons
+            document.querySelectorAll('.sensitivity-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sensitivity = e.target.dataset.sensitivity;
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.sensitivity = sensitivity;
+                        console.log(`🎚️ Sensitivity set to: ${sensitivity}`);
+                        
+                        // Update button states
+                        document.querySelectorAll('.sensitivity-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                });
+            });
         }
 
         closePlaylistPanel() {
