@@ -176,112 +176,6 @@
         </div>
         <!-- End header-left -->
 
-            <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Display Settings</span>
-                    <button class="panel-close-btn" id="displaySettingsClose">×</button>
-                </div>
-
-
-                <!-- Presentation Mode -->
-                <div class="control-group">
-                    <div class="group-label">Presentation Mode</div>
-                    <div class="preset-buttons">
-                        <button class="display-mode-btn active" data-mode="original">Original</button>
-                        <button class="display-mode-btn" data-mode="fit">Fit</button>
-                        <button class="display-mode-btn" data-mode="fill">Fill</button>
-                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
-                        <button class="display-mode-btn" data-mode="performance">Performance</button>
-                    </div>
-                </div>
-
-                <!-- Aspect Ratio -->
-                <div class="control-group">
-                    <div class="group-label">Aspect Ratio</div>
-                    <div class="preset-buttons">
-                        <button class="aspect-ratio-btn active" data-ratio="auto">Auto</button>
-                        <button class="aspect-ratio-btn" data-ratio="16:9">16:9</button>
-                        <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
-                        <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                        <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                        <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
-                    </div>
-                </div>
-
-                <!-- Quality Settings -->
-                <div class="control-group">
-                    <div class="group-label">Capture Quality</div>
-                    <div class="slider-container">
-                        <label>Resolution</label>
-                        <select id="captureResolution" class="quality-select">
-                            <option value="3840">4K (3840px)</option>
-                            <option value="2560" selected>2K (2560px)</option>
-                            <option value="1920">1080p (1920px)</option>
-                            <option value="1280">720p (1280px)</option>
-                            <option value="960">SD (960px)</option>
-                        </select>
-                    </div>
-                    <div class="slider-container">
-                        <label>Frame Rate</label>
-                        <select id="captureFrameRate" class="quality-select">
-                            <option value="60" selected>60 FPS</option>
-                            <option value="30">30 FPS</option>
-                            <option value="24">24 FPS</option>
-                            <option value="15">15 FPS</option>
-                        </select>
-                    </div>
-                    <div class="slider-container">
-                        <label>Bitrate</label>
-                        <input type="range" id="captureBitrate" min="1" max="50" value="10" step="0.5">
-                        <span id="captureBitrateValue">10 Mbps</span>
-                    </div>
-                </div>
-
-                <!-- Display Enhancement -->
-                <div class="control-group">
-                    <div class="group-label">Display Enhancement</div>
-                    <div class="slider-container">
-                        <label>Sharpness</label>
-                        <input type="range" id="displaySharpness" min="0" max="100" value="0">
-                        <span id="displaySharpnessValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Letterbox Color</label>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="color" id="letterboxColor" value="#000000" style="width: 50px; height: 30px;">
-                            <span id="letterboxColorValue">#000000</span>
-                        </div>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="mirrorBackgroundBtn">Mirror Background: Off</button>
-                    </div>
-                    <div class="slider-container" id="mirrorBlurContainer" style="display: none;">
-                        <label>Background Blur</label>
-                        <input type="range" id="mirrorBackgroundBlur" min="0" max="50" value="20">
-                        <span id="mirrorBackgroundBlurValue">20px</span>
-                    </div>
-                </div>
-
-                <!-- Presets -->
-                <div class="control-group">
-                    <div class="group-label">Quick Presets</div>
-                    <div class="preset-buttons">
-                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
-                        <button class="display-preset-btn" data-preset="presentation">Presentation</button>
-                        <button class="display-preset-btn" data-preset="social">Social Media</button>
-                        <button class="display-preset-btn" data-preset="performance">Performance</button>
-                        <button class="display-preset-btn" data-preset="projector">Projector</button>
-                    </div>
-                </div>
-
-                <!-- Camera & Stream Stats -->
-                <div class="control-group">
-                    <div class="group-label">Stream Statistics</div>
-                    <div id="cameraStatsContainer" class="stats-container">
-                        <div class="stats-placeholder">Camera stream info will appear here when video input is active</div>
-                    </div>
-                </div>
-            </div>
         </div>
     <!-- End header-content -->
 </header>
@@ -661,10 +555,9 @@
                     Activate
                 </button>
                 <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
-            </div>
-
-            <!-- AI Autopilot Settings Panel -->
-            <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
+                
+                <!-- AI Autopilot Settings Panel -->
+                <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
                 <div class="panel-header">
                     <span>AI Autopilot Settings</span>
                     <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
@@ -685,7 +578,7 @@
                 <div class="control-group">
                     <div class="group-label">Color Automation</div>
                     <div class="button-container">
-                        <button class="effect-toggle-btn active" id="autoColorSchemesBtn">Auto Color Schemes: On</button>
+                        <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
                     </div>
                 </div>
 
@@ -708,6 +601,61 @@
                         <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
                         <button class="sensitivity-btn" data-sensitivity="high">High</button>
                     </div>
+                </div>
+
+                <!-- Genre Selection -->
+                <div class="control-group">
+                    <div class="group-label">Genre Detection</div>
+                    <div class="preset-buttons">
+                        <button class="genre-btn active" data-genre="auto">Auto Detect</button>
+                        <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
+                        <button class="genre-btn" data-genre="rock">Rock</button>
+                        <button class="genre-btn" data-genre="electronic">Electronic</button>
+                        <button class="genre-btn" data-genre="reggae">Reggae</button>
+                        <button class="genre-btn" data-genre="country">Country</button>
+                        <button class="genre-btn" data-genre="funk">Funk</button>
+                        <button class="genre-btn" data-genre="ambient">Ambient</button>
+                        <button class="genre-btn" data-genre="punk">Punk</button>
+                        <button class="genre-btn" data-genre="jazz">Jazz</button>
+                        <button class="genre-btn" data-genre="classical">Classical</button>
+                    </div>
+                </div>
+
+                <!-- Parameter Control -->
+                <div class="control-group">
+                    <div class="group-label">Parameter Control</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
+                    </div>
+                </div>
+
+                <!-- Video Effects -->
+                <div class="control-group">
+                    <div class="group-label">Video Effects</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="enableVideoEffectsBtn">Video Effects: Off</button>
+                    </div>
+                </div>
+
+                <!-- Current Genre Display -->
+                <div class="control-group">
+                    <div class="group-label">Current Genre</div>
+                    <div class="info-display" id="currentGenreDisplay">Unknown</div>
+                </div>
+
+                <!-- Genre Confidence -->
+                <div class="control-group">
+                    <div class="group-label">Confidence</div>
+                    <div class="info-display" id="genreConfidenceDisplay">0%</div>
+                </div>
+
+                <!-- Test Button -->
+                <div class="control-group">
+                    <div class="group-label">Test</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -745,10 +693,9 @@
                     Live Display
                 </button>
                 <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
-            </div>
-
-            <!-- Display Settings Panel -->
-            <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
+                
+                <!-- Display Settings Panel -->
+                <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
                 <div class="panel-header">
                     <span>Display Settings</span>
                     <button class="panel-close-btn" id="displaySettingsClose">×</button>
@@ -797,6 +744,7 @@
                         <button class="effect-toggle-btn" id="captureVisualizationBtn">Capture Visualization: On</button>
                         <button class="effect-toggle-btn" id="captureVideoBtn">Capture Video: On</button>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -1069,6 +1017,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
         }
 
         /* Spectrum with toggle layout */
@@ -1137,8 +1086,9 @@
         /* Autopilot Settings Panel */
         .autopilot-settings-panel {
             position: absolute;
-            top: calc(100% + 5px);
-            left: 0;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--secondary-bg, #1a1a1a);
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
@@ -1166,10 +1116,50 @@
             border-color: var(--accent-color);
         }
 
-        .scope-btn.active, .timing-btn.active, .sensitivity-btn.active {
+        .scope-btn.active, .timing-btn.active, .sensitivity-btn.active, .genre-btn.active {
             background: var(--accent-color);
             color: white;
             border-color: var(--accent-color);
+        }
+        
+        /* Genre button styles */
+        .genre-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s ease;
+            margin: 2px;
+        }
+        
+        .genre-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+        }
+        
+        .genre-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        
+        /* Info display styles */
+        .info-display {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--accent-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Presets Container */
@@ -1541,8 +1531,9 @@
         /* Video Input Controls */
         .video-controls-panel {
             position: absolute;
-            top: calc(100% + 5px);
-            left: 0;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--secondary-bg, #1a1a1a);
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
@@ -3906,7 +3897,8 @@
         .display-settings-panel {
             position: absolute;
             top: calc(100% + 10px);
-            right: 0;
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--secondary-bg, #1a1a1a);
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
@@ -5605,6 +5597,228 @@
     // ****
     // ****
 
+    // Enhanced Parameter Mapping System
+    const VISUALIZATION_PARAMETERS = {
+        // Bars Scope Parameters
+        bars: {
+            gradient: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'gradient' },
+            peakShowTime: { min: 0, max: 2000, default: 500, type: 'int', audioMotion: 'peakHoldTime' },
+            barWidth: { min: 1, max: 20, default: 8, type: 'int', audioMotion: 'lineWidth' },
+            barSpacing: { min: 0, max: 10, default: 2, type: 'int', audioMotion: 'barSpace' },
+            barHeight: { min: 0.1, max: 2.0, default: 1.0, type: 'float', audioMotion: 'linearBoost' },
+            mirrorMode: { values: ['off', 'x', 'y', 'xy'], default: 'off', type: 'enum', audioMotion: 'mirror' },
+            smoothing: { min: 0, max: 1, default: 0.3, type: 'float', audioMotion: 'smoothing' },
+            colormode: { values: ['spectrum', 'rainbow', 'fire', 'ocean', 'neon'], default: 'spectrum', type: 'enum', audioMotion: 'colorMode' },
+            fadepeaks: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'fadePeaks' },
+            showpeaks: { default: true, type: 'boolean', audioMotion: 'showPeaks' },
+            peakdecay: { min: 0, max: 1, default: 0.7, type: 'float', audioMotion: 'peakFadeTime' }
+        },
+        
+        // Radial Scope Parameters  
+        radial: {
+            gradient: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'gradient' },
+            peakShowTime: { min: 0, max: 2000, default: 500, type: 'int', audioMotion: 'peakHoldTime' },
+            radialSensitivity: { min: 0.1, max: 3.0, default: 1.0, type: 'float', audioMotion: 'linearBoost' },
+            radialSmoothing: { min: 0, max: 1, default: 0.4, type: 'float', audioMotion: 'smoothing' },
+            centerGlow: { min: 0, max: 1, default: 0.3, type: 'float', audioMotion: 'reflexAlpha' },
+            outerGlow: { min: 0, max: 1, default: 0.6, type: 'float', audioMotion: 'reflexBright' },
+            radialinvert: { default: false, type: 'boolean', audioMotion: 'radialInvert' },
+            radius: { min: 50, max: 300, default: 150, type: 'int', audioMotion: 'radius' },
+            colormode: { values: ['spectrum', 'rainbow', 'fire', 'ocean', 'neon'], default: 'spectrum', type: 'enum', audioMotion: 'colorMode' },
+            fadepeaks: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'fadePeaks' },
+            showpeaks: { default: true, type: 'boolean', audioMotion: 'showPeaks' },
+            peakdecay: { min: 0, max: 1, default: 0.7, type: 'float', audioMotion: 'peakFadeTime' },
+            smoothing: { min: 0, max: 1, default: 0.3, type: 'float', audioMotion: 'smoothing' }
+        },
+        
+        // Energy Scope Parameters
+        energy: {
+            gradient: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'gradient' },
+            peakShowTime: { min: 0, max: 2000, default: 500, type: 'int', audioMotion: 'peakHoldTime' },
+            energySensitivity: { min: 0.1, max: 3.0, default: 1.0, type: 'float', audioMotion: 'linearBoost' },
+            energySmoothing: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'smoothing' },
+            particleCount: { min: 10, max: 200, default: 50, type: 'int', audioMotion: 'fftSize' },
+            particleSpeed: { min: 0.1, max: 2.0, default: 1.0, type: 'float', audioMotion: 'gravity' },
+            colormode: { values: ['spectrum', 'rainbow', 'fire', 'ocean', 'neon'], default: 'spectrum', type: 'enum', audioMotion: 'colorMode' },
+            fadepeaks: { min: 0, max: 1, default: 0.5, type: 'float', audioMotion: 'fadePeaks' },
+            showpeaks: { min: 0, max: 1, default: 0.7, type: 'float', audioMotion: 'showPeaks' },
+            peakdecay: { min: 0, max: 1, default: 0.7, type: 'float', audioMotion: 'peakFadeTime' },
+            smoothing: { min: 0, max: 1, default: 0.3, type: 'float', audioMotion: 'smoothing' }
+        },
+        
+        // Global Parameters (affect all scopes)
+        global: {
+            backgroundColor: { type: 'color', default: '#000000', audioMotion: 'showBgColor' },
+            colorScheme: { values: ['default', 'neon', 'fire', 'ocean', 'sunset'], default: 'default', type: 'enum', audioMotion: 'gradient' },
+            brightness: { min: 0.1, max: 2.0, default: 1.0, type: 'float', audioMotion: 'linearBoost' },
+            contrast: { min: 0.1, max: 2.0, default: 1.0, type: 'float', audioMotion: 'maxDecibels' },
+            saturation: { min: 0, max: 2.0, default: 1.0, type: 'float', audioMotion: 'fillAlpha' }
+        }
+    };
+
+    // Enhanced Genre Mappings with 7 New Genres
+    const GENRE_MAPPINGS = {
+        // Heavy Metal
+        'heavy-metal': {
+            visualization: {
+                bars: { gradient: 0.8, peakShowTime: 200, barWidth: 12, smoothing: 0.1, colormode: 'fire', fadepeaks: 0.2, showpeaks: true, peakdecay: 0.3 },
+                radial: { gradient: 0.9, radialSensitivity: 2.5, centerGlow: 0.8, radialinvert: false, radius: 200, colormode: 'fire', fadepeaks: 0.1, showpeaks: true, peakdecay: 0.2 },
+                energy: { energySensitivity: 2.8, particleCount: 150, particleSpeed: 1.8, colormode: 'fire', fadepeaks: 0.1, showpeaks: 0.9, peakdecay: 0.2, smoothing: 0.1 },
+                global: { colorScheme: 'fire', brightness: 1.3, contrast: 1.4, saturation: 1.2 }
+            },
+            video: {
+                colorEffects: { grayscale: 0.3, invert: 0.2, contrast: 1.5, brightness: 0.8 },
+                artisticEffects: { posterize: 0.6, edgeDetection: 0.4 },
+                blendModes: { multiply: 0.3, overlay: 0.2 }
+            },
+            audioCharacteristics: { energy: 'high', tempo: 'fast', frequency: 'bass-heavy', dynamics: 'aggressive' }
+        },
+        
+        // Rock
+        'rock': {
+            visualization: {
+                bars: { gradient: 0.7, peakShowTime: 300, barWidth: 10, smoothing: 0.2, colormode: 'fire', fadepeaks: 0.3, showpeaks: true, peakdecay: 0.4 },
+                radial: { gradient: 0.8, radialSensitivity: 2.0, centerGlow: 0.7, radialinvert: false, radius: 180, colormode: 'fire', fadepeaks: 0.2, showpeaks: true, peakdecay: 0.3 },
+                energy: { energySensitivity: 2.2, particleCount: 120, particleSpeed: 1.5, colormode: 'fire', fadepeaks: 0.2, showpeaks: 0.8, peakdecay: 0.3, smoothing: 0.2 },
+                global: { colorScheme: 'fire', brightness: 1.2, contrast: 1.3, saturation: 1.1 }
+            },
+            video: {
+                colorEffects: { grayscale: 0.2, invert: 0.1, contrast: 1.3, brightness: 0.9 },
+                artisticEffects: { posterize: 0.4, edgeDetection: 0.3 },
+                blendModes: { multiply: 0.2, overlay: 0.1 }
+            },
+            audioCharacteristics: { energy: 'high', tempo: 'medium-fast', frequency: 'balanced', dynamics: 'energetic' }
+        },
+        
+        // Electronic/Dance
+        'electronic': {
+            visualization: {
+                bars: { gradient: 0.6, peakShowTime: 100, barWidth: 6, smoothing: 0.8, colormode: 'neon', fadepeaks: 0.1, showpeaks: true, peakdecay: 0.1 },
+                radial: { gradient: 0.7, radialSensitivity: 1.8, centerGlow: 0.9, radialinvert: true, radius: 160, colormode: 'neon', fadepeaks: 0.05, showpeaks: true, peakdecay: 0.1 },
+                energy: { energySensitivity: 2.2, particleCount: 100, particleSpeed: 1.5, colormode: 'neon', fadepeaks: 0.05, showpeaks: 0.9, peakdecay: 0.1, smoothing: 0.8 },
+                global: { colorScheme: 'neon', brightness: 1.5, contrast: 1.2, saturation: 1.4 }
+            },
+            video: {
+                colorEffects: { hue: 60, saturation: 1.6, brightness: 1.3 },
+                artisticEffects: { blur: 2, sharpen: 0.5 },
+                blendModes: { screen: 0.4, overlay: 0.3 }
+            },
+            audioCharacteristics: { energy: 'very-high', tempo: 'very-fast', frequency: 'treble-heavy', dynamics: 'pulsing' }
+        },
+        
+        // Reggae
+        'reggae': {
+            visualization: {
+                bars: { gradient: 0.4, peakShowTime: 600, barWidth: 8, smoothing: 0.6, colormode: 'ocean', fadepeaks: 0.6, showpeaks: true, peakdecay: 0.8 },
+                radial: { gradient: 0.5, radialSensitivity: 1.2, centerGlow: 0.4, radialinvert: false, radius: 140, colormode: 'ocean', fadepeaks: 0.5, showpeaks: true, peakdecay: 0.7 },
+                energy: { energySensitivity: 1.5, particleCount: 60, particleSpeed: 0.8, colormode: 'ocean', fadepeaks: 0.5, showpeaks: 0.6, peakdecay: 0.8, smoothing: 0.6 },
+                global: { colorScheme: 'ocean', brightness: 1.0, contrast: 1.0, saturation: 1.1 }
+            },
+            video: {
+                colorEffects: { hue: 120, saturation: 1.2, brightness: 1.0 },
+                artisticEffects: { blur: 1, emboss: 0.2 },
+                blendModes: { overlay: 0.1 }
+            },
+            audioCharacteristics: { energy: 'medium', tempo: 'slow-medium', frequency: 'bass-heavy', dynamics: 'relaxed' }
+        },
+        
+        // Country
+        'country': {
+            visualization: {
+                bars: { gradient: 0.3, peakShowTime: 800, barWidth: 6, smoothing: 0.7, colormode: 'sunset', fadepeaks: 0.7, showpeaks: true, peakdecay: 0.9 },
+                radial: { gradient: 0.4, radialSensitivity: 1.0, centerGlow: 0.3, radialinvert: false, radius: 120, colormode: 'sunset', fadepeaks: 0.6, showpeaks: true, peakdecay: 0.8 },
+                energy: { energySensitivity: 1.2, particleCount: 40, particleSpeed: 0.6, colormode: 'sunset', fadepeaks: 0.6, showpeaks: 0.5, peakdecay: 0.9, smoothing: 0.7 },
+                global: { colorScheme: 'sunset', brightness: 0.9, contrast: 0.9, saturation: 0.8 }
+            },
+            video: {
+                colorEffects: { sepia: 0.3, saturation: 0.9, brightness: 0.9 },
+                artisticEffects: { blur: 0.5, emboss: 0.1 },
+                blendModes: { multiply: 0.1 }
+            },
+            audioCharacteristics: { energy: 'low-medium', tempo: 'slow-medium', frequency: 'mid-heavy', dynamics: 'gentle' }
+        },
+        
+        // Funk
+        'funk': {
+            visualization: {
+                bars: { gradient: 0.6, peakShowTime: 150, barWidth: 9, smoothing: 0.4, colormode: 'rainbow', fadepeaks: 0.2, showpeaks: true, peakdecay: 0.3 },
+                radial: { gradient: 0.7, radialSensitivity: 1.6, centerGlow: 0.6, radialinvert: true, radius: 170, colormode: 'rainbow', fadepeaks: 0.1, showpeaks: true, peakdecay: 0.2 },
+                energy: { energySensitivity: 1.8, particleCount: 80, particleSpeed: 1.2, colormode: 'rainbow', fadepeaks: 0.1, showpeaks: 0.7, peakdecay: 0.3, smoothing: 0.4 },
+                global: { colorScheme: 'neon', brightness: 1.1, contrast: 1.1, saturation: 1.3 }
+            },
+            video: {
+                colorEffects: { hue: 180, saturation: 1.4, brightness: 1.1 },
+                artisticEffects: { sharpen: 0.3, emboss: 0.2 },
+                blendModes: { screen: 0.2, overlay: 0.1 }
+            },
+            audioCharacteristics: { energy: 'medium-high', tempo: 'medium', frequency: 'bass-heavy', dynamics: 'groovy' }
+        },
+        
+        // Ambient
+        'ambient': {
+            visualization: {
+                bars: { gradient: 0.2, peakShowTime: 1500, barWidth: 4, smoothing: 0.95, colormode: 'ocean', fadepeaks: 0.9, showpeaks: false, peakdecay: 0.95 },
+                radial: { gradient: 0.1, radialSensitivity: 0.5, centerGlow: 0.1, radialinvert: false, radius: 100, colormode: 'ocean', fadepeaks: 0.8, showpeaks: false, peakdecay: 0.9 },
+                energy: { energySensitivity: 0.8, particleCount: 20, particleSpeed: 0.3, colormode: 'ocean', fadepeaks: 0.8, showpeaks: 0.2, peakdecay: 0.95, smoothing: 0.95 },
+                global: { colorScheme: 'ocean', brightness: 0.6, contrast: 0.7, saturation: 0.6 }
+            },
+            video: {
+                colorEffects: { grayscale: 0.4, sepia: 0.2, brightness: 0.7 },
+                artisticEffects: { blur: 3, emboss: 0.1 },
+                blendModes: { multiply: 0.2 }
+            },
+            audioCharacteristics: { energy: 'very-low', tempo: 'very-slow', frequency: 'balanced', dynamics: 'ethereal' }
+        },
+        
+        // Punk
+        'punk': {
+            visualization: {
+                bars: { gradient: 0.9, peakShowTime: 100, barWidth: 14, smoothing: 0.05, colormode: 'fire', fadepeaks: 0.1, showpeaks: true, peakdecay: 0.1 },
+                radial: { gradient: 0.95, radialSensitivity: 2.8, centerGlow: 0.9, radialinvert: true, radius: 220, colormode: 'fire', fadepeaks: 0.05, showpeaks: true, peakdecay: 0.1 },
+                energy: { energySensitivity: 3.0, particleCount: 180, particleSpeed: 2.0, colormode: 'fire', fadepeaks: 0.05, showpeaks: 0.95, peakdecay: 0.1, smoothing: 0.05 },
+                global: { colorScheme: 'fire', brightness: 1.4, contrast: 1.5, saturation: 1.3 }
+            },
+            video: {
+                colorEffects: { grayscale: 0.4, invert: 0.3, contrast: 1.6, brightness: 0.7 },
+                artisticEffects: { posterize: 0.8, edgeDetection: 0.6 },
+                blendModes: { multiply: 0.4, overlay: 0.3 }
+            },
+            audioCharacteristics: { energy: 'very-high', tempo: 'very-fast', frequency: 'treble-heavy', dynamics: 'chaotic' }
+        },
+        
+        // Jazz (existing)
+        'jazz': {
+            visualization: {
+                bars: { gradient: 0.4, peakShowTime: 800, barWidth: 4, smoothing: 0.9, colormode: 'ocean', fadepeaks: 0.7, showpeaks: true, peakdecay: 0.8 },
+                radial: { gradient: 0.3, radialSensitivity: 0.8, centerGlow: 0.2, radialinvert: false, radius: 110, colormode: 'ocean', fadepeaks: 0.6, showpeaks: true, peakdecay: 0.7 },
+                energy: { energySensitivity: 0.9, particleCount: 30, particleSpeed: 0.6, colormode: 'ocean', fadepeaks: 0.6, showpeaks: 0.4, peakdecay: 0.8, smoothing: 0.9 },
+                global: { colorScheme: 'ocean', brightness: 0.8, contrast: 0.9, saturation: 0.7 }
+            },
+            video: {
+                colorEffects: { sepia: 0.4, saturation: 0.8, brightness: 0.9 },
+                artisticEffects: { blur: 1, emboss: 0.3 },
+                blendModes: { multiply: 0.2 }
+            },
+            audioCharacteristics: { energy: 'medium', tempo: 'variable', frequency: 'mid-heavy', dynamics: 'smooth' }
+        },
+        
+        // Classical (existing)
+        'classical': {
+            visualization: {
+                bars: { gradient: 0.2, peakShowTime: 1200, barWidth: 3, smoothing: 0.95, colormode: 'spectrum', fadepeaks: 0.8, showpeaks: true, peakdecay: 0.9 },
+                radial: { gradient: 0.1, radialSensitivity: 0.6, centerGlow: 0.1, radialinvert: false, radius: 90, colormode: 'spectrum', fadepeaks: 0.7, showpeaks: true, peakdecay: 0.8 },
+                energy: { energySensitivity: 0.7, particleCount: 20, particleSpeed: 0.4, colormode: 'spectrum', fadepeaks: 0.7, showpeaks: 0.3, peakdecay: 0.9, smoothing: 0.95 },
+                global: { colorScheme: 'default', brightness: 0.7, contrast: 0.8, saturation: 0.6 }
+            },
+            video: {
+                colorEffects: { grayscale: 0.2, sepia: 0.3, brightness: 0.8 },
+                artisticEffects: { blur: 0.5, emboss: 0.2 },
+                blendModes: { multiply: 0.1 }
+            },
+            audioCharacteristics: { energy: 'low-medium', tempo: 'slow-medium', frequency: 'balanced', dynamics: 'gentle' }
+        }
+    };
+
     // AI Autopilot System for Live Performance Visualization Management
     class AIAutopilot {
         constructor(visualizer) {
@@ -5613,19 +5827,33 @@
             
             // Autopilot settings
             this.scope = 'all'; // 'bars', 'radial', 'energy', 'all'
-            this.autoColorSchemes = true;
+            this.autoColorSchemes = false; // Off by default
             this.changeTiming = 'instant'; // 'instant', 'smooth', 'slow', 'beat-synced'
             this.sensitivity = 'medium'; // 'low', 'medium', 'high'
             
             // Initialize components
             this.audioAnalyzer = new AudioAnalyzer(visualizer.audioMotion);
             this.decisionEngine = new DecisionEngine(this);
+            this.parameterController = new ParameterController(this);
+            this.genreDetector = new GenreDetector(this);
             
             // Autopilot state
             this.lastModeChange = 0;
             this.currentMode = 0;
             this.modeHistory = [];
             this.energyHistory = [];
+            
+            // Genre detection state
+            this.currentGenre = 'unknown';
+            this.genreConfidence = 0;
+            this.genreHistory = [];
+            this.manualGenre = null; // User-selected genre override
+            
+            // Parameter control state
+            this.parameterHistory = [];
+            this.userPreferences = this.loadUserPreferences();
+            this.parameterControlEnabled = true; // Enable by default for testing
+            this.videoEffectsEnabled = true; // Enable by default
             
             // Define visualization mode groups
             this.modeGroups = {
@@ -5635,7 +5863,7 @@
                 all: [0, 1, 2, 3, 4, 5, 6] // All modes
             };
             
-            console.log('🤖 AI Autopilot initialized');
+            console.log('🤖 AI Autopilot initialized with enhanced parameter control');
         }
         
         activate() {
@@ -5688,6 +5916,565 @@
             this.intensity = level;
             console.log(`🎛️ Autopilot intensity set to: ${level}`);
         }
+        
+        // Enhanced decision making with parameter control
+        makeAdvancedDecisions() {
+            const audioFeatures = this.audioAnalyzer.getCurrentFeatures();
+            
+            // Debug logging
+            console.log('🤖 Enhanced Decision Making:', {
+                energy: audioFeatures.energy?.toFixed(3),
+                beat: audioFeatures.beat,
+                tempo: audioFeatures.tempo,
+                dominantFreq: audioFeatures.dominantFreq,
+                parameterControlEnabled: this.parameterControlEnabled,
+                scope: this.scope
+            });
+            
+            // Use manual genre if set, otherwise detect automatically
+            let detectedGenre;
+            if (this.manualGenre) {
+                detectedGenre = {
+                    genre: this.manualGenre,
+                    confidence: 1.0,
+                    allScores: {}
+                };
+            } else {
+                detectedGenre = this.genreDetector.detectGenre(audioFeatures);
+            }
+            
+            // Update genre state
+            this.updateGenreState(detectedGenre);
+            
+            // Update UI display
+            this.updateGenreDisplay();
+            
+            // Get parameter recommendations based on genre and audio
+            if (this.parameterControlEnabled) {
+                const parameterRecommendations = this.getParameterRecommendations(
+                    detectedGenre, 
+                    audioFeatures, 
+                    this.scope
+                );
+                
+                // Apply parameter changes
+                this.parameterController.applyParameterChanges(parameterRecommendations);
+            }
+            
+            // Continue with existing mode switching logic
+            this.decisionEngine.evaluateVisualizationChange();
+        }
+        
+        getParameterRecommendations(genre, audioFeatures, scope) {
+            const genreName = genre.genre || genre;
+            const genreMapping = GENRE_MAPPINGS[genreName] || GENRE_MAPPINGS['electronic'];
+            const globalParams = genreMapping.visualization.global || {};
+            const videoParams = genreMapping.video || {};
+            
+            let scopeParams = {};
+            if (scope === 'all') {
+                // For 'all' scope, combine parameters from all scopes
+                scopeParams = {
+                    ...(genreMapping.visualization.bars || {}),
+                    ...(genreMapping.visualization.radial || {}),
+                    ...(genreMapping.visualization.energy || {})
+                };
+            } else {
+                // For specific scopes, get only that scope's parameters
+                scopeParams = genreMapping.visualization[scope] || {};
+            }
+            
+            // Apply audio feature scaling
+            const scaledParams = this.scaleParametersByAudio(scopeParams, audioFeatures);
+            
+            return {
+                visualization: { ...globalParams, ...scaledParams },
+                video: this.scaleVideoParametersByAudio(videoParams, audioFeatures)
+            };
+        }
+        
+        scaleParametersByAudio(params, audioFeatures) {
+            const scaled = { ...params };
+            const energy = audioFeatures.energy || 0.5;
+            const tempo = audioFeatures.tempo || 120;
+            
+            // Scale parameters based on audio characteristics
+            if (scaled.energySensitivity) {
+                scaled.energySensitivity *= (0.5 + energy * 1.5);
+            }
+            if (scaled.particleSpeed) {
+                scaled.particleSpeed *= (0.5 + (tempo / 200));
+            }
+            if (scaled.radialSensitivity) {
+                scaled.radialSensitivity *= (0.5 + energy * 1.5);
+            }
+            
+            return scaled;
+        }
+        
+        scaleVideoParametersByAudio(params, audioFeatures) {
+            const scaled = { ...params };
+            const energy = audioFeatures.energy || 0.5;
+            
+            // Scale video effects based on energy
+            if (scaled.colorEffects) {
+                scaled.colorEffects.brightness = (scaled.colorEffects.brightness || 1) * (0.5 + energy);
+                scaled.colorEffects.contrast = (scaled.colorEffects.contrast || 1) * (0.5 + energy);
+            }
+            
+            return scaled;
+        }
+        
+        updateGenreState(detectedGenre) {
+            this.genreHistory.push({
+                genre: detectedGenre.genre,
+                confidence: detectedGenre.confidence,
+                timestamp: Date.now()
+            });
+            
+            // Keep only recent history (last 20 detections)
+            if (this.genreHistory.length > 20) {
+                this.genreHistory = this.genreHistory.slice(-20);
+            }
+            
+            // Update current genre if confidence is high enough
+            if (detectedGenre.confidence > 0.7) {
+                this.currentGenre = detectedGenre.genre;
+                this.genreConfidence = detectedGenre.confidence;
+            }
+        }
+        
+        loadUserPreferences() {
+            try {
+                const saved = localStorage.getItem('autopilot_user_preferences');
+                return saved ? JSON.parse(saved) : {};
+            } catch (error) {
+                console.warn('Could not load user preferences:', error);
+                return {};
+            }
+        }
+        
+        saveUserPreferences() {
+            try {
+                localStorage.setItem('autopilot_user_preferences', JSON.stringify(this.userPreferences));
+            } catch (error) {
+                console.warn('Could not save user preferences:', error);
+            }
+        }
+        
+        updateGenreDisplay() {
+            const genreDisplay = document.getElementById('currentGenreDisplay');
+            const confidenceDisplay = document.getElementById('genreConfidenceDisplay');
+            
+            if (genreDisplay) {
+                const genreName = this.currentGenre.charAt(0).toUpperCase() + this.currentGenre.slice(1).replace('-', ' ');
+                genreDisplay.textContent = genreName;
+            }
+            
+            if (confidenceDisplay) {
+                const confidencePercent = Math.round(this.genreConfidence * 100);
+                confidenceDisplay.textContent = `${confidencePercent}%`;
+            }
+        }
+        
+        // Test method to force parameter changes
+        testParameterControl() {
+            console.log('🧪 Testing parameter control...');
+            
+            // Force a genre detection
+            const testGenre = 'electronic';
+            this.manualGenre = testGenre;
+            this.currentGenre = testGenre;
+            this.genreConfidence = 1.0;
+            
+            // Get test audio features
+            const testAudioFeatures = {
+                energy: 0.8,
+                beat: true,
+                tempo: 140,
+                dominantFreq: 0.7,
+                energyTrend: 0.1,
+                beatStrength: 1.5,
+                frequencyBands: { bass: 0.3, mid: 0.5, treble: 0.8 },
+                spectralFlux: 0.1
+            };
+            
+            // Get parameter recommendations
+            const recommendations = this.getParameterRecommendations(
+                { genre: testGenre, confidence: 1.0 },
+                testAudioFeatures,
+                this.scope
+            );
+            
+            console.log('🧪 Test recommendations:', recommendations);
+            
+            // Apply parameter changes
+            this.parameterController.applyParameterChanges(recommendations);
+            
+            // Update display
+            this.updateGenreDisplay();
+        }
+    }
+
+    // Parameter Controller for Enhanced Autopilot
+    class ParameterController {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.visualizer = autopilot.visualizer;
+            this.currentParameters = {};
+            this.parameterHistory = [];
+            
+            console.log('🎛️ Parameter Controller initialized');
+        }
+        
+        applyParameterChanges(recommendations) {
+            if (!this.visualizer.audioMotion) return;
+            
+            try {
+                // Apply visualization parameters
+                const vizParams = this.convertToAudioMotionParams(recommendations.visualization);
+                this.visualizer.audioMotion.setOptions(vizParams);
+                
+                // Apply video parameters
+                if (recommendations.video && this.autopilot.videoEffectsEnabled) {
+                    this.applyVideoParameters(recommendations.video);
+                }
+                
+                // Record parameter change
+                this.recordParameterChange(recommendations);
+                
+                console.log('🎛️ Parameters applied:', vizParams);
+            } catch (error) {
+                console.error('Error applying parameters:', error);
+            }
+        }
+        
+        convertToAudioMotionParams(params) {
+            const audioMotionParams = {};
+            const scope = this.autopilot.scope;
+            
+            // Convert each parameter to AudioMotion format
+            for (const [paramName, value] of Object.entries(params)) {
+                let paramDef = null;
+                
+                // If scope is 'all', check all scopes for parameter definitions
+                if (scope === 'all') {
+                    for (const scopeName of ['bars', 'radial', 'energy', 'global']) {
+                        const scopeParams = VISUALIZATION_PARAMETERS[scopeName] || {};
+                        if (scopeParams[paramName]) {
+                            paramDef = scopeParams[paramName];
+                            break;
+                        }
+                    }
+                } else {
+                    // For specific scopes, check that scope first, then global
+                    const scopeParams = VISUALIZATION_PARAMETERS[scope] || {};
+                    paramDef = scopeParams[paramName] || VISUALIZATION_PARAMETERS.global[paramName];
+                }
+                
+                if (paramDef && paramDef.audioMotion) {
+                    const audioMotionParam = paramDef.audioMotion;
+                    audioMotionParams[audioMotionParam] = this.convertParameterValue(value, paramDef);
+                }
+            }
+            
+            return audioMotionParams;
+        }
+        
+        convertParameterValue(value, paramDef) {
+            switch (paramDef.type) {
+                case 'float':
+                    return Math.max(paramDef.min, Math.min(paramDef.max, value));
+                case 'int':
+                    const intValue = Math.round(Math.max(paramDef.min, Math.min(paramDef.max, value)));
+                    // Special handling for fftSize - must be power of 2
+                    if (paramDef.audioMotion === 'fftSize') {
+                        return this.getNearestPowerOfTwo(intValue);
+                    }
+                    return intValue;
+                case 'boolean':
+                    return Boolean(value);
+                case 'enum':
+                    return paramDef.values.includes(value) ? value : paramDef.default;
+                case 'color':
+                    return value;
+                default:
+                    return value;
+            }
+        }
+        
+        getNearestPowerOfTwo(value) {
+            const powersOfTwo = [64, 128, 256, 512, 1024, 2048, 4096, 8192];
+            return powersOfTwo.reduce((prev, curr) => 
+                Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+            );
+        }
+        
+        applyVideoParameters(videoParams) {
+            // Apply video effects to the video element
+            const videoElement = this.visualizer.videoElement;
+            if (!videoElement) {
+                console.log('🎬 Video element not found, skipping video effects');
+                return;
+            }
+            
+            console.log('🎬 Applying video effects:', videoParams);
+            let filterString = '';
+            
+            // Apply color effects
+            if (videoParams.colorEffects) {
+                const effects = videoParams.colorEffects;
+                if (effects.grayscale > 0) {
+                    filterString += `grayscale(${effects.grayscale * 100}%) `;
+                }
+                if (effects.sepia > 0) {
+                    filterString += `sepia(${effects.sepia * 100}%) `;
+                }
+                if (effects.invert > 0) {
+                    filterString += `invert(${effects.invert * 100}%) `;
+                }
+                if (effects.hue !== 0) {
+                    filterString += `hue-rotate(${effects.hue}deg) `;
+                }
+                if (effects.saturation !== 1) {
+                    filterString += `saturate(${effects.saturation}) `;
+                }
+                if (effects.brightness !== 1) {
+                    filterString += `brightness(${effects.brightness}) `;
+                }
+                if (effects.contrast !== 1) {
+                    filterString += `contrast(${effects.contrast}) `;
+                }
+            }
+            
+            // Apply artistic effects
+            if (videoParams.artisticEffects) {
+                const effects = videoParams.artisticEffects;
+                if (effects.posterize > 0) {
+                    // Note: CSS doesn't have posterize, this would need custom implementation
+                    filterString += `contrast(${1 + effects.posterize}) `;
+                }
+                if (effects.blur > 0) {
+                    filterString += `blur(${effects.blur}px) `;
+                }
+                if (effects.sharpen > 0) {
+                    filterString += `contrast(${1 + effects.sharpen}) `;
+                }
+            }
+            
+            videoElement.style.filter = filterString.trim();
+            console.log('🎬 Applied filter string:', filterString.trim());
+        }
+        
+        recordParameterChange(recommendations) {
+            this.parameterHistory.push({
+                timestamp: Date.now(),
+                parameters: recommendations,
+                scope: this.autopilot.scope,
+                genre: this.autopilot.currentGenre
+            });
+            
+            // Keep only recent history (last 50 changes)
+            if (this.parameterHistory.length > 50) {
+                this.parameterHistory = this.parameterHistory.slice(-50);
+            }
+        }
+        
+        getCurrentParameters() {
+            return this.currentParameters;
+        }
+        
+        getParameterHistory() {
+            return this.parameterHistory;
+        }
+    }
+
+    // Genre Detector for Enhanced Autopilot
+    class GenreDetector {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.audioAnalyzer = autopilot.audioAnalyzer;
+            this.detectionHistory = [];
+            this.genreConfidence = {};
+            
+            console.log('🎵 Genre Detector initialized');
+        }
+        
+        detectGenre(audioFeatures) {
+            const energy = audioFeatures.energy || 0.5;
+            const tempo = audioFeatures.tempo || 120;
+            const dominantFreq = audioFeatures.dominantFreq || 0.5;
+            const energyTrend = audioFeatures.energyTrend || 0;
+            
+            // Simple rule-based genre detection
+            const genreScores = this.calculateGenreScores(energy, tempo, dominantFreq, energyTrend);
+            const bestGenre = this.selectBestGenre(genreScores);
+            
+            // Record detection
+            this.detectionHistory.push({
+                timestamp: Date.now(),
+                audioFeatures: { energy, tempo, dominantFreq, energyTrend },
+                genreScores,
+                selectedGenre: bestGenre
+            });
+            
+            // Keep only recent history (last 100 detections)
+            if (this.detectionHistory.length > 100) {
+                this.detectionHistory = this.detectionHistory.slice(-100);
+            }
+            
+            return bestGenre;
+        }
+        
+        calculateGenreScores(energy, tempo, dominantFreq, energyTrend) {
+            const scores = {};
+            
+            // Heavy Metal: High energy, fast tempo, bass-heavy, aggressive dynamics
+            scores['heavy-metal'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.8,
+                tempoWeight: 0.3, tempoTarget: 160,
+                freqWeight: 0.2, freqTarget: 0.2, // Bass-heavy
+                trendWeight: 0.1, trendTarget: 0.1 // Aggressive
+            });
+            
+            // Rock: High energy, medium-fast tempo, balanced frequency
+            scores['rock'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.6, energyTarget: 0.5, // Medium-high energy
+                tempoWeight: 0.4, tempoTarget: 120, // Medium-fast tempo
+                freqWeight: 0.0, freqTarget: 0.5, // Frequency less important
+                trendWeight: 0.0, trendTarget: 0.0 // Trend less important
+            });
+            
+            // Electronic: Very high energy, very fast tempo, treble-heavy, pulsing
+            scores['electronic'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.9,
+                tempoWeight: 0.3, tempoTarget: 180,
+                freqWeight: 0.2, freqTarget: 0.8, // Treble-heavy
+                trendWeight: 0.1, trendTarget: 0.15 // Pulsing
+            });
+            
+            // Reggae: Medium energy, slow-medium tempo, bass-heavy, relaxed
+            scores['reggae'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.5,
+                tempoWeight: 0.3, tempoTarget: 100,
+                freqWeight: 0.2, freqTarget: 0.2, // Bass-heavy
+                trendWeight: 0.1, trendTarget: -0.05 // Relaxed
+            });
+            
+            // Country: Low-medium energy, slow-medium tempo, mid-heavy, gentle
+            scores['country'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.6, energyTarget: 0.2, // Much lower energy
+                tempoWeight: 0.4, tempoTarget: 80, // Much slower tempo
+                freqWeight: 0.0, freqTarget: 0.7, // Frequency less important
+                trendWeight: 0.0, trendTarget: -0.05 // Trend less important
+            });
+            
+            // Funk: Medium-high energy, medium tempo, bass-heavy, groovy
+            scores['funk'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.6,
+                tempoWeight: 0.3, tempoTarget: 120,
+                freqWeight: 0.2, freqTarget: 0.3, // Bass-heavy
+                trendWeight: 0.1, trendTarget: 0.0 // Groovy
+            });
+            
+            // Ambient: Very low energy, very slow tempo, balanced, ethereal
+            scores['ambient'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.5, energyTarget: 0.15, // Very low energy
+                tempoWeight: 0.3, tempoTarget: 50, // Very slow tempo
+                freqWeight: 0.15, freqTarget: 0.5, // Balanced
+                trendWeight: 0.05, trendTarget: -0.1 // Ethereal
+            });
+            
+            // Punk: Very high energy, very fast tempo, treble-heavy, chaotic
+            scores['punk'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.95,
+                tempoWeight: 0.3, tempoTarget: 200,
+                freqWeight: 0.2, freqTarget: 0.9, // Treble-heavy
+                trendWeight: 0.1, trendTarget: 0.2 // Chaotic
+            });
+            
+            // Jazz: Medium energy, variable tempo, mid-heavy, smooth
+            scores['jazz'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.5,
+                tempoWeight: 0.2, tempoTarget: 120, // Variable tempo
+                freqWeight: 0.3, freqTarget: 0.6, // Mid-heavy
+                trendWeight: 0.1, trendTarget: 0.0 // Smooth
+            });
+            
+            // Classical: Low-medium energy, slow-medium tempo, balanced, gentle
+            scores['classical'] = this.calculateScore(energy, tempo, dominantFreq, energyTrend, {
+                energyWeight: 0.4, energyTarget: 0.4,
+                tempoWeight: 0.3, tempoTarget: 100,
+                freqWeight: 0.2, freqTarget: 0.5, // Balanced
+                trendWeight: 0.1, trendTarget: -0.05 // Gentle
+            });
+            
+            return scores;
+        }
+        
+        calculateScore(energy, tempo, dominantFreq, energyTrend, targets) {
+            // Calculate individual component scores (0-1 range) with very strict penalties
+            const energyDiff = Math.abs(energy - targets.energyTarget);
+            const energyScore = Math.max(0, 1 - energyDiff * targets.energyWeight * 4); // Very strict penalty
+            
+            // Special handling for tempo=0 (no tempo detected) - give lower score
+            let tempoScore;
+            if (tempo === 0) {
+                tempoScore = 0.2; // Much lower score when no tempo detected
+            } else {
+                const tempoDiff = Math.abs(tempo - targets.tempoTarget) / 200;
+                tempoScore = Math.max(0, 1 - tempoDiff * targets.tempoWeight * 3); // Very strict penalty
+            }
+            
+            const freqDiff = Math.abs(dominantFreq - targets.freqTarget);
+            const freqScore = Math.max(0, 1 - freqDiff * targets.freqWeight * 4); // Very strict penalty
+            
+            const trendDiff = Math.abs(energyTrend - targets.trendTarget);
+            const trendScore = Math.max(0, 1 - trendDiff * targets.trendWeight * 4); // Very strict penalty
+            
+            // Weighted average with very strict scoring
+            const totalWeight = targets.energyWeight + targets.tempoWeight + targets.freqWeight + targets.trendWeight;
+            const weightedScore = (energyScore * targets.energyWeight + 
+                                 tempoScore * targets.tempoWeight + 
+                                 freqScore * targets.freqWeight + 
+                                 trendScore * targets.trendWeight) / totalWeight;
+            
+            // Apply additional penalty for very poor matches
+            const finalScore = weightedScore < 0.4 ? weightedScore * 0.3 : weightedScore;
+            
+            return Math.max(0, Math.min(1, finalScore));
+        }
+        
+        selectBestGenre(genreScores) {
+            let bestGenre = 'electronic'; // Default fallback
+            let bestScore = 0;
+            
+            // Debug logging
+            console.log('🎵 Genre Scores:', genreScores);
+            
+            for (const [genre, score] of Object.entries(genreScores)) {
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestGenre = genre;
+                }
+            }
+            
+            console.log(`🎵 Selected Genre: ${bestGenre} (confidence: ${bestScore.toFixed(3)})`);
+            
+            return {
+                genre: bestGenre,
+                confidence: bestScore,
+                allScores: genreScores
+            };
+        }
+        
+        getDetectionHistory() {
+            return this.detectionHistory;
+        }
+        
+        getGenreConfidence() {
+            return this.genreConfidence;
+        }
     }
 
     // Audio Analysis Engine for AI Autopilot
@@ -5698,7 +6485,7 @@
             this.analysisFrame = null;
             
             // Analysis parameters
-            this.beatThreshold = 1.15; // More sensitive beat detection
+            this.beatThreshold = 1.05; // More sensitive beat detection
             this.energySmoothing = 0.9;  // Smoother energy for better beat detection
             this.tempoWindow = 120; // frames for tempo analysis
             
@@ -5915,6 +6702,39 @@
             const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
             return recentAvg - olderAvg; // Positive = increasing energy
         }
+        
+        // Enhanced method for genre detection and parameter control
+        getCurrentFeatures() {
+            // Convert dominantFreq string to numeric value for genre detection
+            let dominantFreqNumeric = 0.5; // Default to mid
+            if (this.dominantFreq === 'bass') dominantFreqNumeric = 0.2;
+            else if (this.dominantFreq === 'treble') dominantFreqNumeric = 0.8;
+            else if (this.dominantFreq === 'mid') dominantFreqNumeric = 0.5;
+            
+            // Estimate tempo from energy if no tempo detected yet
+            let estimatedTempo = this.currentTempo;
+            if (estimatedTempo === 0 && this.smoothedEnergy > 0.1) {
+                // Estimate tempo based on energy level
+                if (this.smoothedEnergy > 0.4) estimatedTempo = 140; // High energy = fast tempo
+                else if (this.smoothedEnergy > 0.2) estimatedTempo = 120; // Medium energy = medium tempo
+                else estimatedTempo = 100; // Low energy = slow tempo
+            }
+            
+            return {
+                energy: this.smoothedEnergy,
+                beat: this.beatDetected,
+                tempo: estimatedTempo,
+                dominantFreq: dominantFreqNumeric,
+                energyTrend: this.getEnergyTrend(),
+                beatStrength: this.beatDetected ? this.currentEnergy / (this.smoothedEnergy + 0.001) : 0,
+                frequencyBands: {
+                    bass: this.bassEnergy || 0,
+                    mid: this.midEnergy || 0,
+                    treble: this.trebleEnergy || 0
+                },
+                spectralFlux: this.spectralFlux || 0
+            };
+        }
     }
 
     // Decision Engine for AI Autopilot
@@ -5927,7 +6747,7 @@
             this.isRunning = false;
             this.decisionFrame = null;
             this.lastDecision = 0;
-            this.decisionCooldown = 2000; // Minimum 2 seconds between major changes
+            this.decisionCooldown = 500; // Minimum 0.5 seconds between major changes
             
             // Available visualization modes
             this.visualizationModes = [
@@ -5967,7 +6787,9 @@
                 
                 // Only make decisions periodically to avoid chaos
                 if (now - this.lastDecision > this.decisionCooldown) {
-                    this.evaluateVisualizationChange();
+                    // Use enhanced decision making with parameter control
+                    this.autopilot.makeAdvancedDecisions();
+                    this.lastDecision = now; // Update last decision time
                 }
                 
             } catch (error) {
@@ -5984,16 +6806,34 @@
             const energyTrend = this.audioAnalyzer.getEnergyTrend();
             const tempo = this.audioAnalyzer.getTempo();
             
+            // Debug logging
+            console.log('🎯 Visualization Change Evaluation:', {
+                energy: energy?.toFixed(3),
+                beat: beat,
+                dominantFreq: dominantFreq,
+                energyTrend: energyTrend?.toFixed(3),
+                tempo: tempo,
+                currentMode: this.visualizer.currentMode
+            });
+            
             // Intelligent mode selection based on multiple factors
             let targetMode = this.selectOptimalMode(energy, dominantFreq, tempo, energyTrend);
             
-            // Only switch on beats and if mode is significantly different
-            const shouldSwitch = beat && 
-                               targetMode !== this.visualizer.currentMode && 
-                               this.shouldSwitchMode(targetMode, energy);
+            // Switch if mode is different and conditions are met (less restrictive)
+            const shouldSwitch = targetMode !== this.visualizer.currentMode && 
+                               this.shouldSwitchMode(targetMode, energy) &&
+                               (beat || energy > 0.1 || Math.random() < 0.1); // More responsive switching
+            
+            console.log('🎯 Switch Decision:', {
+                shouldSwitch: shouldSwitch,
+                beat: beat,
+                targetMode: targetMode,
+                currentMode: this.visualizer.currentMode,
+                shouldSwitchMode: this.shouldSwitchMode(targetMode, energy)
+            });
             
             if (shouldSwitch) {
-                this.visualizer.setVisualizationMode(targetMode);
+                this.applyModeChange(targetMode);
                 this.autopilot.recordModeChange(targetMode);
                 this.lastDecision = Date.now();
                 
@@ -6011,7 +6851,22 @@
             // Get available modes based on scope setting
             const availableModes = this.autopilot.modeGroups[this.autopilot.scope];
             
-            // Multi-factor mode selection with realistic energy thresholds
+            console.log(`🎯 Scope: ${this.autopilot.scope}, Available modes:`, availableModes);
+            
+            // If scope is specific (radial, energy), return that mode directly
+            if (this.autopilot.scope === 'radial' && availableModes.includes(4)) {
+                return 4; // Radial Spectrum
+            }
+            if (this.autopilot.scope === 'energy' && availableModes.includes(5)) {
+                return 5; // Energy
+            }
+            if (this.autopilot.scope === 'bars' && availableModes.length > 0) {
+                // For bars scope, prefer bar-based visualizations
+                const barModes = availableModes.filter(mode => [0, 2, 3].includes(mode));
+                return barModes.length > 0 ? barModes[Math.floor(Math.random() * barModes.length)] : availableModes[0];
+            }
+            
+            // For 'all' scope, use energy-based selection
             let candidateModes = [];
             
             // Very high energy
@@ -6050,10 +6905,10 @@
         
         shouldSwitchMode(targetMode, energy) {
             // Prevent rapid switching only in very low energy situations
-            if (energy < 0.05) return false;
+            if (energy < 0.02) return false;
             
-            // Prevent switching back to recent modes too quickly
-            const recentModes = this.autopilot.modeHistory.slice(-2); // Allow more variety
+            // Allow more frequent switching - only prevent immediate repeats
+            const recentModes = this.autopilot.modeHistory.slice(-1); // Only prevent immediate repeat
             if (recentModes.includes(targetMode)) return false;
             
             return true;
@@ -6062,6 +6917,37 @@
         getModeName(modeId) {
             const mode = this.visualizationModes.find(m => m.id === modeId);
             return mode ? mode.name : `Mode ${modeId}`;
+        }
+        
+        applyModeChange(targetMode) {
+            const timing = this.autopilot.changeTiming;
+            
+            switch (timing) {
+                case 'instant':
+                    this.visualizer.setVisualizationMode(targetMode);
+                    break;
+                case 'smooth':
+                    // Add smooth transition (could be implemented with CSS transitions)
+                    this.visualizer.setVisualizationMode(targetMode);
+                    break;
+                case 'slow':
+                    // Add delay for slower changes
+                    setTimeout(() => {
+                        this.visualizer.setVisualizationMode(targetMode);
+                    }, 500);
+                    break;
+                case 'beat-synced':
+                    // Wait for next beat to change
+                    if (this.audioAnalyzer.getBeat()) {
+                        this.visualizer.setVisualizationMode(targetMode);
+                    } else {
+                        // Store pending change and apply on next beat
+                        this.pendingModeChange = targetMode;
+                    }
+                    break;
+                default:
+                    this.visualizer.setVisualizationMode(targetMode);
+            }
         }
         
         evaluateColorSchemeChange(energy, dominantFreq) {
@@ -11021,6 +11907,76 @@
                     }
                 });
             });
+            
+            // Genre selection buttons
+            document.querySelectorAll('.genre-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const genre = e.target.dataset.genre;
+                    if (this.aiAutopilot) {
+                        if (genre === 'auto') {
+                            this.aiAutopilot.manualGenre = null;
+                            console.log(`🎵 Genre detection set to: Auto`);
+                        } else {
+                            this.aiAutopilot.manualGenre = genre;
+                            this.aiAutopilot.currentGenre = genre;
+                            this.aiAutopilot.genreConfidence = 1.0;
+                            console.log(`🎵 Manual genre set to: ${genre}`);
+                        }
+                        
+                        // Update button states
+                        document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        // Update display
+                        this.updateGenreDisplay();
+                    }
+                });
+            });
+            
+            // Parameter control toggle
+            const paramControlBtn = document.getElementById('enableParameterControlBtn');
+            if (paramControlBtn) {
+                paramControlBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.parameterControlEnabled = !this.aiAutopilot.parameterControlEnabled;
+                        const isOn = this.aiAutopilot.parameterControlEnabled;
+                        e.target.textContent = `Parameter Control: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            // Video effects toggle
+            const videoEffectsBtn = document.getElementById('enableVideoEffectsBtn');
+            if (videoEffectsBtn) {
+                videoEffectsBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.videoEffectsEnabled = !this.aiAutopilot.videoEffectsEnabled;
+                        const isOn = this.aiAutopilot.videoEffectsEnabled;
+                        e.target.textContent = `Video Effects: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🎬 Video effects: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            // Test parameter control button
+            const testParamBtn = document.getElementById('testParameterControlBtn');
+            if (testParamBtn) {
+                testParamBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.testParameterControl();
+                        console.log('🧪 Test parameter control triggered');
+                    }
+                });
+            }
+        }
+        
+        updateGenreDisplay() {
+            if (this.aiAutopilot) {
+                this.aiAutopilot.updateGenreDisplay();
+            }
         }
 
         closePlaylistPanel() {
@@ -16354,7 +17310,7 @@ https://rogueamoeba.com/loopback/
         });
 
         // Global function for closing info popup
-            function closeInfoPopup() {
+        function closeInfoPopup() {
             if (window.visualizer) {
                 window.visualizer.closeInfoPopup();
             }
