@@ -155,395 +155,12 @@
 <header class="header">
     <button class="info-button" id="infoBtn" title="About GitItUp">i</button>
     <div class="header-content">
-        <div class="header-left">
-            
-            <!-- AUDIO SECTION -->
-            <div class="header-section">
-                <div class="section-label">Audio</div>
-                <div class="section-content">
-                    <!-- Live Audio (renamed from Audio Input) -->
-                    <div class="input-mode-container">
-                        <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
-                            <span class="input-mode-text">Live Audio</span>
-                        </button>
-                        <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
-                            <option value="">Select Audio Input...</option>
-                        </select>
-                    </div>
-
-                    <!-- Playlist -->
-            <div class="dropdown playlist-dropdown">
-                <div class="dropdown-label">Playlist</div>
-                <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
-                        <div class="dropdown-content" id="playlistDropdown">
-                            <!-- Playlist content will be populated here -->
-                        </div>
-                    </div>
-                </div>
+        <div class="header-left" style="display: none;">
+            <!-- Old sections hidden - using new tabbed interface -->
             </div>
 
-            <!-- SECTION DIVIDER -->
-            <div class="section-divider"></div>
-
-            <!-- VIDEO SECTION -->
-            <div class="header-section">
-                <div class="section-label">Video</div>
-                <div class="section-content">
-                    <!-- Live Source (renamed from Video Input) -->
-                    <div class="input-mode-container">
-                        <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Source">
-                            <span class="video-mode-text">Live Source</span>
-                        </button>
-                        <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
-                            <option value="">Select Video Input...</option>
-                        </select>
-                        <div class="video-file-info" id="videoFileInfo" style="display: none;">
-                            <span class="video-file-name" id="videoFileName">No file selected</span>
-                            <div class="video-file-controls-inline">
-                                <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
-                                <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
-            </div>
-                        </div>
-                        <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION DIVIDER -->
-            <div class="section-divider"></div>
-
-            <!-- VISUALIZATIONS SECTION -->
-            <div class="header-section">
-                <div class="section-label">Visualizations</div>
-                <div class="section-content viz-two-columns">
-                    <!-- Column 1 -->
-                    <div class="viz-column">
-                        <!-- Spectrum (renamed from Visualization) -->
-                        <div class="dropdown">
-                            <div class="dropdown-label">Spectrum</div>
-                            <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
-                            <div class="dropdown-content" id="vizModeDropdown">
-                                <div class="dropdown-item active" data-mode="0">Spectrum</div>
-                                <div class="dropdown-item" data-mode="1">Mirror Wave</div>
-                                <div class="dropdown-item" data-mode="2">Classic LED</div>
-                                <div class="dropdown-item" data-mode="3">Stereo</div>
-                                <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
-                                <div class="dropdown-item" data-mode="5">Energy</div>
-                                <div class="dropdown-item" data-mode="6">Mirror</div>
-                            </div>
-                        </div>
-
-                        <!-- Viz Toggle -->
-                        <button class="dropdown-toggle viz-toggle-btn" id="vizToggleBtn" title="Toggle Visualization">ON</button>
-
-                        <!-- Morph -->
-                        <div class="morph-controls">
-                            <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
-                                <span class="morph-btn-text">Start Morph</span>
-                            </button>
-                            <select class="morph-speed-select" id="morphSpeedSelect">
-                                <option value="slow">Slow</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="fast">Fast</option>
-                                <option value="ultra">Ultra</option>
-                                <option value="energy">Energy</option>
-                            </select>
-                            <div class="energy-container" id="energyContainer" style="display: none;">
-                                <div class="energy-label">Energy</div>
-                                <div class="energy-bar">
-                                    <div class="energy-indicator" id="energyIndicator"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Column 2 -->
-                    <div class="viz-column">
-                        <!-- Color Schemes -->
-                        <div class="dropdown">
-                            <div class="dropdown-label">Color Scheme</div>
-                            <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
-                            <div class="dropdown-content" id="colorSchemeDropdown">
-                                <div class="dropdown-item active" data-scheme="default">Default</div>
-                                <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
-                                <div class="dropdown-item" data-scheme="luigi">Luigi</div>
-                                <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
-                                <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
-                            </div>
-                        </div>
-
-                        <!-- Random -->
-                        <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
-
-                        <!-- Presets -->
-                        <div class="presets-container">
-                            <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
-                                <option value="">Load Preset...</option>
-                            </select>
-                            <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
-                            <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
-                            <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
-                            <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
-                        </div>
-
-                        <!-- Kaleidoscope (at bottom of column 2) -->
-                        <div class="kaleidoscope-controls">
-                            <button class="dropdown-toggle kaleidoscope-btn" id="kaleidoscopeBtn" title="Kaleidoscope">
-                                <span class="kaleidoscope-btn-text">Kaleidoscope Off</span>
-                            </button>
-
-                            <!-- Kaleidoscope settings panel -->
-                            <div class="kaleidoscope-panel" id="kaleidoscopePanel" style="display: none;">
-                                <div class="panel-header">
-                                    <span>Kaleidoscope Settings</span>
-                                    <button class="panel-close-btn" id="kaleidoscopeCloseBtn">×</button>
-                                </div>
-
-                                <div class="control-group">
-                                    <div class="slider-container">
-                                        <label>Segments</label>
-                                        <input type="range" id="kaleidoscopeSegments" min="2" max="24" value="6" step="1">
-                                        <span id="kaleidoscopeSegmentsValue">6</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Rings</label>
-                                        <input type="range" id="kaleidoscopeRings" min="1" max="5" value="1" step="1">
-                                        <span id="kaleidoscopeRingsValue">1</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Ring Spacing</label>
-                                        <input type="range" id="kaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
-                                        <span id="kaleidoscopeRingSpacingValue">20%</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Rotation Speed</label>
-                                        <input type="range" id="kaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
-                                        <span id="kaleidoscopeSpeedValue">0</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Scale</label>
-                                        <input type="range" id="kaleidoscopeScale" min="50" max="200" value="100" step="10">
-                                        <span id="kaleidoscopeScaleValue">100%</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Center X</label>
-                                        <input type="range" id="kaleidoscopeCenterX" min="0" max="100" value="50" step="1">
-                                        <span id="kaleidoscopeCenterXValue">50%</span>
-                                    </div>
-                                    <div class="slider-container">
-                                        <label>Center Y</label>
-                                        <input type="range" id="kaleidoscopeCenterY" min="0" max="100" value="50" step="1">
-                                        <span id="kaleidoscopeCenterYValue">50%</span>
-                                    </div>
-                                    <div class="button-container">
-                                        <button class="effect-toggle-btn" id="kaleidoscopeVideoBtn">Apply to Video: Off</button>
-                                        <button class="effect-toggle-btn" id="kaleidoscopeVizBtn">Apply to Viz: On</button>
-                                    </div>
-                                    <div class="button-container">
-                                        <button class="effect-toggle-btn" id="kaleidoscopeShapeBtn">Shape: Triangle</button>
-                                    </div>
-                                    <div class="apply-container"></div>
-
-                                    <div class="control-group">
-                                        <div class="group-label">Beat Reaction</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="kaleidoscopeBeatBtn">Beat React: Off</button>
-                                            <button class="effect-toggle-btn" id="kaleidoscopeBeatRotationBtn">Rotation: Off</button>
-                                            <button class="effect-toggle-btn" id="kaleidoscopeBeatShapeBtn">Shape: Off</button>
-                                        </div>
-                                        <div class="slider-container" id="beatSensitivityContainer" style="display: none;">
-                                            <label>Sensitivity</label>
-                                            <input type="range" id="kaleidoscopeBeatSensitivity" min="10" max="100" value="50" step="10">
-                                            <span id="kaleidoscopeBeatSensitivityValue">50%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <div class="group-label">Presets</div>
-                                    <div class="preset-buttons">
-                                        <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
-                                        <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
-                                        <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
-                                        <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
-                                        <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION DIVIDER -->
-            <div class="section-divider"></div>
-
-            <!-- OUTPUT SECTION -->
-            <div class="header-section">
-                <div class="section-label">Output</div>
-                <div class="section-content">
-                    <!-- Live Display -->
-                    <button class="dropdown-toggle" id="liveDisplayBtn" title="Open Live Display Window">
-                        Live Display
-                    </button>
-                    <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
-
-                    <!-- Display Settings Panel -->
-                    <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
-                        <div class="panel-header">
-                            <span>Display Settings</span>
-                            <button class="panel-close-btn" id="displaySettingsClose">×</button>
-                        </div>
-
-                        <!-- Presentation Mode -->
-                        <div class="control-group">
-                            <div class="group-label">Presentation Mode</div>
-                            <div class="preset-buttons">
-                                <button class="display-mode-btn active" data-mode="original">Original</button>
-                                <button class="display-mode-btn" data-mode="fit">Fit</button>
-                                <button class="display-mode-btn" data-mode="fill">Fill</button>
-                                <button class="display-mode-btn" data-mode="stretch">Stretch</button>
-                                <button class="display-mode-btn" data-mode="performance">Performance</button>
-                            </div>
-                        </div>
-
-                        <!-- Quality Settings -->
-                        <div class="control-group">
-                            <div class="group-label">Capture Quality</div>
-                            <div class="slider-container">
-                                <label>Resolution</label>
-                                <select id="captureResolution" class="quality-select">
-                                    <option value="3840">4K (3840px)</option>
-                                    <option value="2560" selected>2K (2560px)</option>
-                                    <option value="1920">1080p (1920px)</option>
-                                    <option value="1280">720p (1280px)</option>
-                                    <option value="960">SD (960px)</option>
-                                </select>
-                            </div>
-                            <div class="slider-container">
-                                <label>Frame Rate</label>
-                                <select id="captureFrameRate" class="quality-select">
-                                    <option value="60" selected>60 FPS</option>
-                                    <option value="30">30 FPS</option>
-                                    <option value="24">24 FPS</option>
-                                    <option value="15">15 FPS</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Capture Settings -->
-                        <div class="control-group">
-                            <div class="group-label">Capture Settings</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="captureVisualizationBtn">Capture Visualization: On</button>
-                                <button class="effect-toggle-btn" id="captureVideoBtn">Capture Video: On</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Record -->
-                    <div class="record-controls">
-                        <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
-                            <span class="record-text">Record</span>
-                            <span class="record-timer" style="display: none;">00:00</span>
-                        </button>
-                        <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
-
-                        <!-- Record Settings Panel -->
-                        <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
-                            <div class="panel-header">
-                                <span>Recording Settings</span>
-                                <button class="panel-close-btn" id="recordSettingsClose">×</button>
-                            </div>
-
-                            <!-- Resolution -->
-                            <div class="control-group">
-                                <div class="group-label">Resolution</div>
-                                <select id="recordResolutionSelect" class="control-select">
-                                    <option value="canvas">Canvas Size</option>
-                                    <option value="720p">720p (1280×720)</option>
-                                    <option value="1080p" selected>1080p (1920×1080)</option>
-                                    <option value="4k">4K (3840×2160)</option>
-                                </select>
-                            </div>
-
-                            <!-- Aspect Ratio -->
-                            <div class="control-group">
-                                <div class="group-label">Aspect Ratio</div>
-                                <div class="preset-buttons">
-                                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
-                                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
-                                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                                </div>
-                            </div>
-
-                            <!-- Frame Rate -->
-                            <div class="control-group">
-                                <div class="group-label">Frame Rate</div>
-                                <div class="preset-buttons">
-                                    <button class="framerate-btn active" data-fps="30">30 FPS</button>
-                                    <button class="framerate-btn" data-fps="60">60 FPS</button>
-                                </div>
-                            </div>
-
-                            <!-- Video Quality -->
-                            <div class="control-group">
-                                <div class="group-label">Video Quality</div>
-                                <select id="recordVideoQualitySelect" class="control-select">
-                                    <option value="auto" selected>Auto</option>
-                                    <option value="high">High</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="low">Low</option>
-                                </select>
-                            </div>
-
-                            <!-- Audio Quality -->
-                            <div class="control-group">
-                                <div class="group-label">Audio Quality</div>
-                                <select id="recordAudioQualitySelect" class="control-select">
-                                    <option value="auto" selected>Auto</option>
-                                    <option value="high">High (320 kbps)</option>
-                                    <option value="medium">Medium (192 kbps)</option>
-                                    <option value="low">Low (128 kbps)</option>
-                                </select>
-                            </div>
-
-                            <!-- File Settings -->
-                            <div class="control-group">
-                                <div class="group-label">File Settings</div>
-                                <div class="file-location-display" id="recordFileLocation">
-                                    📥 Downloads folder
-                                </div>
-                                <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
-                                <div class="input-container">
-                                    <label>Filename</label>
-                                    <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
-                                    <span class="file-extension">.webm</span>
-                                </div>
-                            </div>
-
-                            <!-- Recording Info -->
-                            <div class="control-group">
-                                <div class="group-label">Recording Info</div>
-                                <div class="recording-info">
-                                    <div class="info-item">
-                                        <span class="info-label">Output:</span>
-                                        <span id="recordingOutput">1920×1080 @ 30fps</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Format:</span>
-                                        <span id="recordingFormat">WebM (VP9/Opus)</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Est. Size:</span>
-                                        <span id="recordingEstSize">~50 MB/min</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Old sections cleanup area -->
+        <div style="display: none;">
             <!-- Hidden playlist data for backward compatibility -->
             <div id="playlistData" style="display: none;">
                 <!-- Will be populated by PlaylistManager -->
@@ -786,8 +403,416 @@
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
     <!-- End header-content -->
+</header>
+
+<!-- New Tabbed Header Interface (Hidden until Phase 5) -->
+<div class="tab-header" id="tabHeader">
+    <!-- App Icon -->
+    <img class="app-icon" id="appIcon" src="" alt="Vizzy App Icon" />
+    
+    <!-- Tab Group (Centered) -->
+    <div class="tab-group">
+        <button class="tab-item" id="audioTab" data-section="audio">Audio</button>
+        <button class="tab-item" id="videoTab" data-section="video">Video</button>
+        <button class="tab-item" id="visualizationsTab" data-section="visualizations">Visualizations</button>
+        <button class="tab-item" id="outputTab" data-section="output">Output</button>
+    </div>
+    
+    <!-- Spacer for balance -->
+    <div class="tab-spacer"></div>
+</div>
+
+<!-- Section Panels (Hidden until opened) -->
+<div class="section-panel" id="audioPanel">
+    <div class="panel-content">
+        <!-- Live Audio (renamed from Audio Input) -->
+        <div class="panel-row">
+            <div class="input-mode-container">
+                <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
+                    <span class="input-mode-text">Live Audio</span>
+                </button>
+                <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
+                    <option value="">Select Audio Input...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Playlist -->
+        <div class="panel-row">
+            <div class="dropdown playlist-dropdown">
+                <div class="dropdown-label">Playlist</div>
+                <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
+                <div class="dropdown-content" id="playlistDropdown">
+                    <!-- Playlist content will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-panel" id="videoPanel">
+    <div class="panel-content">
+        <!-- Live Source (renamed from Video Input) -->
+        <div class="panel-row">
+            <div class="input-mode-container">
+                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Source">
+                    <span class="video-mode-text">Live Source</span>
+                </button>
+                <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
+                    <option value="">Select Video Input...</option>
+                </select>
+                <div class="video-file-info" id="videoFileInfo" style="display: none;">
+                    <span class="video-file-name" id="videoFileName">No file selected</span>
+                    <div class="video-file-controls-inline">
+                        <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
+                        <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
+                    </div>
+                </div>
+                <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-panel" id="visualizationsPanel">
+    <div class="panel-content">
+        <!-- Spectrum Controls (with ON button and Random) -->
+        <div class="spectrum-controls-container">
+            <div class="dropdown-label">Spectrum</div>
+            <div class="control-with-settings">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
+                    <div class="dropdown-content" id="vizModeDropdown">
+                        <div class="dropdown-item active" data-mode="0">Spectrum</div>
+                        <div class="dropdown-item" data-mode="1">Mirror Wave</div>
+                        <div class="dropdown-item" data-mode="2">Classic LED</div>
+                        <div class="dropdown-item" data-mode="3">Stereo</div>
+                        <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
+                        <div class="dropdown-item" data-mode="5">Energy</div>
+                        <div class="dropdown-item" data-mode="6">Mirror</div>
+                    </div>
+                </div>
+                <!-- ON button pinned to the right -->
+                <button class="dropdown-toggle viz-toggle-btn active" id="vizToggleBtn" title="Toggle Visualization">ON</button>
+            </div>
+            <!-- Random button below, left-aligned with Spectrum -->
+            <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
+        </div>
+
+        <!-- Presets -->
+        <div class="presets-container">
+            <div class="dropdown-label">Presets</div>
+            <div class="preset-buttons">
+                <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
+                    <option value="">Load Preset...</option>
+                </select>
+                <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
+                <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
+                <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
+                <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <!-- Morph -->
+        <div class="morph-controls">
+            <div class="dropdown-label">Morph</div>
+            <div class="morph-buttons">
+                <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
+                    <span class="morph-btn-text">Start Morph</span>
+                </button>
+                <select class="morph-speed-select" id="morphSpeedSelect">
+                    <option value="slow">Slow</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="fast">Fast</option>
+                    <option value="ultra">Ultra</option>
+                    <option value="energy">Energy</option>
+                </select>
+            </div>
+            <div class="energy-container" id="energyContainer" style="display: none;">
+                <div class="energy-label">Energy</div>
+                <div class="energy-bar">
+                    <div class="energy-indicator" id="energyIndicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Schemes -->
+        <div class="color-scheme-container">
+            <div class="dropdown-label">Color Scheme</div>
+            <div class="dropdown">
+                <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
+                <div class="dropdown-content" id="colorSchemeDropdown">
+                    <div class="dropdown-item active" data-scheme="default">Default</div>
+                    <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
+                    <div class="dropdown-item" data-scheme="luigi">Luigi</div>
+                    <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
+                    <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kaleidoscope -->
+        <div class="kaleidoscope-controls">
+            <div class="dropdown-label">Kaleidoscope</div>
+            <button class="dropdown-toggle kaleidoscope-btn" id="kaleidoscopeBtn" title="Kaleidoscope">
+                <span class="kaleidoscope-btn-text">Kaleidoscope Off</span>
+            </button>
+
+            <!-- Kaleidoscope settings panel -->
+            <div class="kaleidoscope-panel" id="kaleidoscopePanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Kaleidoscope Settings</span>
+                    <button class="panel-close-btn" id="kaleidoscopeCloseBtn">×</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="slider-container">
+                        <label>Segments</label>
+                        <input type="range" id="kaleidoscopeSegments" min="2" max="24" value="6" step="1">
+                        <span id="kaleidoscopeSegmentsValue">6</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Rings</label>
+                        <input type="range" id="kaleidoscopeRings" min="1" max="5" value="1" step="1">
+                        <span id="kaleidoscopeRingsValue">1</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Ring Spacing</label>
+                        <input type="range" id="kaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
+                        <span id="kaleidoscopeRingSpacingValue">20%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Rotation Speed</label>
+                        <input type="range" id="kaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
+                        <span id="kaleidoscopeSpeedValue">0</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Scale</label>
+                        <input type="range" id="kaleidoscopeScale" min="50" max="200" value="100" step="10">
+                        <span id="kaleidoscopeScaleValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Center X</label>
+                        <input type="range" id="kaleidoscopeCenterX" min="0" max="100" value="50" step="1">
+                        <span id="kaleidoscopeCenterXValue">50%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Center Y</label>
+                        <input type="range" id="kaleidoscopeCenterY" min="0" max="100" value="50" step="1">
+                        <span id="kaleidoscopeCenterYValue">50%</span>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="kaleidoscopeVideoBtn">Apply to Video: Off</button>
+                        <button class="effect-toggle-btn" id="kaleidoscopeVizBtn">Apply to Viz: On</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="kaleidoscopeShapeBtn">Shape: Triangle</button>
+                    </div>
+                    <div class="apply-container"></div>
+
+                    <div class="control-group">
+                        <div class="group-label">Beat Reaction</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="kaleidoscopeBeatBtn">Beat React: Off</button>
+                            <button class="effect-toggle-btn" id="kaleidoscopeBeatRotationBtn">Rotation: Off</button>
+                            <button class="effect-toggle-btn" id="kaleidoscopeBeatShapeBtn">Shape: Off</button>
+                        </div>
+                        <div class="slider-container" id="beatSensitivityContainer" style="display: none;">
+                            <label>Sensitivity</label>
+                            <input type="range" id="kaleidoscopeBeatSensitivity" min="10" max="100" value="50" step="10">
+                            <span id="kaleidoscopeBeatSensitivityValue">50%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-panel" id="outputPanel">
+    <div class="panel-content">
+        <!-- Live Display -->
+        <div class="panel-row">
+            <div class="control-with-settings">
+                <button class="dropdown-toggle" id="liveDisplayBtn" title="Open Live Display Window">
+                    Live Display
+                </button>
+                <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
+            </div>
+
+            <!-- Display Settings Panel -->
+            <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Display Settings</span>
+                    <button class="panel-close-btn" id="displaySettingsClose">×</button>
+                </div>
+
+                <!-- Presentation Mode -->
+                <div class="control-group">
+                    <div class="group-label">Presentation Mode</div>
+                    <div class="preset-buttons">
+                        <button class="display-mode-btn active" data-mode="original">Original</button>
+                        <button class="display-mode-btn" data-mode="fit">Fit</button>
+                        <button class="display-mode-btn" data-mode="fill">Fill</button>
+                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                        <button class="display-mode-btn" data-mode="performance">Performance</button>
+                    </div>
+                </div>
+
+                <!-- Quality Settings -->
+                <div class="control-group">
+                    <div class="group-label">Capture Quality</div>
+                    <div class="slider-container">
+                        <label>Resolution</label>
+                        <select id="captureResolution" class="quality-select">
+                            <option value="3840">4K (3840px)</option>
+                            <option value="2560" selected>2K (2560px)</option>
+                            <option value="1920">1080p (1920px)</option>
+                            <option value="1280">720p (1280px)</option>
+                            <option value="960">SD (960px)</option>
+            </select>
+        </div>
+                    <div class="slider-container">
+                        <label>Frame Rate</label>
+                        <select id="captureFrameRate" class="quality-select">
+                            <option value="60" selected>60 FPS</option>
+                            <option value="30">30 FPS</option>
+                            <option value="24">24 FPS</option>
+                            <option value="15">15 FPS</option>
+                        </select>
+    </div>
+                </div>
+
+                <!-- Capture Settings -->
+                <div class="control-group">
+                    <div class="group-label">Capture Settings</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="captureVisualizationBtn">Capture Visualization: On</button>
+                        <button class="effect-toggle-btn" id="captureVideoBtn">Capture Video: On</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Record -->
+        <div class="panel-row">
+            <div class="record-controls">
+                <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
+                    <span class="record-text">Record</span>
+                    <span class="record-timer" style="display: none;">00:00</span>
+                </button>
+                <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
+
+                <!-- Record Settings Panel -->
+                <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
+                    <div class="panel-header">
+                        <span>Recording Settings</span>
+                        <button class="panel-close-btn" id="recordSettingsClose">×</button>
+                    </div>
+
+                    <!-- Resolution -->
+                    <div class="control-group">
+                        <div class="group-label">Resolution</div>
+                        <select id="recordResolutionSelect" class="control-select">
+                            <option value="canvas">Canvas Size</option>
+                            <option value="720p">720p (1280×720)</option>
+                            <option value="1080p" selected>1080p (1920×1080)</option>
+                            <option value="4k">4K (3840×2160)</option>
+                        </select>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="group-label">Aspect Ratio</div>
+                        <div class="preset-buttons">
+                            <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                            <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                            <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                            <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                        </div>
+                    </div>
+
+                    <!-- Frame Rate -->
+                    <div class="control-group">
+                        <div class="group-label">Frame Rate</div>
+                        <div class="preset-buttons">
+                            <button class="framerate-btn active" data-fps="30">30 FPS</button>
+                            <button class="framerate-btn" data-fps="60">60 FPS</button>
+                        </div>
+                    </div>
+
+                    <!-- Video Quality -->
+                    <div class="control-group">
+                        <div class="group-label">Video Quality</div>
+                        <select id="recordVideoQualitySelect" class="control-select">
+                            <option value="auto" selected>Auto</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <!-- Audio Quality -->
+                    <div class="control-group">
+                        <div class="group-label">Audio Quality</div>
+                        <select id="recordAudioQualitySelect" class="control-select">
+                            <option value="auto" selected>Auto</option>
+                            <option value="high">High (320 kbps)</option>
+                            <option value="medium">Medium (192 kbps)</option>
+                            <option value="low">Low (128 kbps)</option>
+                        </select>
+                    </div>
+
+                    <!-- File Settings -->
+                    <div class="control-group">
+                        <div class="group-label">File Settings</div>
+                        <div class="file-location-display" id="recordFileLocation">
+                            📥 Downloads folder
+                        </div>
+                        <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
+                        <div class="input-container">
+                            <label>Filename</label>
+                            <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
+                            <span class="file-extension">.webm</span>
+                        </div>
+                    </div>
+
+                    <!-- Recording Info -->
+                    <div class="control-group">
+                        <div class="group-label">Recording Info</div>
+                        <div class="recording-info">
+                            <div class="info-item">
+                                <span class="info-label">Output:</span>
+                                <span id="recordingOutput">1920×1080 @ 30fps</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Format:</span>
+                                <span id="recordingFormat">WebM (VP9/Opus)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Est. Size:</span>
+                                <span id="recordingEstSize">~50 MB/min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <style>
         * {
             margin: 0;
@@ -891,15 +916,143 @@
         .viz-two-columns {
             display: flex;
             flex-direction: row;
-            gap: 16px;
+            gap: 24px;
             align-items: flex-start;
         }
 
         .viz-column {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             flex: 1;
+            min-width: 200px;
+        }
+
+        /* Specific spacing for visualization elements */
+        .viz-column .dropdown {
+            margin-bottom: 6px;
+        }
+
+        .viz-column .morph-controls {
+            margin-bottom: 6px;
+        }
+
+        .viz-column .presets-container {
+            margin-bottom: 6px;
+        }
+
+        /* Removed - no longer using viz-column layout */
+
+        /* Balance the two visualization columns */
+        .viz-column:first-child {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 12px;
+        }
+
+        .viz-column:last-child {
+            padding-left: 12px;
+        }
+
+        /* Better organization within columns */
+        .viz-column .dropdown,
+        .viz-column .morph-controls,
+        .viz-column .presets-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .viz-column .viz-toggle-btn,
+        .viz-column .random-viz-btn {
+            align-self: flex-start;
+            margin: 4px 0;
+        }
+
+        /* Control with settings layout (Live Display + gear) */
+        .control-with-settings {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Spectrum with toggle layout */
+        .spectrum-with-toggle {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .spectrum-with-toggle .dropdown {
+            flex: 1;
+        }
+
+        .spectrum-with-toggle .viz-toggle-btn {
+            margin: 0;
+            align-self: flex-end;
+            height: 32px;
+        }
+
+        /* Ensure ON button is highlighted blue by default */
+        .viz-toggle-btn.active {
+            background: var(--accent-color) !important;
+            color: white !important;
+            border-color: var(--accent-color) !important;
+        }
+
+        /* Spectrum controls container styling */
+        .spectrum-controls-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+        }
+
+        .spectrum-controls-container .random-viz-btn {
+            margin-top: 8px;
+            align-self: flex-start;
+            margin-left: 0;
+        }
+
+        /* Presets Container */
+        .presets-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: flex-start;
+        }
+
+        /* Color Scheme Container */
+        .color-scheme-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+        }
+
+        /* Morph Controls */
+        .morph-controls {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+        }
+
+        .morph-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
         }
 
         .logo {
@@ -2608,9 +2761,14 @@
         }
 
         .kaleidoscope-controls {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
             display: flex;
-            position: relative;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 4px;
         }
 
@@ -3341,6 +3499,250 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Tabbed Header Interface - Phase 1 Foundation (Hidden) */
+        .tab-header {
+            display: flex; /* Activated in Phase 4 */
+            height: 100px;
+            background: var(--secondary-bg, #1a1a1a);
+            border-bottom: 2px solid var(--border-color, #898989);
+            padding: 0 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .tab-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            flex: 1;
+            /* Removed grey background */
+        }
+
+        .tab-spacer {
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .tab-item {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .tab-item.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 2px 8px rgba(41, 105, 176, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .section-panel {
+            display: none; /* Hidden until opened */
+            position: absolute;
+            top: 100px;
+            width: auto;
+            min-width: 320px;
+            max-width: 85vw;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            padding: 24px 32px 28px 32px;
+            max-height: calc(100vh - 180px);
+            overflow: visible; /* Allow dropdowns to extend outside panel */
+        }
+
+        .section-panel.show {
+            display: block;
+        }
+
+        .panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Better spacing for different panel types */
+        .section-panel .input-mode-container {
+            margin-bottom: 8px;
+        }
+
+        .section-panel .dropdown {
+            margin-bottom: 8px;
+        }
+
+        .section-panel .morph-controls {
+            margin-bottom: 8px;
+        }
+
+        .section-panel .record-controls {
+            margin-bottom: 8px;
+        }
+
+        /* Secondary Control Positioning */
+        .secondary-control {
+            position: absolute;
+            z-index: 3000;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Fix dropdown clipping in tab panels */
+        .section-panel .dropdown-content {
+            z-index: 3500 !important;
+            position: absolute !important;
+        }
+
+        .section-panel .playlist-dropdown .dropdown-content {
+            z-index: 4000 !important;
+            position: absolute !important;
+            max-height: 400px !important;
+            overflow-y: auto !important;
+            top: 100% !important;
+            left: 0 !important;
+        }
+
+        /* Ensure playlist dropdown content is visible */
+        .section-panel .playlist-dropdown .dropdown-content.show {
+            display: block !important;
+        }
+
+        /* Global Button Size Reduction - 10% smaller */
+        .tab-interface-active button:not(.tab-item):not(.app-icon) {
+            transform: scale(0.9);
+            transform-origin: center;
+        }
+
+        .tab-interface-active .dropdown-toggle,
+        .tab-interface-active .input-mode-btn,
+        .tab-interface-active .preset-btn {
+            font-size: 12px;
+            padding: 8px 14px;
+            line-height: 1.2;
+        }
+
+        .tab-interface-active .effect-toggle-btn {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
+
+        .tab-interface-active .video-settings-toggle {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+        }
+
+        /* Transport button size reduction - 10% smaller */
+        .tab-interface-active .footer .control-btn {
+            width: 36px;
+            height: 36px;
+        }
+
+        /* Better alignment and spacing in panels */
+        .section-panel .button-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .section-panel .preset-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .section-panel .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .section-panel .slider-container label {
+            min-width: 80px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Enhanced visual hierarchy for panel elements */
+        .section-panel .dropdown-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .section-panel .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        .section-panel .dropdown-toggle.active {
+            background: rgba(41, 105, 176, 0.2);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+
+        .section-panel .input-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        .section-panel .input-mode-btn.live-mode {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Better visual separation for panel sections */
+        .panel-row {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .panel-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
         /* Display Settings Panel Styles */
         .display-settings-panel {
             position: absolute;
@@ -3350,7 +3752,7 @@
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
             padding: 12px;
-            z-index: 1000;
+            z-index: 5000;
             min-width: 320px;
             max-width: 400px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -5054,6 +5456,7 @@
             this.supportedFormats = ['mp3', 'wav', 'flac', 'm4a', 'aac', 'ogg'];
             this.maxFiles = 250;
             this.defaultArtwork = this.generateDefaultArtwork();
+            this.appIcon = this.generateAppIcon();
             this.folderHandle = null;
             this.isBackgroundScanning = false;
             
@@ -5076,36 +5479,131 @@
             // Test default artwork generation
             console.log('Default artwork generated:', this.defaultArtwork.substring(0, 50) + '...');
             
+            // Test app icon generation
+            console.log('App icon generated:', this.appIcon.substring(0, 50) + '...');
+            
             // Check music-metadata library availability
             this.checkMetadataLibrary();
             
             // Add test method for debugging
             window.testMetadataExtraction = (file) => this.extractMetadata(file);
             
-            // Debug playlist dropdown content
+            // Initialize tabbed interface (Phase 2 - hidden)
+            this.initializeTabbedInterface();
+            
+            // Phase 4: Activate tabbed interface
+            document.body.classList.add('tab-interface-active');
+            console.log('✓ Tabbed interface activated');
+            
+            // Phase 3 test: Add temporary test function for Audio + Video tabs
+            window.testAudioTab = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                const audioPanel = document.getElementById('audioPanel');
+                const audioTab = document.getElementById('audioTab');
+                
+                if (tabHeader) tabHeader.style.display = 'flex';
+                if (audioPanel) audioPanel.classList.add('show');
+                if (audioTab) audioTab.classList.add('active');
+                
+                console.log('Audio tab test activated');
+            };
+            
+            window.testVideoTab = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                const videoPanel = document.getElementById('videoPanel');
+                const videoTab = document.getElementById('videoTab');
+                
+                if (tabHeader) tabHeader.style.display = 'flex';
+                if (videoPanel) videoPanel.classList.add('show');
+                if (videoTab) videoTab.classList.add('active');
+                
+                console.log('Video tab test activated');
+            };
+            
+            window.testAllTabs = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                if (tabHeader) tabHeader.style.display = 'flex';
+                
+                ['audio', 'video', 'visualizations', 'output'].forEach(section => {
+                    const panel = document.getElementById(`${section}Panel`);
+                    const tab = document.getElementById(`${section}Tab`);
+                    if (panel) panel.classList.add('show');
+                    if (tab) tab.classList.add('active');
+                });
+                
+                console.log('All tabs activated for testing - check functionality');
+            };
+            
+            window.testVisualizationsTab = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                const vizPanel = document.getElementById('visualizationsPanel');
+                const vizTab = document.getElementById('visualizationsTab');
+                
+                if (tabHeader) tabHeader.style.display = 'flex';
+                if (vizPanel) vizPanel.classList.add('show');
+                if (vizTab) vizTab.classList.add('active');
+                
+                console.log('Visualizations tab test activated');
+            };
+            
+            window.testOutputTab = () => {
+                const tabHeader = document.getElementById('tabHeader');
+                const outputPanel = document.getElementById('outputPanel');
+                const outputTab = document.getElementById('outputTab');
+                
+                if (tabHeader) tabHeader.style.display = 'flex';
+                if (outputPanel) outputPanel.classList.add('show');
+                if (outputTab) outputTab.classList.add('active');
+                
+                console.log('Output tab test activated');
+            };
+            
+            // Add debug for playlist button clicks
             setTimeout(() => {
-                const dropdown = document.getElementById('playlistDropdown');
-                if (dropdown) {
-                    console.log('Playlist dropdown found, content:', dropdown.innerHTML.length, 'characters');
-                    console.log('First 200 chars of content:', dropdown.innerHTML.substring(0, 200));
-                    
-                    // Check if it has our new content or old content
-                    const hasNewContent = dropdown.innerHTML.includes('playlist-actions-dropdown');
-                    const hasOldContent = dropdown.innerHTML.includes('playlist-item');
-                    
-                    console.log('Has new content:', hasNewContent);
-                    console.log('Has old content:', hasOldContent);
-                    
-                    if (!hasNewContent) {
-                        console.warn('Dropdown has old/wrong content, replacing with new playlist manager...');
-                        this.populatePlaylistDropdown();
-                    }
-                } else {
-                    console.error('Playlist dropdown element not found!');
+                const playlistToggle = document.getElementById('playlistToggle');
+                if (playlistToggle) {
+                    playlistToggle.addEventListener('click', (e) => {
+                        console.log('Playlist button clicked in new panel');
+                        const dropdown = document.getElementById('playlistDropdown');
+                        if (dropdown) {
+                            console.log('Dropdown found, content length:', dropdown.innerHTML.length);
+                            console.log('Dropdown display:', dropdown.style.display);
+                            console.log('Dropdown classes:', dropdown.classList.toString());
+                        } else {
+                            console.error('Playlist dropdown not found when button clicked');
+                        }
+                    });
                 }
-            }, 500);
+            }, 1000);
         }
         
+        generateAppIcon() {
+            // Create 60x60 app icon - grey placeholder
+            const canvas = document.createElement('canvas');
+            canvas.width = 60;
+            canvas.height = 60;
+            const ctx = canvas.getContext('2d');
+            
+            // Grey background
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 60, 60);
+            
+            // Darker grey border
+            ctx.strokeStyle = '#606060';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(1, 1, 58, 58);
+            
+            // Simple "V" for Vizzy
+            ctx.fillStyle = '#404040';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('V', 30, 30);
+            
+            // Convert to JPG data URL
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
         generateDefaultArtwork() {
             // Create 240x240 default artwork - grey background with "no music" icon
             const canvas = document.createElement('canvas');
@@ -5496,6 +5994,84 @@
                 const scanText = indicator.querySelector('.scan-text');
                 if (scanText) {
                     scanText.textContent = `Enabling playback... ${current}/${total}`;
+                }
+            }
+        }
+        
+        initializeTabbedInterface() {
+            // Phase 2: Initialize the hidden tabbed interface
+            try {
+                // Set app icon source
+                const appIcon = document.getElementById('appIcon');
+                if (appIcon && this.appIcon) {
+                    appIcon.src = this.appIcon;
+                    console.log('✓ App icon initialized');
+                }
+                
+                // Initialize tab click handlers (inactive until Phase 5)
+                document.querySelectorAll('.tab-item').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (document.body.classList.contains('tab-interface-active')) {
+                            const section = e.target.dataset.section;
+                            this.toggleSectionPanel(section);
+                        }
+                    });
+                });
+                
+                // Add click-outside handler to close panels
+                document.addEventListener('click', (e) => {
+                    if (!document.body.classList.contains('tab-interface-active')) return;
+                    
+                    const tabHeader = document.getElementById('tabHeader');
+                    const openPanel = document.querySelector('.section-panel.show');
+                    
+                    // If clicking outside tab header and open panel, close all panels
+                    if (tabHeader && !tabHeader.contains(e.target) && 
+                        (!openPanel || !openPanel.contains(e.target))) {
+                        
+                        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('show'));
+                        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                        console.log('All panels closed (click outside)');
+                    }
+                });
+                
+                console.log('✓ Tabbed interface initialized (hidden)');
+                
+            } catch (error) {
+                console.error('Error initializing tabbed interface:', error);
+            }
+        }
+        
+        toggleSectionPanel(sectionName) {
+            const panel = document.getElementById(`${sectionName}Panel`);
+            const tab = document.getElementById(`${sectionName}Tab`);
+            
+            if (panel && tab) {
+                const isOpen = panel.classList.contains('show');
+                
+                if (isOpen) {
+                    // Close this panel
+                    panel.classList.remove('show');
+                    tab.classList.remove('active');
+                    console.log(`${sectionName} panel closed`);
+                } else {
+                    // Close all other panels first (only 1 tab open at a time)
+                    document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('show'));
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    
+                    // Position panel left-aligned to the tab
+                    const tabRect = tab.getBoundingClientRect();
+                    const headerRect = document.getElementById('tabHeader').getBoundingClientRect();
+                    const leftOffset = tabRect.left - headerRect.left;
+                    
+                    panel.style.left = `${leftOffset}px`;
+                    panel.style.transform = 'none';
+                    
+                    // Open this panel
+                    panel.classList.add('show');
+                    tab.classList.add('active');
+                    console.log(`${sectionName} panel opened at tab position (others closed)`);
                 }
             }
         }
