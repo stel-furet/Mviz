@@ -662,6 +662,17 @@
                             </div>
                         </div>
 
+                        <!-- Predictive Behavior Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Predictive Behavior</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="enablePredictiveBehaviorBtn">Predictive Behavior: On</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="testPredictionBtn">Test Prediction</button>
+                            </div>
+                        </div>
+
                         <!-- Test Button -->
                         <div class="control-group">
                             <div class="group-label">Test</div>
@@ -711,6 +722,14 @@
                                 <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
                             </div>
                             <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
+                        </div>
+
+                        <!-- Predictive Behavior Analytics -->
+                        <div class="control-group">
+                            <div class="group-label">Predictive Analytics</div>
+                            <div class="info-display" id="predictionCountDisplay">Predictions: 0</div>
+                            <div class="info-display" id="predictionAccuracyDisplay">Accuracy: 0%</div>
+                            <div class="info-display" id="predictionConfidenceDisplay">Confidence: 80%</div>
                         </div>
                     </div>
                 </div>
@@ -5976,6 +5995,386 @@
         }
     };
 
+    // Predictive Behavior System for AI Autopilot
+    class PredictiveBehaviorSystem {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.predictionHistory = [];
+            this.userBehaviorPatterns = [];
+            this.contextPredictions = [];
+            this.predictionAccuracy = 0;
+            this.lastPrediction = 0;
+            this.predictionCooldown = 10000; // 10 seconds between predictions
+            this.confidenceThreshold = 0.8; // Only act on high-confidence predictions
+            this.anticipationWindow = 5000; // Look 5 seconds ahead
+            
+            this.loadPredictionData();
+        }
+
+        // Analyze audio context and predict optimal actions
+        predictOptimalActions(audioFeatures, currentMode, currentParams) {
+            const now = Date.now();
+            if (now - this.lastPrediction < this.predictionCooldown) {
+                return null;
+            }
+
+            try {
+                const predictions = {
+                    modeChange: this.predictModeChange(audioFeatures, currentMode),
+                    parameterAdjustment: this.predictParameterAdjustment(audioFeatures, currentParams),
+                    timing: this.predictOptimalTiming(audioFeatures),
+                    confidence: 0
+                };
+
+                // Calculate overall confidence
+                predictions.confidence = this.calculatePredictionConfidence(predictions, audioFeatures);
+                
+                // Only return predictions with high confidence
+                if (predictions.confidence >= this.confidenceThreshold) {
+                    this.lastPrediction = now;
+                    this.recordPrediction(predictions, audioFeatures);
+                    return predictions;
+                }
+
+                return null;
+            } catch (error) {
+                console.error('Error in predictive behavior:', error);
+                return null;
+            }
+        }
+
+        // Predict if a mode change would be beneficial
+        predictModeChange(audioFeatures, currentMode) {
+            const { energy, beat, tempo, dominantFreq, energyTrend } = audioFeatures;
+            
+            // Analyze current mode effectiveness
+            const currentModeEffectiveness = this.analyzeModeEffectiveness(currentMode, audioFeatures);
+            
+            // Predict better modes based on audio context
+            const suggestedModes = this.getContextualModeSuggestions(audioFeatures);
+            
+            // Find the best alternative mode
+            let bestMode = null;
+            let bestScore = currentModeEffectiveness;
+            
+            for (const mode of suggestedModes) {
+                if (mode !== currentMode) {
+                    const modeScore = this.analyzeModeEffectiveness(mode, audioFeatures);
+                    if (modeScore > bestScore) {
+                        bestMode = mode;
+                        bestScore = modeScore;
+                    }
+                }
+            }
+
+            return {
+                suggested: bestMode,
+                confidence: bestMode ? Math.min(0.9, (bestScore - currentModeEffectiveness) * 2) : 0,
+                reason: this.getModeChangeReason(bestMode, audioFeatures),
+                timing: this.predictModeChangeTiming(audioFeatures)
+            };
+        }
+
+        // Predict parameter adjustments that would improve performance
+        predictParameterAdjustment(audioFeatures, currentParams) {
+            const adjustments = {};
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            
+            // Predict linearBoost adjustment
+            if (energy > 0.7 && currentParams.linearBoost < 0.8) {
+                adjustments.linearBoost = {
+                    suggested: Math.min(1.0, currentParams.linearBoost + 0.2),
+                    confidence: energy * 0.8,
+                    reason: 'High energy detected - boost linear response'
+                };
+            } else if (energy < 0.3 && currentParams.linearBoost > 0.3) {
+                adjustments.linearBoost = {
+                    suggested: Math.max(0.1, currentParams.linearBoost - 0.2),
+                    confidence: (1 - energy) * 0.8,
+                    reason: 'Low energy detected - reduce linear boost'
+                };
+            }
+
+            // Predict gradient adjustment
+            if (beat && currentParams.gradient < 0.8) {
+                adjustments.gradient = {
+                    suggested: Math.min(1.0, currentParams.gradient + 0.15),
+                    confidence: 0.7,
+                    reason: 'Beat detected - enhance gradient response'
+                };
+            }
+
+            // Predict smoothing adjustment based on tempo
+            if (tempo > 120 && currentParams.smoothing > 0.3) {
+                adjustments.smoothing = {
+                    suggested: Math.max(0.1, currentParams.smoothing - 0.1),
+                    confidence: 0.6,
+                    reason: 'High tempo - reduce smoothing for responsiveness'
+                };
+            } else if (tempo < 80 && currentParams.smoothing < 0.7) {
+                adjustments.smoothing = {
+                    suggested: Math.min(0.9, currentParams.smoothing + 0.1),
+                    confidence: 0.6,
+                    reason: 'Low tempo - increase smoothing for smoothness'
+                };
+            }
+
+            return adjustments;
+        }
+
+        // Predict optimal timing for changes
+        predictOptimalTiming(audioFeatures) {
+            const { beat, energy, tempo } = audioFeatures;
+            
+            // Prefer timing changes on beats
+            if (beat) {
+                return {
+                    immediate: true,
+                    confidence: 0.9,
+                    reason: 'Beat detected - optimal timing for change'
+                };
+            }
+
+            // For high energy, immediate changes are usually good
+            if (energy > 0.7) {
+                return {
+                    immediate: true,
+                    confidence: 0.7,
+                    reason: 'High energy - immediate change recommended'
+                };
+            }
+
+            // For low energy, wait for a better moment
+            return {
+                immediate: false,
+                confidence: 0.6,
+                reason: 'Low energy - waiting for better timing',
+                delay: 2000 // Wait 2 seconds
+            };
+        }
+
+        // Analyze how effective a mode is for current audio context
+        analyzeModeEffectiveness(mode, audioFeatures) {
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            let effectiveness = 0.5; // Base effectiveness
+
+            // Mode-specific effectiveness analysis
+            switch (mode) {
+                case 0: // Spectrum/Bars
+                    effectiveness = energy * 0.8 + (beat ? 0.2 : 0);
+                    break;
+                case 1: // Mirror Wave
+                    effectiveness = (1 - energy) * 0.7 + (tempo > 100 ? 0.3 : 0);
+                    break;
+                case 2: // Classic LED
+                    effectiveness = beat ? 0.9 : 0.4;
+                    break;
+                case 3: // Stereo
+                    effectiveness = 0.6 + (dominantFreq > 0.5 ? 0.3 : 0);
+                    break;
+                case 4: // Radial Spectrum
+                    effectiveness = energy * 0.9 + (beat ? 0.1 : 0);
+                    break;
+                case 5: // Energy
+                    effectiveness = energy * 1.0;
+                    break;
+                case 6: // Mirror
+                    effectiveness = (1 - energy) * 0.8 + (tempo < 80 ? 0.2 : 0);
+                    break;
+                case 7: // Kaleidoscope
+                    effectiveness = energy * 0.7 + (beat ? 0.3 : 0);
+                    break;
+            }
+
+            return Math.min(1.0, effectiveness);
+        }
+
+        // Get mode suggestions based on audio context
+        getContextualModeSuggestions(audioFeatures) {
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            const suggestions = [];
+
+            // High energy contexts
+            if (energy > 0.7) {
+                suggestions.push(0, 4, 5, 7); // Spectrum, Radial, Energy, Kaleidoscope
+            }
+
+            // Beat-heavy contexts
+            if (beat) {
+                suggestions.push(0, 2, 4, 5); // Spectrum, LED, Radial, Energy
+            }
+
+            // Low energy contexts
+            if (energy < 0.3) {
+                suggestions.push(1, 6); // Mirror Wave, Mirror
+            }
+
+            // High tempo contexts
+            if (tempo > 120) {
+                suggestions.push(0, 2, 4); // Spectrum, LED, Radial
+            }
+
+            // Low tempo contexts
+            if (tempo < 80) {
+                suggestions.push(1, 6, 7); // Mirror Wave, Mirror, Kaleidoscope
+            }
+
+            // Remove duplicates and return
+            return [...new Set(suggestions)];
+        }
+
+        // Get reason for mode change suggestion
+        getModeChangeReason(suggestedMode, audioFeatures) {
+            const { energy, beat, tempo } = audioFeatures;
+            
+            if (!suggestedMode) return 'No change needed';
+            
+            const modeNames = {
+                0: 'Spectrum', 1: 'Mirror Wave', 2: 'LED', 3: 'Stereo',
+                4: 'Radial', 5: 'Energy', 6: 'Mirror', 7: 'Kaleidoscope'
+            };
+
+            let reason = `Switch to ${modeNames[suggestedMode]}`;
+            
+            if (energy > 0.7) reason += ' for high energy';
+            else if (beat) reason += ' for beat response';
+            else if (tempo > 120) reason += ' for high tempo';
+            else if (tempo < 80) reason += ' for low tempo';
+            
+            return reason;
+        }
+
+        // Predict timing for mode changes
+        predictModeChangeTiming(audioFeatures) {
+            const { beat, energy } = audioFeatures;
+            
+            if (beat) return 'immediate';
+            if (energy > 0.6) return 'soon';
+            return 'wait';
+        }
+
+        // Calculate overall prediction confidence
+        calculatePredictionConfidence(predictions, audioFeatures) {
+            let totalConfidence = 0;
+            let count = 0;
+
+            if (predictions.modeChange && predictions.modeChange.confidence > 0) {
+                totalConfidence += predictions.modeChange.confidence;
+                count++;
+            }
+
+            if (predictions.parameterAdjustment && Object.keys(predictions.parameterAdjustment).length > 0) {
+                const paramConfidences = Object.values(predictions.parameterAdjustment).map(p => p.confidence);
+                totalConfidence += paramConfidences.reduce((a, b) => a + b, 0) / paramConfidences.length;
+                count++;
+            }
+
+            if (predictions.timing && predictions.timing.confidence > 0) {
+                totalConfidence += predictions.timing.confidence;
+                count++;
+            }
+
+            return count > 0 ? totalConfidence / count : 0;
+        }
+
+        // Record prediction for learning
+        recordPrediction(predictions, audioFeatures) {
+            this.predictionHistory.push({
+                timestamp: Date.now(),
+                predictions,
+                audioFeatures,
+                executed: false
+            });
+
+            // Keep only last 100 predictions
+            if (this.predictionHistory.length > 100) {
+                this.predictionHistory.shift();
+            }
+
+            this.savePredictionData();
+        }
+
+        // Execute a prediction
+        executePrediction(prediction) {
+            try {
+                // Execute mode change if suggested
+                if (prediction.modeChange && prediction.modeChange.suggested !== null) {
+                    this.autopilot.visualizer.setVisualizationMode(prediction.modeChange.suggested);
+                    console.log(`🎯 Predictive mode change: ${prediction.modeChange.reason}`);
+                }
+
+                // Execute parameter adjustments
+                if (prediction.parameterAdjustment) {
+                    for (const [param, adjustment] of Object.entries(prediction.parameterAdjustment)) {
+                        if (adjustment.confidence > 0.6) {
+                            this.autopilot.visualizer.audioMotion[param] = adjustment.suggested;
+                            console.log(`🎯 Predictive parameter adjustment: ${param} = ${adjustment.suggested} (${adjustment.reason})`);
+                        }
+                    }
+                }
+
+                // Mark as executed
+                prediction.executed = true;
+                this.updatePredictionAccuracy();
+
+            } catch (error) {
+                console.error('Error executing prediction:', error);
+            }
+        }
+
+        // Update prediction accuracy based on user feedback
+        updatePredictionAccuracy() {
+            const recentPredictions = this.predictionHistory.slice(-20);
+            const executedPredictions = recentPredictions.filter(p => p.executed);
+            
+            if (executedPredictions.length > 0) {
+                // Simple accuracy calculation - could be enhanced with user feedback
+                this.predictionAccuracy = executedPredictions.length / recentPredictions.length;
+            }
+        }
+
+        // Get prediction analytics
+        getPredictionAnalytics() {
+            const totalPredictions = this.predictionHistory.length;
+            const executedPredictions = this.predictionHistory.filter(p => p.executed).length;
+            const recentAccuracy = this.predictionAccuracy * 100;
+
+            return {
+                totalPredictions,
+                executedPredictions,
+                accuracy: Math.round(recentAccuracy),
+                confidence: Math.round(this.confidenceThreshold * 100)
+            };
+        }
+
+        // Load prediction data from localStorage
+        loadPredictionData() {
+            try {
+                const data = localStorage.getItem('autopilot_predictions');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    this.predictionHistory = parsed.predictionHistory || [];
+                    this.predictionAccuracy = parsed.predictionAccuracy || 0;
+                }
+            } catch (error) {
+                console.error('Error loading prediction data:', error);
+            }
+        }
+
+        // Save prediction data to localStorage
+        savePredictionData() {
+            try {
+                const data = {
+                    predictionHistory: this.predictionHistory.slice(-50), // Keep last 50
+                    predictionAccuracy: this.predictionAccuracy
+                };
+                localStorage.setItem('autopilot_predictions', JSON.stringify(data));
+            } catch (error) {
+                console.error('Error saving prediction data:', error);
+            }
+        }
+    }
+
     // Adaptive Parameter Tuning System for AI Autopilot
     class AdaptiveTuningSystem {
         constructor(autopilot) {
@@ -6526,6 +6925,7 @@
             this.genreDetector = new GenreDetector(this);
             this.patternLearning = new PatternLearningSystem(this); // New ML system
             this.adaptiveTuning = new AdaptiveTuningSystem(this); // New adaptive tuning system
+            this.predictiveBehavior = new PredictiveBehaviorSystem(this); // New predictive behavior system
             
             // Autopilot state
             this.lastModeChange = 0;
@@ -6552,6 +6952,9 @@
             
             // Adaptive tuning state
             this.adaptiveTuningEnabled = true; // Enable adaptive tuning by default
+            
+            // Predictive behavior state
+            this.predictiveBehaviorEnabled = true; // Enable predictive behavior by default
             
             // Define visualization mode groups
             this.modeGroups = {
@@ -6710,10 +7113,54 @@
                 this.adaptiveTuning.trackPerformance(audioFeatures, userFeedback);
             }
             
+            // Predictive Behavior System - anticipate optimal actions
+            if (this.predictiveBehavior && this.predictiveBehaviorEnabled) {
+                const currentParams = this.getCurrentParameters();
+                const predictions = this.predictiveBehavior.predictOptimalActions(
+                    audioFeatures, 
+                    this.visualizer.currentMode, 
+                    currentParams
+                );
+                
+                if (predictions && predictions.confidence >= 0.8) {
+                    console.log('🎯 Predictive behavior triggered:', {
+                        modeChange: predictions.modeChange?.reason,
+                        parameterAdjustments: Object.keys(predictions.parameterAdjustment || {}),
+                        timing: predictions.timing?.reason,
+                        confidence: Math.round(predictions.confidence * 100) + '%'
+                    });
+                    
+                    // Execute predictions if timing is right
+                    if (predictions.timing?.immediate) {
+                        this.predictiveBehavior.executePrediction(predictions);
+                    } else if (predictions.timing?.delay) {
+                        // Schedule delayed execution
+                        setTimeout(() => {
+                            this.predictiveBehavior.executePrediction(predictions);
+                        }, predictions.timing.delay);
+                    }
+                }
+            }
+            
             // Continue with existing mode switching logic
             this.decisionEngine.evaluateVisualizationChange();
         }
         
+        // Get current parameters for predictive behavior
+        getCurrentParameters() {
+            if (!this.visualizer.audioMotion) return {};
+            
+            return {
+                linearBoost: this.visualizer.audioMotion.linearBoost || 0.5,
+                gradient: this.visualizer.audioMotion.gradient || 0.5,
+                smoothing: this.visualizer.audioMotion.smoothing || 0.5,
+                fillAlpha: this.visualizer.audioMotion.fillAlpha || 0.5,
+                peakHoldTime: this.visualizer.audioMotion.peakHoldTime || 0.5,
+                maxDecibels: this.visualizer.audioMotion.maxDecibels || 0.5,
+                minFreq: this.visualizer.audioMotion.minFreq || 0.5
+            };
+        }
+
         // Check if we should learn from the current decision
         shouldLearnFromDecision() {
             const now = Date.now();
@@ -13734,12 +14181,50 @@
                 console.error('🎯 Force Optimization button not found');
             }
             
+            // Predictive behavior controls
+            const enablePredictiveBehaviorBtn = document.getElementById('enablePredictiveBehaviorBtn');
+            if (enablePredictiveBehaviorBtn) {
+                enablePredictiveBehaviorBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.predictiveBehaviorEnabled = !this.aiAutopilot.predictiveBehaviorEnabled;
+                        const isOn = this.aiAutopilot.predictiveBehaviorEnabled;
+                        e.target.textContent = `Predictive Behavior: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🎯 Predictive behavior: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            const testPredictionBtn = document.getElementById('testPredictionBtn');
+            if (testPredictionBtn) {
+                testPredictionBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot && this.aiAutopilot.predictiveBehavior) {
+                        const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                        const currentParams = this.aiAutopilot.getCurrentParameters();
+                        const predictions = this.aiAutopilot.predictiveBehavior.predictOptimalActions(
+                            audioFeatures, 
+                            this.aiAutopilot.visualizer.currentMode, 
+                            currentParams
+                        );
+                        
+                        if (predictions) {
+                            console.log('🎯 Test prediction result:', predictions);
+                            alert(`Prediction: ${predictions.modeChange?.reason || 'No mode change'}\nConfidence: ${Math.round(predictions.confidence * 100)}%`);
+                        } else {
+                            console.log('🎯 No prediction available (low confidence)');
+                            alert('No prediction available - confidence too low');
+                        }
+                    }
+                });
+            }
+            
             // Update learning analytics periodically
             setInterval(() => {
                 if (this.aiAutopilot) {
                     this.updateLearningAnalytics();
                     this.updateFeedbackStats();
                     this.updateAdaptiveTuningAnalytics();
+                    this.updatePredictiveBehaviorAnalytics();
                 }
             }, 5000); // Update every 5 seconds
             
@@ -13837,6 +14322,30 @@
             if (trendDisplay) {
                 const trendText = analytics.performanceTrend.charAt(0).toUpperCase() + analytics.performanceTrend.slice(1);
                 trendDisplay.textContent = `Trend: ${trendText}`;
+            }
+        }
+
+        updatePredictiveBehaviorAnalytics() {
+            if (!this.aiAutopilot || !this.aiAutopilot.predictiveBehavior) return;
+            
+            const analytics = this.aiAutopilot.predictiveBehavior.getPredictionAnalytics();
+            
+            // Update prediction count display
+            const predictionCountDisplay = document.getElementById('predictionCountDisplay');
+            if (predictionCountDisplay) {
+                predictionCountDisplay.textContent = `Predictions: ${analytics.totalPredictions}`;
+            }
+            
+            // Update prediction accuracy display
+            const predictionAccuracyDisplay = document.getElementById('predictionAccuracyDisplay');
+            if (predictionAccuracyDisplay) {
+                predictionAccuracyDisplay.textContent = `Accuracy: ${analytics.accuracy}%`;
+            }
+            
+            // Update prediction confidence display
+            const predictionConfidenceDisplay = document.getElementById('predictionConfidenceDisplay');
+            if (predictionConfidenceDisplay) {
+                predictionConfidenceDisplay.textContent = `Confidence: ${analytics.confidence}%`;
             }
         }
 
