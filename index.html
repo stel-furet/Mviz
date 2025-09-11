@@ -879,10 +879,15 @@
             color: var(--text-primary);
         }
 
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 60vh;
+            flex: 1;
             background: var(--primary-bg, #f5f3e9);
             transition: background 0.3s ease;
         }
@@ -2911,6 +2916,7 @@
         }
 
         .kaleidoscope-controls {
+            position: relative;
             background: rgba(255, 255, 255, 0.02);
             border-radius: 6px;
             padding: 10px;
@@ -2949,8 +2955,8 @@
 
         .kaleidoscope-panel {
             position: absolute;
-            top: calc(100% + 10px);
-            /* left: 0; */
+            top: calc(100% + 0px);
+            left: 0;
             background: var(--secondary-bg, #1a1a1a);
             border: 1px solid var(--border-color, #898989);
             border-radius: 8px;
@@ -5966,63 +5972,125 @@
         }
         
         getParameterRecommendations(genre, audioFeatures, scope) {
-            const genreName = genre.genre || genre;
-            const genreMapping = GENRE_MAPPINGS[genreName] || GENRE_MAPPINGS['electronic'];
-            const globalParams = genreMapping.visualization.global || {};
-            const videoParams = genreMapping.video || {};
-            
-            let scopeParams = {};
-            if (scope === 'all') {
-                // For 'all' scope, combine parameters from all scopes
-                scopeParams = {
-                    ...(genreMapping.visualization.bars || {}),
-                    ...(genreMapping.visualization.radial || {}),
-                    ...(genreMapping.visualization.energy || {})
-                };
-            } else {
-                // For specific scopes, get only that scope's parameters
-                scopeParams = genreMapping.visualization[scope] || {};
-            }
-            
-            // Apply audio feature scaling
-            const scaledParams = this.scaleParametersByAudio(scopeParams, audioFeatures);
-            
-            return {
-                visualization: { ...globalParams, ...scaledParams },
-                video: this.scaleVideoParametersByAudio(videoParams, audioFeatures)
-            };
-        }
-        
-        scaleParametersByAudio(params, audioFeatures) {
-            const scaled = { ...params };
+            // Enhanced parameter recommendations with more dramatic visual changes
             const energy = audioFeatures.energy || 0.5;
             const tempo = audioFeatures.tempo || 120;
+            const beat = audioFeatures.beat || false;
+            const dominantFreq = audioFeatures.dominantFreq || 0.5;
+            const harmonic = audioFeatures.harmonic || {};
+            const structure = audioFeatures.structure || {};
             
-            // Scale parameters based on audio characteristics
-            if (scaled.energySensitivity) {
-                scaled.energySensitivity *= (0.5 + energy * 1.5);
-            }
-            if (scaled.particleSpeed) {
-                scaled.particleSpeed *= (0.5 + (tempo / 200));
-            }
-            if (scaled.radialSensitivity) {
-                scaled.radialSensitivity *= (0.5 + energy * 1.5);
+            // More dramatic parameter ranges for better visual impact
+            const recommendations = {
+                visualization: {},
+                video: {}
+            };
+            
+            // Energy-based parameters (more dramatic range)
+            if (energy > 0.7) {
+                recommendations.visualization.linearBoost = 2.5 + (energy - 0.7) * 2; // 2.5-4.0
+                recommendations.visualization.gradient = 0.8 + (energy - 0.7) * 0.2; // 0.8-1.0
+                recommendations.visualization.fillAlpha = 0.9 + (energy - 0.7) * 0.1; // 0.9-1.0
+            } else if (energy > 0.4) {
+                recommendations.visualization.linearBoost = 1.5 + (energy - 0.4) * 3.33; // 1.5-2.5
+                recommendations.visualization.gradient = 0.4 + (energy - 0.4) * 1.33; // 0.4-0.8
+                recommendations.visualization.fillAlpha = 0.6 + (energy - 0.4) * 1.0; // 0.6-0.9
+            } else {
+                recommendations.visualization.linearBoost = 0.5 + energy * 2.5; // 0.5-1.5
+                recommendations.visualization.gradient = energy * 1.0; // 0.0-0.4
+                recommendations.visualization.fillAlpha = 0.3 + energy * 0.75; // 0.3-0.6
             }
             
-            return scaled;
-        }
-        
-        scaleVideoParametersByAudio(params, audioFeatures) {
-            const scaled = { ...params };
-            const energy = audioFeatures.energy || 0.5;
-            
-            // Scale video effects based on energy
-            if (scaled.colorEffects) {
-                scaled.colorEffects.brightness = (scaled.colorEffects.brightness || 1) * (0.5 + energy);
-                scaled.colorEffects.contrast = (scaled.colorEffects.contrast || 1) * (0.5 + energy);
+            // Tempo-based parameters
+            if (tempo > 140) {
+                recommendations.visualization.peakHoldTime = 300; // Fast tempo = quick peaks
+                recommendations.visualization.smoothing = 0.3; // Less smoothing for fast music
+            } else if (tempo > 100) {
+                recommendations.visualization.peakHoldTime = 500; // Medium tempo
+                recommendations.visualization.smoothing = 0.5;
+            } else {
+                recommendations.visualization.peakHoldTime = 800; // Slow tempo = longer peaks
+                recommendations.visualization.smoothing = 0.8; // More smoothing for slow music
             }
             
-            return scaled;
+            // Beat-reactive parameters
+            if (beat) {
+                recommendations.visualization.peakFadeTime = 200; // Quick fade on beats
+                recommendations.visualization.linearBoost *= 1.3; // Boost on beats
+            } else {
+                recommendations.visualization.peakFadeTime = 1000; // Slower fade without beats
+            }
+            
+            // Frequency-based parameters
+            if (dominantFreq < 0.3) { // Bass heavy
+                recommendations.visualization.maxDecibels = -20; // More sensitive to low frequencies
+                recommendations.visualization.minFreq = 20; // Lower minimum frequency
+            } else if (dominantFreq > 0.7) { // Treble heavy
+                recommendations.visualization.maxDecibels = -30; // Less sensitive to high frequencies
+                recommendations.visualization.minFreq = 100; // Higher minimum frequency
+            } else { // Mid range
+                recommendations.visualization.maxDecibels = -25;
+                recommendations.visualization.minFreq = 50;
+            }
+            
+            // Harmonic-based parameters
+            if (harmonic.chord) {
+                // Different chord types get different visual treatments
+                if (harmonic.chord.includes('m')) { // Minor chords
+                    recommendations.visualization.gradient = 0.2; // Darker colors
+                    recommendations.visualization.fillAlpha = 0.7;
+                } else { // Major chords
+                    recommendations.visualization.gradient = 0.8; // Brighter colors
+                    recommendations.visualization.fillAlpha = 0.9;
+                }
+            }
+            
+            // Structure-based parameters
+            if (structure.section) {
+                switch (structure.section) {
+                    case 'intro':
+                        recommendations.visualization.linearBoost *= 0.7; // Quieter intro
+                        recommendations.visualization.fillAlpha *= 0.8;
+                        break;
+                    case 'chorus':
+                        recommendations.visualization.linearBoost *= 1.4; // Louder chorus
+                        recommendations.visualization.fillAlpha = Math.min(1.0, recommendations.visualization.fillAlpha * 1.2);
+                        break;
+                    case 'bridge':
+                        recommendations.visualization.gradient = 0.5; // Different colors for bridge
+                        recommendations.visualization.linearBoost *= 1.1;
+                        break;
+                    case 'outro':
+                        recommendations.visualization.linearBoost *= 0.6; // Quieter outro
+                        recommendations.visualization.fillAlpha *= 0.7;
+                        break;
+                }
+            }
+            
+            // Genre-specific enhancements
+            const genreMultipliers = {
+                'electronic': { boost: 1.5, gradient: 1.0, alpha: 1.0 },
+                'rock': { boost: 1.3, gradient: 0.8, alpha: 0.9 },
+                'classical': { boost: 0.8, gradient: 0.6, alpha: 0.8 },
+                'jazz': { boost: 1.1, gradient: 0.7, alpha: 0.85 },
+                'ambient': { boost: 0.6, gradient: 0.3, alpha: 0.6 },
+                'country': { boost: 1.2, gradient: 0.9, alpha: 0.9 }
+            };
+            
+            const multiplier = genreMultipliers[genre.genre] || { boost: 1.0, gradient: 1.0, alpha: 1.0 };
+            recommendations.visualization.linearBoost *= multiplier.boost;
+            recommendations.visualization.gradient *= multiplier.gradient;
+            recommendations.visualization.fillAlpha *= multiplier.alpha;
+            
+            // Clamp values to valid ranges
+            recommendations.visualization.linearBoost = Math.max(0.1, Math.min(5.0, recommendations.visualization.linearBoost));
+            recommendations.visualization.gradient = Math.max(0.0, Math.min(1.0, recommendations.visualization.gradient));
+            recommendations.visualization.fillAlpha = Math.max(0.1, Math.min(1.0, recommendations.visualization.fillAlpha));
+            recommendations.visualization.peakHoldTime = Math.max(100, Math.min(2000, recommendations.visualization.peakHoldTime));
+            recommendations.visualization.peakFadeTime = Math.max(100, Math.min(2000, recommendations.visualization.peakFadeTime));
+            recommendations.visualization.smoothing = Math.max(0.1, Math.min(1.0, recommendations.visualization.smoothing));
+            
+            return recommendations;
         }
         
         updateGenreState(detectedGenre) {
@@ -6477,7 +6545,458 @@
         }
     }
 
-    // Audio Analysis Engine for AI Autopilot
+    // Harmonic Analysis Engine for Enhanced Audio Analysis
+    class HarmonicAnalyzer {
+        constructor(audioAnalyzer) {
+            this.audioAnalyzer = audioAnalyzer;
+            this.isRunning = false;
+            
+            // Harmonic analysis parameters
+            this.chordDetectionThreshold = 0.3;
+            this.harmonicWindow = 60; // frames for harmonic analysis
+            this.keyDetectionWindow = 300; // 5 seconds for key detection
+            
+            // Current harmonic data
+            this.currentChord = null;
+            this.chordConfidence = 0;
+            this.currentKey = null;
+            this.keyConfidence = 0;
+            this.harmonicProgression = [];
+            
+            // History for analysis
+            this.chordHistory = [];
+            this.keyHistory = [];
+            this.harmonicContent = [];
+            
+            // Musical note frequencies (A4 = 440Hz)
+            this.noteFrequencies = this.generateNoteFrequencies();
+            this.chordPatterns = this.initializeChordPatterns();
+            
+            console.log('🎼 Harmonic Analyzer initialized');
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
+            this.analyzeHarmonics();
+            console.log('🎼 Harmonic analysis started');
+        }
+        
+        stop() {
+            this.isRunning = false;
+            console.log('🎼 Harmonic analysis stopped');
+        }
+        
+        analyzeHarmonics() {
+            if (!this.isRunning) return;
+            
+            try {
+                if (this.audioAnalyzer && this.audioAnalyzer.audioMotion && this.audioAnalyzer.audioMotion.analyser) {
+                    this.detectChord();
+                    this.detectKey();
+                    this.analyzeHarmonicProgression();
+                }
+            } catch (error) {
+                console.error('Harmonic analysis error:', error);
+            }
+            
+            if (this.isRunning) {
+                requestAnimationFrame(() => this.analyzeHarmonics());
+            }
+        }
+        
+        detectChord() {
+            const analyser = this.audioAnalyzer.audioMotion.analyser;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Convert frequency data to note strengths
+            const noteStrengths = this.analyzeNoteStrengths(dataArray);
+            
+            // Find the strongest chord match
+            const chordMatch = this.findBestChordMatch(noteStrengths);
+            
+            if (chordMatch.confidence > this.chordDetectionThreshold) {
+                this.currentChord = chordMatch.chord;
+                this.chordConfidence = chordMatch.confidence;
+                
+                // Add to history
+                this.chordHistory.push({
+                    timestamp: Date.now(),
+                    chord: this.currentChord,
+                    confidence: this.chordConfidence
+                });
+                
+                // Keep only recent history
+                if (this.chordHistory.length > 100) {
+                    this.chordHistory = this.chordHistory.slice(-100);
+                }
+            }
+        }
+        
+        detectKey() {
+            if (this.chordHistory.length < 10) return;
+            
+            // Analyze recent chord progression for key detection
+            const recentChords = this.chordHistory.slice(-20).map(c => c.chord);
+            const keyMatch = this.analyzeKeyFromProgression(recentChords);
+            
+            if (keyMatch.confidence > 0.4) {
+                this.currentKey = keyMatch.key;
+                this.keyConfidence = keyMatch.confidence;
+                
+                // Add to history
+                this.keyHistory.push({
+                    timestamp: Date.now(),
+                    key: this.currentKey,
+                    confidence: this.keyConfidence
+                });
+                
+                // Keep only recent history
+                if (this.keyHistory.length > 50) {
+                    this.keyHistory = this.keyHistory.slice(-50);
+                }
+            }
+        }
+        
+        analyzeHarmonicProgression() {
+            if (this.chordHistory.length < 5) return;
+            
+            // Analyze chord progression patterns
+            const recentChords = this.chordHistory.slice(-10).map(c => c.chord);
+            const progression = this.identifyProgressionPattern(recentChords);
+            
+            if (progression) {
+                this.harmonicProgression.push({
+                    timestamp: Date.now(),
+                    progression: progression
+                });
+                
+                // Keep only recent progressions
+                if (this.harmonicProgression.length > 20) {
+                    this.harmonicProgression = this.harmonicProgression.slice(-20);
+                }
+            }
+        }
+        
+        analyzeNoteStrengths(dataArray) {
+            const noteStrengths = new Array(12).fill(0); // 12 semitones
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                const frequency = (i * this.audioAnalyzer.audioMotion.analyser.context.sampleRate) / 
+                                 (2 * dataArray.length);
+                
+                if (frequency < 80 || frequency > 2000) continue; // Focus on musical range
+                
+                // Find closest note
+                const noteIndex = this.findClosestNote(frequency);
+                const strength = dataArray[i] / 255;
+                
+                noteStrengths[noteIndex] += strength;
+            }
+            
+            return noteStrengths;
+        }
+        
+        findClosestNote(frequency) {
+            const A4 = 440;
+            const semitone = Math.round(12 * Math.log2(frequency / A4));
+            return ((semitone % 12) + 12) % 12;
+        }
+        
+        findBestChordMatch(noteStrengths) {
+            let bestMatch = { chord: null, confidence: 0 };
+            
+            for (const [chordName, pattern] of Object.entries(this.chordPatterns)) {
+                const confidence = this.calculateChordConfidence(noteStrengths, pattern);
+                
+                if (confidence > bestMatch.confidence) {
+                    bestMatch = { chord: chordName, confidence };
+                }
+            }
+            
+            return bestMatch;
+        }
+        
+        calculateChordConfidence(noteStrengths, chordPattern) {
+            let totalStrength = 0;
+            let chordNotes = 0;
+            
+            for (let i = 0; i < 12; i++) {
+                if (chordPattern[i]) {
+                    totalStrength += noteStrengths[i];
+                    chordNotes++;
+                }
+            }
+            
+            return chordNotes > 0 ? totalStrength / chordNotes : 0;
+        }
+        
+        analyzeKeyFromProgression(chords) {
+            // Simple key detection based on chord frequency
+            const chordCounts = {};
+            chords.forEach(chord => {
+                chordCounts[chord] = (chordCounts[chord] || 0) + 1;
+            });
+            
+            // Find most common chord (simplified key detection)
+            const mostCommonChord = Object.keys(chordCounts).reduce((a, b) => 
+                chordCounts[a] > chordCounts[b] ? a : b
+            );
+            
+            return {
+                key: mostCommonChord,
+                confidence: chordCounts[mostCommonChord] / chords.length
+            };
+        }
+        
+        identifyProgressionPattern(chords) {
+            // Simple progression pattern recognition
+            if (chords.length < 3) return null;
+            
+            const patterns = {
+                'I-V-vi-IV': ['C', 'G', 'Am', 'F'],
+                'vi-IV-I-V': ['Am', 'F', 'C', 'G'],
+                'I-vi-IV-V': ['C', 'Am', 'F', 'G']
+            };
+            
+            for (const [patternName, pattern] of Object.entries(patterns)) {
+                if (this.matchesPattern(chords, pattern)) {
+                    return patternName;
+                }
+            }
+            
+            return null;
+        }
+        
+        matchesPattern(chords, pattern) {
+            if (chords.length < pattern.length) return false;
+            
+            const recentChords = chords.slice(-pattern.length);
+            return recentChords.every((chord, index) => 
+                chord === pattern[index] || chord.includes(pattern[index])
+            );
+        }
+        
+        generateNoteFrequencies() {
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const frequencies = {};
+            
+            for (let octave = 0; octave < 8; octave++) {
+                for (let i = 0; i < 12; i++) {
+                    const frequency = 440 * Math.pow(2, (i - 9) / 12 + (octave - 4));
+                    frequencies[`${notes[i]}${octave}`] = frequency;
+                }
+            }
+            
+            return frequencies;
+        }
+        
+        initializeChordPatterns() {
+            return {
+                'C': [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], // C-E-G
+                'Cm': [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], // C-Eb-G
+                'F': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0], // F-A-C
+                'G': [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1], // G-B-D
+                'Am': [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0], // A-C-E
+                'Dm': [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0], // D-F-A
+                'Em': [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1], // E-G-B
+                'Bdim': [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0] // B-D-F
+            };
+        }
+        
+        // Public getters
+        getCurrentChord() { return this.currentChord; }
+        getChordConfidence() { return this.chordConfidence; }
+        getCurrentKey() { return this.currentKey; }
+        getKeyConfidence() { return this.keyConfidence; }
+        getHarmonicProgression() { return this.harmonicProgression; }
+    }
+
+    // Musical Structure Detection Engine
+    class StructureDetector {
+        constructor(audioAnalyzer) {
+            this.audioAnalyzer = audioAnalyzer;
+            this.isRunning = false;
+            
+            // Structure detection parameters
+            this.energyThreshold = 0.1;
+            this.tempoThreshold = 10; // BPM change threshold
+            this.structureWindow = 300; // 5 seconds for structure analysis
+            
+            // Current structure data
+            this.currentSection = 'unknown';
+            this.sectionConfidence = 0;
+            this.sectionDuration = 0;
+            this.sectionStartTime = 0;
+            
+            // Structure history
+            this.sectionHistory = [];
+            this.energyPatterns = [];
+            this.tempoPatterns = [];
+            
+            // Section types and their characteristics
+            this.sectionTypes = {
+                'intro': { energy: 'low', tempo: 'stable', duration: 'short' },
+                'verse': { energy: 'medium', tempo: 'stable', duration: 'medium' },
+                'chorus': { energy: 'high', tempo: 'stable', duration: 'medium' },
+                'bridge': { energy: 'variable', tempo: 'variable', duration: 'short' },
+                'outro': { energy: 'decreasing', tempo: 'decreasing', duration: 'short' }
+            };
+            
+            console.log('🏗️ Structure Detector initialized');
+        }
+        
+        start() {
+            if (this.isRunning) return;
+            this.isRunning = true;
+            this.detectStructure();
+            console.log('🏗️ Structure detection started');
+        }
+        
+        stop() {
+            this.isRunning = false;
+            console.log('🏗️ Structure detection stopped');
+        }
+        
+        detectStructure() {
+            if (!this.isRunning) return;
+            
+            try {
+                if (this.audioAnalyzer) {
+                    this.analyzeSectionCharacteristics();
+                    this.updateSectionHistory();
+                }
+            } catch (error) {
+                console.error('Structure detection error:', error);
+            }
+            
+            if (this.isRunning) {
+                requestAnimationFrame(() => this.detectStructure());
+            }
+        }
+        
+        analyzeSectionCharacteristics() {
+            const energy = this.audioAnalyzer.getEnergy();
+            const tempo = this.audioAnalyzer.getTempo();
+            const energyTrend = this.audioAnalyzer.getEnergyTrend();
+            
+            // Store patterns for analysis
+            this.energyPatterns.push({
+                timestamp: Date.now(),
+                energy: energy,
+                trend: energyTrend
+            });
+            
+            this.tempoPatterns.push({
+                timestamp: Date.now(),
+                tempo: tempo
+            });
+            
+            // Keep only recent patterns
+            if (this.energyPatterns.length > 300) {
+                this.energyPatterns = this.energyPatterns.slice(-300);
+            }
+            if (this.tempoPatterns.length > 300) {
+                this.tempoPatterns = this.tempoPatterns.slice(-300);
+            }
+            
+            // Analyze current section
+            this.classifyCurrentSection(energy, tempo, energyTrend);
+        }
+        
+        classifyCurrentSection(energy, tempo, energyTrend) {
+            const sectionScores = {};
+            
+            for (const [sectionType, characteristics] of Object.entries(this.sectionTypes)) {
+                let score = 0;
+                
+                // Energy analysis
+                if (characteristics.energy === 'low' && energy < 0.3) score += 0.3;
+                else if (characteristics.energy === 'medium' && energy >= 0.3 && energy < 0.7) score += 0.3;
+                else if (characteristics.energy === 'high' && energy >= 0.7) score += 0.3;
+                else if (characteristics.energy === 'variable') score += 0.2;
+                else if (characteristics.energy === 'decreasing' && energyTrend < -0.1) score += 0.3;
+                
+                // Tempo analysis
+                if (characteristics.tempo === 'stable' && this.isTempoStable()) score += 0.3;
+                else if (characteristics.tempo === 'variable' && !this.isTempoStable()) score += 0.3;
+                else if (characteristics.tempo === 'decreasing' && this.isTempoDecreasing()) score += 0.3;
+                
+                // Duration analysis
+                const currentDuration = Date.now() - this.sectionStartTime;
+                if (characteristics.duration === 'short' && currentDuration < 10000) score += 0.2;
+                else if (characteristics.duration === 'medium' && currentDuration >= 10000 && currentDuration < 30000) score += 0.2;
+                else if (characteristics.duration === 'long' && currentDuration >= 30000) score += 0.2;
+                
+                sectionScores[sectionType] = score;
+            }
+            
+            // Find best matching section
+            const bestSection = Object.keys(sectionScores).reduce((a, b) => 
+                sectionScores[a] > sectionScores[b] ? a : b
+            );
+            
+            const confidence = sectionScores[bestSection];
+            
+            // Update current section if confidence is high enough
+            if (confidence > 0.5 && bestSection !== this.currentSection) {
+                this.currentSection = bestSection;
+                this.sectionConfidence = confidence;
+                this.sectionStartTime = Date.now();
+                this.sectionDuration = 0;
+                
+                console.log(`🏗️ Section detected: ${bestSection} (confidence: ${confidence.toFixed(2)})`);
+            }
+            
+            this.sectionDuration = Date.now() - this.sectionStartTime;
+        }
+        
+        isTempoStable() {
+            if (this.tempoPatterns.length < 10) return true;
+            
+            const recentTempos = this.tempoPatterns.slice(-10).map(p => p.tempo);
+            const avgTempo = recentTempos.reduce((a, b) => a + b, 0) / recentTempos.length;
+            const variance = recentTempos.reduce((sum, tempo) => sum + Math.pow(tempo - avgTempo, 2), 0) / recentTempos.length;
+            
+            return Math.sqrt(variance) < this.tempoThreshold;
+        }
+        
+        isTempoDecreasing() {
+            if (this.tempoPatterns.length < 20) return false;
+            
+            const recentTempos = this.tempoPatterns.slice(-20).map(p => p.tempo);
+            const firstHalf = recentTempos.slice(0, 10);
+            const secondHalf = recentTempos.slice(10);
+            
+            const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+            const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+            
+            return secondAvg < firstAvg - 5; // 5 BPM decrease
+        }
+        
+        updateSectionHistory() {
+            this.sectionHistory.push({
+                timestamp: Date.now(),
+                section: this.currentSection,
+                confidence: this.sectionConfidence,
+                duration: this.sectionDuration
+            });
+            
+            // Keep only recent history
+            if (this.sectionHistory.length > 100) {
+                this.sectionHistory = this.sectionHistory.slice(-100);
+            }
+        }
+        
+        // Public getters
+        getCurrentSection() { return this.currentSection; }
+        getSectionConfidence() { return this.sectionConfidence; }
+        getSectionDuration() { return this.sectionDuration; }
+        getSectionHistory() { return this.sectionHistory; }
+    }
+
+    // Enhanced Audio Analysis Engine for AI Autopilot
     class AudioAnalyzer {
         constructor(audioMotion) {
             this.audioMotion = audioMotion;
@@ -6500,7 +7019,11 @@
             this.beatHistory = [];
             this.tempoHistory = [];
             
-            console.log('🎵 Audio Analyzer initialized');
+            // Enhanced analysis components
+            this.harmonicAnalyzer = new HarmonicAnalyzer(this);
+            this.structureDetector = new StructureDetector(this);
+            
+            console.log('🎵 Enhanced Audio Analyzer initialized');
         }
         
         start() {
@@ -6514,8 +7037,12 @@
                 frequencyBinCount: this.audioMotion?.analyser?.frequencyBinCount
             });
             
+            // Start enhanced analysis components
+            this.harmonicAnalyzer.start();
+            this.structureDetector.start();
+            
             this.analyze();
-            console.log('🎵 Audio analysis started');
+            console.log('🎵 Enhanced audio analysis started');
         }
         
         stop() {
@@ -6524,7 +7051,12 @@
                 cancelAnimationFrame(this.analysisFrame);
                 this.analysisFrame = null;
             }
-            console.log('🎵 Audio analysis stopped');
+            
+            // Stop enhanced analysis components
+            this.harmonicAnalyzer.stop();
+            this.structureDetector.stop();
+            
+            console.log('🎵 Enhanced audio analysis stopped');
         }
         
         analyze() {
@@ -6540,7 +7072,13 @@
                     
                     // Debug output every 60 frames (1 second)
                     if (this.analysisFrame && this.analysisFrame % 60 === 0) {
-                        console.log(`🎵 Analysis: Energy=${this.currentEnergy.toFixed(3)}, Beat=${this.beatDetected}, Tempo=${this.currentTempo}, Freq=${this.dominantFreq}`);
+                        const chord = this.harmonicAnalyzer.getCurrentChord();
+                        const key = this.harmonicAnalyzer.getCurrentKey();
+                        const section = this.structureDetector.getCurrentSection();
+                        
+                        console.log(`🎵 Enhanced Analysis: Energy=${this.currentEnergy.toFixed(3)}, Beat=${this.beatDetected}, Tempo=${this.currentTempo}, Freq=${this.dominantFreq}`);
+                        console.log(`🎼 Harmonic: Chord=${chord || 'none'}, Key=${key || 'none'}`);
+                        console.log(`🏗️ Structure: Section=${section}, Duration=${this.structureDetector.getSectionDuration()}ms`);
                     }
                 } else {
                     // Debug: Check why audio data isn't available
@@ -6721,6 +7259,7 @@
             }
             
             return {
+                // Basic audio features
                 energy: this.smoothedEnergy,
                 beat: this.beatDetected,
                 tempo: estimatedTempo,
@@ -6732,7 +7271,24 @@
                     mid: this.midEnergy || 0,
                     treble: this.trebleEnergy || 0
                 },
-                spectralFlux: this.spectralFlux || 0
+                spectralFlux: this.spectralFlux || 0,
+                
+                // Enhanced harmonic features
+                harmonic: {
+                    chord: this.harmonicAnalyzer.getCurrentChord(),
+                    chordConfidence: this.harmonicAnalyzer.getChordConfidence(),
+                    key: this.harmonicAnalyzer.getCurrentKey(),
+                    keyConfidence: this.harmonicAnalyzer.getKeyConfidence(),
+                    progression: this.harmonicAnalyzer.getHarmonicProgression()
+                },
+                
+                // Enhanced structure features
+                structure: {
+                    section: this.structureDetector.getCurrentSection(),
+                    sectionConfidence: this.structureDetector.getSectionConfidence(),
+                    sectionDuration: this.structureDetector.getSectionDuration(),
+                    sectionHistory: this.structureDetector.getSectionHistory()
+                }
             };
         }
     }
@@ -6853,6 +7409,11 @@
             
             console.log(`🎯 Scope: ${this.autopilot.scope}, Available modes:`, availableModes);
             
+            // Get enhanced audio features including harmonic and structure analysis
+            const audioFeatures = this.audioAnalyzer.getCurrentFeatures();
+            const harmonic = audioFeatures.harmonic || {};
+            const structure = audioFeatures.structure || {};
+            
             // If scope is specific (radial, energy), return that mode directly
             if (this.autopilot.scope === 'radial' && availableModes.includes(4)) {
                 return 4; // Radial Spectrum
@@ -6866,32 +7427,72 @@
                 return barModes.length > 0 ? barModes[Math.floor(Math.random() * barModes.length)] : availableModes[0];
             }
             
-            // For 'all' scope, use energy-based selection
+            // Enhanced mode selection with harmonic and structure awareness
             let candidateModes = [];
             
-            // Very high energy
-            if (energy > 0.4 && energyTrend > 0.02) {
-                candidateModes = availableModes.filter(mode => [4, 5].includes(mode)); // Radial, Energy
+            // Structure-based mode selection (highest priority)
+            if (structure.section) {
+                switch (structure.section) {
+                    case 'intro':
+                        // Intro - prefer subtle, building modes
+                        candidateModes = availableModes.filter(mode => [0, 4, 5].includes(mode)); // Spectrum, Radial, Wave
+                        break;
+                    case 'verse':
+                        // Verse - balanced, steady modes
+                        candidateModes = availableModes.filter(mode => [0, 1, 4, 5].includes(mode)); // Spectrum, Bars, Radial, Wave
+                        break;
+                    case 'chorus':
+                        // Chorus - most dynamic, energetic modes
+                        candidateModes = availableModes.filter(mode => [1, 2, 3, 6].includes(mode)); // Bars, Stereo, Mirror, Kaleidoscope
+                        break;
+                    case 'bridge':
+                        // Bridge - unique, experimental modes
+                        candidateModes = availableModes.filter(mode => [2, 3, 6].includes(mode)); // Stereo, Mirror, Kaleidoscope
+                        break;
+                    case 'outro':
+                        // Outro - fading, subtle modes
+                        candidateModes = availableModes.filter(mode => [0, 4, 5].includes(mode)); // Spectrum, Radial, Wave
+                        break;
+                }
             }
-            // High energy
-            else if (energy > 0.3) {
-                candidateModes = availableModes.filter(mode => [1, 5, 4].includes(mode)); // Mirror Wave, Energy, Radial
+            
+            // Harmonic-based mode selection (if no structure info or as secondary factor)
+            if (candidateModes.length === 0 && harmonic.chord) {
+                if (harmonic.chord.includes('m')) {
+                    // Minor chords - prefer darker, more introspective modes
+                    candidateModes = availableModes.filter(mode => [0, 4, 5].includes(mode)); // Spectrum, Radial, Wave
+                } else if (harmonic.chord.includes('M') || harmonic.chord.includes('maj')) {
+                    // Major chords - prefer brighter, more energetic modes
+                    candidateModes = availableModes.filter(mode => [1, 2, 3, 6].includes(mode)); // Bars, Stereo, Mirror, Kaleidoscope
+                }
             }
-            // Medium energy
-            else if (energy > 0.2) {
-                candidateModes = availableModes.filter(mode => [3, 6, 0].includes(mode)); // Stereo, Mirror, Spectrum
-            }
-            // Rising energy
-            else if (energyTrend > 0.01) {
-                candidateModes = availableModes.filter(mode => [1, 0].includes(mode)); // Mirror Wave, Spectrum
-            }
-            // Low energy
-            else if (energy > 0.1) {
-                candidateModes = availableModes.filter(mode => [0, 2].includes(mode)); // Spectrum, Classic LED
-            }
-            // Very low energy
-            else {
-                candidateModes = availableModes.filter(mode => [2].includes(mode)); // Classic LED
+            
+            // Energy-based selection (fallback if no structure/harmonic info)
+            if (candidateModes.length === 0) {
+                // Very high energy
+                if (energy > 0.4 && energyTrend > 0.02) {
+                    candidateModes = availableModes.filter(mode => [4, 5].includes(mode)); // Radial, Energy
+                }
+                // High energy
+                else if (energy > 0.3) {
+                    candidateModes = availableModes.filter(mode => [1, 5, 4].includes(mode)); // Mirror Wave, Energy, Radial
+                }
+                // Medium energy
+                else if (energy > 0.2) {
+                    candidateModes = availableModes.filter(mode => [3, 6, 0].includes(mode)); // Stereo, Mirror, Spectrum
+                }
+                // Rising energy
+                else if (energyTrend > 0.01) {
+                    candidateModes = availableModes.filter(mode => [1, 0].includes(mode)); // Mirror Wave, Spectrum
+                }
+                // Low energy
+                else if (energy > 0.1) {
+                    candidateModes = availableModes.filter(mode => [0, 2].includes(mode)); // Spectrum, Classic LED
+                }
+                // Very low energy
+                else {
+                    candidateModes = availableModes.filter(mode => [2].includes(mode)); // Classic LED
+                }
             }
             
             // If no candidates match scope, use any available mode
