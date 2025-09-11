@@ -563,97 +563,155 @@
                     <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
                 </div>
 
-                <!-- Autopilot Scope -->
-                <div class="control-group">
-                    <div class="group-label">Autopilot Scope</div>
-                    <div class="preset-buttons">
-                        <button class="scope-btn active" data-scope="bars">Bars</button>
-                        <button class="scope-btn" data-scope="radial">Radial</button>
-                        <button class="scope-btn" data-scope="energy">Energy</button>
-                        <button class="scope-btn" data-scope="all">All</button>
+                <div class="autopilot-settings-content">
+                    <!-- Left Column -->
+                    <div class="autopilot-column">
+                        <!-- Autopilot Scope -->
+                        <div class="control-group">
+                            <div class="group-label">Autopilot Scope</div>
+                            <div class="preset-buttons">
+                                <button class="scope-btn" data-scope="bars">Bars</button>
+                                <button class="scope-btn" data-scope="radial">Radial</button>
+                                <button class="scope-btn" data-scope="energy">Energy</button>
+                                <button class="scope-btn active" data-scope="all">All</button>
+                            </div>
+                        </div>
+
+                        <!-- Color Schemes Toggle -->
+                        <div class="control-group">
+                            <div class="group-label">Color Automation</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
+                            </div>
+                        </div>
+
+                        <!-- Change Timing -->
+                        <div class="control-group">
+                            <div class="group-label">Change Timing</div>
+                            <div class="preset-buttons">
+                                <button class="timing-btn active" data-timing="instant">Instant</button>
+                                <button class="timing-btn" data-timing="smooth">Smooth</button>
+                                <button class="timing-btn" data-timing="slow">Slow</button>
+                                <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
+                            </div>
+                        </div>
+
+                        <!-- Sensitivity -->
+                        <div class="control-group">
+                            <div class="group-label">Sensitivity</div>
+                            <div class="preset-buttons">
+                                <button class="sensitivity-btn" data-sensitivity="low">Low</button>
+                                <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
+                                <button class="sensitivity-btn" data-sensitivity="high">High</button>
+                            </div>
+                        </div>
+
+                        <!-- Genre Selection -->
+                        <div class="control-group">
+                            <div class="group-label">Genre Detection</div>
+                            <div class="preset-buttons">
+                                <button class="genre-btn active" data-genre="auto">Auto Detect</button>
+                                <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
+                                <button class="genre-btn" data-genre="rock">Rock</button>
+                                <button class="genre-btn" data-genre="electronic">Electronic</button>
+                                <button class="genre-btn" data-genre="reggae">Reggae</button>
+                                <button class="genre-btn" data-genre="country">Country</button>
+                                <button class="genre-btn" data-genre="funk">Funk</button>
+                                <button class="genre-btn" data-genre="ambient">Ambient</button>
+                                <button class="genre-btn" data-genre="punk">Punk</button>
+                                <button class="genre-btn" data-genre="jazz">Jazz</button>
+                                <button class="genre-btn" data-genre="classical">Classical</button>
+                            </div>
+                        </div>
+
+                        <!-- Parameter Control -->
+                        <div class="control-group">
+                            <div class="group-label">Parameter Control</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
+                            </div>
+                        </div>
+
+                        <!-- Video Effects -->
+                        <div class="control-group">
+                            <div class="group-label">Video Effects</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="enableVideoEffectsBtn">Video Effects: Off</button>
+                            </div>
+                        </div>
+
+                        <!-- Learning Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Learning Controls</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="enableLearningBtn">Learning: On</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="resetLearningBtn">Reset Learning Data</button>
+                            </div>
+                        </div>
+
+                        <!-- Adaptive Tuning Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Adaptive Tuning</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="enableAdaptiveTuningBtn">Adaptive Tuning: On</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="forceOptimizationBtn">Force Optimization</button>
+                            </div>
+                        </div>
+
+                        <!-- Test Button -->
+                        <div class="control-group">
+                            <div class="group-label">Test</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Color Schemes Toggle -->
-                <div class="control-group">
-                    <div class="group-label">Color Automation</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
-                    </div>
-                </div>
+                    <!-- Right Column -->
+                    <div class="autopilot-column">
+                        <!-- Current Genre Display -->
+                        <div class="control-group">
+                            <div class="group-label">Current Genre</div>
+                            <div class="info-display" id="currentGenreDisplay">Unknown</div>
+                        </div>
 
-                <!-- Change Timing -->
-                <div class="control-group">
-                    <div class="group-label">Change Timing</div>
-                    <div class="preset-buttons">
-                        <button class="timing-btn active" data-timing="instant">Instant</button>
-                        <button class="timing-btn" data-timing="smooth">Smooth</button>
-                        <button class="timing-btn" data-timing="slow">Slow</button>
-                        <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
-                    </div>
-                </div>
+                        <!-- Genre Confidence -->
+                        <div class="control-group">
+                            <div class="group-label">Confidence</div>
+                            <div class="info-display" id="genreConfidenceDisplay">0%</div>
+                        </div>
 
-                <!-- Sensitivity -->
-                <div class="control-group">
-                    <div class="group-label">Sensitivity</div>
-                    <div class="preset-buttons">
-                        <button class="sensitivity-btn" data-sensitivity="low">Low</button>
-                        <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
-                        <button class="sensitivity-btn" data-sensitivity="high">High</button>
-                    </div>
-                </div>
+                        <!-- Learning Analytics -->
+                        <div class="control-group">
+                            <div class="group-label">Learning Analytics</div>
+                            <div class="info-display" id="learningProgressDisplay">Learning: 0%</div>
+                            <div class="info-display" id="patternCountDisplay">Patterns: 0</div>
+                            <div class="info-display" id="successRateDisplay">Success Rate: 0%</div>
+                        </div>
 
-                <!-- Genre Selection -->
-                <div class="control-group">
-                    <div class="group-label">Genre Detection</div>
-                    <div class="preset-buttons">
-                        <button class="genre-btn active" data-genre="auto">Auto Detect</button>
-                        <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
-                        <button class="genre-btn" data-genre="rock">Rock</button>
-                        <button class="genre-btn" data-genre="electronic">Electronic</button>
-                        <button class="genre-btn" data-genre="reggae">Reggae</button>
-                        <button class="genre-btn" data-genre="country">Country</button>
-                        <button class="genre-btn" data-genre="funk">Funk</button>
-                        <button class="genre-btn" data-genre="ambient">Ambient</button>
-                        <button class="genre-btn" data-genre="punk">Punk</button>
-                        <button class="genre-btn" data-genre="jazz">Jazz</button>
-                        <button class="genre-btn" data-genre="classical">Classical</button>
-                    </div>
-                </div>
+                        <!-- Adaptive Tuning Analytics -->
+                        <div class="control-group">
+                            <div class="group-label">Adaptive Tuning</div>
+                            <div class="info-display" id="performanceDisplay">Performance: 0%</div>
+                            <div class="info-display" id="optimizationCountDisplay">Optimizations: 0</div>
+                            <div class="info-display" id="performanceTrendDisplay">Trend: Stable</div>
+                        </div>
 
-                <!-- Parameter Control -->
-                <div class="control-group">
-                    <div class="group-label">Parameter Control</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
-                    </div>
-                </div>
-
-                <!-- Video Effects -->
-                <div class="control-group">
-                    <div class="group-label">Video Effects</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="enableVideoEffectsBtn">Video Effects: Off</button>
-                    </div>
-                </div>
-
-                <!-- Current Genre Display -->
-                <div class="control-group">
-                    <div class="group-label">Current Genre</div>
-                    <div class="info-display" id="currentGenreDisplay">Unknown</div>
-                </div>
-
-                <!-- Genre Confidence -->
-                <div class="control-group">
-                    <div class="group-label">Confidence</div>
-                    <div class="info-display" id="genreConfidenceDisplay">0%</div>
-                </div>
-
-                <!-- Test Button -->
-                <div class="control-group">
-                    <div class="group-label">Test</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
+                        <!-- User Feedback -->
+                        <div class="control-group">
+                            <div class="group-label">User Feedback</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="thumbsUpBtn">👍 Like Current Settings</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
+                            </div>
+                            <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
+                        </div>
                     </div>
                 </div>
                 </div>
@@ -1161,9 +1219,40 @@
             border-radius: 8px;
             padding: 16px;
             z-index: 6000;
-            min-width: 280px;
-            max-width: 350px;
+            min-width: 600px;
+            max-width: 800px;
+            width: 90vw;
+            max-height: calc(100vh - 200px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        /* Two-column layout for autopilot settings */
+        .autopilot-settings-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .autopilot-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .autopilot-settings-panel {
+                min-width: 320px;
+                max-width: 90vw;
+                width: 90vw;
+            }
+            
+            .autopilot-settings-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
         }
 
         /* Autopilot setting button styles */
@@ -5887,6 +5976,537 @@
         }
     };
 
+    // Adaptive Parameter Tuning System for AI Autopilot
+    class AdaptiveTuningSystem {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.tuningData = this.loadTuningData();
+            this.performanceHistory = this.tuningData.performanceHistory || [];
+            this.optimizationTargets = this.tuningData.optimizationTargets || {};
+            this.abTests = this.tuningData.abTests || [];
+            
+            // Tuning configuration
+            this.optimizationInterval = 30000; // 30 seconds between optimizations
+            this.minSamplesForOptimization = 10;
+            this.maxOptimizationHistory = 500;
+            this.learningRate = 0.1;
+            this.explorationRate = 0.2; // 20% chance to try new parameters
+            
+            // Performance tracking
+            this.currentPerformance = 0;
+            this.performanceWindow = [];
+            this.lastOptimization = 0;
+            
+            console.log('🎯 Adaptive Tuning System initialized');
+        }
+        
+        // Track performance of current parameters
+        trackPerformance(audioFeatures, userFeedback = null) {
+            const performance = this.calculatePerformance(audioFeatures, userFeedback);
+            
+            this.performanceWindow.push({
+                performance: performance,
+                timestamp: Date.now(),
+                audioFeatures: { ...audioFeatures },
+                userFeedback: userFeedback
+            });
+            
+            // Keep only recent performance data (last 100 samples)
+            if (this.performanceWindow.length > 100) {
+                this.performanceWindow = this.performanceWindow.slice(-100);
+            }
+            
+            this.currentPerformance = performance;
+            
+            // Check if we should optimize
+            if (this.shouldOptimize()) {
+                this.optimizeParameters();
+            }
+        }
+        
+        // Calculate performance score based on audio and user feedback
+        calculatePerformance(audioFeatures, userFeedback) {
+            let score = 0;
+            
+            // Audio-based performance (60% weight)
+            const energy = audioFeatures.energy || 0;
+            const beat = audioFeatures.beat || false;
+            const tempo = audioFeatures.tempo || 0;
+            
+            score += energy * 0.3; // Energy response
+            if (beat) score += 0.2; // Beat detection
+            score += Math.min(tempo / 200, 0.1); // Tempo stability
+            
+            // User feedback (40% weight)
+            if (userFeedback === 'positive') {
+                score += 0.4;
+            } else if (userFeedback === 'negative') {
+                score -= 0.2;
+            }
+            
+            // Smooth the score
+            return Math.max(0, Math.min(1, score));
+        }
+        
+        // Check if we should run optimization
+        shouldOptimize() {
+            const now = Date.now();
+            const hasEnoughSamples = this.performanceWindow.length >= this.minSamplesForOptimization;
+            const enoughTimePassed = now - this.lastOptimization > this.optimizationInterval;
+            
+            return hasEnoughSamples && enoughTimePassed;
+        }
+        
+        // Optimize parameters based on performance history
+        optimizeParameters(forced = false) {
+            try {
+                console.log('🎯 Starting parameter optimization...', forced ? '(FORCED)' : '');
+                
+                // Analyze current performance trends
+                const performanceAnalysis = this.analyzePerformance();
+                
+                // Get current parameters
+                const currentParams = this.getCurrentParameters();
+                console.log('🎯 Current parameters:', currentParams);
+                
+                // Generate optimization suggestions
+                const optimizations = this.generateOptimizations(currentParams, performanceAnalysis, forced);
+                console.log('🎯 Generated optimizations:', optimizations);
+                
+                // Apply optimizations
+                this.applyOptimizations(optimizations);
+                
+                // Record optimization
+                this.recordOptimization(optimizations, performanceAnalysis);
+                
+                this.lastOptimization = Date.now();
+                
+                console.log('🎯 Parameter optimization completed');
+                
+            } catch (error) {
+                console.error('Error in parameter optimization:', error);
+            }
+        }
+        
+        // Analyze performance trends
+        analyzePerformance() {
+            if (this.performanceWindow.length < 5) {
+                return { trend: 'stable', avgPerformance: 0.5 };
+            }
+            
+            const recent = this.performanceWindow.slice(-10);
+            const older = this.performanceWindow.slice(-20, -10);
+            
+            const recentAvg = recent.reduce((sum, p) => sum + p.performance, 0) / recent.length;
+            const olderAvg = older.length > 0 ? 
+                older.reduce((sum, p) => sum + p.performance, 0) / older.length : recentAvg;
+            
+            const trend = recentAvg > olderAvg + 0.1 ? 'improving' : 
+                         recentAvg < olderAvg - 0.1 ? 'declining' : 'stable';
+            
+            return {
+                trend: trend,
+                avgPerformance: recentAvg,
+                recentPerformance: recentAvg,
+                olderPerformance: olderAvg,
+                sampleCount: this.performanceWindow.length
+            };
+        }
+        
+        // Generate optimization suggestions
+        generateOptimizations(currentParams, performanceAnalysis, forced = false) {
+            const optimizations = {};
+            
+            // Define parameter ranges for optimization
+            const parameterRanges = {
+                linearBoost: { min: 0.5, max: 2.0, step: 0.1 },
+                gradient: { min: 0, max: 1, step: 0.1 },
+                fillAlpha: { min: 0.1, max: 1, step: 0.1 },
+                peakHoldTime: { min: 0, max: 1, step: 0.1 },
+                smoothing: { min: 0, max: 1, step: 0.1 },
+                maxDecibels: { min: -60, max: -10, step: 5 },
+                minFreq: { min: 20, max: 2000, step: 50 }
+            };
+            
+            // Apply different optimization strategies based on performance trend
+            Object.keys(parameterRanges).forEach(paramName => {
+                const currentValue = currentParams[paramName] || 0.5;
+                const range = parameterRanges[paramName];
+                
+                let newValue = currentValue;
+                
+                if (forced) {
+                    // When forced, always make a change for demonstration
+                    newValue = this.exploreParameterSpace(paramName, currentValue, range, 0.2);
+                } else if (performanceAnalysis.trend === 'declining') {
+                    // Try more aggressive changes when performance is declining
+                    newValue = this.exploreParameterSpace(paramName, currentValue, range, 0.3);
+                } else if (performanceAnalysis.trend === 'improving') {
+                    // Fine-tune when performance is improving
+                    newValue = this.fineTuneParameter(paramName, currentValue, range, 0.1);
+                } else {
+                    // Stable performance - try small improvements
+                    newValue = this.exploreParameterSpace(paramName, currentValue, range, 0.15);
+                }
+                
+                // Only change if the difference is significant (or if forced)
+                if (forced || Math.abs(newValue - currentValue) > range.step) {
+                    optimizations[paramName] = newValue;
+                }
+            });
+            
+            return optimizations;
+        }
+        
+        // Explore parameter space for better values
+        exploreParameterSpace(paramName, currentValue, range, explorationRate) {
+            // 20% chance to try a completely new value
+            if (Math.random() < this.explorationRate) {
+                return range.min + Math.random() * (range.max - range.min);
+            }
+            
+            // Otherwise, make a small adjustment
+            const adjustment = (Math.random() - 0.5) * explorationRate * (range.max - range.min);
+            return Math.max(range.min, Math.min(range.max, currentValue + adjustment));
+        }
+        
+        // Fine-tune parameter with small adjustments
+        fineTuneParameter(paramName, currentValue, range, tuningRate) {
+            const adjustment = (Math.random() - 0.5) * tuningRate * (range.max - range.min);
+            return Math.max(range.min, Math.min(range.max, currentValue + adjustment));
+        }
+        
+        // Apply optimizations to the visualizer
+        applyOptimizations(optimizations) {
+            if (Object.keys(optimizations).length === 0) return;
+            
+            if (this.autopilot.visualizer.audioMotion) {
+                this.autopilot.visualizer.audioMotion.setOptions(optimizations);
+                console.log('🎯 Applied optimizations:', optimizations);
+            }
+        }
+        
+        // Record optimization for future analysis
+        recordOptimization(optimizations, performanceAnalysis) {
+            const optimization = {
+                timestamp: Date.now(),
+                optimizations: { ...optimizations },
+                performanceBefore: performanceAnalysis.avgPerformance,
+                performanceTrend: performanceAnalysis.trend,
+                sampleCount: performanceAnalysis.sampleCount
+            };
+            
+            this.performanceHistory.push(optimization);
+            
+            // Keep only recent history
+            if (this.performanceHistory.length > this.maxOptimizationHistory) {
+                this.performanceHistory = this.performanceHistory.slice(-this.maxOptimizationHistory);
+            }
+            
+            // Save tuning data
+            this.saveTuningData();
+        }
+        
+        // Get current parameter values
+        getCurrentParameters() {
+            if (!this.autopilot.visualizer.audioMotion) return {};
+            
+            // Get parameters from the visualizer's current configuration
+            const audioMotion = this.autopilot.visualizer.audioMotion;
+            
+            return {
+                linearBoost: audioMotion.linearBoost || 1.0,
+                gradient: audioMotion.gradient || 0.5,
+                fillAlpha: audioMotion.fillAlpha || 0.8,
+                peakHoldTime: audioMotion.peakHoldTime || 0.5,
+                smoothing: audioMotion.smoothing || 0.5,
+                maxDecibels: audioMotion.maxDecibels || -30,
+                minFreq: audioMotion.minFreq || 20
+            };
+        }
+        
+        // Get optimization analytics
+        getOptimizationAnalytics() {
+            const totalOptimizations = this.performanceHistory.length;
+            const recentOptimizations = this.performanceHistory.slice(-10);
+            
+            const avgPerformance = this.performanceWindow.length > 0 ?
+                this.performanceWindow.reduce((sum, p) => sum + p.performance, 0) / this.performanceWindow.length : 0;
+            
+            const performanceTrend = this.analyzePerformance();
+            
+            return {
+                totalOptimizations: totalOptimizations,
+                currentPerformance: avgPerformance,
+                performanceTrend: performanceTrend.trend,
+                recentOptimizations: recentOptimizations.length,
+                optimizationFrequency: totalOptimizations > 0 ? 
+                    (Date.now() - this.performanceHistory[0].timestamp) / (totalOptimizations * 1000) : 0
+            };
+        }
+        
+        // Data persistence
+        loadTuningData() {
+            try {
+                const saved = localStorage.getItem('autopilot_adaptive_tuning');
+                return saved ? JSON.parse(saved) : { 
+                    performanceHistory: [], 
+                    optimizationTargets: {}, 
+                    abTests: [] 
+                };
+            } catch (error) {
+                console.warn('Could not load tuning data:', error);
+                return { performanceHistory: [], optimizationTargets: {}, abTests: [] };
+            }
+        }
+        
+        saveTuningData() {
+            try {
+                const data = {
+                    performanceHistory: this.performanceHistory,
+                    optimizationTargets: this.optimizationTargets,
+                    abTests: this.abTests,
+                    lastSaved: Date.now()
+                };
+                localStorage.setItem('autopilot_adaptive_tuning', JSON.stringify(data));
+            } catch (error) {
+                console.warn('Could not save tuning data:', error);
+            }
+        }
+    }
+
+    // Pattern Learning System for AI Autopilot
+    class PatternLearningSystem {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.learningData = this.loadLearningData();
+            this.patterns = this.learningData.patterns || {};
+            this.userBehavior = this.learningData.userBehavior || {};
+            this.performanceMetrics = this.learningData.performanceMetrics || {};
+            
+            // Learning configuration
+            this.learningRate = 0.1; // How quickly to adapt to new patterns
+            this.minSamples = 5; // Minimum samples before making predictions
+            this.maxHistory = 1000; // Maximum stored samples per pattern
+            
+            console.log('🧠 Pattern Learning System initialized');
+        }
+        
+        // Learn from successful parameter combinations
+        learnFromSuccess(genre, audioFeatures, parameters, effectiveness) {
+            const patternKey = this.getPatternKey(genre, audioFeatures);
+            
+            if (!this.patterns[patternKey]) {
+                this.patterns[patternKey] = {
+                    samples: [],
+                    successRate: 0,
+                    avgEffectiveness: 0,
+                    lastUpdated: Date.now()
+                };
+            }
+            
+            const pattern = this.patterns[patternKey];
+            
+            // Add new sample
+            pattern.samples.push({
+                parameters: { ...parameters },
+                effectiveness: effectiveness,
+                timestamp: Date.now()
+            });
+            
+            // Keep only recent samples
+            if (pattern.samples.length > this.maxHistory) {
+                pattern.samples = pattern.samples.slice(-this.maxHistory);
+            }
+            
+            // Update success rate and average effectiveness
+            this.updatePatternMetrics(pattern);
+            
+            // Save learning data
+            this.saveLearningData();
+            
+            console.log(`🧠 Learned pattern for ${patternKey}:`, {
+                samples: pattern.samples.length,
+                successRate: pattern.successRate.toFixed(3),
+                avgEffectiveness: pattern.avgEffectiveness.toFixed(3)
+            });
+        }
+        
+        // Get pattern-based parameter recommendations
+        getPatternRecommendations(genre, audioFeatures) {
+            const patternKey = this.getPatternKey(genre, audioFeatures);
+            const pattern = this.patterns[patternKey];
+            
+            if (!pattern || pattern.samples.length < this.minSamples) {
+                return null; // Not enough data for recommendations
+            }
+            
+            // Find most effective parameter combinations
+            const effectiveSamples = pattern.samples
+                .filter(s => s.effectiveness > pattern.avgEffectiveness)
+                .sort((a, b) => b.effectiveness - a.effectiveness)
+                .slice(0, 5); // Top 5 most effective
+            
+            if (effectiveSamples.length === 0) {
+                return null;
+            }
+            
+            // Calculate weighted average of effective parameters
+            const recommendations = this.calculateWeightedAverage(effectiveSamples);
+            
+            console.log(`🧠 Pattern recommendations for ${patternKey}:`, recommendations);
+            
+            return {
+                confidence: pattern.successRate,
+                parameters: recommendations,
+                source: 'pattern_learning'
+            };
+        }
+        
+        // Learn from user behavior patterns
+        learnFromUserBehavior(action, context, outcome) {
+            const behaviorKey = `${action}_${context}`;
+            
+            if (!this.userBehavior[behaviorKey]) {
+                this.userBehavior[behaviorKey] = {
+                    totalActions: 0,
+                    positiveOutcomes: 0,
+                    contexts: [],
+                    lastAction: Date.now()
+                };
+            }
+            
+            const behavior = this.userBehavior[behaviorKey];
+            behavior.totalActions++;
+            
+            if (outcome === 'positive') {
+                behavior.positiveOutcomes++;
+            }
+            
+            behavior.contexts.push({
+                context: { ...context },
+                outcome: outcome,
+                timestamp: Date.now()
+            });
+            
+            // Keep only recent contexts
+            if (behavior.contexts.length > 100) {
+                behavior.contexts = behavior.contexts.slice(-100);
+            }
+            
+            behavior.lastAction = Date.now();
+            
+            console.log(`🧠 Learned user behavior: ${behaviorKey}`, {
+                totalActions: behavior.totalActions,
+                successRate: (behavior.positiveOutcomes / behavior.totalActions).toFixed(3)
+            });
+        }
+        
+        // Get user behavior predictions
+        predictUserPreference(action, context) {
+            const behaviorKey = `${action}_${context}`;
+            const behavior = this.userBehavior[behaviorKey];
+            
+            if (!behavior || behavior.totalActions < 3) {
+                return null; // Not enough data
+            }
+            
+            const successRate = behavior.positiveOutcomes / behavior.totalActions;
+            
+            return {
+                action: action,
+                context: context,
+                predictedPreference: successRate > 0.6 ? 'positive' : 'negative',
+                confidence: Math.abs(successRate - 0.5) * 2, // 0-1 confidence
+                totalActions: behavior.totalActions
+            };
+        }
+        
+        // Helper methods
+        getPatternKey(genre, audioFeatures) {
+            const energyLevel = audioFeatures.energy > 0.7 ? 'high' : audioFeatures.energy > 0.4 ? 'medium' : 'low';
+            const tempoCategory = audioFeatures.tempo > 140 ? 'fast' : audioFeatures.tempo > 100 ? 'medium' : 'slow';
+            return `${genre}_${energyLevel}_${tempoCategory}`;
+        }
+        
+        updatePatternMetrics(pattern) {
+            if (pattern.samples.length === 0) return;
+            
+            const totalEffectiveness = pattern.samples.reduce((sum, sample) => sum + sample.effectiveness, 0);
+            pattern.avgEffectiveness = totalEffectiveness / pattern.samples.length;
+            
+            const successfulSamples = pattern.samples.filter(s => s.effectiveness > 0.7).length;
+            pattern.successRate = successfulSamples / pattern.samples.length;
+            pattern.lastUpdated = Date.now();
+        }
+        
+        calculateWeightedAverage(samples) {
+            const weights = samples.map(s => s.effectiveness);
+            const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+            
+            const avgParams = {};
+            const paramKeys = Object.keys(samples[0].parameters);
+            
+            paramKeys.forEach(key => {
+                const weightedSum = samples.reduce((sum, sample, index) => {
+                    return sum + (sample.parameters[key] * weights[index]);
+                }, 0);
+                avgParams[key] = weightedSum / totalWeight;
+            });
+            
+            return avgParams;
+        }
+        
+        // Data persistence
+        loadLearningData() {
+            try {
+                const saved = localStorage.getItem('autopilot_ml_patterns');
+                return saved ? JSON.parse(saved) : { patterns: {}, userBehavior: {}, performanceMetrics: {} };
+            } catch (error) {
+                console.warn('Could not load learning data:', error);
+                return { patterns: {}, userBehavior: {}, performanceMetrics: {} };
+            }
+        }
+        
+        saveLearningData() {
+            try {
+                const data = {
+                    patterns: this.patterns,
+                    userBehavior: this.userBehavior,
+                    performanceMetrics: this.performanceMetrics,
+                    lastSaved: Date.now()
+                };
+                localStorage.setItem('autopilot_ml_patterns', JSON.stringify(data));
+            } catch (error) {
+                console.warn('Could not save learning data:', error);
+            }
+        }
+        
+        // Get learning analytics
+        getLearningAnalytics() {
+            const totalPatterns = Object.keys(this.patterns).length;
+            const totalSamples = Object.values(this.patterns).reduce((sum, pattern) => sum + pattern.samples.length, 0);
+            const avgSuccessRate = totalPatterns > 0 ? 
+                Object.values(this.patterns).reduce((sum, pattern) => sum + pattern.successRate, 0) / totalPatterns : 0;
+            
+            const totalBehaviors = Object.keys(this.userBehavior).length;
+            const totalActions = Object.values(this.userBehavior).reduce((sum, behavior) => sum + behavior.totalActions, 0);
+            
+            return {
+                patterns: {
+                    total: totalPatterns,
+                    samples: totalSamples,
+                    avgSuccessRate: avgSuccessRate
+                },
+                userBehavior: {
+                    total: totalBehaviors,
+                    actions: totalActions
+                },
+                learningProgress: Math.min(totalSamples / 100, 1) // 0-1 progress indicator
+            };
+        }
+    }
+
     // AI Autopilot System for Live Performance Visualization Management
     class AIAutopilot {
         constructor(visualizer) {
@@ -5904,10 +6524,12 @@
             this.decisionEngine = new DecisionEngine(this);
             this.parameterController = new ParameterController(this);
             this.genreDetector = new GenreDetector(this);
+            this.patternLearning = new PatternLearningSystem(this); // New ML system
+            this.adaptiveTuning = new AdaptiveTuningSystem(this); // New adaptive tuning system
             
             // Autopilot state
             this.lastModeChange = 0;
-            this.currentMode = 0;
+            this.currentMode = visualizer.currentMode; // Use current visualization mode instead of defaulting to 0
             this.modeHistory = [];
             this.energyHistory = [];
             
@@ -5923,6 +6545,14 @@
             this.parameterControlEnabled = true; // Enable by default for testing
             this.videoEffectsEnabled = true; // Enable by default
             
+            // Learning state
+            this.learningEnabled = true; // Enable pattern learning by default
+            this.lastLearningUpdate = 0;
+            this.learningCooldown = 5000; // 5 seconds between learning updates
+            
+            // Adaptive tuning state
+            this.adaptiveTuningEnabled = true; // Enable adaptive tuning by default
+            
             // Define visualization mode groups
             this.modeGroups = {
                 bars: [0, 2, 3], // Spectrum, Classic LED, Stereo
@@ -5931,7 +6561,7 @@
                 all: [0, 1, 2, 3, 4, 5, 6] // All modes
             };
             
-            console.log('🤖 AI Autopilot initialized with enhanced parameter control');
+            console.log('🤖 AI Autopilot initialized with enhanced parameter control and pattern learning');
         }
         
         activate() {
@@ -5944,7 +6574,8 @@
             // Reset history
             this.modeHistory = [this.visualizer.currentMode];
             
-            console.log('🤖 AI Autopilot activated');
+            // Don't force a mode change on activation - respect current mode and scope
+            console.log('🤖 AI Autopilot activated with scope:', this.scope);
             this.updateUI();
         }
         
@@ -5985,7 +6616,7 @@
             console.log(`🎛️ Autopilot intensity set to: ${level}`);
         }
         
-        // Enhanced decision making with parameter control
+        // Enhanced decision making with parameter control and pattern learning
         makeAdvancedDecisions() {
             const audioFeatures = this.audioAnalyzer.getCurrentFeatures();
             
@@ -5996,6 +6627,7 @@
                 tempo: audioFeatures.tempo,
                 dominantFreq: audioFeatures.dominantFreq,
                 parameterControlEnabled: this.parameterControlEnabled,
+                learningEnabled: this.learningEnabled,
                 scope: this.scope
             });
             
@@ -6019,18 +6651,164 @@
             
             // Get parameter recommendations based on genre and audio
             if (this.parameterControlEnabled) {
-                const parameterRecommendations = this.getParameterRecommendations(
-                    detectedGenre, 
-                    audioFeatures, 
-                    this.scope
+                let parameterRecommendations;
+                
+                // Try user preference recommendations first (highest priority)
+                const userPreferenceRecommendations = this.parameterController.getUserPreferenceRecommendations(
+                    detectedGenre.genre, 
+                    audioFeatures
                 );
+                
+                if (userPreferenceRecommendations) {
+                    console.log('👤 Using user preference recommendations');
+                    parameterRecommendations = {
+                        visualization: userPreferenceRecommendations,
+                        video: {},
+                        source: 'user_preferences',
+                        confidence: 0.9 // High confidence in user preferences
+                    };
+                }
+                // Try pattern learning recommendations second
+                else if (this.learningEnabled) {
+                    const patternRecommendations = this.patternLearning.getPatternRecommendations(
+                        detectedGenre.genre, 
+                        audioFeatures
+                    );
+                    
+                    if (patternRecommendations) {
+                        console.log('🧠 Using pattern learning recommendations');
+                        parameterRecommendations = {
+                            visualization: patternRecommendations.parameters,
+                            video: {},
+                            source: 'pattern_learning',
+                            confidence: patternRecommendations.confidence
+                        };
+                    }
+                }
+                
+                // Fallback to rule-based recommendations if no learning data
+                if (!parameterRecommendations) {
+                    parameterRecommendations = this.getParameterRecommendations(
+                        detectedGenre, 
+                        audioFeatures, 
+                        this.scope
+                    );
+                }
                 
                 // Apply parameter changes
                 this.parameterController.applyParameterChanges(parameterRecommendations);
+                
+                // Learn from this decision if learning is enabled
+                if (this.learningEnabled && this.shouldLearnFromDecision()) {
+                    this.learnFromCurrentDecision(detectedGenre, audioFeatures, parameterRecommendations);
+                }
+            }
+            
+            // Track performance for adaptive tuning
+            if (this.adaptiveTuning && this.adaptiveTuningEnabled) {
+                const userFeedback = this.getLastUserFeedback();
+                this.adaptiveTuning.trackPerformance(audioFeatures, userFeedback);
             }
             
             // Continue with existing mode switching logic
             this.decisionEngine.evaluateVisualizationChange();
+        }
+        
+        // Check if we should learn from the current decision
+        shouldLearnFromDecision() {
+            const now = Date.now();
+            return now - this.lastLearningUpdate > this.learningCooldown;
+        }
+        
+        // Learn from the current decision for future improvements
+        learnFromCurrentDecision(genre, audioFeatures, recommendations) {
+            try {
+                // Calculate effectiveness based on audio response
+                const effectiveness = this.calculateDecisionEffectiveness(audioFeatures);
+                
+                // Learn from successful parameter combinations
+                this.patternLearning.learnFromSuccess(
+                    genre.genre,
+                    audioFeatures,
+                    recommendations.visualization || {},
+                    effectiveness
+                );
+                
+                // Learn from user behavior (if user makes manual adjustments)
+                this.learnFromUserInteractions(genre, audioFeatures);
+                
+                this.lastLearningUpdate = Date.now();
+                
+                console.log(`🧠 Learning from decision: effectiveness=${effectiveness.toFixed(3)}`);
+                
+            } catch (error) {
+                console.error('Error in learning from decision:', error);
+            }
+        }
+        
+        // Calculate how effective the current decision was
+        calculateDecisionEffectiveness(audioFeatures) {
+            // Simple effectiveness calculation based on audio response
+            const energy = audioFeatures.energy || 0;
+            const beat = audioFeatures.beat || false;
+            const tempo = audioFeatures.tempo || 0;
+            
+            // Higher energy and beat detection = more effective
+            let effectiveness = energy * 0.6;
+            
+            if (beat) {
+                effectiveness += 0.2;
+            }
+            
+            // Tempo stability bonus
+            if (tempo > 0) {
+                effectiveness += Math.min(tempo / 200, 0.2);
+            }
+            
+            return Math.min(effectiveness, 1.0);
+        }
+        
+        // Learn from user interactions and manual adjustments
+        learnFromUserInteractions(genre, audioFeatures) {
+            // This will be expanded when we add user feedback learning
+            // For now, just track basic interaction patterns
+            const context = {
+                genre: genre.genre,
+                energy: audioFeatures.energy,
+                tempo: audioFeatures.tempo
+            };
+            
+            // Learn that the AI made a decision in this context
+            this.patternLearning.learnFromUserBehavior(
+                'ai_decision',
+                JSON.stringify(context),
+                'positive' // Assume positive unless user indicates otherwise
+            );
+        }
+        
+        // Method to be called when user manually adjusts parameters
+        onUserParameterChange(parameterName, oldValue, newValue) {
+            if (this.parameterController) {
+                const context = {
+                    genre: this.currentGenre,
+                    energy: this.audioAnalyzer.getEnergy(),
+                    tempo: this.audioAnalyzer.getTempo()
+                };
+                
+                this.parameterController.trackUserAdjustment(parameterName, oldValue, newValue, context);
+            }
+        }
+        
+        // Get the last user feedback for performance tracking
+        getLastUserFeedback() {
+            if (this.parameterController && this.parameterController.feedbackHistory.length > 0) {
+                const lastFeedback = this.parameterController.feedbackHistory[this.parameterController.feedbackHistory.length - 1];
+                // Only return feedback from the last 30 seconds
+                if (Date.now() - lastFeedback.timestamp < 30000) {
+                    return lastFeedback.feedback;
+                }
+            }
+            return null;
         }
         
         getParameterRecommendations(genre, audioFeatures, scope) {
@@ -6254,7 +7032,13 @@
             this.currentParameters = {};
             this.parameterHistory = [];
             
-            console.log('🎛️ Parameter Controller initialized');
+            // User feedback learning
+            this.userAdjustments = [];
+            this.feedbackHistory = [];
+            this.lastUserAdjustment = null;
+            this.adjustmentThreshold = 0.1; // Minimum change to consider significant
+            
+            console.log('🎛️ Parameter Controller initialized with user feedback learning');
         }
         
         applyParameterChanges(recommendations) {
@@ -6408,6 +7192,183 @@
             if (this.parameterHistory.length > 50) {
                 this.parameterHistory = this.parameterHistory.slice(-50);
             }
+        }
+        
+        // Track user manual parameter adjustments
+        trackUserAdjustment(parameterName, oldValue, newValue, context) {
+            const change = Math.abs(newValue - oldValue);
+            
+            // Only track significant changes
+            if (change < this.adjustmentThreshold) return;
+            
+            const adjustment = {
+                parameter: parameterName,
+                oldValue: oldValue,
+                newValue: newValue,
+                change: change,
+                direction: newValue > oldValue ? 'increase' : 'decrease',
+                timestamp: Date.now(),
+                context: context || {}
+            };
+            
+            this.userAdjustments.push(adjustment);
+            this.lastUserAdjustment = adjustment;
+            
+            // Keep only recent adjustments (last 100)
+            if (this.userAdjustments.length > 100) {
+                this.userAdjustments = this.userAdjustments.slice(-100);
+            }
+            
+            // Learn from this adjustment
+            this.learnFromUserAdjustment(adjustment);
+            
+            console.log(`👤 User adjusted ${parameterName}: ${oldValue.toFixed(3)} → ${newValue.toFixed(3)}`);
+        }
+        
+        // Learn from user adjustments
+        learnFromUserAdjustment(adjustment) {
+            if (!this.autopilot.patternLearning) return;
+            
+            const context = {
+                genre: this.autopilot.currentGenre,
+                energy: this.autopilot.audioAnalyzer.getEnergy(),
+                tempo: this.autopilot.audioAnalyzer.getTempo(),
+                parameter: adjustment.parameter,
+                direction: adjustment.direction
+            };
+            
+            // Learn that user prefers this adjustment in this context
+            this.autopilot.patternLearning.learnFromUserBehavior(
+                'parameter_adjustment',
+                JSON.stringify(context),
+                'positive' // User made the change, so they prefer it
+            );
+            
+            // Store the adjustment pattern for future recommendations
+            this.storeAdjustmentPattern(adjustment, context);
+        }
+        
+        // Store adjustment patterns for future use
+        storeAdjustmentPattern(adjustment, context) {
+            const patternKey = `${context.genre}_${adjustment.parameter}_${context.direction}`;
+            
+            if (!this.autopilot.userPreferences.adjustmentPatterns) {
+                this.autopilot.userPreferences.adjustmentPatterns = {};
+            }
+            
+            if (!this.autopilot.userPreferences.adjustmentPatterns[patternKey]) {
+                this.autopilot.userPreferences.adjustmentPatterns[patternKey] = {
+                    count: 0,
+                    avgChange: 0,
+                    contexts: []
+                };
+            }
+            
+            const pattern = this.autopilot.userPreferences.adjustmentPatterns[patternKey];
+            pattern.count++;
+            pattern.avgChange = (pattern.avgChange * (pattern.count - 1) + adjustment.change) / pattern.count;
+            pattern.contexts.push({
+                context: context,
+                adjustment: adjustment,
+                timestamp: Date.now()
+            });
+            
+            // Keep only recent contexts (last 20)
+            if (pattern.contexts.length > 20) {
+                pattern.contexts = pattern.contexts.slice(-20);
+            }
+            
+            // Save updated preferences
+            this.autopilot.saveUserPreferences();
+        }
+        
+        // Get user preference-based recommendations
+        getUserPreferenceRecommendations(genre, audioFeatures) {
+            if (!this.autopilot.userPreferences.adjustmentPatterns) {
+                return null;
+            }
+            
+            const recommendations = {};
+            const patterns = this.autopilot.userPreferences.adjustmentPatterns;
+            
+            // Look for patterns that match current context
+            Object.keys(patterns).forEach(patternKey => {
+                const [patternGenre, parameter, direction] = patternKey.split('_');
+                
+                if (patternGenre === genre && patterns[patternKey].count >= 3) {
+                    const pattern = patterns[patternKey];
+                    const currentValue = this.getCurrentParameterValue(parameter);
+                    
+                    if (currentValue !== null) {
+                        // Apply user's preferred adjustment
+                        const adjustment = pattern.avgChange * (direction === 'increase' ? 1 : -1);
+                        recommendations[parameter] = Math.max(0, Math.min(1, currentValue + adjustment));
+                    }
+                }
+            });
+            
+            return Object.keys(recommendations).length > 0 ? recommendations : null;
+        }
+        
+        // Get current value of a parameter
+        getCurrentParameterValue(parameterName) {
+            if (!this.visualizer.audioMotion) return null;
+            
+            const audioMotion = this.visualizer.audioMotion;
+            return audioMotion[parameterName] || null;
+        }
+        
+        // Record user feedback (thumbs up/down)
+        recordUserFeedback(feedback, context) {
+            const feedbackEntry = {
+                feedback: feedback, // 'positive' or 'negative'
+                context: context,
+                timestamp: Date.now()
+            };
+            
+            this.feedbackHistory.push(feedbackEntry);
+            
+            // Keep only recent feedback (last 50)
+            if (this.feedbackHistory.length > 50) {
+                this.feedbackHistory = this.feedbackHistory.slice(-50);
+            }
+            
+            // Learn from feedback
+            this.learnFromFeedback(feedbackEntry);
+            
+            console.log(`👤 User feedback: ${feedback}`, context);
+        }
+        
+        // Learn from user feedback
+        learnFromFeedback(feedbackEntry) {
+            if (!this.autopilot.patternLearning) return;
+            
+            const context = {
+                genre: this.autopilot.currentGenre,
+                energy: this.autopilot.audioAnalyzer.getEnergy(),
+                tempo: this.autopilot.audioAnalyzer.getTempo(),
+                ...feedbackEntry.context
+            };
+            
+            this.autopilot.patternLearning.learnFromUserBehavior(
+                'user_feedback',
+                JSON.stringify(context),
+                feedbackEntry.feedback
+            );
+        }
+        
+        // Get feedback statistics
+        getFeedbackStats() {
+            const total = this.feedbackHistory.length;
+            const positive = this.feedbackHistory.filter(f => f.feedback === 'positive').length;
+            const negative = this.feedbackHistory.filter(f => f.feedback === 'negative').length;
+            
+            return {
+                total: total,
+                positive: positive,
+                negative: negative,
+                satisfaction: total > 0 ? positive / total : 0
+            };
         }
         
         getCurrentParameters() {
@@ -7400,6 +8361,12 @@
         makeDecisions() {
             if (!this.isRunning) return;
             
+            // Don't run decision engine for specific scopes (radial, energy)
+            if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
+                this.decisionFrame = requestAnimationFrame(() => this.makeDecisions());
+                return;
+            }
+            
             try {
                 const now = Date.now();
                 
@@ -7431,10 +8398,26 @@
                 dominantFreq: dominantFreq,
                 energyTrend: energyTrend?.toFixed(3),
                 tempo: tempo,
-                currentMode: this.visualizer.currentMode
+                currentMode: this.visualizer.currentMode,
+                scope: this.autopilot.scope
             });
             
-            // Intelligent mode selection based on multiple factors
+            // For specific scopes (radial, energy), only switch if not already in the correct mode
+            if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
+                const expectedMode = this.autopilot.scope === 'radial' ? 4 : 5;
+                console.log(`🎯 Scope check: Current mode ${this.visualizer.currentMode}, Expected mode ${expectedMode} for scope ${this.autopilot.scope}`);
+                if (this.visualizer.currentMode !== expectedMode) {
+                    console.log(`🎯 Scope enforcement: Switching to ${this.autopilot.scope} mode (${expectedMode})`);
+                    this.applyModeChange(expectedMode);
+                    this.autopilot.recordModeChange(expectedMode);
+                    this.lastDecision = Date.now();
+                } else {
+                    console.log(`🎯 Scope enforcement: Already in correct mode ${expectedMode} for scope ${this.autopilot.scope}`);
+                }
+                return; // Don't run normal decision logic for specific scopes
+            }
+            
+            // Intelligent mode selection based on multiple factors (only for 'bars' and 'all' scopes)
             let targetMode = this.selectOptimalMode(energy, dominantFreq, tempo, energyTrend);
             
             // Switch if mode is different and conditions are met (less restrictive)
@@ -7583,6 +8566,7 @@
         }
         
         applyModeChange(targetMode) {
+            console.log(`🎯 applyModeChange called: ${this.visualizer.currentMode} → ${targetMode}`);
             const timing = this.autopilot.changeTiming;
             
             switch (timing) {
@@ -12548,6 +13532,21 @@
                         // Update button states
                         document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
                         e.target.classList.add('active');
+                        
+                        // If scope is specific (radial, energy), immediately switch to that mode
+                        if (scope === 'radial' || scope === 'energy') {
+                            const targetMode = scope === 'radial' ? 4 : 5;
+                            console.log(`🎯 Scope change: Immediately switching to mode ${targetMode} (${scope})`);
+                            this.setVisualizationMode(targetMode);
+                            
+                            // Force a decision engine update to respect the new scope
+                            setTimeout(() => {
+                                if (this.aiAutopilot && this.aiAutopilot.decisionEngine) {
+                                    console.log(`🎯 Scope change: Forcing decision engine update for scope ${scope}`);
+                                    this.aiAutopilot.decisionEngine.lastDecision = 0; // Reset decision timer
+                                }
+                            }, 100);
+                        }
                     }
                 });
             });
@@ -12635,6 +13634,115 @@
                 });
             }
             
+            // Learning controls
+            const enableLearningBtn = document.getElementById('enableLearningBtn');
+            if (enableLearningBtn) {
+                enableLearningBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.learningEnabled = !this.aiAutopilot.learningEnabled;
+                        const isOn = this.aiAutopilot.learningEnabled;
+                        e.target.textContent = `Learning: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            // Reset learning data
+            const resetLearningBtn = document.getElementById('resetLearningBtn');
+            if (resetLearningBtn) {
+                resetLearningBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot && confirm('Are you sure you want to reset all learning data? This cannot be undone.')) {
+                        this.aiAutopilot.patternLearning.patterns = {};
+                        this.aiAutopilot.patternLearning.userBehavior = {};
+                        this.aiAutopilot.patternLearning.performanceMetrics = {};
+                        this.aiAutopilot.patternLearning.saveLearningData();
+                        this.updateLearningAnalytics();
+                        console.log('🧠 Learning data reset');
+                    }
+                });
+            }
+            
+            // User feedback buttons
+            const thumbsUpBtn = document.getElementById('thumbsUpBtn');
+            if (thumbsUpBtn) {
+                thumbsUpBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        const context = {
+                            genre: this.aiAutopilot.currentGenre,
+                            energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
+                            tempo: this.aiAutopilot.audioAnalyzer.getTempo()
+                        };
+                        this.aiAutopilot.parameterController.recordUserFeedback('positive', context);
+                        this.updateFeedbackStats();
+                        console.log('👍 User liked current settings');
+                    }
+                });
+            }
+            
+            const thumbsDownBtn = document.getElementById('thumbsDownBtn');
+            if (thumbsDownBtn) {
+                thumbsDownBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        const context = {
+                            genre: this.aiAutopilot.currentGenre,
+                            energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
+                            tempo: this.aiAutopilot.audioAnalyzer.getTempo()
+                        };
+                        this.aiAutopilot.parameterController.recordUserFeedback('negative', context);
+                        this.updateFeedbackStats();
+                        console.log('👎 User disliked current settings');
+                    }
+                });
+            }
+            
+            // Adaptive tuning controls
+            const enableAdaptiveTuningBtn = document.getElementById('enableAdaptiveTuningBtn');
+            if (enableAdaptiveTuningBtn) {
+                enableAdaptiveTuningBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.adaptiveTuningEnabled = !this.aiAutopilot.adaptiveTuningEnabled;
+                        const isOn = this.aiAutopilot.adaptiveTuningEnabled;
+                        e.target.textContent = `Adaptive Tuning: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🎯 Adaptive tuning: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            const forceOptimizationBtn = document.getElementById('forceOptimizationBtn');
+            if (forceOptimizationBtn) {
+                forceOptimizationBtn.addEventListener('click', (e) => {
+                    console.log('🎯 Force Optimization button clicked');
+                    if (this.aiAutopilot) {
+                        console.log('🎯 AI Autopilot exists:', !!this.aiAutopilot);
+                        if (this.aiAutopilot.adaptiveTuning) {
+                            console.log('🎯 Adaptive Tuning exists:', !!this.aiAutopilot.adaptiveTuning);
+                            console.log('🎯 Performance window length:', this.aiAutopilot.adaptiveTuning.performanceWindow.length);
+                            
+                            // Force optimization regardless of normal conditions
+                            this.aiAutopilot.adaptiveTuning.optimizeParameters(true);
+                            console.log('🎯 Forced parameter optimization completed');
+                        } else {
+                            console.error('🎯 Adaptive Tuning not available');
+                        }
+                    } else {
+                        console.error('🎯 AI Autopilot not available');
+                    }
+                });
+            } else {
+                console.error('🎯 Force Optimization button not found');
+            }
+            
+            // Update learning analytics periodically
+            setInterval(() => {
+                if (this.aiAutopilot) {
+                    this.updateLearningAnalytics();
+                    this.updateFeedbackStats();
+                    this.updateAdaptiveTuningAnalytics();
+                }
+            }, 5000); // Update every 5 seconds
+            
             // Video effects toggle
             const videoEffectsBtn = document.getElementById('enableVideoEffectsBtn');
             if (videoEffectsBtn) {
@@ -12664,6 +13772,71 @@
         updateGenreDisplay() {
             if (this.aiAutopilot) {
                 this.aiAutopilot.updateGenreDisplay();
+            }
+        }
+        
+        updateLearningAnalytics() {
+            if (!this.aiAutopilot || !this.aiAutopilot.patternLearning) return;
+            
+            const analytics = this.aiAutopilot.patternLearning.getLearningAnalytics();
+            
+            // Update learning progress display
+            const progressDisplay = document.getElementById('learningProgressDisplay');
+            if (progressDisplay) {
+                const progressPercent = Math.round(analytics.learningProgress * 100);
+                progressDisplay.textContent = `Learning: ${progressPercent}%`;
+            }
+            
+            // Update pattern count display
+            const patternDisplay = document.getElementById('patternCountDisplay');
+            if (patternDisplay) {
+                patternDisplay.textContent = `Patterns: ${analytics.patterns.total}`;
+            }
+            
+            // Update success rate display
+            const successDisplay = document.getElementById('successRateDisplay');
+            if (successDisplay) {
+                const successPercent = Math.round(analytics.patterns.avgSuccessRate * 100);
+                successDisplay.textContent = `Success Rate: ${successPercent}%`;
+            }
+        }
+        
+        updateFeedbackStats() {
+            if (!this.aiAutopilot || !this.aiAutopilot.parameterController) return;
+            
+            const stats = this.aiAutopilot.parameterController.getFeedbackStats();
+            
+            // Update feedback stats display
+            const feedbackDisplay = document.getElementById('feedbackStatsDisplay');
+            if (feedbackDisplay) {
+                const satisfactionPercent = Math.round(stats.satisfaction * 100);
+                feedbackDisplay.textContent = `Satisfaction: ${satisfactionPercent}% (${stats.positive}/${stats.total})`;
+            }
+        }
+        
+        updateAdaptiveTuningAnalytics() {
+            if (!this.aiAutopilot || !this.aiAutopilot.adaptiveTuning) return;
+            
+            const analytics = this.aiAutopilot.adaptiveTuning.getOptimizationAnalytics();
+            
+            // Update performance display
+            const performanceDisplay = document.getElementById('performanceDisplay');
+            if (performanceDisplay) {
+                const performancePercent = Math.round(analytics.currentPerformance * 100);
+                performanceDisplay.textContent = `Performance: ${performancePercent}%`;
+            }
+            
+            // Update optimization count display
+            const optimizationDisplay = document.getElementById('optimizationCountDisplay');
+            if (optimizationDisplay) {
+                optimizationDisplay.textContent = `Optimizations: ${analytics.totalOptimizations}`;
+            }
+            
+            // Update performance trend display
+            const trendDisplay = document.getElementById('performanceTrendDisplay');
+            if (trendDisplay) {
+                const trendText = analytics.performanceTrend.charAt(0).toUpperCase() + analytics.performanceTrend.slice(1);
+                trendDisplay.textContent = `Trend: ${trendText}`;
             }
         }
 
@@ -14714,6 +15887,8 @@ https://rogueamoeba.com/loopback/
         }
 
         setVisualizationMode(modeIndex) {
+            console.log(`🎨 setVisualizationMode called: ${this.currentMode} → ${modeIndex}`);
+            console.trace('🎨 setVisualizationMode call stack');
             this.currentMode = modeIndex;
 
             if (this.audioMotion && modeIndex >= 0 && modeIndex < this.visualizationModes.length) {
