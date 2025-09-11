@@ -594,6 +594,39 @@
                         <input type="range" id="infiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
                         <span id="infiniteZoomSpeedValue">50</span>
                     </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomRotationSlider">Rotation:</label>
+                        <input type="range" id="infiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider">
+                        <span id="infiniteZoomRotationValue">0.0</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomOpacitySlider">Opacity:</label>
+                        <input type="range" id="infiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
+                        <span id="infiniteZoomOpacityValue">100%</span>
+                    </div>
+                    <div class="button-container">
+                        <button id="infiniteZoomBeatReactBtn" class="toggle-btn">Beat React: Off</button>
+                    </div>
+                    <div class="control-group" id="infiniteZoomBeatReactControls" style="display: none;">
+                        <h4>Beat Reaction Controls</h4>
+                        <div class="control-item">
+                            <label for="infiniteZoomSensitivitySlider">Sensitivity:</label>
+                            <input type="range" id="infiniteZoomSensitivitySlider" min="0" max="100" step="1" value="100" class="slider">
+                            <span id="infiniteZoomSensitivityValue">100%</span>
+                        </div>
+                        <div class="button-container">
+                            <button id="infiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="infiniteZoomBeatRotationBtn" class="toggle-btn">Beat Rotation: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="infiniteZoomBeatDensityBtn" class="toggle-btn">Beat Density: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="infiniteZoomBeatShapeBtn" class="toggle-btn">Beat Shape: Off</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1075,7 +1108,7 @@
                         <button class="display-preset-btn" data-preset="social">Social Media</button>
                         <button class="display-preset-btn" data-preset="performance">Performance</button>
                         <button class="display-preset-btn" data-preset="projector">Projector</button>
-                    </div>
+    </div>
                 </div>
 
                 <!-- Capture Settings -->
@@ -3566,6 +3599,27 @@
             background: #333;
             color: white;
         }
+        
+        .kaleidoscope-panel .toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .kaleidoscope-panel .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .kaleidoscope-panel .toggle-btn.active {
+            background: var(--accent-color, #ff6b6b);
+            border-color: var(--accent-color, #ff6b6b);
+        }
 
         /* Kaleidoscope canvas overlay */
         .kaleidoscope-canvas {
@@ -5291,13 +5345,94 @@
             this.canvas.width = rect.width || 800;
             this.canvas.height = rect.height || 400;
         }
+        
+        generateBasicAudioFeatures() {
+            if (!this.analyser || !this.dataArray) {
+                console.log('🔍 No analyser or dataArray available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                return {
+                    energy: 0,
+                    beat: false,
+                    tempo: 0,
+                    dominantFrequency: 0
+                };
+            }
+            
+            // Get fresh audio data
+            this.analyser.getByteFrequencyData(this.dataArray);
+            
+            // Calculate basic energy from frequency data
+            let sum = 0;
+            for (let i = 0; i < this.dataArray.length; i++) {
+                sum += this.dataArray[i];
+            }
+            const energy = sum / (this.dataArray.length * 255);
+            
+            // Debug: check if we're getting real audio data
+            const maxDataValue = Math.max(...this.dataArray);
+            console.log('🔍 Audio data - Energy:', energy.toFixed(3), 'Max value:', maxDataValue, 'DataArray length:', this.dataArray.length);
+            
+            // Simple beat detection based on energy spikes (more sensitive)
+            const now = Date.now();
+            const timeSinceLastBeat = now - (this.lastBeatTime || 0);
+            const beatThreshold = 0.1; // Lowered from 0.3 to 0.1 for more sensitivity
+            const beatInterval = 300; // Reduced from 500ms to 300ms for more frequent beats
+            
+            let beat = false;
+            if (energy > beatThreshold && timeSinceLastBeat > beatInterval) {
+                beat = true;
+                this.lastBeatTime = now;
+            }
+            
+            // Calculate dominant frequency
+            let maxValue = 0;
+            let dominantBin = 0;
+            for (let i = 0; i < this.dataArray.length; i++) {
+                if (this.dataArray[i] > maxValue) {
+                    maxValue = this.dataArray[i];
+                    dominantBin = i;
+                }
+            }
+            const dominantFrequency = (dominantBin / this.dataArray.length) * 22050; // Assuming 44.1kHz sample rate
+            
+            const features = {
+                energy: Math.min(energy, 1),
+                beat: beat,
+                tempo: 120, // Default tempo
+                dominantFrequency: dominantFrequency
+            };
+            
+            console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
+            
+            return features;
+        }
 
         animate() { // Check if visualization is enabled through parent visualizer
             if (window.visualizer && !window.visualizer.visualizationEnabled) {
                 // Still update Infinite Zoom even when main visualization is off
                 if (window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
-                    const audioFeatures = window.visualizer.aiAutopilot ? 
-                        window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures() : null;
+                    let audioFeatures = null;
+                    
+                    // Try to get audio features from AI Autopilot first
+                    if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                        audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                    }
+                    
+                    // Fallback: generate basic audio features from main audio analyzer
+                    if (!audioFeatures && this.analyser && this.dataArray) {
+                        audioFeatures = this.generateBasicAudioFeatures();
+                        console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                    } else if (!audioFeatures) {
+                        console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    } else if (audioFeatures && audioFeatures.energy === 0) {
+                        // Try to generate basic audio features if AI features have no energy
+                        console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                        const basicFeatures = this.generateBasicAudioFeatures();
+                        if (basicFeatures.energy > 0) {
+                            audioFeatures = basicFeatures;
+                            console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                        }
+                    }
+                    
                     window.visualizer.infiniteZoom.update(audioFeatures);
                     window.visualizer.infiniteZoom.draw();
                 }
@@ -5310,8 +5445,29 @@
             
             // Update and draw Infinite Zoom if active
             if (window.visualizer && window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
-                const audioFeatures = window.visualizer.aiAutopilot ? 
-                    window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures() : null;
+                let audioFeatures = null;
+                
+                // Try to get audio features from AI Autopilot first
+                if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                    audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                }
+                
+                // Fallback: generate basic audio features from main audio analyzer
+                if (!audioFeatures && this.analyser && this.dataArray) {
+                    audioFeatures = this.generateBasicAudioFeatures();
+                    console.log('🔍 Generated basic audio features:', audioFeatures);
+                } else if (!audioFeatures) {
+                    console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                } else if (audioFeatures && audioFeatures.energy === 0) {
+                    // Try to generate basic audio features if AI features have no energy
+                    console.log('🔍 AI features have no energy, trying basic audio features...');
+                    const basicFeatures = this.generateBasicAudioFeatures();
+                    if (basicFeatures.energy > 0) {
+                        audioFeatures = basicFeatures;
+                        console.log('🔍 Using basic audio features instead:', audioFeatures);
+                    }
+                }
+                
                 window.visualizer.infiniteZoom.update(audioFeatures);
                 window.visualizer.infiniteZoom.draw();
             }
@@ -8113,6 +8269,27 @@
             this.objects = [];
             this.lastBeatTime = 0;
             
+            // Beat reaction
+            this.beatReact = false;
+            this.baseZoomSpeed = 0.05; // Store base speed when beat react is off
+            
+            // Rotation
+            this.rotationSpeed = 0; // -10 to 10, 0 = no rotation
+            this.currentRotation = 0;
+            this.baseRotationSpeed = 0;
+            
+            // Beat reaction controls
+            this.beatZoom = false;
+            this.beatRotation = false;
+            this.beatDensity = false;
+            this.beatShape = false;
+            
+            // Opacity
+            this.opacity = 1.0; // 0-1 range
+            
+            // Beat React sensitivity (0-1, default 1.0 for 100%)
+            this.sensitivity = 1.0;
+            
             // Audio response
             this.energyHistory = [];
             this.beatSensitivity = 0.7;
@@ -8138,6 +8315,9 @@
             const container = document.getElementById('visualizationContainer');
             if (container) {
                 container.appendChild(this.canvas);
+                
+                // Resize canvas to fill container
+                this.resize();
                 
                 // Calculate initial density based on screen area (50% of max)
                 const screenArea = this.canvas.width * this.canvas.height;
@@ -8207,12 +8387,26 @@
         update(audioFeatures = null) {
             if (!this.isActive) return;
             
-            // Update zoom
-            this.currentZoom += this.zoomSpeed;
+            // Debug logging
+            if (this.beatReact) {
+                console.log('🔍 Infinite Zoom update called - Beat React:', this.beatReact, 'Audio Features:', !!audioFeatures);
+            }
             
-            // Audio response
-            if (audioFeatures) {
-                this.updateAudioResponse(audioFeatures);
+            // Always call audio response FIRST to calculate new speeds
+            this.updateAudioResponse(audioFeatures);
+            
+            // Update zoom
+            const oldZoom = this.currentZoom;
+            this.currentZoom += this.zoomSpeed;
+            if (this.beatReact && this.zoomSpeed !== 0) {
+                console.log('🔍 Zoom update - Speed:', this.zoomSpeed, 'Old:', oldZoom.toFixed(3), 'New:', this.currentZoom.toFixed(3));
+            }
+            
+            // Update rotation
+            const oldRotation = this.currentRotation;
+            this.currentRotation += this.rotationSpeed * 0.01; // Scale rotation speed
+            if (this.beatReact && this.rotationSpeed !== 0) {
+                console.log('🔍 Rotation update - Speed:', this.rotationSpeed, 'Old:', oldRotation.toFixed(3), 'New:', this.currentRotation.toFixed(3));
             }
             
             // Update object positions based on zoom direction
@@ -8246,23 +8440,109 @@
         }
         
         updateAudioResponse(audioFeatures) {
+            console.log('🔍 updateAudioResponse called with:', audioFeatures);
+            console.log('🔍 Beat React enabled:', this.beatReact);
+            console.log('🔍 Beat controls - Zoom:', this.beatZoom, 'Rotation:', this.beatRotation, 'Density:', this.beatDensity, 'Shape:', this.beatShape);
+            
+            // Use test features only if no audio features at all
+            if (!audioFeatures) {
+                // Fallback: generate test audio features for debugging
+                const testFeatures = {
+                    energy: 0.5 + Math.sin(Date.now() / 1000) * 0.3, // Oscillating energy
+                    beat: Math.random() > 0.95, // Random beats
+                    tempo: 120,
+                    dominantFrequency: 1000
+                };
+                console.log('🔍 Using test audio features (no audio features):', testFeatures);
+                audioFeatures = testFeatures;
+            } else if (audioFeatures.energy === 0) {
+                console.log('🔍 Real audio features received but energy is 0 - using as-is');
+            } else {
+                console.log('🔍 Using real audio features with energy:', audioFeatures.energy);
+            }
+            
             // Track energy history
-            this.energyHistory.push(audioFeatures.energy);
+            this.energyHistory.push(audioFeatures.energy || 0);
             if (this.energyHistory.length > 20) {
                 this.energyHistory.shift();
             }
             
-            // Don't override zoom speed from slider - let user control it
-            // const avgEnergy = this.energyHistory.reduce((sum, e) => sum + e, 0) / this.energyHistory.length;
-            // this.zoomSpeed = 0.01 + (avgEnergy * 0.03);
-            
-            // Don't override density from slider - let user control it
-            // const screenArea = this.canvas.width * this.canvas.height;
-            // const maxDensity = Math.floor(screenArea / 1000);
-            // const targetDensity = Math.floor(30 + (avgEnergy * (maxDensity - 30)));
-            // if (this.objects.length < targetDensity) {
-            //     this.addObject();
-            // }
+            // Beat reaction - only if enabled
+            if (this.beatReact) {
+                const currentEnergy = audioFeatures.energy || 0;
+                const avgEnergy = this.energyHistory.reduce((sum, e) => sum + e, 0) / this.energyHistory.length;
+                console.log('🔍 Beat React processing - currentEnergy:', currentEnergy, 'avgEnergy:', avgEnergy, 'history length:', this.energyHistory.length);
+                
+                // Beat Zoom - adjust zoom speed based on current energy (scaled by sensitivity)
+                if (this.beatZoom) {
+                    // Map energy 0-1 to zoom speed range, scaled by sensitivity
+                    // High energy = zoom in (positive), low energy = zoom out (negative)
+                    const zoomRange = 1.0 * this.sensitivity; // Reduced from 2.0 to 1.0 for more balanced effect
+                    // Invert the calculation: higher energy = more positive zoom (zoom in)
+                    this.zoomSpeed = (0.2 - currentEnergy) * zoomRange;
+                    console.log('🔍 Beat Zoom - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'New Speed:', this.zoomSpeed);
+                } else {
+                    // Restore base zoom speed when beat zoom is off
+                    this.zoomSpeed = this.baseZoomSpeed;
+                }
+                
+                // Beat Rotation - adjust rotation speed based on current energy (scaled by sensitivity)
+                if (this.beatRotation) {
+                    // Map energy 0-1 to rotation speed range, scaled by sensitivity
+                    // High energy = clockwise (positive), low energy = counter-clockwise (negative)
+                    // Use a smaller range and center it around the actual energy values we're seeing
+                    const rotationRange = 20 * this.sensitivity; // Reduced from 100 to 20 for more balanced effect
+                    // Invert the calculation: higher energy = more positive rotation (clockwise)
+                    this.rotationSpeed = (0.2 - currentEnergy) * rotationRange;
+                    console.log('🔍 Beat Rotation - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'New Speed:', this.rotationSpeed);
+                } else {
+                    // Restore base rotation speed when beat rotation is off
+                    this.rotationSpeed = this.baseRotationSpeed;
+                }
+                
+                // Beat Density - add objects based on current energy (scaled by sensitivity)
+                if (this.beatDensity) {
+                    // Map energy 0-1 to density multiplier, scaled by sensitivity
+                    const densityRange = 5.0 * this.sensitivity; // Increased from 2.9 to 5.0 for much more dramatic effect
+                    const densityMultiplier = 0.1 + currentEnergy * densityRange;
+                    const targetDensity = Math.floor(this.density * densityMultiplier);
+                    if (this.objects.length < targetDensity) {
+                        this.addObject();
+                    }
+                    console.log('🔍 Beat Density - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'Multiplier:', densityMultiplier, 'Target Density:', targetDensity, 'Current Objects:', this.objects.length);
+                }
+                
+                // Beat Shape - change shape on beat
+                if (this.beatShape && audioFeatures.beat) {
+                    const shapes = ['circle', 'square', 'rectangle', 'triangle', 'star', 'mushroom'];
+                    const currentIndex = shapes.indexOf(this.shape);
+                    this.shape = shapes[(currentIndex + 1) % shapes.length];
+                    this.updateObjectShapes();
+                    console.log(`🔍 Beat Shape changed to: ${this.shape} (beat detected!)`);
+                } else if (this.beatShape) {
+                    console.log('🔍 Beat Shape enabled but no beat detected - beat:', audioFeatures.beat);
+                }
+                
+                // Add objects on beat (general)
+                if (audioFeatures.beat) {
+                    const now = Date.now();
+                    if (now - this.lastBeatTime > 200) { // Debounce
+                        this.addObject();
+                        this.lastBeatTime = now;
+                        console.log(`🔍 Beat detected - added object. Energy: ${avgEnergy.toFixed(2)}`);
+                    }
+                }
+                
+                // Debug logging
+                if (this.beatZoom || this.beatRotation || this.beatDensity) {
+                    console.log(`🔍 Beat React - Energy: ${currentEnergy.toFixed(2)}, Zoom: ${this.zoomSpeed.toFixed(3)}, Rotation: ${this.rotationSpeed.toFixed(3)}`);
+                }
+            } else {
+                // Beat React is disabled - restore all base values
+                this.zoomSpeed = this.baseZoomSpeed;
+                this.rotationSpeed = this.baseRotationSpeed;
+                console.log('🔍 Beat React disabled - Restored base values - Zoom:', this.zoomSpeed, 'Rotation:', this.rotationSpeed);
+            }
         }
         
         draw() {
@@ -8271,10 +8551,29 @@
             // Clear canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
+            // Apply opacity
+            this.ctx.globalAlpha = this.opacity;
+            
+            // Apply rotation if any
+            if (this.currentRotation !== 0) {
+                this.ctx.save();
+                this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.rotate(this.currentRotation);
+                this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);
+            }
+            
             // Draw objects
             this.objects.forEach(obj => {
                 this.drawObject(obj);
             });
+            
+            // Restore rotation
+            if (this.currentRotation !== 0) {
+                this.ctx.restore();
+            }
+            
+            // Reset alpha
+            this.ctx.globalAlpha = 1.0;
         }
         
         // This method is called by the main kaleidoscope system
@@ -8366,30 +8665,74 @@
         }
         
         drawMushroom(x, y, size) {
-            // Cap
-            this.ctx.fillStyle = obj.color;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y - size / 4, size / 3, 0, Math.PI * 2);
-            this.ctx.fill();
+            // Generate random colors for each mushroom
+            const capColor = this.generateMushroomCapColor();
+            const stemColor = this.generateMushroomStemColor();
             
-            // Spots on cap
+            // Cap (red with white spots)
+            this.ctx.fillStyle = capColor;
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.lineWidth = 1;
+            this.ctx.beginPath();
+            this.ctx.ellipse(x, y - size / 4, size / 3, size / 4, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.stroke();
+            
+            // White spots on cap
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.beginPath();
-            this.ctx.arc(x - size / 8, y - size / 4, size / 12, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.beginPath();
-            this.ctx.arc(x + size / 8, y - size / 4, size / 12, 0, Math.PI * 2);
-            this.ctx.fill();
+            this.ctx.strokeStyle = '#000000';
+            const spotCount = Math.floor(Math.random() * 4) + 2; // 2-5 spots
+            for (let i = 0; i < spotCount; i++) {
+                const spotX = x + (Math.random() - 0.5) * size * 0.4;
+                const spotY = y - size / 4 + (Math.random() - 0.5) * size * 0.3;
+                const spotSize = Math.random() * size * 0.08 + size * 0.03;
+                
+                this.ctx.beginPath();
+                this.ctx.ellipse(spotX, spotY, spotSize, spotSize * 0.8, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
             
-            // Stem
-            this.ctx.fillStyle = obj.color;
-            this.ctx.fillRect(x - size / 12, y - size / 4, size / 6, size / 2);
+            // Stem (light colored)
+            this.ctx.fillStyle = stemColor;
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.beginPath();
+            this.ctx.ellipse(x, y + size / 8, size / 12, size / 3, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.stroke();
         }
         
-        resize(width, height) {
+        generateMushroomCapColor() {
+            const colors = [
+                '#ff4444', // Red
+                '#ff6b6b', // Light red
+                '#ff8e8e', // Pink-red
+                '#ff4444', // Dark red
+                '#ff3333'  // Bright red
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        generateMushroomStemColor() {
+            const colors = [
+                '#f4e4bc', // Cream
+                '#f0e68c', // Khaki
+                '#f5deb3', // Wheat
+                '#ffe4b5', // Moccasin
+                '#f0e68c'  // Light khaki
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        resize() {
             if (this.canvas) {
-                this.canvas.width = width;
-                this.canvas.height = height;
+                const container = document.getElementById('visualizationContainer');
+                if (container) {
+                    const rect = container.getBoundingClientRect();
+                    this.canvas.width = rect.width;
+                    this.canvas.height = rect.height;
+                    console.log(`🔍 Infinite Zoom canvas resized to: ${rect.width}x${rect.height}`);
+                }
             }
         }
         
@@ -19964,10 +20307,159 @@ https://rogueamoeba.com/loopback/
                         // 0 = no movement, 50 = normal speed, 100 = very fast, -100 = very fast reverse
                         if (value === 0) {
                             this.infiniteZoom.zoomSpeed = 0;
+                            this.infiniteZoom.baseZoomSpeed = 0;
                         } else {
                             // Convert to actual zoom speed: -100 to 100 becomes -0.1 to 0.1
-                            this.infiniteZoom.zoomSpeed = (value / 100) * 0.1;
+                            const newSpeed = (value / 100) * 0.1;
+                            this.infiniteZoom.zoomSpeed = newSpeed;
+                            this.infiniteZoom.baseZoomSpeed = newSpeed;
                         }
+                    }
+                });
+            }
+            
+            // Infinite Zoom rotation slider
+            const infiniteZoomRotationSlider = document.getElementById('infiniteZoomRotationSlider');
+            const infiniteZoomRotationValue = document.getElementById('infiniteZoomRotationValue');
+            if (infiniteZoomRotationSlider && infiniteZoomRotationValue) {
+                infiniteZoomRotationSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    infiniteZoomRotationValue.textContent = value.toFixed(1);
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.rotationSpeed = value;
+                        this.infiniteZoom.baseRotationSpeed = value;
+                        console.log('🔍 Rotation slider changed to:', value, 'Base:', this.infiniteZoom.baseRotationSpeed);
+                    }
+                });
+            }
+            
+            // Infinite Zoom opacity slider
+            const infiniteZoomOpacitySlider = document.getElementById('infiniteZoomOpacitySlider');
+            const infiniteZoomOpacityValue = document.getElementById('infiniteZoomOpacityValue');
+            if (infiniteZoomOpacitySlider && infiniteZoomOpacityValue) {
+                infiniteZoomOpacitySlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomOpacityValue.textContent = value + '%';
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.opacity = value / 100;
+                    }
+                });
+            }
+            
+            // Infinite Zoom sensitivity slider
+            const infiniteZoomSensitivitySlider = document.getElementById('infiniteZoomSensitivitySlider');
+            const infiniteZoomSensitivityValue = document.getElementById('infiniteZoomSensitivityValue');
+            if (infiniteZoomSensitivitySlider && infiniteZoomSensitivityValue) {
+                infiniteZoomSensitivitySlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomSensitivityValue.textContent = value + '%';
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.sensitivity = value / 100; // Convert 0-100 to 0-1
+                        console.log('🔍 Sensitivity changed to:', this.infiniteZoom.sensitivity);
+                    }
+                });
+            }
+            
+            // Infinite Zoom Beat React button
+            const infiniteZoomBeatReactBtn = document.getElementById('infiniteZoomBeatReactBtn');
+            if (infiniteZoomBeatReactBtn) {
+                infiniteZoomBeatReactBtn.addEventListener('click', () => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.beatReact = !this.infiniteZoom.beatReact;
+                        infiniteZoomBeatReactBtn.textContent = `Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`;
+                        infiniteZoomBeatReactBtn.classList.toggle('active', this.infiniteZoom.beatReact);
+                        console.log('🔍 Beat React toggled to:', this.infiniteZoom.beatReact);
+                        
+                        // Show/hide beat reaction controls
+                        const controls = document.getElementById('infiniteZoomBeatReactControls');
+                        if (controls) {
+                            controls.style.display = this.infiniteZoom.beatReact ? 'block' : 'none';
+                        }
+                        
+                        // When enabling Beat React, turn on all individual controls by default
+                        if (this.infiniteZoom.beatReact) {
+                            this.infiniteZoom.beatZoom = true;
+                            this.infiniteZoom.beatRotation = true;
+                            this.infiniteZoom.beatDensity = true;
+                            this.infiniteZoom.beatShape = true;
+                            
+                            // Update button states
+                            const beatZoomBtn = document.getElementById('infiniteZoomBeatZoomBtn');
+                            const beatRotationBtn = document.getElementById('infiniteZoomBeatRotationBtn');
+                            const beatDensityBtn = document.getElementById('infiniteZoomBeatDensityBtn');
+                            const beatShapeBtn = document.getElementById('infiniteZoomBeatShapeBtn');
+                            
+                            if (beatZoomBtn) {
+                                beatZoomBtn.textContent = 'Beat Zoom: On';
+                                beatZoomBtn.classList.add('active');
+                            }
+                            if (beatRotationBtn) {
+                                beatRotationBtn.textContent = 'Beat Rotation: On';
+                                beatRotationBtn.classList.add('active');
+                            }
+                            if (beatDensityBtn) {
+                                beatDensityBtn.textContent = 'Beat Density: On';
+                                beatDensityBtn.classList.add('active');
+                            }
+                            if (beatShapeBtn) {
+                                beatShapeBtn.textContent = 'Beat Shape: On';
+                                beatShapeBtn.classList.add('active');
+                            }
+                        } else {
+                            // When disabling Beat React, turn off all individual controls
+                            this.infiniteZoom.beatZoom = false;
+                            this.infiniteZoom.beatRotation = false;
+                            this.infiniteZoom.beatDensity = false;
+                            this.infiniteZoom.beatShape = false;
+                        }
+                        
+                        console.log(`🔍 Infinite Zoom Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`);
+                    }
+                });
+            }
+            
+            // Beat reaction control buttons
+            const infiniteZoomBeatZoomBtn = document.getElementById('infiniteZoomBeatZoomBtn');
+            if (infiniteZoomBeatZoomBtn) {
+                infiniteZoomBeatZoomBtn.addEventListener('click', () => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.beatZoom = !this.infiniteZoom.beatZoom;
+                        infiniteZoomBeatZoomBtn.textContent = `Beat Zoom: ${this.infiniteZoom.beatZoom ? 'On' : 'Off'}`;
+                        infiniteZoomBeatZoomBtn.classList.toggle('active', this.infiniteZoom.beatZoom);
+                    }
+                });
+            }
+            
+            const infiniteZoomBeatRotationBtn = document.getElementById('infiniteZoomBeatRotationBtn');
+            if (infiniteZoomBeatRotationBtn) {
+                infiniteZoomBeatRotationBtn.addEventListener('click', () => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.beatRotation = !this.infiniteZoom.beatRotation;
+                        infiniteZoomBeatRotationBtn.textContent = `Beat Rotation: ${this.infiniteZoom.beatRotation ? 'On' : 'Off'}`;
+                        infiniteZoomBeatRotationBtn.classList.toggle('active', this.infiniteZoom.beatRotation);
+                        console.log('🔍 Beat Rotation toggled to:', this.infiniteZoom.beatRotation);
+                    }
+                });
+            }
+            
+            const infiniteZoomBeatDensityBtn = document.getElementById('infiniteZoomBeatDensityBtn');
+            if (infiniteZoomBeatDensityBtn) {
+                infiniteZoomBeatDensityBtn.addEventListener('click', () => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.beatDensity = !this.infiniteZoom.beatDensity;
+                        infiniteZoomBeatDensityBtn.textContent = `Beat Density: ${this.infiniteZoom.beatDensity ? 'On' : 'Off'}`;
+                        infiniteZoomBeatDensityBtn.classList.toggle('active', this.infiniteZoom.beatDensity);
+                    }
+                });
+            }
+            
+            const infiniteZoomBeatShapeBtn = document.getElementById('infiniteZoomBeatShapeBtn');
+            if (infiniteZoomBeatShapeBtn) {
+                infiniteZoomBeatShapeBtn.addEventListener('click', () => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.beatShape = !this.infiniteZoom.beatShape;
+                        infiniteZoomBeatShapeBtn.textContent = `Beat Shape: ${this.infiniteZoom.beatShape ? 'On' : 'Off'}`;
+                        infiniteZoomBeatShapeBtn.classList.toggle('active', this.infiniteZoom.beatShape);
                     }
                 });
             }
@@ -21741,6 +22233,13 @@ https://rogueamoeba.com/loopback/
 
         document.addEventListener('DOMContentLoaded', () => {
             window.visualizer = new GitItUpVisualizer();
+            
+            // Add resize listener for Infinite Zoom
+            window.addEventListener('resize', () => {
+                if (window.visualizer && window.visualizer.infiniteZoom) {
+                    window.visualizer.infiniteZoom.resize();
+                }
+            });
         });
 
         // Global function for closing info popup
