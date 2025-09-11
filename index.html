@@ -510,6 +510,7 @@
                     <div class="button-container">
                         <button class="effect-toggle-btn" id="kaleidoscopeVideoBtn">Apply to Video: Off</button>
                         <button class="effect-toggle-btn" id="kaleidoscopeVizBtn">Apply to Viz: On</button>
+                        <button class="effect-toggle-btn" id="kaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
                     </div>
                     <div class="button-container">
                         <button class="effect-toggle-btn" id="kaleidoscopeShapeBtn">Shape: Triangle</button>
@@ -5443,8 +5444,13 @@
             this.getAudioData();
             this.updatePeaks();
             
-            // Update and draw Infinite Zoom if active
+            // Update and draw Infinite Zoom if active and not captured via kaleidoscope
             if (window.visualizer && window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
+                // Check if Infinite Zoom is being captured via kaleidoscope
+                const isCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
+                                                window.visualizer.kaleidoscopeApplyToViz && 
+                                                window.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                
                 let audioFeatures = null;
                 
                 // Try to get audio features from AI Autopilot first
@@ -5455,21 +5461,39 @@
                 // Fallback: generate basic audio features from main audio analyzer
                 if (!audioFeatures && this.analyser && this.dataArray) {
                     audioFeatures = this.generateBasicAudioFeatures();
-                    console.log('🔍 Generated basic audio features:', audioFeatures);
+                    if (!isCapturedViaKaleidoscope) {
+                        console.log('🔍 Generated basic audio features:', audioFeatures);
+                    }
                 } else if (!audioFeatures) {
-                    console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    if (!isCapturedViaKaleidoscope) {
+                        console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    }
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
-                    console.log('🔍 AI features have no energy, trying basic audio features...');
+                    if (!isCapturedViaKaleidoscope) {
+                        console.log('🔍 AI features have no energy, trying basic audio features...');
+                    }
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;
-                        console.log('🔍 Using basic audio features instead:', audioFeatures);
+                        if (!isCapturedViaKaleidoscope) {
+                            console.log('🔍 Using basic audio features instead:', audioFeatures);
+                        }
                     }
                 }
                 
+                // Always update Infinite Zoom (needed for kaleidoscope to capture)
                 window.visualizer.infiniteZoom.update(audioFeatures);
+                
+                // Always draw Infinite Zoom (needed for kaleidoscope to capture)
                 window.visualizer.infiniteZoom.draw();
+                
+                // Hide/show canvas based on whether it's being captured via kaleidoscope
+                if (isCapturedViaKaleidoscope) {
+                    window.visualizer.infiniteZoom.canvas.style.display = 'none';
+                } else {
+                    window.visualizer.infiniteZoom.canvas.style.display = 'block';
+                }
             }
             
             this.draw();
@@ -13291,18 +13315,24 @@
                 console.log(`Drawing visualization with shared dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
                 this.compositeCtx.drawImage(sourceCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                 
-                // Draw Infinite Zoom if active
+                // Draw Infinite Zoom if active and not captured via kaleidoscope
                 if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
-                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                    if (shouldDrawSeparately) {
+                        this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    }
                 }
                 
             } else {
                 // No video - draw visualization with standard letterboxing
                 this.drawScaledVisualization(sourceCanvas);
                 
-                // Draw Infinite Zoom if active
+                // Draw Infinite Zoom if active and not captured via kaleidoscope
                 if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
-                    this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                    if (shouldDrawSeparately) {
+                        this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                    }
                 }
             }
         }
@@ -14554,6 +14584,32 @@
                         this.captureCtx.restore();
                     }
 
+                    // Layer 5: Infinite Zoom (only when NOT captured via kaleidoscope)
+                    if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
+                        // Only capture Infinite Zoom separately if kaleidoscope is OFF or not applying to viz or not applying to infinite zoom
+                        const shouldCaptureSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                        
+                        if (shouldCaptureSeparately) {
+                            this.captureCtx.save();
+                            this.captureCtx.globalAlpha = this.visualizer.infiniteZoom.opacity || 1;
+                            this.captureCtx.filter = 'none';
+
+                            // Draw Infinite Zoom canvas with proper scaling
+                            this.captureCtx.save();
+                            this.captureCtx.scale(this.captureScale, this.captureScale);
+                            this.captureCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                            this.captureCtx.restore();
+
+                            if (frameCount % 60 === 0) {
+                                console.log('Captured Infinite Zoom separately scaled by', this.captureScale + 'x');
+                            }
+
+                            this.captureCtx.restore();
+                        } else if (frameCount % 60 === 0) {
+                            console.log('Infinite Zoom captured via kaleidoscope - skipping separate capture');
+                        }
+                    }
+
                     frameCount++;
 
                 } catch (error) {
@@ -14789,6 +14845,7 @@
             this.kaleidoscopeCenterY = 0.5;
             this.kaleidoscopeApplyToVideo = false;
             this.kaleidoscopeApplyToViz = false;
+            this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
             this.kaleidoscopeRings = 1; // Number of rings
             this.kaleidoscopeRingSpacing = 0.2; // Spacing between rings (as percentage)
             this.kaleidoscopeShape = 'triangle'; // 'triangle', 'petal', 'rectangle'
@@ -19224,15 +19281,18 @@ https://rogueamoeba.com/loopback/
                 }
             }
 
-            // Apply kaleidoscope to VISUALIZATION if enabled
-            if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
+            // Check if we need to draw kaleidoscope (either AM viz or IZ)
+            const shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
+                                         (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas);
+
+            if (shouldDrawKaleidoscope) {
                 this.kaleidoscopeVizCanvas.style.display = 'block';
                 this.kaleidoscopeVizCtx.clearRect(0, 0, width, height);
 
                 console.log('Drawing viz kaleidoscope');
 
                 // Hide the original visualization canvas when kaleidoscope is active
-                if (this.audioMotion.canvas) {
+                if (this.audioMotion && this.audioMotion.canvas) {
                     this.audioMotion.canvas.style.visibility = 'hidden';
                 }
 
@@ -19287,22 +19347,26 @@ https://rogueamoeba.com/loopback/
                         // Set opacity based on ring number for better visibility
                         this.kaleidoscopeVizCtx.globalAlpha = 1 - (ring * 0.15);
 
-                        // Draw segment - include both main visualization and infinite zoom
+                        // Draw segment - include main visualization and/or infinite zoom
                         if (i % 2 === 0) {
-                            // Draw main visualization
-                            this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            // Draw main visualization if enabled and available
+                            if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
+                                this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            }
                             
-                            // Draw infinite zoom if active
-                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) {
+                            // Draw infinite zoom if active and enabled for kaleidoscope
+                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
                                 this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                             }
                         } else {
                             this.kaleidoscopeVizCtx.scale(1, -1);
-                            // Draw main visualization
-                            this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            // Draw main visualization if enabled and available
+                            if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
+                                this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            }
                             
-                            // Draw infinite zoom if active
-                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) {
+                            // Draw infinite zoom if active and enabled for kaleidoscope
+                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
                                 this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                             }
                         }
@@ -20719,6 +20783,29 @@ https://rogueamoeba.com/loopback/
                         btn.classList.remove('active');
                     }
 
+                    if (this.kaleidoscopeEnabled) {
+                        this.applyKaleidoscopeEffect();
+                    }
+                });
+            }
+
+            // Infinite Zoom toggle button
+            const kaleidoscopeInfiniteZoomBtn = document.getElementById('kaleidoscopeInfiniteZoomBtn');
+            if (kaleidoscopeInfiniteZoomBtn) {
+                // Initialize button state
+                kaleidoscopeInfiniteZoomBtn.textContent = `Infinite Zoom: ${
+                    this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
+                }`;
+                kaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+                
+                kaleidoscopeInfiniteZoomBtn.addEventListener('click', () => {
+                    this.kaleidoscopeApplyToInfiniteZoom = !this.kaleidoscopeApplyToInfiniteZoom;
+                    kaleidoscopeInfiniteZoomBtn.textContent = `Infinite Zoom: ${
+                        this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
+                    }`;
+                    kaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+
+                    // Apply kaleidoscope effect if enabled
                     if (this.kaleidoscopeEnabled) {
                         this.applyKaleidoscopeEffect();
                     }
