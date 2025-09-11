@@ -540,6 +540,61 @@
                         <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
                     </div>
                 </div>
+                
+            </div>
+        </div>
+
+        <!-- Infinite Zoom -->
+        <div class="kaleidoscope-controls">
+            <div class="dropdown-label">Infinite Zoom</div>
+            <button class="dropdown-toggle kaleidoscope-btn" id="infiniteZoomBtn" title="Infinite Zoom">
+                <span class="kaleidoscope-btn-text">Infinite Zoom Off</span>
+            </button>
+
+            <!-- Infinite Zoom settings panel -->
+            <div class="kaleidoscope-panel" id="infiniteZoomPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Infinite Zoom Settings</span>
+                    <button class="panel-close-btn" id="infiniteZoomCloseBtn">×</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="button-container">
+                        <select id="infiniteZoomShapeSelect" class="dropdown-select">
+                            <option value="circle">Circle</option>
+                            <option value="square">Square</option>
+                            <option value="rectangle">Rectangle</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="star">Star</option>
+                            <option value="mushroom">Mushroom</option>
+                        </select>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomColorRandomSlider">Color Randomness:</label>
+                        <input type="range" id="infiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider">
+                        <span id="infiniteZoomColorRandomValue">0.5</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomMinSizeSlider">Min Size:</label>
+                        <input type="range" id="infiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider">
+                        <span id="infiniteZoomMinSizeValue">2</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomMaxSizeSlider">Max Size:</label>
+                        <input type="range" id="infiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider">
+                        <span id="infiniteZoomMaxSizeValue">20</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomDensitySlider">Density:</label>
+                        <input type="range" id="infiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider">
+                        <span id="infiniteZoomDensityValue">50</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="infiniteZoomSpeedSlider">Speed:</label>
+                        <input type="range" id="infiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
+                        <span id="infiniteZoomSpeedValue">50</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -571,79 +626,79 @@
                 <div class="autopilot-settings-content">
                     <!-- Left Column -->
                     <div class="autopilot-column">
-                        <!-- Autopilot Scope -->
-                        <div class="control-group">
-                            <div class="group-label">Autopilot Scope</div>
-                            <div class="preset-buttons">
+                <!-- Autopilot Scope -->
+                <div class="control-group">
+                    <div class="group-label">Autopilot Scope</div>
+                    <div class="preset-buttons">
                                 <button class="scope-btn" data-scope="bars">Bars</button>
-                                <button class="scope-btn" data-scope="radial">Radial</button>
-                                <button class="scope-btn" data-scope="energy">Energy</button>
+                        <button class="scope-btn" data-scope="radial">Radial</button>
+                        <button class="scope-btn" data-scope="energy">Energy</button>
                                 <button class="scope-btn active" data-scope="all">All</button>
-                            </div>
-                        </div>
+                    </div>
+                </div>
 
-                        <!-- Color Schemes Toggle -->
-                        <div class="control-group">
-                            <div class="group-label">Color Automation</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
-                            </div>
-                        </div>
+                <!-- Color Schemes Toggle -->
+                <div class="control-group">
+                    <div class="group-label">Color Automation</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
+                    </div>
+                </div>
 
-                        <!-- Change Timing -->
-                        <div class="control-group">
-                            <div class="group-label">Change Timing</div>
-                            <div class="preset-buttons">
-                                <button class="timing-btn active" data-timing="instant">Instant</button>
-                                <button class="timing-btn" data-timing="smooth">Smooth</button>
-                                <button class="timing-btn" data-timing="slow">Slow</button>
-                                <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
-                            </div>
-                        </div>
+                <!-- Change Timing -->
+                <div class="control-group">
+                    <div class="group-label">Change Timing</div>
+                    <div class="preset-buttons">
+                        <button class="timing-btn active" data-timing="instant">Instant</button>
+                        <button class="timing-btn" data-timing="smooth">Smooth</button>
+                        <button class="timing-btn" data-timing="slow">Slow</button>
+                        <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
+                    </div>
+                </div>
 
-                        <!-- Sensitivity -->
-                        <div class="control-group">
-                            <div class="group-label">Sensitivity</div>
-                            <div class="preset-buttons">
-                                <button class="sensitivity-btn" data-sensitivity="low">Low</button>
-                                <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
-                                <button class="sensitivity-btn" data-sensitivity="high">High</button>
-                            </div>
-                        </div>
+                <!-- Sensitivity -->
+                <div class="control-group">
+                    <div class="group-label">Sensitivity</div>
+                    <div class="preset-buttons">
+                        <button class="sensitivity-btn" data-sensitivity="low">Low</button>
+                        <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
+                        <button class="sensitivity-btn" data-sensitivity="high">High</button>
+                    </div>
+                </div>
 
-                        <!-- Genre Selection -->
-                        <div class="control-group">
-                            <div class="group-label">Genre Detection</div>
-                            <div class="preset-buttons">
-                                <button class="genre-btn active" data-genre="auto">Auto Detect</button>
-                                <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
-                                <button class="genre-btn" data-genre="rock">Rock</button>
-                                <button class="genre-btn" data-genre="electronic">Electronic</button>
-                                <button class="genre-btn" data-genre="reggae">Reggae</button>
-                                <button class="genre-btn" data-genre="country">Country</button>
-                                <button class="genre-btn" data-genre="funk">Funk</button>
-                                <button class="genre-btn" data-genre="ambient">Ambient</button>
-                                <button class="genre-btn" data-genre="punk">Punk</button>
-                                <button class="genre-btn" data-genre="jazz">Jazz</button>
-                                <button class="genre-btn" data-genre="classical">Classical</button>
-                            </div>
-                        </div>
+                <!-- Genre Selection -->
+                <div class="control-group">
+                    <div class="group-label">Genre Detection</div>
+                    <div class="preset-buttons">
+                        <button class="genre-btn active" data-genre="auto">Auto Detect</button>
+                        <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
+                        <button class="genre-btn" data-genre="rock">Rock</button>
+                        <button class="genre-btn" data-genre="electronic">Electronic</button>
+                        <button class="genre-btn" data-genre="reggae">Reggae</button>
+                        <button class="genre-btn" data-genre="country">Country</button>
+                        <button class="genre-btn" data-genre="funk">Funk</button>
+                        <button class="genre-btn" data-genre="ambient">Ambient</button>
+                        <button class="genre-btn" data-genre="punk">Punk</button>
+                        <button class="genre-btn" data-genre="jazz">Jazz</button>
+                        <button class="genre-btn" data-genre="classical">Classical</button>
+                    </div>
+                </div>
 
-                        <!-- Parameter Control -->
-                        <div class="control-group">
-                            <div class="group-label">Parameter Control</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
-                            </div>
-                        </div>
+                <!-- Parameter Control -->
+                <div class="control-group">
+                    <div class="group-label">Parameter Control</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
+                    </div>
+                </div>
 
-                        <!-- Video Effects -->
-                        <div class="control-group">
-                            <div class="group-label">Video Effects</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="enableVideoEffectsBtn">Video Effects: Off</button>
-                            </div>
-                        </div>
+                <!-- Video Effects -->
+                <div class="control-group">
+                    <div class="group-label">Video Effects</div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn active" id="enableVideoEffectsBtn">Video Effects: On</button>
+                    </div>
+                </div>
 
                         <!-- Learning Controls -->
                         <div class="control-group">
@@ -695,25 +750,28 @@
                             <div class="button-container">
                                 <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
                             </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="testParametersBtn">Test Parameters</button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Right Column -->
                     <div class="autopilot-column">
-                        <!-- Current Genre Display -->
-                        <div class="control-group">
-                            <div class="group-label">Current Genre</div>
-                            <div class="info-display" id="currentGenreDisplay">Unknown</div>
-                        </div>
+                <!-- Current Genre Display -->
+                <div class="control-group">
+                    <div class="group-label">Current Genre</div>
+                    <div class="info-display" id="currentGenreDisplay">Unknown</div>
+                </div>
 
-                        <!-- Genre Confidence -->
-                        <div class="control-group">
-                            <div class="group-label">Confidence</div>
-                            <div class="info-display" id="genreConfidenceDisplay">0%</div>
-                        </div>
+                <!-- Genre Confidence -->
+                <div class="control-group">
+                    <div class="group-label">Confidence</div>
+                    <div class="info-display" id="genreConfidenceDisplay">0%</div>
+                </div>
 
                         <!-- Learning Analytics -->
-                        <div class="control-group">
+                <div class="control-group">
                             <div class="group-label">Learning Analytics</div>
                             <div class="info-display" id="learningProgressDisplay">Learning: 0%</div>
                             <div class="info-display" id="patternCountDisplay">Patterns: 0</div>
@@ -731,14 +789,14 @@
                         <!-- User Feedback -->
                         <div class="control-group">
                             <div class="group-label">User Feedback</div>
-                            <div class="button-container">
+                    <div class="button-container">
                                 <button class="effect-toggle-btn" id="thumbsUpBtn">👍 Like Current Settings</button>
-                            </div>
+                    </div>
                             <div class="button-container">
                                 <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
-                            </div>
+                </div>
                             <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
-                        </div>
+                </div>
 
                         <!-- Predictive Behavior Analytics -->
                         <div class="control-group">
@@ -963,7 +1021,7 @@
                             <option value="24">24 FPS</option>
                             <option value="15">15 FPS</option>
                         </select>
-                    </div>
+    </div>
                     <div class="slider-container">
                         <label>Bitrate</label>
                         <input type="range" id="captureBitrate" min="1" max="50" value="30" step="0.5">
@@ -3493,6 +3551,21 @@
             min-width: 250px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
+        
+        .kaleidoscope-panel .dropdown-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: white;
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+        
+        .kaleidoscope-panel .dropdown-select option {
+            background: #333;
+            color: white;
+        }
 
         /* Kaleidoscope canvas overlay */
         .kaleidoscope-canvas {
@@ -5221,12 +5294,28 @@
 
         animate() { // Check if visualization is enabled through parent visualizer
             if (window.visualizer && !window.visualizer.visualizationEnabled) {
+                // Still update Infinite Zoom even when main visualization is off
+                if (window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
+                    const audioFeatures = window.visualizer.aiAutopilot ? 
+                        window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures() : null;
+                    window.visualizer.infiniteZoom.update(audioFeatures);
+                    window.visualizer.infiniteZoom.draw();
+                }
                 this.animationFrame = requestAnimationFrame(() => this.animate());
-                return; // Skip drawing but keep loop running for quick resume
+                return; // Skip main drawing but keep loop running for quick resume
             }
 
             this.getAudioData();
             this.updatePeaks();
+            
+            // Update and draw Infinite Zoom if active
+            if (window.visualizer && window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
+                const audioFeatures = window.visualizer.aiAutopilot ? 
+                    window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures() : null;
+                window.visualizer.infiniteZoom.update(audioFeatures);
+                window.visualizer.infiniteZoom.draw();
+            }
+            
             this.draw();
             this.animationFrame = requestAnimationFrame(() => this.animate());
         }
@@ -6755,6 +6844,23 @@
         // Main decision-making orchestrator
         makeIntelligentDecision(audioFeatures, currentMode, currentParams) {
             try {
+                // Check scope constraints first
+                if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
+                    const expectedMode = this.autopilot.scope === 'radial' ? 4 : 5;
+                    if (currentMode !== expectedMode) {
+                        console.log(`🧠 Multi-layer scope enforcement: Switching to ${this.autopilot.scope} mode (${expectedMode})`);
+                        return {
+                            action: 'mode_change',
+                            mode: expectedMode,
+                            confidence: 1.0,
+                            sourceLayer: 'scope_enforcement',
+                            reason: `Scope enforcement: ${this.autopilot.scope} mode required`
+                        };
+                    }
+                    // If already in correct mode, only allow parameter adjustments
+                    return this.makeScopeConstrainedDecision(audioFeatures, currentMode, currentParams);
+                }
+                
                 // Analyze current context
                 const context = this.contextAnalyzer.analyzeContext(audioFeatures, currentMode, currentParams);
                 
@@ -6784,6 +6890,86 @@
                 console.error('Error in multi-layered intelligence:', error);
                 return null;
             }
+        }
+
+        // Make decisions when scope is constrained to specific modes
+        makeScopeConstrainedDecision(audioFeatures, currentMode, currentParams) {
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            
+            // Only allow parameter adjustments for constrained scopes
+            if (beat && energy > 0.5) {
+                return {
+                    action: 'parameter_adjustment',
+                    parameters: {
+                        linearBoost: Math.min(5.0, (this.autopilot.visualizer.audioMotion.linearBoost || 1.0) + 2.0),
+                        gradient: Math.min(1.0, (this.autopilot.visualizer.audioMotion.gradient || 0.5) + 0.4),
+                        fillAlpha: Math.min(1.0, (this.autopilot.visualizer.audioMotion.fillAlpha || 0.5) + 0.3),
+                        volume: Math.min(3.0, (this.autopilot.visualizer.audioMotion.volume || 1.0) + 1.0),
+                        peakHoldTime: Math.max(100, (this.autopilot.visualizer.audioMotion.peakHoldTime || 500) - 200)
+                    },
+                    confidence: 0.8,
+                    sourceLayer: 'scope_constrained',
+                    reason: 'Beat detected - enhancing parameters for constrained scope'
+                };
+            }
+            
+            if (energy > 0.8) {
+                return {
+                    action: 'parameter_adjustment',
+                    parameters: {
+                        linearBoost: Math.min(8.0, (this.autopilot.visualizer.audioMotion.linearBoost || 1.0) + 4.0),
+                        gradient: Math.min(1.0, (this.autopilot.visualizer.audioMotion.gradient || 0.5) + 0.5),
+                        fillAlpha: Math.min(1.0, (this.autopilot.visualizer.audioMotion.fillAlpha || 0.5) + 0.4),
+                        volume: Math.min(5.0, (this.autopilot.visualizer.audioMotion.volume || 1.0) + 2.0),
+                        smoothing: Math.max(0.1, (this.autopilot.visualizer.audioMotion.smoothing || 0.5) - 0.3),
+                        peakHoldTime: Math.max(50, (this.autopilot.visualizer.audioMotion.peakHoldTime || 500) - 300)
+                    },
+                    confidence: 0.9,
+                    sourceLayer: 'scope_constrained',
+                    reason: 'High energy - maximizing parameters for constrained scope'
+                };
+            }
+            
+            if (energy < 0.3) {
+                return {
+                    action: 'parameter_adjustment',
+                    parameters: {
+                        smoothing: Math.min(0.9, (this.autopilot.visualizer.audioMotion.smoothing || 0.5) + 0.4),
+                        fillAlpha: Math.max(0.1, (this.autopilot.visualizer.audioMotion.fillAlpha || 0.5) - 0.4),
+                        linearBoost: Math.max(0.5, (this.autopilot.visualizer.audioMotion.linearBoost || 1.0) - 0.5),
+                        volume: Math.max(0.5, (this.autopilot.visualizer.audioMotion.volume || 1.0) - 0.3),
+                        peakHoldTime: Math.min(1000, (this.autopilot.visualizer.audioMotion.peakHoldTime || 500) + 300)
+                    },
+                    confidence: 0.7,
+                    sourceLayer: 'scope_constrained',
+                    reason: 'Low energy - smoothing parameters for constrained scope'
+                };
+            }
+            
+            // Add video effects for more dramatic changes
+            if (energy > 0.6 && this.autopilot.videoEffectsEnabled) {
+                return {
+                    action: 'video_adjustment',
+                    videoParameters: {
+                        colorEffects: {
+                            brightness: 1.0 + (energy * 0.5),
+                            contrast: 1.0 + (energy * 0.3),
+                            saturation: 1.0 + (energy * 0.4),
+                            hue: energy * 30
+                        }
+                    },
+                    confidence: 0.8,
+                    sourceLayer: 'scope_constrained',
+                    reason: 'High energy - applying video effects for constrained scope'
+                };
+            }
+            
+            return {
+                action: 'no_action',
+                confidence: 0.5,
+                sourceLayer: 'scope_constrained',
+                reason: 'No parameter adjustment needed for constrained scope'
+            };
         }
 
         // Get decisions from all layers
@@ -6822,6 +7008,13 @@
                         }
                         break;
                         
+                    case 'video_adjustment':
+                        if (decision.videoParameters && this.autopilot.videoEffectsEnabled) {
+                            this.applyVideoAdjustments(decision.videoParameters);
+                            console.log(`🧠 Multi-layer decision: Video adjustments applied`);
+                        }
+                        break;
+                        
                     case 'timing_adjustment':
                         if (decision.timing) {
                             this.adjustTiming(decision.timing);
@@ -6840,12 +7033,65 @@
 
         // Apply parameter adjustments
         applyParameterAdjustments(parameters) {
-            if (!this.autopilot.visualizer.audioMotion) return;
+            if (!this.autopilot.visualizer.audioMotion) {
+                console.log('🧠 No audioMotion available for parameter adjustment');
+                return;
+            }
             
-            for (const [param, value] of Object.entries(parameters)) {
-                if (this.autopilot.visualizer.audioMotion.hasOwnProperty(param)) {
-                    this.autopilot.visualizer.audioMotion[param] = value;
+            console.log('🧠 Applying parameters:', parameters);
+            console.log('🧠 Before - audioMotion params:', {
+                linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
+                gradient: this.autopilot.visualizer.audioMotion.gradient,
+                fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
+                smoothing: this.autopilot.visualizer.audioMotion.smoothing
+            });
+            
+            try {
+                // Use setOptions to properly apply parameter changes
+                this.autopilot.visualizer.audioMotion.setOptions(parameters);
+                console.log('🧠 Multi-layer parameters applied via setOptions:', parameters);
+                
+                // Force a redraw to ensure changes are visible
+                if (this.autopilot.visualizer.audioMotion.ctx) {
+                    this.autopilot.visualizer.audioMotion.ctx.clearRect(0, 0, 
+                        this.autopilot.visualizer.audioMotion.canvas.width, 
+                        this.autopilot.visualizer.audioMotion.canvas.height);
                 }
+                
+                // Verify the parameters were actually set
+                setTimeout(() => {
+                    console.log('🧠 After - audioMotion params:', {
+                        linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
+                        gradient: this.autopilot.visualizer.audioMotion.gradient,
+                        fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
+                        smoothing: this.autopilot.visualizer.audioMotion.smoothing
+                    });
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error applying multi-layer parameters via setOptions:', error);
+                // Fallback to direct property setting
+                console.log('🧠 Falling back to direct property setting');
+                for (const [param, value] of Object.entries(parameters)) {
+                    if (this.autopilot.visualizer.audioMotion.hasOwnProperty(param)) {
+                        this.autopilot.visualizer.audioMotion[param] = value;
+                        console.log(`🧠 Set ${param} = ${value}`);
+                    } else {
+                        console.log(`🧠 Property ${param} not found on audioMotion`);
+                    }
+                }
+            }
+        }
+
+        // Apply video adjustments
+        applyVideoAdjustments(videoParameters) {
+            if (!this.autopilot.parameterController) return;
+            
+            try {
+                this.autopilot.parameterController.applyVideoParameters(videoParameters);
+                console.log('🧠 Multi-layer video parameters applied:', videoParameters);
+            } catch (error) {
+                console.error('Error applying multi-layer video parameters:', error);
             }
         }
 
@@ -7846,6 +8092,329 @@
         }
     }
 
+    // Infinite Zoom Visualization System
+    class InfiniteZoomVisualization {
+        constructor(visualizer) {
+            this.visualizer = visualizer;
+            this.isActive = false;
+            this.canvas = null;
+            this.ctx = null;
+            
+            // Settings
+            this.colorRandomness = 0.5; // 0-1, how random colors are
+            this.minSize = 2;
+            this.maxSize = 20;
+            this.density = 50; // Will be calculated based on screen area
+            this.shape = 'circle'; // circle, square, rectangle, triangle, star, mushroom
+            
+            // Animation state
+            this.zoomSpeed = 0.05; // 50% of max speed
+            this.currentZoom = 0;
+            this.objects = [];
+            this.lastBeatTime = 0;
+            
+            // Audio response
+            this.energyHistory = [];
+            this.beatSensitivity = 0.7;
+            
+            console.log('🔍 Infinite Zoom Visualization initialized');
+        }
+        
+        initialize() {
+            // Create canvas
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = 800;
+            this.canvas.height = 600;
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Set canvas style
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.top = '0';
+            this.canvas.style.left = '0';
+            this.canvas.style.pointerEvents = 'none';
+            this.canvas.style.zIndex = '1';
+            
+            // Add to visualization container
+            const container = document.getElementById('visualizationContainer');
+            if (container) {
+                container.appendChild(this.canvas);
+                
+                // Calculate initial density based on screen area (50% of max)
+                const screenArea = this.canvas.width * this.canvas.height;
+                const maxDensity = Math.floor(screenArea / 100); // 1 object per 100 pixels for max density
+                this.density = Math.floor(0.5 * maxDensity); // 50% of max density
+            }
+            
+            console.log('🔍 Infinite Zoom canvas created and added to container');
+        }
+        
+        start() {
+            this.isActive = true;
+            this.generateInitialObjects();
+            console.log('🔍 Infinite Zoom started');
+        }
+        
+        stop() {
+            this.isActive = false;
+            this.objects = [];
+            if (this.canvas && this.canvas.parentNode) {
+                this.canvas.parentNode.removeChild(this.canvas);
+            }
+            console.log('🔍 Infinite Zoom stopped');
+        }
+        
+        generateInitialObjects() {
+            this.objects = [];
+            // Use the density as calculated by the slider (already based on screen area)
+            for (let i = 0; i < this.density; i++) {
+                this.addObject();
+            }
+        }
+        
+        addObject() {
+            const object = {
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: this.minSize + Math.random() * (this.maxSize - this.minSize),
+                color: this.generateColor(),
+                depth: Math.random() * 1000 + 100, // distance from camera
+                rotation: Math.random() * Math.PI * 2,
+                shape: this.shape
+            };
+            this.objects.push(object);
+        }
+        
+        updateObjectShapes() {
+            // Update all existing objects to use current shape
+            this.objects.forEach(obj => {
+                obj.shape = this.shape;
+            });
+        }
+        
+        generateColor() {
+            if (Math.random() < this.colorRandomness) {
+                // Random color
+                const hue = Math.random() * 360;
+                const saturation = 70 + Math.random() * 30;
+                const lightness = 50 + Math.random() * 30;
+                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            } else {
+                // Fixed color (white)
+                return '#ffffff';
+            }
+        }
+        
+        update(audioFeatures = null) {
+            if (!this.isActive) return;
+            
+            // Update zoom
+            this.currentZoom += this.zoomSpeed;
+            
+            // Audio response
+            if (audioFeatures) {
+                this.updateAudioResponse(audioFeatures);
+            }
+            
+            // Update object positions based on zoom direction
+            this.objects.forEach(obj => {
+                obj.depth -= this.zoomSpeed * 50;
+                
+                // Handle object recycling based on zoom direction
+                if (this.zoomSpeed > 0 && obj.depth < 50) {
+                    // Zoom in: reset objects that get too close
+                    obj.depth = 1000 + Math.random() * 500;
+                    obj.x = Math.random() * this.canvas.width;
+                    obj.y = Math.random() * this.canvas.height;
+                    obj.color = this.generateColor();
+                } else if (this.zoomSpeed < 0 && obj.depth > 2000) {
+                    // Zoom out: reset objects that get too far
+                    obj.depth = 100 + Math.random() * 200;
+                    obj.x = Math.random() * this.canvas.width;
+                    obj.y = Math.random() * this.canvas.height;
+                    obj.color = this.generateColor();
+                }
+            });
+            
+            // Add new objects on beat
+            if (audioFeatures && audioFeatures.beat) {
+                const now = Date.now();
+                if (now - this.lastBeatTime > 200) { // Debounce
+                    this.addObject();
+                    this.lastBeatTime = now;
+                }
+            }
+        }
+        
+        updateAudioResponse(audioFeatures) {
+            // Track energy history
+            this.energyHistory.push(audioFeatures.energy);
+            if (this.energyHistory.length > 20) {
+                this.energyHistory.shift();
+            }
+            
+            // Don't override zoom speed from slider - let user control it
+            // const avgEnergy = this.energyHistory.reduce((sum, e) => sum + e, 0) / this.energyHistory.length;
+            // this.zoomSpeed = 0.01 + (avgEnergy * 0.03);
+            
+            // Don't override density from slider - let user control it
+            // const screenArea = this.canvas.width * this.canvas.height;
+            // const maxDensity = Math.floor(screenArea / 1000);
+            // const targetDensity = Math.floor(30 + (avgEnergy * (maxDensity - 30)));
+            // if (this.objects.length < targetDensity) {
+            //     this.addObject();
+            // }
+        }
+        
+        draw() {
+            if (!this.isActive || !this.ctx) return;
+            
+            // Clear canvas
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw objects
+            this.objects.forEach(obj => {
+                this.drawObject(obj);
+            });
+        }
+        
+        // This method is called by the main kaleidoscope system
+        drawForKaleidoscope() {
+            if (!this.isActive || !this.ctx) return;
+            
+            // Clear canvas
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw objects
+            this.objects.forEach(obj => {
+                this.drawObject(obj);
+            });
+        }
+        
+        drawObject(obj) {
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            
+            // Calculate screen position based on depth
+            const scale = 100 / obj.depth;
+            const screenX = centerX + (obj.x - centerX) * scale;
+            const screenY = centerY + (obj.y - centerY) * scale;
+            const screenSize = obj.size * scale;
+            
+            // Skip if too small or off-screen
+            if (screenSize < 0.5 || screenX < -50 || screenX > this.canvas.width + 50 || 
+                screenY < -50 || screenY > this.canvas.height + 50) {
+                return;
+            }
+            
+            this.ctx.save();
+            this.ctx.translate(screenX, screenY);
+            this.ctx.rotate(obj.rotation);
+            this.ctx.fillStyle = obj.color;
+            this.ctx.globalAlpha = Math.min(1, scale * 2);
+            
+            switch (obj.shape) {
+                case 'circle':
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, screenSize / 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    break;
+                    
+                case 'square':
+                    this.ctx.fillRect(-screenSize / 2, -screenSize / 2, screenSize, screenSize);
+                    break;
+                    
+                case 'rectangle':
+                    this.ctx.fillRect(-screenSize / 2, -screenSize / 4, screenSize, screenSize / 2);
+                    break;
+                    
+                case 'triangle':
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, -screenSize / 2);
+                    this.ctx.lineTo(-screenSize / 2, screenSize / 2);
+                    this.ctx.lineTo(screenSize / 2, screenSize / 2);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    break;
+                    
+                case 'star':
+                    this.drawStar(0, 0, screenSize / 2, 5);
+                    break;
+                    
+                case 'mushroom':
+                    this.drawMushroom(0, 0, screenSize);
+                    break;
+            }
+            
+            this.ctx.restore();
+        }
+        
+        drawStar(x, y, radius, points) {
+            this.ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const angle = (i * Math.PI) / points;
+                const r = i % 2 === 0 ? radius : radius * 0.5;
+                const px = x + Math.cos(angle) * r;
+                const py = y + Math.sin(angle) * r;
+                if (i === 0) {
+                    this.ctx.moveTo(px, py);
+                } else {
+                    this.ctx.lineTo(px, py);
+                }
+            }
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
+        
+        drawMushroom(x, y, size) {
+            // Cap
+            this.ctx.fillStyle = obj.color;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y - size / 4, size / 3, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Spots on cap
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.beginPath();
+            this.ctx.arc(x - size / 8, y - size / 4, size / 12, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.beginPath();
+            this.ctx.arc(x + size / 8, y - size / 4, size / 12, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Stem
+            this.ctx.fillStyle = obj.color;
+            this.ctx.fillRect(x - size / 12, y - size / 4, size / 6, size / 2);
+        }
+        
+        resize(width, height) {
+            if (this.canvas) {
+                this.canvas.width = width;
+                this.canvas.height = height;
+            }
+        }
+        
+        getSettings() {
+            return {
+                isActive: this.isActive,
+                colorRandomness: this.colorRandomness,
+                minSize: this.minSize,
+                maxSize: this.maxSize,
+                density: this.density,
+                shape: this.shape,
+                zoomSpeed: this.zoomSpeed
+            };
+        }
+        
+        setSettings(settings) {
+            if (settings.colorRandomness !== undefined) this.colorRandomness = settings.colorRandomness;
+            if (settings.minSize !== undefined) this.minSize = settings.minSize;
+            if (settings.maxSize !== undefined) this.maxSize = settings.maxSize;
+            if (settings.density !== undefined) this.density = settings.density;
+            if (settings.shape !== undefined) this.shape = settings.shape;
+            if (settings.zoomSpeed !== undefined) this.zoomSpeed = settings.zoomSpeed;
+        }
+    }
+
     // AI Autopilot System for Live Performance Visualization Management
     class AIAutopilot {
         constructor(visualizer) {
@@ -7982,6 +8551,14 @@
             // Use multi-layered intelligence if enabled
             if (this.multiLayeredIntelligenceEnabled && this.multiLayeredIntelligence) {
                 const currentParams = this.getCurrentParameters();
+                console.log('🧠 Multi-layered intelligence: Making decision for scope:', this.scope, 'current mode:', this.visualizer.currentMode);
+                console.log('🧠 Current audioMotion params:', {
+                    linearBoost: this.visualizer.audioMotion?.linearBoost,
+                    gradient: this.visualizer.audioMotion?.gradient,
+                    fillAlpha: this.visualizer.audioMotion?.fillAlpha,
+                    smoothing: this.visualizer.audioMotion?.smoothing
+                });
+                
                 const decision = this.multiLayeredIntelligence.makeIntelligentDecision(
                     audioFeatures, 
                     this.visualizer.currentMode, 
@@ -7991,6 +8568,8 @@
                 if (decision) {
                     console.log('🧠 Multi-layered intelligence decision:', decision);
                     return; // Multi-layered intelligence handles everything
+                } else {
+                    console.log('🧠 Multi-layered intelligence: No decision made');
                 }
             }
             
@@ -8052,10 +8631,10 @@
                 // Fallback to rule-based recommendations if no learning data
                 if (!parameterRecommendations) {
                     parameterRecommendations = this.getParameterRecommendations(
-                        detectedGenre, 
-                        audioFeatures, 
-                        this.scope
-                    );
+                    detectedGenre, 
+                    audioFeatures, 
+                    this.scope
+                );
                 }
                 
                 // Apply parameter changes
@@ -9768,12 +10347,6 @@
         makeDecisions() {
             if (!this.isRunning) return;
             
-            // Don't run decision engine for specific scopes (radial, energy)
-            if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
-                this.decisionFrame = requestAnimationFrame(() => this.makeDecisions());
-                return;
-            }
-            
             try {
                 const now = Date.now();
                 
@@ -9921,29 +10494,29 @@
             
             // Energy-based selection (fallback if no structure/harmonic info)
             if (candidateModes.length === 0) {
-                // Very high energy
-                if (energy > 0.4 && energyTrend > 0.02) {
-                    candidateModes = availableModes.filter(mode => [4, 5].includes(mode)); // Radial, Energy
-                }
-                // High energy
-                else if (energy > 0.3) {
-                    candidateModes = availableModes.filter(mode => [1, 5, 4].includes(mode)); // Mirror Wave, Energy, Radial
-                }
-                // Medium energy
-                else if (energy > 0.2) {
-                    candidateModes = availableModes.filter(mode => [3, 6, 0].includes(mode)); // Stereo, Mirror, Spectrum
-                }
-                // Rising energy
-                else if (energyTrend > 0.01) {
-                    candidateModes = availableModes.filter(mode => [1, 0].includes(mode)); // Mirror Wave, Spectrum
-                }
-                // Low energy
-                else if (energy > 0.1) {
-                    candidateModes = availableModes.filter(mode => [0, 2].includes(mode)); // Spectrum, Classic LED
-                }
-                // Very low energy
-                else {
-                    candidateModes = availableModes.filter(mode => [2].includes(mode)); // Classic LED
+            // Very high energy
+            if (energy > 0.4 && energyTrend > 0.02) {
+                candidateModes = availableModes.filter(mode => [4, 5].includes(mode)); // Radial, Energy
+            }
+            // High energy
+            else if (energy > 0.3) {
+                candidateModes = availableModes.filter(mode => [1, 5, 4].includes(mode)); // Mirror Wave, Energy, Radial
+            }
+            // Medium energy
+            else if (energy > 0.2) {
+                candidateModes = availableModes.filter(mode => [3, 6, 0].includes(mode)); // Stereo, Mirror, Spectrum
+            }
+            // Rising energy
+            else if (energyTrend > 0.01) {
+                candidateModes = availableModes.filter(mode => [1, 0].includes(mode)); // Mirror Wave, Spectrum
+            }
+            // Low energy
+            else if (energy > 0.1) {
+                candidateModes = availableModes.filter(mode => [0, 2].includes(mode)); // Spectrum, Classic LED
+            }
+            // Very low energy
+            else {
+                candidateModes = availableModes.filter(mode => [2].includes(mode)); // Classic LED
                 }
             }
             
@@ -12375,9 +12948,19 @@
                 console.log(`Drawing visualization with shared dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
                 this.compositeCtx.drawImage(sourceCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                 
+                // Draw Infinite Zoom if active
+                if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
+                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                }
+                
             } else {
                 // No video - draw visualization with standard letterboxing
                 this.drawScaledVisualization(sourceCanvas);
+                
+                // Draw Infinite Zoom if active
+                if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
+                    this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
             }
         }
         
@@ -14359,6 +14942,7 @@
                 this.recordManager = new RecordManager(this);
                 this.playlistManager = new PlaylistManager(this);
                 this.aiAutopilot = new AIAutopilot(this);
+                this.infiniteZoom = new InfiniteZoomVisualization(this);
                 
                 // Initialize playlist UI handlers
                 this.initializePlaylistUI();
@@ -15272,6 +15856,7 @@
                 });
             }
             
+            
             // Test parameter control button
             const testParamBtn = document.getElementById('testParameterControlBtn');
             if (testParamBtn) {
@@ -15279,6 +15864,43 @@
                     if (this.aiAutopilot) {
                         this.aiAutopilot.testParameterControl();
                         console.log('🧪 Test parameter control triggered');
+                    }
+                });
+            }
+            
+            // Test parameters button
+            const testParametersBtn = document.getElementById('testParametersBtn');
+            if (testParametersBtn) {
+                testParametersBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
+                        console.log('🧪 Testing parameter changes...');
+                        
+                        // Test dramatic parameter changes
+                        const testParams = {
+                            linearBoost: 5.0,
+                            gradient: 0.9,
+                            fillAlpha: 0.8,
+                            volume: 3.0,
+                            smoothing: 0.2,
+                            peakHoldTime: 200
+                        };
+                        
+                        this.aiAutopilot.multiLayeredIntelligence.applyParameterAdjustments(testParams);
+                        
+                        // Test video effects
+                        if (this.aiAutopilot.videoEffectsEnabled) {
+                            const testVideoParams = {
+                                colorEffects: {
+                                    brightness: 1.5,
+                                    contrast: 1.3,
+                                    saturation: 1.4,
+                                    hue: 45
+                                }
+                            };
+                            this.aiAutopilot.multiLayeredIntelligence.applyVideoAdjustments(testVideoParams);
+                        }
+                        
+                        alert('Test parameters applied! Check console for details.');
                     }
                 });
             }
@@ -17822,6 +18444,34 @@ https://rogueamoeba.com/loopback/
                 }
             }
         }
+        
+        toggleInfiniteZoom() {
+            const panel = document.getElementById('infiniteZoomPanel');
+            const btn = document.getElementById('infiniteZoomBtn');
+            const btnText = btn.querySelector('.kaleidoscope-btn-text');
+            
+            // Toggle panel visibility
+            if (panel) {
+                const isVisible = panel.style.display !== 'none';
+                panel.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    // Panel is opening - toggle infinite zoom state
+                    if (this.infiniteZoom) {
+                        if (this.infiniteZoom.isActive) {
+                            this.infiniteZoom.stop();
+                            btnText.textContent = 'Infinite Zoom Off';
+                            btn.classList.remove('active');
+                        } else {
+                            this.infiniteZoom.initialize();
+                            this.infiniteZoom.start();
+                            btnText.textContent = 'Infinite Zoom On';
+                            btn.classList.add('active');
+                        }
+                    }
+                }
+            }
+        }
 
         startKaleidoscopeAnimation() {
             const animate = () => {
@@ -18294,12 +18944,24 @@ https://rogueamoeba.com/loopback/
                         // Set opacity based on ring number for better visibility
                         this.kaleidoscopeVizCtx.globalAlpha = 1 - (ring * 0.15);
 
-                        // Draw segment
+                        // Draw segment - include both main visualization and infinite zoom
                         if (i % 2 === 0) {
+                            // Draw main visualization
                             this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            
+                            // Draw infinite zoom if active
+                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) {
+                                this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            }
                         } else {
                             this.kaleidoscopeVizCtx.scale(1, -1);
+                            // Draw main visualization
                             this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            
+                            // Draw infinite zoom if active
+                            if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) {
+                                this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            }
                         }
                         this.kaleidoscopeVizCtx.restore();
                     }
@@ -18483,11 +19145,9 @@ https://rogueamoeba.com/loopback/
             if (this.audioMotion) {
                 if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                     this.audioMotion.animate();
-                } else { // Stop visualization completely
-                    if (this.audioMotion.animationFrame) {
-                        cancelAnimationFrame(this.audioMotion.animationFrame);
-                        this.audioMotion.animationFrame = null;
-                    }
+                } else { // Stop main visualization but keep animation loop for Infinite Zoom
+                    // Don't cancel animation frame - let it continue for Infinite Zoom
+                    // The animation loop will handle skipping main visualization when disabled
                     // Clear the canvas only if video is NOT active
                     if (this.audioMotion.ctx && this.audioMotion.canvas) { // Check if video is active
                         const container = document.getElementById('visualizationContainer');
@@ -19185,6 +19845,130 @@ https://rogueamoeba.com/loopback/
             if (kaleidoscopeBtn) {
                 kaleidoscopeBtn.addEventListener('click', () => {
                     this.toggleKaleidoscope();
+                });
+            }
+            
+            // Infinite Zoom button
+            const infiniteZoomBtn = document.getElementById('infiniteZoomBtn');
+            if (infiniteZoomBtn) {
+                infiniteZoomBtn.addEventListener('click', () => {
+                    this.toggleInfiniteZoom();
+                });
+            }
+            
+            // Infinite Zoom close button
+            const infiniteZoomCloseBtn = document.getElementById('infiniteZoomCloseBtn');
+            if (infiniteZoomCloseBtn) {
+                infiniteZoomCloseBtn.addEventListener('click', () => {
+                    const panel = document.getElementById('infiniteZoomPanel');
+                    if (panel) {
+                        panel.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Infinite Zoom shape selection
+            const infiniteZoomShapeSelect = document.getElementById('infiniteZoomShapeSelect');
+            if (infiniteZoomShapeSelect) {
+                infiniteZoomShapeSelect.addEventListener('change', (e) => {
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.shape = e.target.value;
+                        this.infiniteZoom.updateObjectShapes();
+                        console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
+                    }
+                });
+            }
+            
+            // Infinite Zoom color randomness slider
+            const infiniteZoomColorRandomSlider = document.getElementById('infiniteZoomColorRandomSlider');
+            const infiniteZoomColorRandomValue = document.getElementById('infiniteZoomColorRandomValue');
+            if (infiniteZoomColorRandomSlider && infiniteZoomColorRandomValue) {
+                infiniteZoomColorRandomSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    infiniteZoomColorRandomValue.textContent = value.toFixed(1);
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.colorRandomness = value;
+                        // Update existing objects with new color randomness
+                        this.infiniteZoom.objects.forEach(obj => {
+                            obj.color = this.infiniteZoom.generateColor();
+                        });
+                    }
+                });
+            }
+            
+            // Infinite Zoom min size slider
+            const infiniteZoomMinSizeSlider = document.getElementById('infiniteZoomMinSizeSlider');
+            const infiniteZoomMinSizeValue = document.getElementById('infiniteZoomMinSizeValue');
+            if (infiniteZoomMinSizeSlider && infiniteZoomMinSizeValue) {
+                infiniteZoomMinSizeSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomMinSizeValue.textContent = value;
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.minSize = value;
+                        // Update existing objects with new size range
+                        this.infiniteZoom.objects.forEach(obj => {
+                            obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
+                        });
+                    }
+                });
+            }
+            
+            // Infinite Zoom max size slider
+            const infiniteZoomMaxSizeSlider = document.getElementById('infiniteZoomMaxSizeSlider');
+            const infiniteZoomMaxSizeValue = document.getElementById('infiniteZoomMaxSizeValue');
+            if (infiniteZoomMaxSizeSlider && infiniteZoomMaxSizeValue) {
+                infiniteZoomMaxSizeSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomMaxSizeValue.textContent = value;
+                    if (this.infiniteZoom) {
+                        this.infiniteZoom.maxSize = value;
+                        // Update existing objects with new size range
+                        this.infiniteZoom.objects.forEach(obj => {
+                            obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
+                        });
+                    }
+                });
+            }
+            
+            // Infinite Zoom density slider
+            const infiniteZoomDensitySlider = document.getElementById('infiniteZoomDensitySlider');
+            const infiniteZoomDensityValue = document.getElementById('infiniteZoomDensityValue');
+            if (infiniteZoomDensitySlider && infiniteZoomDensityValue) {
+                infiniteZoomDensitySlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomDensityValue.textContent = value;
+                    if (this.infiniteZoom) {
+                        // Convert 1-100 range to actual density based on screen area
+                        // At 100, objects should fill screen with no negative space
+                        const screenArea = this.infiniteZoom.canvas ? 
+                            this.infiniteZoom.canvas.width * this.infiniteZoom.canvas.height : 800 * 600;
+                        const maxDensity = Math.floor(screenArea / 100); // 1 object per 100 pixels for max density
+                        this.infiniteZoom.density = Math.floor((value / 100) * maxDensity);
+                        // Regenerate objects if active
+                        if (this.infiniteZoom.isActive) {
+                            this.infiniteZoom.generateInitialObjects();
+                        }
+                    }
+                });
+            }
+            
+            // Infinite Zoom speed slider
+            const infiniteZoomSpeedSlider = document.getElementById('infiniteZoomSpeedSlider');
+            const infiniteZoomSpeedValue = document.getElementById('infiniteZoomSpeedValue');
+            if (infiniteZoomSpeedSlider && infiniteZoomSpeedValue) {
+                infiniteZoomSpeedSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    infiniteZoomSpeedValue.textContent = value;
+                    if (this.infiniteZoom) {
+                        // Convert -100 to 100 range to zoom speed
+                        // 0 = no movement, 50 = normal speed, 100 = very fast, -100 = very fast reverse
+                        if (value === 0) {
+                            this.infiniteZoom.zoomSpeed = 0;
+                        } else {
+                            // Convert to actual zoom speed: -100 to 100 becomes -0.1 to 0.1
+                            this.infiniteZoom.zoomSpeed = (value / 100) * 0.1;
+                        }
+                    }
                 });
             }
 
