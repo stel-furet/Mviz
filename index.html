@@ -555,6 +555,11 @@
                     Activate
                 </button>
                 <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
+            </div>
+            <div class="control-with-settings" style="margin-top: 8px;">
+                <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
+                    📊 Learning Analytics
+                </button>
                 
                 <!-- AI Autopilot Settings Panel -->
                 <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
@@ -673,6 +678,17 @@
                             </div>
                         </div>
 
+                        <!-- Multi-layered Intelligence Controls -->
+                        <div class="control-group">
+                            <div class="group-label">Multi-layered Intelligence</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="enableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: On</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="testIntelligenceBtn">Test Intelligence</button>
+                            </div>
+                        </div>
+
                         <!-- Test Button -->
                         <div class="control-group">
                             <div class="group-label">Test</div>
@@ -731,8 +747,144 @@
                             <div class="info-display" id="predictionAccuracyDisplay">Accuracy: 0%</div>
                             <div class="info-display" id="predictionConfidenceDisplay">Confidence: 80%</div>
                         </div>
+
+                        <!-- Multi-layered Intelligence Analytics -->
+                        <div class="control-group">
+                            <div class="group-label">Intelligence Analytics</div>
+                            <div class="info-display" id="intelligenceDecisionsDisplay">Decisions: 0</div>
+                            <div class="info-display" id="metaLearningDisplay">Meta-Learning: 0%</div>
+                            <div class="info-display" id="layerPerformanceDisplay">Performance: Balanced</div>
+                        </div>
                     </div>
                 </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Analytics Dashboard Modal -->
+        <div class="learning-analytics-modal" id="learningAnalyticsModal" style="display: none;">
+            <div class="analytics-modal-content">
+                <div class="analytics-modal-header">
+                    <h2>📊 Learning Analytics Dashboard</h2>
+                    <div class="analytics-controls">
+                        <label for="updateFrequency">Update Frequency:</label>
+                        <select id="updateFrequency" class="frequency-select">
+                            <option value="1000">1 second</option>
+                            <option value="2000">2 seconds</option>
+                            <option value="3000">3 seconds</option>
+                            <option value="5000" selected>5 seconds</option>
+                            <option value="10000">10 seconds</option>
+                            <option value="15000">15 seconds</option>
+                            <option value="20000">20 seconds</option>
+                        </select>
+                        <button class="export-btn" id="exportLearningDataBtn">Export Data</button>
+                        <button class="reset-btn" id="resetLearningDataBtn">Reset All Data</button>
+                    </div>
+                    <button class="analytics-close-btn" id="analyticsCloseBtn">×</button>
+                </div>
+                
+                <div class="analytics-content">
+                    <!-- Learning Progress Section -->
+                    <div class="analytics-section">
+                        <h3>🧠 Learning Progress</h3>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="card-title">Pattern Learning</div>
+                                <div class="card-value" id="dashboardPatternCount">0</div>
+                                <div class="card-subtitle">Patterns Learned</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Success Rate</div>
+                                <div class="card-value" id="dashboardSuccessRate">0%</div>
+                                <div class="card-subtitle">Learning Accuracy</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Learning Progress</div>
+                                <div class="card-value" id="dashboardLearningProgress">0%</div>
+                                <div class="card-subtitle">Overall Progress</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Feedback Section -->
+                    <div class="analytics-section">
+                        <h3>👤 User Feedback</h3>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="card-title">Total Feedback</div>
+                                <div class="card-value" id="dashboardTotalFeedback">0</div>
+                                <div class="card-subtitle">Interactions</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Satisfaction</div>
+                                <div class="card-value" id="dashboardSatisfaction">0%</div>
+                                <div class="card-subtitle">User Satisfaction</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Positive</div>
+                                <div class="card-value" id="dashboardPositiveFeedback">0</div>
+                                <div class="card-subtitle">👍 Likes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictive Behavior Section -->
+                    <div class="analytics-section">
+                        <h3>🎯 Predictive Behavior</h3>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="card-title">Predictions Made</div>
+                                <div class="card-value" id="dashboardPredictions">0</div>
+                                <div class="card-subtitle">Total Predictions</div>
+                                <div class="card-description">Mode changes, parameter adjustments, and timing predictions based on audio analysis.</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Prediction Accuracy</div>
+                                <div class="card-value" id="dashboardPredictionAccuracy">0%</div>
+                                <div class="card-subtitle">Success Rate</div>
+                                <div class="card-description">Percentage of executed predictions out of total predictions made. Calculated from recent prediction history.</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Confidence Level</div>
+                                <div class="card-value" id="dashboardConfidence">80%</div>
+                                <div class="card-subtitle">Current Threshold</div>
+                                <div class="card-description">Minimum confidence required to execute predictions. Higher values mean more conservative decision-making.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adaptive Tuning Section -->
+                    <div class="analytics-section">
+                        <h3>⚙️ Adaptive Tuning</h3>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="card-title">Optimizations</div>
+                                <div class="card-value" id="dashboardOptimizations">0</div>
+                                <div class="card-subtitle">Parameter Optimizations</div>
+                                <div class="card-description">Successful parameter adjustments that accurately produce expected results. For example, applying dark color schemes with slow graphics to ambient tracks.</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Performance</div>
+                                <div class="card-value" id="dashboardPerformance">0%</div>
+                                <div class="card-subtitle">Current Performance</div>
+                                <div class="card-description">Combined score based on audio response (60%) and user feedback (40%). Measures how well parameters match the current audio context.</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="card-title">Trend</div>
+                                <div class="card-value" id="dashboardTrend">Stable</div>
+                                <div class="card-subtitle">Performance Trend</div>
+                                <div class="card-description">Direction of performance over time: Improving (getting better), Declining (getting worse), or Stable (consistent performance).</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Section -->
+                    <div class="analytics-section">
+                        <h3>📈 Recent Activity</h3>
+                        <div class="activity-log" id="activityLog">
+                            <div class="activity-item">System initialized</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1271,6 +1423,211 @@
             .autopilot-settings-content {
                 grid-template-columns: 1fr;
                 gap: 16px;
+            }
+        }
+
+        /* Learning Analytics Dashboard Modal */
+        .learning-analytics-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .analytics-modal-content {
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .analytics-modal-header {
+            background: var(--primary-bg, #2a2a2a);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color, #898989);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .analytics-modal-header h2 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .analytics-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .analytics-controls label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .frequency-select {
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .export-btn, .reset-btn {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .export-btn:hover, .reset-btn:hover {
+            background: var(--accent-hover, #4a9eff);
+        }
+
+        .reset-btn {
+            background: #e74c3c;
+        }
+
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+
+        .analytics-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .analytics-close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .analytics-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .analytics-section {
+            margin-bottom: 30px;
+        }
+
+        .analytics-section h3 {
+            color: var(--text-primary);
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            border-bottom: 1px solid var(--border-color, #898989);
+            padding-bottom: 8px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-title {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            color: var(--accent-color);
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 11px;
+            margin-top: 8px;
+            line-height: 1.4;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .activity-log {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            color: var(--text-secondary);
+            font-size: 14px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive design for analytics modal */
+        @media (max-width: 768px) {
+            .analytics-modal-content {
+                width: 100%;
+                height: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
             }
         }
 
@@ -6375,6 +6732,589 @@
         }
     }
 
+    // Multi-layered Intelligence System for AI Autopilot
+    class MultiLayeredIntelligenceSystem {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.decisionLayers = {
+                reactive: new ReactiveDecisionLayer(autopilot),
+                predictive: new PredictiveDecisionLayer(autopilot),
+                strategic: new StrategicDecisionLayer(autopilot)
+            };
+            this.metaLearning = new MetaLearningSystem(autopilot);
+            this.conflictResolver = new ConflictResolver(autopilot);
+            this.contextAnalyzer = new ContextAnalyzer(autopilot);
+            
+            this.decisionHistory = [];
+            this.performanceMetrics = {};
+            this.learningEnabled = true;
+            
+            this.loadIntelligenceData();
+        }
+
+        // Main decision-making orchestrator
+        makeIntelligentDecision(audioFeatures, currentMode, currentParams) {
+            try {
+                // Analyze current context
+                const context = this.contextAnalyzer.analyzeContext(audioFeatures, currentMode, currentParams);
+                
+                // Get decisions from each layer
+                const layerDecisions = this.getLayerDecisions(context, audioFeatures, currentMode, currentParams);
+                
+                // Resolve conflicts between layers
+                const resolvedDecision = this.conflictResolver.resolveConflicts(layerDecisions, context);
+                
+                // Apply meta-learning to improve decision quality
+                const finalDecision = this.metaLearning.enhanceDecision(resolvedDecision, context);
+                
+                // Execute the decision
+                this.executeDecision(finalDecision, context);
+                
+                // Learn from the outcome
+                if (this.learningEnabled) {
+                    this.learnFromDecision(finalDecision, context);
+                }
+                
+                // Record decision for analysis
+                this.recordDecision(finalDecision, context);
+                
+                return finalDecision;
+                
+            } catch (error) {
+                console.error('Error in multi-layered intelligence:', error);
+                return null;
+            }
+        }
+
+        // Get decisions from all layers
+        getLayerDecisions(context, audioFeatures, currentMode, currentParams) {
+            const decisions = {};
+            
+            // Reactive layer - immediate responses
+            decisions.reactive = this.decisionLayers.reactive.makeDecision(context, audioFeatures);
+            
+            // Predictive layer - future-focused decisions
+            decisions.predictive = this.decisionLayers.predictive.makeDecision(context, audioFeatures);
+            
+            // Strategic layer - long-term optimization
+            decisions.strategic = this.decisionLayers.strategic.makeDecision(context, audioFeatures);
+            
+            return decisions;
+        }
+
+        // Execute the final decision
+        executeDecision(decision, context) {
+            if (!decision || !decision.action) return;
+            
+            try {
+                switch (decision.action) {
+                    case 'mode_change':
+                        if (decision.mode !== undefined) {
+                            this.autopilot.visualizer.setVisualizationMode(decision.mode);
+                            console.log(`🧠 Multi-layer decision: Mode change to ${decision.mode}`);
+                        }
+                        break;
+                        
+                    case 'parameter_adjustment':
+                        if (decision.parameters) {
+                            this.applyParameterAdjustments(decision.parameters);
+                            console.log(`🧠 Multi-layer decision: Parameter adjustments applied`);
+                        }
+                        break;
+                        
+                    case 'timing_adjustment':
+                        if (decision.timing) {
+                            this.adjustTiming(decision.timing);
+                            console.log(`🧠 Multi-layer decision: Timing adjusted`);
+                        }
+                        break;
+                        
+                    case 'no_action':
+                        console.log(`🧠 Multi-layer decision: No action needed`);
+                        break;
+                }
+            } catch (error) {
+                console.error('Error executing multi-layer decision:', error);
+            }
+        }
+
+        // Apply parameter adjustments
+        applyParameterAdjustments(parameters) {
+            if (!this.autopilot.visualizer.audioMotion) return;
+            
+            for (const [param, value] of Object.entries(parameters)) {
+                if (this.autopilot.visualizer.audioMotion.hasOwnProperty(param)) {
+                    this.autopilot.visualizer.audioMotion[param] = value;
+                }
+            }
+        }
+
+        // Adjust timing settings
+        adjustTiming(timing) {
+            if (timing.cooldown) {
+                this.autopilot.decisionEngine.decisionCooldown = timing.cooldown;
+            }
+            if (timing.sensitivity) {
+                this.autopilot.sensitivity = timing.sensitivity;
+            }
+        }
+
+        // Learn from decision outcomes
+        learnFromDecision(decision, context) {
+            this.metaLearning.learnFromOutcome(decision, context);
+            this.updatePerformanceMetrics(decision, context);
+        }
+
+        // Record decision for analysis
+        recordDecision(decision, context) {
+            this.decisionHistory.push({
+                timestamp: Date.now(),
+                decision,
+                context,
+                executed: true
+            });
+            
+            // Keep only last 100 decisions
+            if (this.decisionHistory.length > 100) {
+                this.decisionHistory.shift();
+            }
+        }
+
+        // Update performance metrics
+        updatePerformanceMetrics(decision, context) {
+            const layer = decision.sourceLayer || 'unknown';
+            if (!this.performanceMetrics[layer]) {
+                this.performanceMetrics[layer] = {
+                    totalDecisions: 0,
+                    successfulDecisions: 0,
+                    averageConfidence: 0
+                };
+            }
+            
+            this.performanceMetrics[layer].totalDecisions++;
+            if (decision.confidence > 0.7) {
+                this.performanceMetrics[layer].successfulDecisions++;
+            }
+            
+            // Update average confidence
+            const current = this.performanceMetrics[layer];
+            current.averageConfidence = (current.averageConfidence * (current.totalDecisions - 1) + decision.confidence) / current.totalDecisions;
+        }
+
+        // Get intelligence analytics
+        getIntelligenceAnalytics() {
+            const totalDecisions = this.decisionHistory.length;
+            const layerPerformance = {};
+            
+            for (const [layer, metrics] of Object.entries(this.performanceMetrics)) {
+                layerPerformance[layer] = {
+                    successRate: metrics.totalDecisions > 0 ? 
+                        (metrics.successfulDecisions / metrics.totalDecisions * 100).toFixed(1) : 0,
+                    averageConfidence: metrics.averageConfidence.toFixed(2),
+                    totalDecisions: metrics.totalDecisions
+                };
+            }
+            
+            return {
+                totalDecisions,
+                layerPerformance,
+                metaLearningProgress: this.metaLearning.getLearningProgress()
+            };
+        }
+
+        // Load intelligence data
+        loadIntelligenceData() {
+            try {
+                const data = localStorage.getItem('autopilot_intelligence');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    this.decisionHistory = parsed.decisionHistory || [];
+                    this.performanceMetrics = parsed.performanceMetrics || {};
+                }
+            } catch (error) {
+                console.error('Error loading intelligence data:', error);
+            }
+        }
+
+        // Save intelligence data
+        saveIntelligenceData() {
+            try {
+                const data = {
+                    decisionHistory: this.decisionHistory.slice(-50),
+                    performanceMetrics: this.performanceMetrics
+                };
+                localStorage.setItem('autopilot_intelligence', JSON.stringify(data));
+            } catch (error) {
+                console.error('Error saving intelligence data:', error);
+            }
+        }
+    }
+
+    // Reactive Decision Layer - Immediate responses
+    class ReactiveDecisionLayer {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.responseThreshold = 0.8;
+        }
+
+        makeDecision(context, audioFeatures) {
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            
+            // High energy immediate response
+            if (energy > 0.8) {
+                return {
+                    action: 'mode_change',
+                    mode: this.getHighEnergyMode(context),
+                    confidence: energy,
+                    sourceLayer: 'reactive',
+                    reason: 'High energy detected - immediate response needed'
+                };
+            }
+            
+            // Beat detection response
+            if (beat && energy > 0.5) {
+                return {
+                    action: 'parameter_adjustment',
+                    parameters: {
+                        linearBoost: Math.min(1.0, this.autopilot.visualizer.audioMotion.linearBoost + 0.2),
+                        gradient: Math.min(1.0, this.autopilot.visualizer.audioMotion.gradient + 0.15)
+                    },
+                    confidence: 0.9,
+                    sourceLayer: 'reactive',
+                    reason: 'Beat detected - enhancing responsiveness'
+                };
+            }
+            
+            // Low energy response
+            if (energy < 0.2) {
+                return {
+                    action: 'parameter_adjustment',
+                    parameters: {
+                        smoothing: Math.min(0.9, this.autopilot.visualizer.audioMotion.smoothing + 0.1),
+                        fillAlpha: Math.max(0.1, this.autopilot.visualizer.audioMotion.fillAlpha - 0.1)
+                    },
+                    confidence: 0.8,
+                    sourceLayer: 'reactive',
+                    reason: 'Low energy - smoothing response'
+                };
+            }
+            
+            return {
+                action: 'no_action',
+                confidence: 0.5,
+                sourceLayer: 'reactive',
+                reason: 'No immediate response needed'
+            };
+        }
+
+        getHighEnergyMode(context) {
+            const highEnergyModes = [0, 4, 5, 7]; // Spectrum, Radial, Energy, Kaleidoscope
+            return highEnergyModes[Math.floor(Math.random() * highEnergyModes.length)];
+        }
+    }
+
+    // Predictive Decision Layer - Future-focused decisions
+    class PredictiveDecisionLayer {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.predictionWindow = 5000; // 5 seconds ahead
+        }
+
+        makeDecision(context, audioFeatures) {
+            // Use existing predictive behavior system
+            if (this.autopilot.predictiveBehavior) {
+                const predictions = this.autopilot.predictiveBehavior.predictOptimalActions(
+                    audioFeatures,
+                    this.autopilot.visualizer.currentMode,
+                    this.autopilot.getCurrentParameters()
+                );
+                
+                if (predictions && predictions.confidence >= 0.8) {
+                    return {
+                        action: predictions.modeChange ? 'mode_change' : 'parameter_adjustment',
+                        mode: predictions.modeChange?.suggested,
+                        parameters: predictions.parameterAdjustment,
+                        confidence: predictions.confidence,
+                        sourceLayer: 'predictive',
+                        reason: predictions.modeChange?.reason || 'Predictive parameter optimization'
+                    };
+                }
+            }
+            
+            return {
+                action: 'no_action',
+                confidence: 0.3,
+                sourceLayer: 'predictive',
+                reason: 'No high-confidence predictions available'
+            };
+        }
+    }
+
+    // Strategic Decision Layer - Long-term optimization
+    class StrategicDecisionLayer {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.optimizationHorizon = 30000; // 30 seconds
+        }
+
+        makeDecision(context, audioFeatures) {
+            // Use adaptive tuning for strategic decisions
+            if (this.autopilot.adaptiveTuning) {
+                const tuningAnalytics = this.autopilot.adaptiveTuning.getOptimizationAnalytics();
+                
+                if (tuningAnalytics.currentPerformance < 0.6) {
+                    return {
+                        action: 'parameter_adjustment',
+                        parameters: this.getStrategicOptimizations(context),
+                        confidence: 0.7,
+                        sourceLayer: 'strategic',
+                        reason: 'Strategic optimization needed - performance below threshold'
+                    };
+                }
+            }
+            
+            // Use pattern learning for strategic decisions
+            if (this.autopilot.patternLearning) {
+                const recommendations = this.autopilot.patternLearning.getPatternRecommendations(
+                    context.genre || 'unknown',
+                    audioFeatures
+                );
+                
+                if (recommendations && recommendations.confidence > 0.6) {
+                    return {
+                        action: 'parameter_adjustment',
+                        parameters: recommendations.parameters,
+                        confidence: recommendations.confidence,
+                        sourceLayer: 'strategic',
+                        reason: 'Strategic pattern-based optimization'
+                    };
+                }
+            }
+            
+            return {
+                action: 'no_action',
+                confidence: 0.4,
+                sourceLayer: 'strategic',
+                reason: 'No strategic optimization needed'
+            };
+        }
+
+        getStrategicOptimizations(context) {
+            // Strategic parameter adjustments based on context
+            const optimizations = {};
+            
+            if (context.energy > 0.7) {
+                optimizations.linearBoost = 0.8;
+                optimizations.gradient = 0.7;
+            } else if (context.energy < 0.3) {
+                optimizations.smoothing = 0.8;
+                optimizations.fillAlpha = 0.3;
+            }
+            
+            return optimizations;
+        }
+    }
+
+    // Context Analyzer - Determines decision context
+    class ContextAnalyzer {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+        }
+
+        analyzeContext(audioFeatures, currentMode, currentParams) {
+            const { energy, beat, tempo, dominantFreq } = audioFeatures;
+            
+            return {
+                energy: energy,
+                beat: beat,
+                tempo: tempo,
+                dominantFreq: dominantFreq,
+                currentMode: currentMode,
+                currentParams: currentParams,
+                genre: this.autopilot.genreDetector?.detectedGenre?.genre || 'unknown',
+                timeOfDay: this.getTimeOfDay(),
+                sessionDuration: this.getSessionDuration(),
+                userEngagement: this.getUserEngagement(),
+                systemLoad: this.getSystemLoad()
+            };
+        }
+
+        getTimeOfDay() {
+            const hour = new Date().getHours();
+            if (hour < 6) return 'night';
+            if (hour < 12) return 'morning';
+            if (hour < 18) return 'afternoon';
+            return 'evening';
+        }
+
+        getSessionDuration() {
+            return Date.now() - (this.autopilot.sessionStartTime || Date.now());
+        }
+
+        getUserEngagement() {
+            // Calculate based on recent user interactions
+            const recentFeedback = this.autopilot.parameterController?.feedbackHistory?.slice(-10) || [];
+            return recentFeedback.length > 0 ? 'high' : 'low';
+        }
+
+        getSystemLoad() {
+            // Simple system load estimation
+            return this.autopilot.decisionHistory?.length > 50 ? 'high' : 'low';
+        }
+    }
+
+    // Conflict Resolver - Resolves disagreements between layers
+    class ConflictResolver {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.layerPriorities = {
+                reactive: 1,    // Highest priority for immediate responses
+                predictive: 2,  // Medium priority for predictions
+                strategic: 3    // Lowest priority for long-term planning
+            };
+        }
+
+        resolveConflicts(layerDecisions, context) {
+            const validDecisions = Object.entries(layerDecisions)
+                .filter(([layer, decision]) => decision.action !== 'no_action')
+                .map(([layer, decision]) => ({ ...decision, layer }));
+            
+            if (validDecisions.length === 0) {
+                return { action: 'no_action', confidence: 0.5, sourceLayer: 'conflict_resolver' };
+            }
+            
+            if (validDecisions.length === 1) {
+                return validDecisions[0];
+            }
+            
+            // Resolve conflicts based on priority and confidence
+            const sortedDecisions = validDecisions.sort((a, b) => {
+                const priorityA = this.layerPriorities[a.sourceLayer] || 999;
+                const priorityB = this.layerPriorities[b.sourceLayer] || 999;
+                
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB; // Lower number = higher priority
+                }
+                
+                return b.confidence - a.confidence; // Higher confidence wins
+            });
+            
+            const winningDecision = sortedDecisions[0];
+            
+            // Merge compatible decisions
+            const mergedDecision = this.mergeCompatibleDecisions(sortedDecisions);
+            
+            return {
+                ...winningDecision,
+                mergedFrom: sortedDecisions.map(d => d.sourceLayer),
+                reason: `Resolved conflict between ${sortedDecisions.map(d => d.sourceLayer).join(', ')}`
+            };
+        }
+
+        mergeCompatibleDecisions(decisions) {
+            const merged = { ...decisions[0] };
+            
+            // Merge parameter adjustments
+            const parameterDecisions = decisions.filter(d => d.action === 'parameter_adjustment');
+            if (parameterDecisions.length > 1) {
+                merged.parameters = {};
+                parameterDecisions.forEach(decision => {
+                    if (decision.parameters) {
+                        Object.assign(merged.parameters, decision.parameters);
+                    }
+                });
+            }
+            
+            return merged;
+        }
+    }
+
+    // Meta-Learning System - Learns how to learn better
+    class MetaLearningSystem {
+        constructor(autopilot) {
+            this.autopilot = autopilot;
+            this.learningHistory = [];
+            this.effectivenessScores = {};
+            this.learningProgress = 0;
+        }
+
+        enhanceDecision(decision, context) {
+            // Apply meta-learning insights to improve decision
+            const enhancedDecision = { ...decision };
+            
+            // Adjust confidence based on historical effectiveness
+            if (this.effectivenessScores[decision.sourceLayer]) {
+                const effectiveness = this.effectivenessScores[decision.sourceLayer];
+                enhancedDecision.confidence *= effectiveness;
+            }
+            
+            // Add meta-learning insights
+            enhancedDecision.metaInsights = this.getMetaInsights(context);
+            
+            return enhancedDecision;
+        }
+
+        learnFromOutcome(decision, context) {
+            // Learn from decision outcomes to improve future decisions
+            this.learningHistory.push({
+                timestamp: Date.now(),
+                decision,
+                context,
+                outcome: null // Will be updated when outcome is known
+            });
+            
+            // Update effectiveness scores
+            this.updateEffectivenessScores(decision);
+            
+            // Update learning progress
+            this.updateLearningProgress();
+        }
+
+        updateEffectivenessScores(decision) {
+            const layer = decision.sourceLayer;
+            if (!this.effectivenessScores[layer]) {
+                this.effectivenessScores[layer] = 0.5;
+            }
+            
+            // Simple effectiveness calculation based on confidence
+            const effectiveness = decision.confidence > 0.8 ? 1.0 : decision.confidence;
+            this.effectivenessScores[layer] = (this.effectivenessScores[layer] + effectiveness) / 2;
+        }
+
+        updateLearningProgress() {
+            const totalDecisions = this.learningHistory.length;
+            const effectiveDecisions = this.learningHistory.filter(h => h.decision.confidence > 0.7).length;
+            
+            this.learningProgress = totalDecisions > 0 ? (effectiveDecisions / totalDecisions) * 100 : 0;
+        }
+
+        getMetaInsights(context) {
+            const insights = [];
+            
+            if (context.userEngagement === 'high') {
+                insights.push('High user engagement - prioritize user preferences');
+            }
+            
+            if (context.systemLoad === 'high') {
+                insights.push('High system load - use conservative decisions');
+            }
+            
+            if (context.sessionDuration > 300000) { // 5 minutes
+                insights.push('Long session - consider variety in decisions');
+            }
+            
+            return insights;
+        }
+
+        getLearningProgress() {
+            return {
+                progress: Math.round(this.learningProgress),
+                totalDecisions: this.learningHistory.length,
+                effectivenessScores: { ...this.effectivenessScores }
+            };
+        }
+    }
+
     // Adaptive Parameter Tuning System for AI Autopilot
     class AdaptiveTuningSystem {
         constructor(autopilot) {
@@ -6926,6 +7866,7 @@
             this.patternLearning = new PatternLearningSystem(this); // New ML system
             this.adaptiveTuning = new AdaptiveTuningSystem(this); // New adaptive tuning system
             this.predictiveBehavior = new PredictiveBehaviorSystem(this); // New predictive behavior system
+            this.multiLayeredIntelligence = new MultiLayeredIntelligenceSystem(this); // New multi-layered intelligence system
             
             // Autopilot state
             this.lastModeChange = 0;
@@ -6955,6 +7896,9 @@
             
             // Predictive behavior state
             this.predictiveBehaviorEnabled = true; // Enable predictive behavior by default
+            
+            // Multi-layered intelligence state
+            this.multiLayeredIntelligenceEnabled = true; // Enable multi-layered intelligence by default
             
             // Define visualization mode groups
             this.modeGroups = {
@@ -7031,8 +7975,24 @@
                 dominantFreq: audioFeatures.dominantFreq,
                 parameterControlEnabled: this.parameterControlEnabled,
                 learningEnabled: this.learningEnabled,
-                scope: this.scope
+                scope: this.scope,
+                multiLayeredIntelligenceEnabled: this.multiLayeredIntelligenceEnabled
             });
+            
+            // Use multi-layered intelligence if enabled
+            if (this.multiLayeredIntelligenceEnabled && this.multiLayeredIntelligence) {
+                const currentParams = this.getCurrentParameters();
+                const decision = this.multiLayeredIntelligence.makeIntelligentDecision(
+                    audioFeatures, 
+                    this.visualizer.currentMode, 
+                    currentParams
+                );
+                
+                if (decision) {
+                    console.log('🧠 Multi-layered intelligence decision:', decision);
+                    return; // Multi-layered intelligence handles everything
+                }
+            }
             
             // Use manual genre if set, otherwise detect automatically
             let detectedGenre;
@@ -14218,15 +15178,85 @@
                 });
             }
             
+            // Multi-layered intelligence controls
+            const enableMultiLayeredIntelligenceBtn = document.getElementById('enableMultiLayeredIntelligenceBtn');
+            if (enableMultiLayeredIntelligenceBtn) {
+                enableMultiLayeredIntelligenceBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot) {
+                        this.aiAutopilot.multiLayeredIntelligenceEnabled = !this.aiAutopilot.multiLayeredIntelligenceEnabled;
+                        const isOn = this.aiAutopilot.multiLayeredIntelligenceEnabled;
+                        e.target.textContent = `Multi-layered Intelligence: ${isOn ? 'On' : 'Off'}`;
+                        e.target.classList.toggle('active', isOn);
+                        console.log(`🧠 Multi-layered intelligence: ${isOn ? 'enabled' : 'disabled'}`);
+                    }
+                });
+            }
+            
+            const testIntelligenceBtn = document.getElementById('testIntelligenceBtn');
+            if (testIntelligenceBtn) {
+                testIntelligenceBtn.addEventListener('click', (e) => {
+                    if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
+                        const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                        const currentParams = this.aiAutopilot.getCurrentParameters();
+                        const decision = this.aiAutopilot.multiLayeredIntelligence.makeIntelligentDecision(
+                            audioFeatures, 
+                            this.aiAutopilot.visualizer.currentMode, 
+                            currentParams
+                        );
+                        
+                        if (decision) {
+                            console.log('🧠 Test intelligence result:', decision);
+                            alert(`Intelligence Decision: ${decision.reason}\nAction: ${decision.action}\nConfidence: ${Math.round(decision.confidence * 100)}%\nSource: ${decision.sourceLayer}`);
+                        } else {
+                            console.log('🧠 No intelligence decision available');
+                            alert('No intelligence decision available');
+                        }
+                    }
+                });
+            }
+            
+            // Learning Analytics Dashboard controls
+            const learningAnalyticsBtn = document.getElementById('learningAnalyticsBtn');
+            if (learningAnalyticsBtn) {
+                learningAnalyticsBtn.addEventListener('click', () => {
+                    this.openLearningAnalyticsDashboard();
+                });
+            }
+
+            const analyticsCloseBtn = document.getElementById('analyticsCloseBtn');
+            if (analyticsCloseBtn) {
+                analyticsCloseBtn.addEventListener('click', () => {
+                    this.closeLearningAnalyticsDashboard();
+                });
+            }
+
+            const updateFrequencySelect = document.getElementById('updateFrequency');
+            if (updateFrequencySelect) {
+                updateFrequencySelect.addEventListener('change', (e) => {
+                    this.setAnalyticsUpdateFrequency(parseInt(e.target.value));
+                });
+            }
+
+            const exportLearningDataBtn = document.getElementById('exportLearningDataBtn');
+            if (exportLearningDataBtn) {
+                exportLearningDataBtn.addEventListener('click', () => {
+                    this.exportLearningData();
+                });
+            }
+
+            const resetLearningDataBtn = document.getElementById('resetLearningDataBtn');
+            if (resetLearningDataBtn) {
+                resetLearningDataBtn.addEventListener('click', () => {
+                    this.resetAllLearningData();
+                });
+            }
+
+            // Initialize analytics update frequency
+            this.analyticsUpdateInterval = 5000; // Default 5 seconds
+            this.analyticsUpdateTimer = null;
+
             // Update learning analytics periodically
-            setInterval(() => {
-                if (this.aiAutopilot) {
-                    this.updateLearningAnalytics();
-                    this.updateFeedbackStats();
-                    this.updateAdaptiveTuningAnalytics();
-                    this.updatePredictiveBehaviorAnalytics();
-                }
-            }, 5000); // Update every 5 seconds
+            this.startAnalyticsUpdates();
             
             // Video effects toggle
             const videoEffectsBtn = document.getElementById('enableVideoEffectsBtn');
@@ -14346,6 +15376,233 @@
             const predictionConfidenceDisplay = document.getElementById('predictionConfidenceDisplay');
             if (predictionConfidenceDisplay) {
                 predictionConfidenceDisplay.textContent = `Confidence: ${analytics.confidence}%`;
+            }
+        }
+
+        updateMultiLayeredIntelligenceAnalytics() {
+            if (!this.aiAutopilot || !this.aiAutopilot.multiLayeredIntelligence) return;
+            
+            const analytics = this.aiAutopilot.multiLayeredIntelligence.getIntelligenceAnalytics();
+            
+            // Update intelligence decisions display
+            const intelligenceDecisionsDisplay = document.getElementById('intelligenceDecisionsDisplay');
+            if (intelligenceDecisionsDisplay) {
+                intelligenceDecisionsDisplay.textContent = `Decisions: ${analytics.totalDecisions}`;
+            }
+            
+            // Update meta-learning display
+            const metaLearningDisplay = document.getElementById('metaLearningDisplay');
+            if (metaLearningDisplay) {
+                metaLearningDisplay.textContent = `Meta-Learning: ${analytics.metaLearningProgress.progress}%`;
+            }
+            
+            // Update layer performance display
+            const layerPerformanceDisplay = document.getElementById('layerPerformanceDisplay');
+            if (layerPerformanceDisplay) {
+                const layerCount = Object.keys(analytics.layerPerformance).length;
+                const avgSuccessRate = layerCount > 0 ? 
+                    Object.values(analytics.layerPerformance).reduce((sum, layer) => sum + parseFloat(layer.successRate), 0) / layerCount : 0;
+                
+                let performanceText = 'Balanced';
+                if (avgSuccessRate > 80) performanceText = 'Excellent';
+                else if (avgSuccessRate > 60) performanceText = 'Good';
+                else if (avgSuccessRate > 40) performanceText = 'Fair';
+                else if (avgSuccessRate > 0) performanceText = 'Poor';
+                
+                layerPerformanceDisplay.textContent = `Performance: ${performanceText}`;
+            }
+        }
+
+        // Learning Analytics Dashboard Methods
+        openLearningAnalyticsDashboard() {
+            const modal = document.getElementById('learningAnalyticsModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                this.updateDashboardAnalytics();
+                this.logActivity('Learning Analytics Dashboard opened');
+            }
+        }
+
+        closeLearningAnalyticsDashboard() {
+            const modal = document.getElementById('learningAnalyticsModal');
+            if (modal) {
+                modal.style.display = 'none';
+                this.logActivity('Learning Analytics Dashboard closed');
+            }
+        }
+
+        setAnalyticsUpdateFrequency(interval) {
+            this.analyticsUpdateInterval = interval;
+            this.startAnalyticsUpdates();
+            this.logActivity(`Analytics update frequency changed to ${interval/1000} seconds`);
+        }
+
+        startAnalyticsUpdates() {
+            // Clear existing timer
+            if (this.analyticsUpdateTimer) {
+                clearInterval(this.analyticsUpdateTimer);
+            }
+
+            // Start new timer
+            this.analyticsUpdateTimer = setInterval(() => {
+                if (this.aiAutopilot) {
+                    this.updateLearningAnalytics();
+                    this.updateFeedbackStats();
+                    this.updateAdaptiveTuningAnalytics();
+                    this.updatePredictiveBehaviorAnalytics();
+                    this.updateMultiLayeredIntelligenceAnalytics();
+                    this.updateDashboardAnalytics();
+                }
+            }, this.analyticsUpdateInterval);
+        }
+
+        updateDashboardAnalytics() {
+            if (!this.aiAutopilot) return;
+
+            // Update Learning Progress
+            const patternLearning = this.aiAutopilot.patternLearning;
+            if (patternLearning) {
+                const learningAnalytics = patternLearning.getLearningAnalytics();
+                
+                const patternCount = document.getElementById('dashboardPatternCount');
+                if (patternCount) patternCount.textContent = learningAnalytics.patternCount;
+
+                const successRate = document.getElementById('dashboardSuccessRate');
+                if (successRate) successRate.textContent = `${learningAnalytics.successRate}%`;
+
+                const learningProgress = document.getElementById('dashboardLearningProgress');
+                if (learningProgress) learningProgress.textContent = `${learningAnalytics.learningProgress}%`;
+            }
+
+            // Update User Feedback
+            const parameterController = this.aiAutopilot.parameterController;
+            if (parameterController) {
+                const feedbackStats = parameterController.getFeedbackStats();
+                
+                const totalFeedback = document.getElementById('dashboardTotalFeedback');
+                if (totalFeedback) totalFeedback.textContent = feedbackStats.total;
+
+                const satisfaction = document.getElementById('dashboardSatisfaction');
+                if (satisfaction) satisfaction.textContent = `${Math.round(feedbackStats.satisfaction * 100)}%`;
+
+                const positiveFeedback = document.getElementById('dashboardPositiveFeedback');
+                if (positiveFeedback) positiveFeedback.textContent = feedbackStats.positive;
+            }
+
+            // Update Predictive Behavior
+            const predictiveBehavior = this.aiAutopilot.predictiveBehavior;
+            if (predictiveBehavior) {
+                const predictionAnalytics = predictiveBehavior.getPredictionAnalytics();
+                
+                const predictions = document.getElementById('dashboardPredictions');
+                if (predictions) predictions.textContent = predictionAnalytics.totalPredictions;
+
+                const predictionAccuracy = document.getElementById('dashboardPredictionAccuracy');
+                if (predictionAccuracy) predictionAccuracy.textContent = `${predictionAnalytics.accuracy}%`;
+
+                const confidence = document.getElementById('dashboardConfidence');
+                if (confidence) confidence.textContent = `${predictionAnalytics.confidence}%`;
+            }
+
+            // Update Adaptive Tuning
+            const adaptiveTuning = this.aiAutopilot.adaptiveTuning;
+            if (adaptiveTuning) {
+                const tuningAnalytics = adaptiveTuning.getOptimizationAnalytics();
+                
+                const optimizations = document.getElementById('dashboardOptimizations');
+                if (optimizations) optimizations.textContent = tuningAnalytics.totalOptimizations;
+
+                const performance = document.getElementById('dashboardPerformance');
+                if (performance) performance.textContent = `${Math.round(tuningAnalytics.currentPerformance * 100)}%`;
+
+                const trend = document.getElementById('dashboardTrend');
+                if (trend) {
+                    const trendText = tuningAnalytics.performanceTrend.charAt(0).toUpperCase() + tuningAnalytics.performanceTrend.slice(1);
+                    trend.textContent = trendText;
+                }
+            }
+        }
+
+        logActivity(message) {
+            const activityLog = document.getElementById('activityLog');
+            if (activityLog) {
+                const timestamp = new Date().toLocaleTimeString();
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.textContent = `[${timestamp}] ${message}`;
+                
+                // Add to top of log
+                activityLog.insertBefore(activityItem, activityLog.firstChild);
+                
+                // Keep only last 20 items
+                while (activityLog.children.length > 20) {
+                    activityLog.removeChild(activityLog.lastChild);
+                }
+            }
+        }
+
+        exportLearningData() {
+            if (!this.aiAutopilot) return;
+
+            try {
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    patternLearning: this.aiAutopilot.patternLearning ? this.aiAutopilot.patternLearning.getLearningAnalytics() : null,
+                    userFeedback: this.aiAutopilot.parameterController ? this.aiAutopilot.parameterController.getFeedbackStats() : null,
+                    predictiveBehavior: this.aiAutopilot.predictiveBehavior ? this.aiAutopilot.predictiveBehavior.getPredictionAnalytics() : null,
+                    adaptiveTuning: this.aiAutopilot.adaptiveTuning ? this.aiAutopilot.adaptiveTuning.getOptimizationAnalytics() : null
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `learning-data-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                this.logActivity('Learning data exported successfully');
+            } catch (error) {
+                console.error('Error exporting learning data:', error);
+                this.logActivity('Error exporting learning data');
+            }
+        }
+
+        resetAllLearningData() {
+            if (!this.aiAutopilot) return;
+
+            if (confirm('Are you sure you want to reset all learning data? This action cannot be undone.')) {
+                try {
+                    // Reset pattern learning
+                    if (this.aiAutopilot.patternLearning) {
+                        localStorage.removeItem('autopilot_ml_patterns');
+                    }
+
+                    // Reset user feedback
+                    if (this.aiAutopilot.parameterController) {
+                        this.aiAutopilot.parameterController.feedbackHistory = [];
+                        this.aiAutopilot.parameterController.userAdjustments = [];
+                    }
+
+                    // Reset predictive behavior
+                    if (this.aiAutopilot.predictiveBehavior) {
+                        localStorage.removeItem('autopilot_predictions');
+                    }
+
+                    // Reset adaptive tuning
+                    if (this.aiAutopilot.adaptiveTuning) {
+                        localStorage.removeItem('autopilot_adaptive_tuning');
+                    }
+
+                    // Reload the page to reset everything
+                    window.location.reload();
+                    this.logActivity('All learning data reset - page reloading');
+                } catch (error) {
+                    console.error('Error resetting learning data:', error);
+                    this.logActivity('Error resetting learning data');
+                }
             }
         }
 
