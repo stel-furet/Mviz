@@ -734,7 +734,61 @@
                             <option value="24">24 FPS</option>
                             <option value="15">15 FPS</option>
                         </select>
-    </div>
+                    </div>
+                    <div class="slider-container">
+                        <label>Bitrate</label>
+                        <input type="range" id="captureBitrate" min="1" max="50" value="30" step="0.5">
+                        <span id="captureBitrateValue">30 Mbps</span>
+                    </div>
+                </div>
+
+                <!-- Aspect Ratio -->
+                <div class="control-group">
+                    <div class="group-label">Aspect Ratio</div>
+                    <div class="preset-buttons">
+                        <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                        <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                        <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                        <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                        <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
+                    </div>
+                </div>
+
+                <!-- Display Enhancement -->
+                <div class="control-group">
+                    <div class="group-label">Display Enhancement</div>
+                    <div class="slider-container">
+                        <label>Sharpness</label>
+                        <input type="range" id="displaySharpness" min="0" max="100" value="0">
+                        <span id="displaySharpnessValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Letterbox Color</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="color" id="letterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                            <span id="letterboxColorValue">#000000</span>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="mirrorBackgroundBtn">Mirror Background: Off</button>
+                    </div>
+                    <div class="slider-container" id="mirrorBlurContainer" style="display: none;">
+                        <label>Background Blur</label>
+                        <input type="range" id="mirrorBackgroundBlur" min="0" max="50" value="20">
+                        <span id="mirrorBackgroundBlurValue">20px</span>
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="control-group">
+                    <div class="group-label">Quick Presets</div>
+                    <div class="preset-buttons">
+                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                        <button class="display-preset-btn" data-preset="presentation">Presentation</button>
+                        <button class="display-preset-btn" data-preset="social">Social Media</button>
+                        <button class="display-preset-btn" data-preset="performance">Performance</button>
+                        <button class="display-preset-btn" data-preset="projector">Projector</button>
+                    </div>
                 </div>
 
                 <!-- Capture Settings -->
@@ -784,6 +838,14 @@
                             <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
                             <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
                             <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="group-label">Visualization</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn active" id="recordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
                         </div>
                     </div>
 
@@ -9414,6 +9476,7 @@
             this.videoQuality = 'auto';
             this.audioQuality = 'auto';
             this.customFilename = 'Vizzy_Recording';
+            this.matchVisualizationAspect = true;
             
             // Resolution presets
             this.resolutionPresets = {
@@ -9455,6 +9518,7 @@
                     this.audioQuality = settings.audioQuality || 'auto';
                     this.customFilename = settings.customFilename || 'Vizzy_Recording';
                     this.saveLocation = settings.saveLocation || null;
+                    this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
                 }
             } catch (e) {
                 console.error('Error loading recording settings:', e);
@@ -9470,7 +9534,8 @@
                     videoQuality: this.videoQuality,
                     audioQuality: this.audioQuality,
                     customFilename: this.customFilename,
-                    saveLocation: this.saveLocation
+                    saveLocation: this.saveLocation,
+                    matchVisualizationAspect: this.matchVisualizationAspect
                 };
                 localStorage.setItem('gitup_record_settings', JSON.stringify(settings));
             } catch (e) {
@@ -9609,6 +9674,28 @@
             if (chooseLocationBtn) {
                 chooseLocationBtn.addEventListener('click', () => {
                     this.chooseFileLocation();
+                });
+            }
+
+            // Match Visualization Aspect Ratio toggle
+            const matchVisualizationAspectBtn = document.getElementById('recordMatchVisualizationAspectBtn');
+            if (matchVisualizationAspectBtn) {
+                // Set initial state
+                matchVisualizationAspectBtn.textContent = this.matchVisualizationAspect ? 'Match Video Aspect: On' : 'Match Video Aspect: Off';
+                matchVisualizationAspectBtn.classList.toggle('active', this.matchVisualizationAspect);
+                
+                matchVisualizationAspectBtn.addEventListener('click', () => {
+                    this.matchVisualizationAspect = !this.matchVisualizationAspect;
+                    matchVisualizationAspectBtn.textContent = this.matchVisualizationAspect ? 'Match Video Aspect: On' : 'Match Video Aspect: Off';
+                    matchVisualizationAspectBtn.classList.toggle('active', this.matchVisualizationAspect);
+                    
+                    // Apply aspect ratio matching if video is active
+                    if (this.visualizer && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && this.visualizer.videoElement) {
+                        this.visualizer.updateVisualizationAspectRatio();
+                    }
+                    
+                    console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
+                    this.saveSettings();
                 });
             }
         }
@@ -16127,6 +16214,27 @@ https://rogueamoeba.com/loopback/
                 btn.addEventListener('click', (e) => {
                     const preset = btn.dataset.preset;
                     this.applyDisplayPreset(preset);
+                });
+            });
+
+            // Display aspect ratio buttons
+            document.querySelectorAll('#displaySettingsPanel .aspect-ratio-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Remove active class from all aspect ratio buttons in display settings
+                    document.querySelectorAll('#displaySettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+                    
+                    const ratio = btn.dataset.ratio;
+                    if (this.streamManager) {
+                        this.streamManager.displaySettings.aspectRatio = ratio;
+                        this.streamManager.saveDisplaySettings();
+                        console.log('Display aspect ratio changed to:', ratio);
+                        
+                        if (this.streamManager.isStreaming) {
+                            this.streamManager.channel.postMessage({type: 'display-settings', data: this.streamManager.displaySettings});
+                        }
+                    }
                 });
             });
 
