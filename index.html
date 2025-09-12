@@ -210,443 +210,25 @@
 <!-- Section Panels (Hidden until opened) -->
 <div class="section-panel" id="audioPanel">
     <div class="panel-content">
-        <!-- Live Audio (renamed from Audio Input) -->
-        <div class="panel-row">
-            <div class="input-mode-container">
-                <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
-                    <span class="input-mode-text">Live Audio</span>
-                </button>
-                <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
-                    <option value="">Select Audio Input...</option>
-                </select>
-            </div>
-        </div>
+        <!-- Live Audio (moved to sidebar) -->
 
-        <!-- Playlist -->
-        <div class="panel-row">
-            <div class="dropdown playlist-dropdown">
-                <div class="dropdown-label">Playlist</div>
-                <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
-                <div class="dropdown-content" id="playlistDropdown">
-                    <!-- Playlist content will be populated here -->
-                </div>
-            </div>
-        </div>
+        <!-- Playlist (moved to sidebar) -->
     </div>
 </div>
 
 <div class="section-panel" id="videoPanel">
     <div class="panel-content">
-        <!-- Live Source (renamed from Video Input) -->
-        <div class="panel-row">
-            <div class="input-mode-container">
-                <button class="input-mode-btn" id="videoInputBtn" title="Toggle Video Source">
-                    <span class="video-mode-text">Live Source</span>
-                </button>
-                <select class="audio-device-select" id="videoDeviceSelect" style="display: none;">
-                    <option value="">Select Video Input...</option>
-                </select>
-                <div class="video-file-info" id="videoFileInfo" style="display: none;">
-                    <span class="video-file-name" id="videoFileName">No file selected</span>
-                    <div class="video-file-controls-inline">
-                        <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
-                        <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
-                    </div>
-                </div>
-                <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
+        <!-- Live Source (moved to sidebar) -->
                 
-                <!-- Video Settings Panel -->
-                <div class="video-controls-panel" id="videoControlsPanel" style="display: none;">
-                    <div class="panel-header">
-                        <span>Video Settings</span>
-                        <button class="panel-close-btn" id="videoControlsClose">×</button>
+                <!-- Video Settings Panel (moved to sidebar) -->
                     </div>
-
-                    <!-- Basic Controls -->
-                    <div class="control-group">
-                        <div class="group-label">Basic</div>
-                        <div class="slider-container">
-                            <label>Opacity</label>
-                            <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
-                            <span id="videoOpacityValue">100%</span>
                         </div>
-                        <div class="slider-container">
-                            <label>Brightness</label>
-                            <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
-                            <span id="videoBrightnessValue">100%</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Contrast</label>
-                            <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
-                            <span id="videoContrastValue">100%</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Fade Time</label>
-                            <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
-                            <span id="videoFadeValue">3.0s</span>
                         </div>
                     </div>
 
-                    <!-- Color Controls -->
-                    <div class="control-group">
-                        <div class="group-label">Color</div>
-                        <div class="slider-container">
-                            <label>Saturation</label>
-                            <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
-                            <span id="videoSaturationValue">100%</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Hue Rotate</label>
-                            <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
-                            <span id="videoHueRotateValue">0°</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Grayscale</label>
-                            <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
-                            <span id="videoGrayscaleValue">0%</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Sepia</label>
-                            <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
-                            <span id="videoSepiaValue">0%</span>
-                        </div>
-                    </div>
+<!-- Visualizations Panel (moved to sidebar) -->
 
-                    <!-- Effects -->
-                    <div class="control-group">
-                        <div class="group-label">Effects</div>
-                        <div class="slider-container">
-                            <label>Blur</label>
-                            <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
-                            <span id="videoBlurValue">0px</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Vignette</label>
-                            <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
-                            <span id="videoVignetteValue">0%</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Posterize</label>
-                            <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
-                            <span id="videoPosterizeValue">Off</span>
-                        </div>
-                        <div class="button-container">
-                            <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
-                            <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
-                        </div>
-                    </div>
-
-                    <!-- Animation -->
-                    <div class="control-group">
-                        <div class="group-label">Animation</div>
-                        <div class="button-container">
-                            <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
-                        </div>
-                        <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
-                            <label>Pulse Rate</label>
-                            <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
-                            <span id="videoPulseRateValue">2.0s</span>
-                        </div>
-                    </div>
-
-                    <!-- Visualization Aspect Ratio -->
-                    <div class="control-group">
-                        <div class="group-label">Visualization</div>
-                        <div class="button-container">
-                            <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
-                        </div>
-                    </div>
-
-                    <!-- Presets -->
-                    <div class="control-group">
-                        <div class="group-label">Presets</div>
-                        <div class="preset-buttons">
-                            <button class="video-preset-btn" data-preset="normal">Normal</button>
-                            <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
-                            <button class="video-preset-btn" data-preset="noir">Noir</button>
-                            <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
-                            <button class="video-preset-btn" data-preset="vintage">Vintage</button>
-                            <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
-                            <button class="video-preset-btn" data-preset="underwater">Underwater</button>
-                            <button class="video-preset-btn" data-preset="infrared">Infrared</button>
-                            <button class="video-preset-btn" data-preset="acid">Acid</button>
-                            <button class="video-preset-btn" data-preset="thermal">Thermal</button>
-                            <button class="video-preset-btn" data-preset="matrix">Matrix</button>
-                            <button class="video-preset-btn" data-preset="glitch">Glitch</button>
-                        </div>
-                    </div>
-
-                    <!-- Camera & Stream Stats -->
-                    <div class="control-group">
-                        <div class="group-label">Stream Statistics</div>
-                        <div id="cameraStatsContainer" class="stats-container">
-                            <div class="stats-placeholder">Camera stream info will appear here when video input is active</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="section-panel" id="visualizationsPanel">
-    <div class="panel-content">
-        <!-- Spectrum Controls (with ON button and Random) -->
-        <div class="spectrum-controls-container">
-            <div class="dropdown-label">Spectrum</div>
-            <div class="control-with-settings">
-                <div class="dropdown">
-                    <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
-                    <div class="dropdown-content" id="vizModeDropdown">
-                        <div class="dropdown-item active" data-mode="0">Spectrum</div>
-                        <div class="dropdown-item" data-mode="1">Mirror Wave</div>
-                        <div class="dropdown-item" data-mode="2">Classic LED</div>
-                        <div class="dropdown-item" data-mode="3">Stereo</div>
-                        <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
-                        <div class="dropdown-item" data-mode="5">Energy</div>
-                        <div class="dropdown-item" data-mode="6">Mirror</div>
-                    </div>
-                </div>
-                <!-- ON button pinned to the right -->
-                <button class="dropdown-toggle viz-toggle-btn active" id="vizToggleBtn" title="Toggle Visualization">ON</button>
-            </div>
-            <!-- Random button below, left-aligned with Spectrum -->
-            <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
-        </div>
-
-        <!-- Presets -->
-        <div class="presets-container">
-            <div class="dropdown-label">Presets</div>
-            <div class="preset-buttons">
-                <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
-                    <option value="">Load Preset...</option>
-                </select>
-                <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
-                <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
-                <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
-                <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
-            </div>
-        </div>
-
-        <!-- Morph -->
-        <div class="morph-controls">
-            <div class="dropdown-label">Morph</div>
-            <div class="morph-buttons">
-                <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
-                    <span class="morph-btn-text">Start Morph</span>
-                </button>
-                <select class="morph-speed-select" id="morphSpeedSelect">
-                    <option value="slow">Slow</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="fast">Fast</option>
-                    <option value="ultra">Ultra</option>
-                    <option value="energy">Energy</option>
-                </select>
-            </div>
-            <div class="energy-container" id="energyContainer" style="display: none;">
-                <div class="energy-label">Energy</div>
-                <div class="energy-bar">
-                    <div class="energy-indicator" id="energyIndicator"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Color Schemes -->
-        <div class="color-scheme-container">
-            <div class="dropdown-label">Color Scheme</div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
-                <div class="dropdown-content" id="colorSchemeDropdown">
-                    <div class="dropdown-item active" data-scheme="default">Default</div>
-                    <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
-                    <div class="dropdown-item" data-scheme="luigi">Luigi</div>
-                    <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
-                    <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Kaleidoscope -->
-        <div class="kaleidoscope-controls">
-            <div class="dropdown-label">Kaleidoscope</div>
-            <button class="dropdown-toggle kaleidoscope-btn" id="kaleidoscopeBtn" title="Kaleidoscope">
-                <span class="kaleidoscope-btn-text">Kaleidoscope Off</span>
-            </button>
-
-            <!-- Kaleidoscope settings panel -->
-            <div class="kaleidoscope-panel" id="kaleidoscopePanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Kaleidoscope Settings</span>
-                    <button class="panel-close-btn" id="kaleidoscopeCloseBtn">×</button>
-                </div>
-
-                <div class="control-group">
-                    <div class="slider-container">
-                        <label>Segments</label>
-                        <input type="range" id="kaleidoscopeSegments" min="2" max="24" value="6" step="1">
-                        <span id="kaleidoscopeSegmentsValue">6</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Rings</label>
-                        <input type="range" id="kaleidoscopeRings" min="1" max="5" value="1" step="1">
-                        <span id="kaleidoscopeRingsValue">1</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Ring Spacing</label>
-                        <input type="range" id="kaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
-                        <span id="kaleidoscopeRingSpacingValue">20%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Rotation Speed</label>
-                        <input type="range" id="kaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
-                        <span id="kaleidoscopeSpeedValue">0</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Scale</label>
-                        <input type="range" id="kaleidoscopeScale" min="50" max="200" value="100" step="10">
-                        <span id="kaleidoscopeScaleValue">100%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Center X</label>
-                        <input type="range" id="kaleidoscopeCenterX" min="0" max="100" value="50" step="1">
-                        <span id="kaleidoscopeCenterXValue">50%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Center Y</label>
-                        <input type="range" id="kaleidoscopeCenterY" min="0" max="100" value="50" step="1">
-                        <span id="kaleidoscopeCenterYValue">50%</span>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="kaleidoscopeVideoBtn">Apply to Video: Off</button>
-                        <button class="effect-toggle-btn" id="kaleidoscopeVizBtn">Apply to Viz: On</button>
-                        <button class="effect-toggle-btn" id="kaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="kaleidoscopeShapeBtn">Shape: Triangle</button>
-                    </div>
-                    <div class="apply-container"></div>
-
-                    <div class="control-group">
-                        <div class="group-label">Beat Reaction</div>
-                        <div class="button-container">
-                            <button class="effect-toggle-btn" id="kaleidoscopeBeatBtn">Beat React: Off</button>
-                            <button class="effect-toggle-btn" id="kaleidoscopeBeatRotationBtn">Rotation: Off</button>
-                            <button class="effect-toggle-btn" id="kaleidoscopeBeatShapeBtn">Shape: Off</button>
-                        </div>
-                        <div class="slider-container" id="beatSensitivityContainer" style="display: none;">
-                            <label>Sensitivity</label>
-                            <input type="range" id="kaleidoscopeBeatSensitivity" min="10" max="100" value="50" step="10">
-                            <span id="kaleidoscopeBeatSensitivityValue">50%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="group-label">Presets</div>
-                    <div class="preset-buttons">
-                        <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
-        <!-- Infinite Zoom -->
-        <div class="kaleidoscope-controls">
-            <div class="dropdown-label">Infinite Zoom</div>
-            <div class="button-group">
-                <button class="dropdown-toggle kaleidoscope-btn" id="infiniteZoomBtn" title="Infinite Zoom">
-                    <span class="kaleidoscope-btn-text">Infinite Zoom Off</span>
-                </button>
-                <button class="gear-btn" id="infiniteZoomGearBtn" title="Infinite Zoom Settings">
-                    <span class="gear-icon">⚙️</span>
-                </button>
-            </div>
-
-            <!-- Infinite Zoom settings panel -->
-            <div class="kaleidoscope-panel" id="infiniteZoomPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Infinite Zoom Settings</span>
-                    <button class="panel-close-btn" id="infiniteZoomCloseBtn">×</button>
-                </div>
-
-                <div class="control-group">
-                    <div class="button-container">
-                        <select id="infiniteZoomShapeSelect" class="dropdown-select">
-                            <option value="circle">Circle</option>
-                            <option value="square">Square</option>
-                            <option value="rectangle">Rectangle</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="star">Star</option>
-                            <option value="mushroom">Mushroom</option>
-                        </select>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomColorRandomSlider">Color Randomness:</label>
-                        <input type="range" id="infiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider">
-                        <span id="infiniteZoomColorRandomValue">0.5</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomMinSizeSlider">Min Size:</label>
-                        <input type="range" id="infiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider">
-                        <span id="infiniteZoomMinSizeValue">2</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomMaxSizeSlider">Max Size:</label>
-                        <input type="range" id="infiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider">
-                        <span id="infiniteZoomMaxSizeValue">20</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomDensitySlider">Density:</label>
-                        <input type="range" id="infiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider">
-                        <span id="infiniteZoomDensityValue">50</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomSpeedSlider">Speed:</label>
-                        <input type="range" id="infiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
-                        <span id="infiniteZoomSpeedValue">50</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomRotationSlider">Rotation:</label>
-                        <input type="range" id="infiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider">
-                        <span id="infiniteZoomRotationValue">0.0</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="infiniteZoomOpacitySlider">Opacity:</label>
-                        <input type="range" id="infiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
-                        <span id="infiniteZoomOpacityValue">100%</span>
-                    </div>
-                    <div class="button-container">
-                        <button id="infiniteZoomBeatReactBtn" class="toggle-btn">Beat React: Off</button>
-                    </div>
-                    <div class="control-group" id="infiniteZoomBeatReactControls" style="display: none;">
-                        <h4>Beat Reaction Controls</h4>
-                        <div class="control-item">
-                            <label for="infiniteZoomSensitivitySlider">Sensitivity:</label>
-                            <input type="range" id="infiniteZoomSensitivitySlider" min="0" max="100" step="1" value="100" class="slider">
-                            <span id="infiniteZoomSensitivityValue">100%</span>
-                        </div>
-                        <div class="button-container">
-                            <button id="infiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>
-                        </div>
-                        <div class="button-container">
-                            <button id="infiniteZoomBeatRotationBtn" class="toggle-btn">Beat Rotation: Off</button>
-                        </div>
-                        <div class="button-container">
-                            <button id="infiniteZoomBeatDensityBtn" class="toggle-btn">Beat Density: Off</button>
-                        </div>
-                        <div class="button-container">
-                            <button id="infiniteZoomBeatShapeBtn" class="toggle-btn">Beat Shape: Off</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Kaleidoscope and Infinite Zoom controls (moved to sidebar) -->
 
 <div class="section-panel" id="autopilotPanel">
     <div class="panel-content">
@@ -2638,6 +2220,18 @@
         .viz-toggle-btn.active {
             background: var(--accent-color);
             color: var(--primary-bg, #f5f3e9);
+        }
+
+        /* Video toggle button - green when active */
+        #videoToggleBtn.active {
+            background: #4CAF50 !important;
+            color: white !important;
+            border-color: #4CAF50 !important;
+        }
+        
+        /* Override dropdown-toggle triangle for video toggle */
+        #videoToggleBtn.dropdown-toggle::after {
+            display: none;
         }
 
         /* Video Input Controls */
@@ -5481,10 +5075,10 @@
                 <div class="section-content" id="sidebarAudioInput">
                     <!-- Live Audio Input -->
                     <div class="control-group">
-                        <button class="input-mode-btn" id="sidebarInputModeBtn" title="Toggle Live Audio Input">
+                        <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
                             <span class="input-mode-text">Live Audio</span>
                         </button>
-                        <select class="audio-device-select" id="sidebarAudioDeviceSelect" style="display: none;">
+                        <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
                             <option value="">Select Audio Input...</option>
                         </select>
                     </div>
@@ -5493,8 +5087,8 @@
                     <div class="control-group">
                         <div class="dropdown playlist-dropdown">
                             <div class="dropdown-label">Playlist</div>
-                            <button class="dropdown-toggle" id="sidebarPlaylistToggle">Select Track</button>
-                            <div class="dropdown-content" id="sidebarPlaylistDropdown">
+                            <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
+                            <div class="dropdown-content" id="playlistDropdown">
                                 <!-- Playlist content will be populated here -->
                             </div>
                         </div>
@@ -5502,12 +5096,153 @@
                 </div>
             </div>
 
-            <!-- Video Input Section -->
+            <!-- Video Section -->
             <div class="sidebar-section">
-                <div class="section-icon" title="Video Input">▶</div>
-                <h4 class="section-title" onclick="toggleSection('video')">Video Input</h4>
+                <div class="section-icon" title="Video">▶</div>
+                <h4 class="section-title" onclick="toggleSection('video')">Video</h4>
                 <div class="section-content" id="sidebarVideoInput">
-                    <!-- Video controls will be moved here -->
+                    <!-- Video Input Controls -->
+                    <div class="control-group">
+                        <div class="dropdown-label">Video Input</div>
+                        <select class="audio-device-select" id="videoDeviceSelect">
+                            <option value="">Select Video Input...</option>
+                        </select>
+                        <div class="video-file-info" id="videoFileInfo" style="display: none;">
+                            <span class="video-file-name" id="videoFileName">No file selected</span>
+                            <div class="video-file-controls-inline">
+                                <button class="video-file-control-btn active" id="videoFileLoopBtn">Loop</button>
+                                <button class="video-file-control-btn active" id="videoFileMuteBtn">Muted</button>
+                            </div>
+                        </div>
+                        <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
+                    </div>
+                    
+                    <!-- Video ON/OFF Toggle -->
+                    <div class="control-group">
+                        <button class="dropdown-toggle viz-toggle-btn" id="videoToggleBtn" title="Toggle Video">OFF</button>
+                    </div>
+                    
+                    <!-- Basic Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Basic</div>
+                        <div class="slider-container">
+                            <label>Opacity</label>
+                            <input type="range" id="videoOpacitySlider" min="0" max="100" value="100">
+                            <span id="videoOpacityValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Brightness</label>
+                            <input type="range" id="videoBrightnessSlider" min="0" max="200" value="100">
+                            <span id="videoBrightnessValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Contrast</label>
+                            <input type="range" id="videoContrastSlider" min="0" max="200" value="100">
+                            <span id="videoContrastValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Fade Time</label>
+                            <input type="range" id="videoFadeSlider" min="0" max="10" step="0.5" value="3">
+                            <span id="videoFadeValue">3.0s</span>
+                        </div>
+                    </div>
+
+                    <!-- Color Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Color</div>
+                        <div class="slider-container">
+                            <label>Saturation</label>
+                            <input type="range" id="videoSaturationSlider" min="0" max="200" value="100">
+                            <span id="videoSaturationValue">100%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Hue Rotate</label>
+                            <input type="range" id="videoHueRotateSlider" min="0" max="360" value="0">
+                            <span id="videoHueRotateValue">0°</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Grayscale</label>
+                            <input type="range" id="videoGrayscaleSlider" min="0" max="100" value="0">
+                            <span id="videoGrayscaleValue">0%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Sepia</label>
+                            <input type="range" id="videoSepiaSlider" min="0" max="100" value="0">
+                            <span id="videoSepiaValue">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Effects -->
+                    <div class="control-group">
+                        <div class="group-label">Effects</div>
+                        <div class="slider-container">
+                            <label>Blur</label>
+                            <input type="range" id="videoBlurSlider" min="0" max="20" value="0">
+                            <span id="videoBlurValue">0px</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Vignette</label>
+                            <input type="range" id="videoVignetteSlider" min="0" max="100" value="0">
+                            <span id="videoVignetteValue">0%</span>
+                        </div>
+                        <div class="slider-container">
+                            <label>Posterize</label>
+                            <input type="range" id="videoPosterizeSlider" min="2" max="16" value="16">
+                            <span id="videoPosterizeValue">Off</span>
+                        </div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="videoInvertBtn">Invert: Off</button>
+                            <button class="effect-toggle-btn" id="videoMirrorBtn">Mirror: Off</button>
+                        </div>
+                    </div>
+
+                    <!-- Animation -->
+                    <div class="control-group">
+                        <div class="group-label">Animation</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="videoPulseBtn">Pulse: Off</button>
+                        </div>
+                        <div class="slider-container" id="videoPulseRateContainer" style="display: none;">
+                            <label>Pulse Rate</label>
+                            <input type="range" id="videoPulseRateSlider" min="0.5" max="4" step="0.1" value="2">
+                            <span id="videoPulseRateValue">2.0s</span>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="group-label">Visualization</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn active" id="matchVisualizationAspectBtn">Match Video Aspect: On</button>
+                        </div>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="control-group">
+                        <div class="group-label">Presets</div>
+                        <div class="preset-buttons">
+                            <button class="video-preset-btn" data-preset="normal">Normal</button>
+                            <button class="video-preset-btn" data-preset="dreamy">Dreamy</button>
+                            <button class="video-preset-btn" data-preset="noir">Noir</button>
+                            <button class="video-preset-btn" data-preset="cyberpunk">Cyberpunk</button>
+                            <button class="video-preset-btn" data-preset="vintage">Vintage</button>
+                            <button class="video-preset-btn" data-preset="retro-tv">Retro TV</button>
+                            <button class="video-preset-btn" data-preset="underwater">Underwater</button>
+                            <button class="video-preset-btn" data-preset="infrared">Infrared</button>
+                            <button class="video-preset-btn" data-preset="acid">Acid</button>
+                            <button class="video-preset-btn" data-preset="thermal">Thermal</button>
+                            <button class="video-preset-btn" data-preset="matrix">Matrix</button>
+                            <button class="video-preset-btn" data-preset="glitch">Glitch</button>
+                        </div>
+                    </div>
+
+                    <!-- Camera & Stream Stats -->
+                    <div class="control-group">
+                        <div class="group-label">Stream Statistics</div>
+                        <div id="cameraStatsContainer" class="stats-container">
+                            <div class="stats-placeholder">Camera stream info will appear here when video input is active</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -5516,7 +5251,259 @@
                 <div class="section-icon" title="Visualizations">◊</div>
                 <h4 class="section-title" onclick="toggleSection('visualizations')">Visualizations</h4>
                 <div class="section-content" id="sidebarVisualizations">
-                    <!-- Visualization controls will be moved here -->
+                    <!-- Spectrum Controls (with ON button and Random) -->
+                    <div class="spectrum-controls-container">
+                        <div class="dropdown-label">Spectrum</div>
+                        <div class="control-with-settings">
+                            <div class="dropdown">
+                                <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
+                                <div class="dropdown-content" id="vizModeDropdown">
+                                    <div class="dropdown-item active" data-mode="0">Spectrum</div>
+                                    <div class="dropdown-item" data-mode="1">Mirror Wave</div>
+                                    <div class="dropdown-item" data-mode="2">Classic LED</div>
+                                    <div class="dropdown-item" data-mode="3">Stereo</div>
+                                    <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
+                                    <div class="dropdown-item" data-mode="5">Energy</div>
+                                    <div class="dropdown-item" data-mode="6">Mirror</div>
+                                </div>
+                            </div>
+                            <!-- ON button pinned to the right -->
+                            <button class="dropdown-toggle viz-toggle-btn active" id="vizToggleBtn" title="Toggle Visualization">ON</button>
+                        </div>
+                        <!-- Random button below, left-aligned with Spectrum -->
+                        <button class="dropdown-toggle random-viz-btn" id="randomVizBtn" title="Random Visualization">Random</button>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="presets-container">
+                        <div class="dropdown-label">Presets</div>
+                        <div class="preset-buttons">
+                            <select class="preset-selector" id="presetSelector" title="Load Saved Preset">
+                                <option value="">Load Preset...</option>
+                            </select>
+                            <button class="preset-btn" id="savePresetBtn" title="Save Current as Preset">Save</button>
+                            <button class="preset-btn" id="exportPresetsBtn" title="Export All Presets">Export</button>
+                            <button class="preset-btn" id="importPresetsBtn" title="Import Presets">Import</button>
+                            <input type="file" id="importPresetsFile" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Morph -->
+                    <div class="morph-controls">
+                        <div class="dropdown-label">Morph</div>
+                        <div class="morph-buttons">
+                            <button class="morph-btn" id="morphBtn" title="Morph between visualizations">
+                                <span class="morph-btn-text">Start Morph</span>
+                            </button>
+                            <select class="morph-speed-select" id="morphSpeedSelect">
+                                <option value="slow">Slow</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="fast">Fast</option>
+                                <option value="ultra">Ultra</option>
+                                <option value="energy">Energy</option>
+                            </select>
+                        </div>
+                        <div class="energy-container" id="energyContainer" style="display: none;">
+                            <div class="energy-label">Energy</div>
+                            <div class="energy-bar">
+                                <div class="energy-indicator" id="energyIndicator"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Schemes -->
+                    <div class="color-scheme-container">
+                        <div class="dropdown-label">Color Scheme</div>
+                        <div class="dropdown">
+                            <button class="dropdown-toggle" id="colorSchemeToggle">Default</button>
+                            <div class="dropdown-content" id="colorSchemeDropdown">
+                                <div class="dropdown-item active" data-scheme="default">Default</div>
+                                <div class="dropdown-item" data-scheme="earthtones">Earthtones</div>
+                                <div class="dropdown-item" data-scheme="luigi">Luigi</div>
+                                <div class="dropdown-item" data-scheme="metal">Heavy Metal</div>
+                                <div class="dropdown-item" data-scheme="psychedelic">Psychedelic</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kaleidoscope -->
+                    <div class="kaleidoscope-controls">
+                        <div class="dropdown-label">Kaleidoscope</div>
+                        <button class="dropdown-toggle kaleidoscope-btn" id="kaleidoscopeBtn" title="Kaleidoscope">
+                            <span class="kaleidoscope-btn-text">Kaleidoscope Off</span>
+                        </button>
+
+                        <!-- Kaleidoscope settings panel -->
+                        <div class="kaleidoscope-panel" id="kaleidoscopePanel" style="display: none;">
+                            <div class="panel-header">
+                                <span>Kaleidoscope Settings</span>
+                                <button class="panel-close-btn" id="kaleidoscopeCloseBtn">×</button>
+                            </div>
+
+                            <div class="control-group">
+                                <div class="slider-container">
+                                    <label>Segments</label>
+                                    <input type="range" id="kaleidoscopeSegments" min="2" max="24" value="6" step="1">
+                                    <span id="kaleidoscopeSegmentsValue">6</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Rings</label>
+                                    <input type="range" id="kaleidoscopeRings" min="1" max="5" value="1" step="1">
+                                    <span id="kaleidoscopeRingsValue">1</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Ring Spacing</label>
+                                    <input type="range" id="kaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
+                                    <span id="kaleidoscopeRingSpacingValue">20%</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Rotation Speed</label>
+                                    <input type="range" id="kaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
+                                    <span id="kaleidoscopeSpeedValue">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Scale</label>
+                                    <input type="range" id="kaleidoscopeScale" min="50" max="200" value="100" step="10">
+                                    <span id="kaleidoscopeScaleValue">100%</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Center X</label>
+                                    <input type="range" id="kaleidoscopeCenterX" min="0" max="100" value="50" step="1">
+                                    <span id="kaleidoscopeCenterXValue">50%</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label>Center Y</label>
+                                    <input type="range" id="kaleidoscopeCenterY" min="0" max="100" value="50" step="1">
+                                    <span id="kaleidoscopeCenterYValue">50%</span>
+                                </div>
+                                <div class="button-container">
+                                    <button class="effect-toggle-btn" id="kaleidoscopeVideoBtn">Apply to Video: Off</button>
+                                    <button class="effect-toggle-btn" id="kaleidoscopeVizBtn">Apply to Viz: On</button>
+                                    <button class="effect-toggle-btn" id="kaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
+                                </div>
+                                <div class="button-container">
+                                    <button class="effect-toggle-btn" id="kaleidoscopeShapeBtn">Shape: Triangle</button>
+                                </div>
+                                <div class="apply-container"></div>
+
+                                <div class="control-group">
+                                    <div class="group-label">Beat Reaction</div>
+                                    <div class="button-container">
+                                        <button class="effect-toggle-btn" id="kaleidoscopeBeatBtn">Beat React: Off</button>
+                                        <button class="effect-toggle-btn" id="kaleidoscopeBeatRotationBtn">Rotation: Off</button>
+                                        <button class="effect-toggle-btn" id="kaleidoscopeBeatShapeBtn">Shape: Off</button>
+                                    </div>
+                                    <div class="slider-container" id="beatSensitivityContainer" style="display: none;">
+                                        <label>Sensitivity</label>
+                                        <input type="range" id="kaleidoscopeBeatSensitivity" min="10" max="100" value="50" step="10">
+                                        <span id="kaleidoscopeBeatSensitivityValue">50%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="group-label">Presets</div>
+                                <div class="preset-buttons">
+                                    <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
+                                    <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
+                                    <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
+                                    <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
+                                    <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Infinite Zoom -->
+                    <div class="kaleidoscope-controls">
+                        <div class="dropdown-label">Infinite Zoom</div>
+                        <div class="button-group">
+                            <button class="dropdown-toggle kaleidoscope-btn" id="infiniteZoomBtn" title="Infinite Zoom">
+                                <span class="kaleidoscope-btn-text">Infinite Zoom Off</span>
+                            </button>
+                            <button class="gear-btn" id="infiniteZoomGearBtn" title="Infinite Zoom Settings">
+                                <span class="gear-icon">⚙️</span>
+                            </button>
+                        </div>
+
+                        <!-- Infinite Zoom settings panel -->
+                        <div class="kaleidoscope-panel" id="infiniteZoomPanel" style="display: none;">
+                            <div class="panel-header">
+                                <span>Infinite Zoom Settings</span>
+                                <button class="panel-close-btn" id="infiniteZoomCloseBtn">×</button>
+                            </div>
+
+                            <div class="control-group">
+                                <div class="button-container">
+                                    <select id="infiniteZoomShapeSelect" class="dropdown-select">
+                                        <option value="circle">Circle</option>
+                                        <option value="square">Square</option>
+                                        <option value="rectangle">Rectangle</option>
+                                        <option value="triangle">Triangle</option>
+                                        <option value="star">Star</option>
+                                        <option value="mushroom">Mushroom</option>
+                                    </select>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomColorRandomSlider">Color Randomness:</label>
+                                    <input type="range" id="infiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider">
+                                    <span id="infiniteZoomColorRandomValue">0.5</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomMinSizeSlider">Min Size:</label>
+                                    <input type="range" id="infiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider">
+                                    <span id="infiniteZoomMinSizeValue">2</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomMaxSizeSlider">Max Size:</label>
+                                    <input type="range" id="infiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider">
+                                    <span id="infiniteZoomMaxSizeValue">20</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomDensitySlider">Density:</label>
+                                    <input type="range" id="infiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider">
+                                    <span id="infiniteZoomDensityValue">50</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomSpeedSlider">Speed:</label>
+                                    <input type="range" id="infiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
+                                    <span id="infiniteZoomSpeedValue">50</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomRotationSlider">Rotation:</label>
+                                    <input type="range" id="infiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider">
+                                    <span id="infiniteZoomRotationValue">0.0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <label for="infiniteZoomOpacitySlider">Opacity:</label>
+                                    <input type="range" id="infiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
+                                    <span id="infiniteZoomOpacityValue">100%</span>
+                                </div>
+                                <div class="button-container">
+                                    <button id="infiniteZoomBeatReactBtn" class="toggle-btn">Beat React: Off</button>
+                                </div>
+                                <div class="control-group" id="infiniteZoomBeatReactControls" style="display: none;">
+                                    <h4>Beat Reaction Controls</h4>
+                                    <div class="control-item">
+                                        <label for="infiniteZoomSensitivitySlider">Sensitivity:</label>
+                                        <input type="range" id="infiniteZoomSensitivitySlider" min="0" max="100" step="1" value="100" class="slider">
+                                        <span id="infiniteZoomSensitivityValue">100%</span>
+                                    </div>
+                                    <div class="button-container">
+                                        <button id="infiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>
+                                    </div>
+                                    <div class="button-container">
+                                        <button id="infiniteZoomBeatRotationBtn" class="toggle-btn">Beat Rotation: Off</button>
+                                    </div>
+                                    <div class="button-container">
+                                        <button id="infiniteZoomBeatDensityBtn" class="toggle-btn">Beat Density: Off</button>
+                                    </div>
+                                    <div class="button-container">
+                                        <button id="infiniteZoomBeatShapeBtn" class="toggle-btn">Beat Shape: Off</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -6181,7 +6168,7 @@
             
             // Debug: check if we're getting real audio data
             const maxDataValue = Math.max(...this.dataArray);
-            console.log('🔍 Audio data - Energy:', energy.toFixed(3), 'Max value:', maxDataValue, 'DataArray length:', this.dataArray.length);
+                // console.log('🔍 Audio data - Energy:', energy.toFixed(3), 'Max value:', maxDataValue, 'DataArray length:', this.dataArray.length);
             
             // Simple beat detection based on energy spikes (more sensitive)
             const now = Date.now();
@@ -6213,7 +6200,7 @@
                 dominantFrequency: dominantFrequency
             };
             
-            console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
+            // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
             
             return features;
         }
@@ -6510,28 +6497,28 @@
             // Check if background image is active and enabled
             const hasBackgroundImage = window.visualizer && window.visualizer.backgroundImage && window.visualizer.backgroundImageEnabled;
 
-            console.log('🎬 SpectrumAnalyzer.draw - Layer Debug:', {
-                isVideoActive,
-                hasBackgroundImage,
-                backgroundColor: this.backgroundColor,
-                showBgColor: this.showBgColor,
-                bgAlpha: this.bgAlpha,
-                canvasSize: `${width}x${height}`,
-                contextType: this.ctx.constructor.name,
-                visualizerExists: !!window.visualizer,
-                backgroundImageExists: !!(window.visualizer && window.visualizer.backgroundImage),
-                backgroundImageEnabled: !!(window.visualizer && window.visualizer.backgroundImageEnabled)
-            });
+            // console.log('🎬 SpectrumAnalyzer.draw - Layer Debug:', {
+            //     isVideoActive,
+            //     hasBackgroundImage,
+            //     backgroundColor: this.backgroundColor,
+            //     showBgColor: this.showBgColor,
+            //     bgAlpha: this.bgAlpha,
+            //     canvasSize: `${width}x${height}`,
+            //     contextType: this.ctx.constructor.name,
+            //     visualizerExists: !!window.visualizer,
+            //     backgroundImageExists: !!(window.visualizer && window.visualizer.backgroundImage),
+            //     backgroundImageEnabled: !!(window.visualizer && window.visualizer.backgroundImageEnabled)
+            // });
 
             if (! isVideoActive) { // Only fill background when video is NOT active
                 if (!hasBackgroundImage) {
                     // Only fill with background color if no background image
-                    console.log('🎨 Filling with background color:', this.backgroundColor);
+                    // console.log('🎨 Filling with background color:', this.backgroundColor);
                 this.ctx.fillStyle = this.backgroundColor;
                 this.ctx.fillRect(0, 0, width, height);
 
                 if (this.showBgColor && this.backgroundColor !== '#ffffff') {
-                        console.log('🎭 Applying background overlay:', `rgba(0, 0, 0, ${this.bgAlpha})`);
+                        // console.log('🎭 Applying background overlay:', `rgba(0, 0, 0, ${this.bgAlpha})`);
                     this.ctx.fillStyle = `rgba(0, 0, 0, ${
                         this.bgAlpha
                     })`;
@@ -6555,7 +6542,7 @@
 
             // Only apply overlay if showBgColor is true AND background is not pure white AND no background image
             if (this.showBgColor && this.backgroundColor !== '#ffffff' && !hasBackgroundImage) {
-                console.log('🎭 Applying background overlay (no background image)');
+                // console.log('🎭 Applying background overlay (no background image)');
                 this.ctx.fillStyle = `rgba(0, 0, 0, ${
                     this.bgAlpha
                 })`;
@@ -6567,31 +6554,31 @@
             }
 
             // Draw based on mode - radial takes precedence over channel layout
-            console.log('🎨 Drawing visualization elements:', {
-                radial: this.radial,
-                channelLayout: this.channelLayout,
-                mode: this.mode,
-                ledBars: this.ledBars,
-                barSpace: this.barSpace
-            });
+            // console.log('🎨 Drawing visualization elements:', {
+            //     radial: this.radial,
+            //     channelLayout: this.channelLayout,
+            //     mode: this.mode,
+            //     ledBars: this.ledBars,
+            //     barSpace: this.barSpace
+            // });
             
             if (this.radial) {
-                console.log('🌀 Drawing radial visualization');
+                // console.log('🌀 Drawing radial visualization');
                 this.drawRadial();
             } else if (this.channelLayout === 'dual-vertical') {
-                console.log('📊 Drawing dual vertical visualization');
+                // console.log('📊 Drawing dual vertical visualization');
                 this.drawDualVertical();
             } else if (this.channelLayout === 'dual-horizontal') {
-                console.log('📊 Drawing dual horizontal visualization');
+                // console.log('📊 Drawing dual horizontal visualization');
                 this.drawDualHorizontal();
             } else if (this.mode === 10) {
-                console.log('📈 Drawing line graph visualization');
+                // console.log('📈 Drawing line graph visualization');
                 this.drawLineGraph();
             } else if (this.mode === 6 && this.ledBars) {
-                console.log('💡 Drawing LED bars visualization');
+                // console.log('💡 Drawing LED bars visualization');
                 this.drawLEDBars();
             } else if (this.mode === 0 && this.barSpace === 0) {
-                console.log('🌊 Drawing fluid spectrum visualization');
+                // console.log('🌊 Drawing fluid spectrum visualization');
                 this.drawFluidSpectrum(); // Use fluid drawing for mode 0 with no bar space
             } else {
                 this.drawBars();
@@ -9321,9 +9308,9 @@
         }
         
         updateAudioResponse(audioFeatures) {
-            console.log('🔍 updateAudioResponse called with:', audioFeatures);
-            console.log('🔍 Beat React enabled:', this.beatReact);
-            console.log('🔍 Beat controls - Zoom:', this.beatZoom, 'Rotation:', this.beatRotation, 'Density:', this.beatDensity, 'Shape:', this.beatShape);
+            // console.log('🔍 updateAudioResponse called with:', audioFeatures);
+            // console.log('🔍 Beat React enabled:', this.beatReact);
+            // console.log('🔍 Beat controls - Zoom:', this.beatZoom, 'Rotation:', this.beatRotation, 'Density:', this.beatDensity, 'Shape:', this.beatShape);
             
             // Use test features only if no audio features at all
             if (!audioFeatures) {
@@ -16823,25 +16810,73 @@
         }
 
         async toggleVideoInput() {
-            const btn = document.getElementById('videoInputBtn');
-            const btnText = btn.querySelector('.video-mode-text');
             const deviceSelect = document.getElementById('videoDeviceSelect');
-            const controlsPanel = document.getElementById('videoControlsPanel');
 
             if (this.videoMode === 'off') { // Show device selector
                 await this.initializeVideoInput();
 
                 deviceSelect.style.display = 'block';
-                btnText.textContent = 'Select Video Source';
                 this.videoMode = 'selecting';
 
             } else { // Turn off video
                 this.stopVideoInput();
-                btnText.textContent = 'Video Input';
-                btn.classList.remove('video-active');
-                deviceSelect.style.display = 'none';
-                controlsPanel.style.display = 'none';
                 this.videoMode = 'off';
+                this.updateVideoToggleState();
+            }
+        }
+
+        toggleVideoPlayback() {
+            if (this.videoMode === 'camera' || this.videoMode === 'file') {
+                // Video is currently visible - hide it
+                if (this.videoElement) {
+                    this.videoElement.style.display = 'none';
+                    this.videoMode = 'hidden';
+                }
+            } else if (this.videoMode === 'hidden') {
+                // Video is hidden - show it
+                if (this.videoElement) {
+                    this.videoElement.style.display = 'block';
+                    this.videoMode = this.videoFile ? 'file' : 'camera';
+                }
+            } else {
+                // No video source selected - start selection process
+                this.toggleVideoInput();
+            }
+            this.updateVideoToggleState();
+        }
+
+        saveVideoSource(type, source) {
+            const videoSource = {
+                type: type,
+                source: source,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('mviz_video_source', JSON.stringify(videoSource));
+            console.log('Video source saved:', videoSource);
+        }
+
+        loadVideoSource() {
+            try {
+                const saved = localStorage.getItem('mviz_video_source');
+                if (saved) {
+                    const videoSource = JSON.parse(saved);
+                    console.log('Video source loaded:', videoSource);
+                    return videoSource;
+                }
+            } catch (e) {
+                console.error('Error loading video source:', e);
+            }
+            return null;
+        }
+
+        updateVideoDropdownDisplay() {
+            const deviceSelect = document.getElementById('videoDeviceSelect');
+            if (deviceSelect) {
+                // Force the dropdown to show the selected option text
+                const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+                if (selectedOption) {
+                    console.log('Selected video source:', selectedOption.textContent);
+                }
             }
         }
 
@@ -18343,33 +18378,21 @@
                 this.videoElement.style.opacity = this.videoOpacity.toString();
 
                 // Update UI
-                const btn = document.getElementById('videoInputBtn');
-                const btnText = btn.querySelector('.video-mode-text');
-                const controlsPanel = document.getElementById('videoControlsPanel');
-
-                btn.classList.add('video-active');
-                btnText.textContent = 'Camera Active';
                 this.videoMode = 'camera';
                 this.currentVideoDeviceId = deviceId;
+                this.updateVideoToggleState();
                 
-
-                // Video Settings Button (only add if not already present)
-                if (!document.getElementById('videoSettingsBtn')) {
-                    const settingsBtn = document.createElement('button');
-                    settingsBtn.id = 'videoSettingsBtn';
-                    settingsBtn.innerHTML = '⚙';
-                    settingsBtn.className = 'video-settings-toggle';
-                    settingsBtn.title = 'Video Settings';
-                    btn.parentNode.appendChild(settingsBtn);
-                }
+                // Save video source to localStorage
+                this.saveVideoSource('camera', deviceId);
 
                 // Keep device selector visible and update selection
                 const deviceSelect = document.getElementById('videoDeviceSelect');
                 if (deviceSelect) {
+                    // Update the list first, then set the selection
+                    this.updateVideoDeviceList();
                     deviceSelect.value = deviceId;
                     deviceSelect.style.display = 'block';
-                    // Update the list to refresh file name if needed
-                    this.updateVideoDeviceList();
+                    this.updateVideoDropdownDisplay();
                 }
 
                 // Add cleanup listener for unexpected stream end
@@ -18494,6 +18517,8 @@
 
         async startVideoFile(file) {
             try {
+                console.log('startVideoFile called with file:', file.name);
+                
                 // Check if we're switching sources
                 const isSourceSwitch = this.videoElement && (this.videoStream || this.videoFile);
 
@@ -18509,10 +18534,10 @@
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Stop the old source without removing elements
-                    this.stopVideoInput(false);
+                    this.stopVideoInput(false, true);
                 } else {
                     // Normal stop for initial setup
-                    this.stopVideoInput(false);
+                    this.stopVideoInput(false, true);
                 }
 
                 // Store the file
@@ -18520,9 +18545,11 @@
 
                 // Get container reference
                 const container = document.getElementById('visualizationContainer');
+                console.log('Container found:', !!container);
 
                 // Create backdrop if needed
                 if (!document.getElementById('videoBackdrop')) {
+                    console.log('Creating video backdrop...');
                     const backdrop = document.createElement('div');
                     backdrop.id = 'videoBackdrop';
                     backdrop.style.cssText = `
@@ -18539,6 +18566,7 @@
 
                 // Create or reuse DISPLAY video element
                 if (!this.videoElement) {
+                    console.log('Creating new video element...');
                     this.videoElement = document.createElement('video');
                     this.videoElement.id = 'bgVideo';
                     this.videoElement.muted = false; // Keep unmuted, control via gain node
@@ -18560,8 +18588,11 @@
                     `;
 
                     const backdrop = document.getElementById('videoBackdrop');
+                    console.log('Backdrop found:', !!backdrop);
                     container.insertBefore(this.videoElement, backdrop.nextSibling);
+                    console.log('Video element inserted into container');
                 } else {
+                    console.log('Reusing existing video element...');
                     // Update settings for existing element
                     this.videoElement.muted = false; // Keep unmuted, control via gain node
                     this.videoElement.loop = this.videoFileLoop;
@@ -18616,6 +18647,7 @@
                 }
 
                 // Wait for metadata and play
+                console.log('Setting up video loading...');
                 await new Promise((resolve, reject) => {
                     let resolved = false;
                     const timeout = setTimeout(() => {
@@ -18664,16 +18696,11 @@
                 }
 
                 // Update UI
-                const btn = document.getElementById('videoInputBtn');
-                const btnText = btn.querySelector('.video-mode-text');
-                const deviceSelect = document.getElementById('videoDeviceSelect');
-
-                btn.classList.add('video-active');
-                btnText.textContent = 'File Active';
                 this.videoMode = 'file';
+                this.updateVideoToggleState();
                 
-                // Hide dropdown and show file info
-                deviceSelect.style.display = 'none';
+                // Save video source to localStorage
+                this.saveVideoSource('file', file.name);
                 
                 const fileInfo = document.getElementById('videoFileInfo');
                 const fileName = document.getElementById('videoFileName');
@@ -18682,19 +18709,12 @@
                     fileName.textContent = file.name;
                 }
 
-                // Show controls panel
+                // Show controls panel (if it exists)
                 const controlsPanel = document.getElementById('videoControlsPanel');
-                controlsPanel.style.display = 'block';
-
-                // Add settings button if not exists
-                if (!document.getElementById('videoSettingsBtn')) {
-                    const settingsBtn = document.createElement('button');
-                    settingsBtn.id = 'videoSettingsBtn';
-                    settingsBtn.innerHTML = '⚙';
-                    settingsBtn.className = 'video-settings-toggle';
-                    settingsBtn.title = 'Video Settings';
-                    btn.parentNode.appendChild(settingsBtn);
+                if (controlsPanel) {
+                    controlsPanel.style.display = 'block';
                 }
+
 
                 // If stream manager active, rebuild capture
                 if (this.streamManager && this.streamManager.isStreaming) {
@@ -18710,6 +18730,7 @@
 
             } catch (error) {
                 console.error('Error starting video file:', error);
+                console.error('Error stack:', error.stack);
                 this.showError(`Failed to load video: ${error.message}`);
                 this.stopVideoInput();
             }
@@ -18949,19 +18970,10 @@
             }
 
             if (updateUI) {
-                const btn = document.getElementById('videoInputBtn');
-                const btnText = btn.querySelector('.video-mode-text');
                 const deviceSelect = document.getElementById('videoDeviceSelect');
                 const controlsPanel = document.getElementById('videoControlsPanel');
 
-                if (btn) {
-                    btn.classList.remove('video-active');
-                }
-                if (btnText) {
-                    btnText.textContent = 'Video Input';
-                }
                 if (deviceSelect) {
-                    deviceSelect.style.display = 'none';
                     deviceSelect.value = '';
                 }
                 
@@ -18976,14 +18988,12 @@
                 }
 
                 this.videoMode = 'off';
+                this.updateVideoToggleState();
                 
                 this.currentVideoDeviceId = null;
                 this.videoFile = null;
             }
 
-            const settingsBtn = document.getElementById('videoSettingsBtn');
-            if (settingsBtn) 
-                settingsBtn.remove();
             
 
         }
@@ -21361,25 +21371,7 @@ https://rogueamoeba.com/loopback/
                 });
             }
 
-            // Close button for video controls panel
-            const videoControlsClose = document.getElementById('videoControlsClose');
-            if (videoControlsClose) {
-                videoControlsClose.addEventListener('click', () => {
-                    document.getElementById('videoControlsPanel').style.display = 'none';
-                });
-            }
             
-            // Video settings button (for dynamically created button)
-            document.addEventListener('click', (e) => {
-                if (e.target && e.target.id === 'videoSettingsBtn') {
-                    e.stopPropagation();
-                    const panel = document.getElementById('videoControlsPanel');
-                    if (panel) {
-                        const isVisible = panel.style.display !== 'none';
-                        panel.style.display = isVisible ? 'none' : 'block';
-                    }
-                }
-            });
             // Pulse controls
             const videoPulseRateSlider = document.getElementById('videoPulseRateSlider');
             if (videoPulseRateSlider) {
@@ -22431,23 +22423,27 @@ https://rogueamoeba.com/loopback/
                 });
             });
 
-            // Toggle panel visibility when clicking the video button (when already active)
-            const videoInputBtn = document.getElementById('videoInputBtn');
-            if (videoInputBtn) {
-                videoInputBtn.addEventListener('click', () => {
-                    if (this.videoMode === 'camera' || this.videoMode === 'file') { // If video is on, turn it OFF (not toggle panel)
-                        this.stopVideoInput();
-                        const btnText = videoInputBtn.querySelector('.video-mode-text');
-                        btnText.textContent = 'Video Input';
-                        videoInputBtn.classList.remove('video-active');
-                        document.getElementById('videoDeviceSelect').style.display = 'none';
-                        document.getElementById('videoControlsPanel').style.display = 'none';
-                        this.videoMode = 'off';
-                    } else { // If video is off, start the selection process
-                        this.toggleVideoInput();
-                    }
+            // Video ON/OFF Toggle Button
+            const videoToggleBtn = document.getElementById('videoToggleBtn');
+            if (videoToggleBtn) {
+                videoToggleBtn.addEventListener('click', () => {
+                    this.toggleVideoPlayback();
                 });
             }
+            
+            // Helper function to update video toggle button state
+            this.updateVideoToggleState = () => {
+                const videoToggleBtn = document.getElementById('videoToggleBtn');
+                if (videoToggleBtn) {
+                    if (this.videoMode === 'camera' || this.videoMode === 'file') {
+                        videoToggleBtn.textContent = 'ON';
+                        videoToggleBtn.classList.add('active');
+                    } else {
+                        videoToggleBtn.textContent = 'OFF';
+                        videoToggleBtn.classList.remove('active');
+                    }
+                }
+            };
 
             const videoDeviceSelect = document.getElementById('videoDeviceSelect');
             if (videoDeviceSelect) {
@@ -22479,6 +22475,7 @@ https://rogueamoeba.com/loopback/
                         const deviceSelect = document.getElementById('videoDeviceSelect');
                         if (deviceSelect) {
                             deviceSelect.value = 'file';
+                            this.updateVideoDropdownDisplay();
                         }
                         // Reset file input for reselection
                         e.target.value = '';
@@ -24085,6 +24082,26 @@ https://rogueamoeba.com/loopback/
             
             // Initialize Sidebar
             initializeSidebar();
+            
+            // Initialize Video Devices
+            if (window.visualizer && window.visualizer.initializeVideoInput) {
+                window.visualizer.initializeVideoInput();
+            }
+            
+            // Load saved video source
+            if (window.visualizer && window.visualizer.loadVideoSource) {
+                const savedSource = window.visualizer.loadVideoSource();
+                if (savedSource) {
+                    // Update dropdown to show saved source
+                    const deviceSelect = document.getElementById('videoDeviceSelect');
+                    if (deviceSelect) {
+                        // Update the device list first, then set the selection
+                        window.visualizer.updateVideoDeviceList();
+                        deviceSelect.value = savedSource.source;
+                        window.visualizer.updateVideoDropdownDisplay();
+                    }
+                }
+            }
             
             // Add resize listener for Infinite Zoom
             window.addEventListener('resize', () => {
