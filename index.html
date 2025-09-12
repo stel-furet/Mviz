@@ -1241,6 +1241,92 @@
                 </div>
             </div>
         </div>
+
+        <!-- Background Image -->
+        <div class="panel-row">
+            <div class="background-controls">
+                <button class="dropdown-toggle" id="backgroundImgBtn" title="Toggle Background Image">
+                    <span class="background-text">Background IMG: OFF</span>
+                </button>
+                <button id="backgroundSettingsBtn" class="video-settings-toggle" title="Background Settings">⚙</button>
+
+                <!-- Background Settings Panel -->
+                <div class="background-settings-panel" id="backgroundSettingsPanel" style="display: none;">
+                    <div class="panel-header">
+                        <span>Background Settings</span>
+                        <button class="panel-close-btn" id="backgroundSettingsClose">×</button>
+                    </div>
+
+                    <!-- Opacity -->
+                    <div class="control-group">
+                        <div class="group-label">Opacity</div>
+                        <div class="slider-container">
+                            <input type="range" id="backgroundOpacitySlider" class="control-slider" min="0" max="100" value="100">
+                            <span class="slider-value" id="backgroundOpacityValue">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Saturation -->
+                    <div class="control-group">
+                        <div class="group-label">Saturation</div>
+                        <div class="slider-container">
+                            <input type="range" id="backgroundSaturationSlider" class="control-slider" min="0" max="200" value="100">
+                            <span class="slider-value" id="backgroundSaturationValue">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Posterization -->
+                    <div class="control-group">
+                        <div class="group-label">Posterization</div>
+                        <div class="slider-container">
+                            <input type="range" id="backgroundPosterizeSlider" class="control-slider" min="0" max="16" value="16">
+                            <span class="slider-value" id="backgroundPosterizeValue">16</span>
+                        </div>
+                    </div>
+
+                    <!-- Contrast -->
+                    <div class="control-group">
+                        <div class="group-label">Contrast</div>
+                        <div class="slider-container">
+                            <input type="range" id="backgroundContrastSlider" class="control-slider" min="0" max="200" value="100">
+                            <span class="slider-value" id="backgroundContrastValue">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Sizing -->
+                    <div class="control-group">
+                        <div class="group-label">Sizing</div>
+                        <div class="button-group">
+                            <button class="size-btn" id="backgroundSizeFit" data-size="fit">Fit</button>
+                            <button class="size-btn" id="backgroundSizeFill" data-size="fill">Fill</button>
+                            <button class="size-btn" id="backgroundSizeStretch" data-size="stretch">Stretch</button>
+                            <button class="size-btn active" id="backgroundSizeOriginal" data-size="original">Original</button>
+                        </div>
+                    </div>
+
+                    <!-- Image Selection -->
+                    <div class="control-group">
+                        <div class="group-label">Image</div>
+                        <button class="control-btn" id="backgroundSelectImageBtn">Select Image</button>
+                        <input type="file" id="backgroundImageFile" accept=".jpg,.jpeg,.png" style="display: none;">
+                        <div class="background-file-info" id="backgroundFileInfo" style="display: none;">
+                            <div class="file-preview-container">
+                                <div class="image-preview" id="backgroundImagePreview"></div>
+                                <div class="file-details">
+                                    <div class="file-name" id="backgroundFileName"></div>
+                                    <div class="file-size" id="backgroundFileSize"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clear Background -->
+                    <div class="control-group">
+                        <button class="control-btn clear-btn" id="backgroundClearBtn">Clear Background</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -4454,6 +4540,199 @@
             margin-bottom: 8px;
         }
 
+        .section-panel .background-controls {
+            margin-bottom: 8px;
+        }
+
+        /* Background Controls Styles */
+        .background-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+
+        #backgroundImgBtn {
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #backgroundImgBtn.has-image {
+            background: var(--accent-color) !important;
+            color: var(--primary-bg, #f5f3e9) !important;
+        }
+
+        /* Background Settings Panel */
+        .background-settings-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            background: var(--secondary-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #898989);
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 1000;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-bg, #f5f3e9);
+        }
+
+        .control-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-bg, #f5f3e9);
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Size button group */
+        .button-group {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .size-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .size-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .size-btn.active {
+            background: var(--accent-color);
+            color: var(--primary-bg, #f5f3e9);
+            border-color: var(--accent-color);
+        }
+
+        /* File info layout */
+        .file-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .image-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .background-file-info {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .file-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .image-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .clear-btn {
+            background: #ff3030 !important;
+            color: white !important;
+        }
+
+        .clear-btn:hover {
+            background: #ff5050 !important;
+        }
+
         /* Secondary Control Positioning */
         .secondary-control {
             position: absolute;
@@ -5729,44 +6008,91 @@
             const container = document.getElementById('visualizationContainer');
             const isVideoActive = container && container.classList.contains('video-active');
 
+            // Check if background image is active and enabled
+            const hasBackgroundImage = window.visualizer && window.visualizer.backgroundImage && window.visualizer.backgroundImageEnabled;
+
+            console.log('🎬 SpectrumAnalyzer.draw - Layer Debug:', {
+                isVideoActive,
+                hasBackgroundImage,
+                backgroundColor: this.backgroundColor,
+                showBgColor: this.showBgColor,
+                bgAlpha: this.bgAlpha,
+                canvasSize: `${width}x${height}`,
+                contextType: this.ctx.constructor.name,
+                visualizerExists: !!window.visualizer,
+                backgroundImageExists: !!(window.visualizer && window.visualizer.backgroundImage),
+                backgroundImageEnabled: !!(window.visualizer && window.visualizer.backgroundImageEnabled)
+            });
+
             if (! isVideoActive) { // Only fill background when video is NOT active
+                if (!hasBackgroundImage) {
+                    // Only fill with background color if no background image
+                    console.log('🎨 Filling with background color:', this.backgroundColor);
                 this.ctx.fillStyle = this.backgroundColor;
                 this.ctx.fillRect(0, 0, width, height);
 
                 if (this.showBgColor && this.backgroundColor !== '#ffffff') {
+                        console.log('🎭 Applying background overlay:', `rgba(0, 0, 0, ${this.bgAlpha})`);
                     this.ctx.fillStyle = `rgba(0, 0, 0, ${
                         this.bgAlpha
                     })`;
                     this.ctx.fillRect(0, 0, width, height);
+                    }
+                } else {
+                    // Clear canvas for transparency when background image is active
+                    console.log('🧹 Clearing canvas for background image transparency');
+                    this.ctx.clearRect(0, 0, width, height);
                 }
             } else { // Clear canvas for transparency when video is active
+                console.log('🧹 Clearing canvas for video transparency');
                 this.ctx.clearRect(0, 0, width, height);
             }
 
-            // Clear canvas with background color
-            this.ctx.fillStyle = this.backgroundColor;
-            this.ctx.fillRect(0, 0, width, height);
+            // Draw background image if available (only in main visualization, not in capture)
+            if (hasBackgroundImage) {
+                console.log('🖼️ Drawing background image in main visualization');
+                window.visualizer.drawBackgroundImage(this.ctx, width, height);
+            }
 
-            // Only apply overlay if showBgColor is true AND background is not pure white
-            if (this.showBgColor && this.backgroundColor !== '#ffffff') {
+            // Only apply overlay if showBgColor is true AND background is not pure white AND no background image
+            if (this.showBgColor && this.backgroundColor !== '#ffffff' && !hasBackgroundImage) {
+                console.log('🎭 Applying background overlay (no background image)');
                 this.ctx.fillStyle = `rgba(0, 0, 0, ${
                     this.bgAlpha
                 })`;
                 this.ctx.fillRect(0, 0, width, height);
+            } else if (hasBackgroundImage) {
+                console.log('✅ Skipping overlay - background image is active');
+            } else {
+                console.log('✅ No overlay - background image should be visible');
             }
 
             // Draw based on mode - radial takes precedence over channel layout
+            console.log('🎨 Drawing visualization elements:', {
+                radial: this.radial,
+                channelLayout: this.channelLayout,
+                mode: this.mode,
+                ledBars: this.ledBars,
+                barSpace: this.barSpace
+            });
+            
             if (this.radial) {
+                console.log('🌀 Drawing radial visualization');
                 this.drawRadial();
             } else if (this.channelLayout === 'dual-vertical') {
+                console.log('📊 Drawing dual vertical visualization');
                 this.drawDualVertical();
             } else if (this.channelLayout === 'dual-horizontal') {
+                console.log('📊 Drawing dual horizontal visualization');
                 this.drawDualHorizontal();
             } else if (this.mode === 10) {
+                console.log('📈 Drawing line graph visualization');
                 this.drawLineGraph();
             } else if (this.mode === 6 && this.ledBars) {
+                console.log('💡 Drawing LED bars visualization');
                 this.drawLEDBars();
             } else if (this.mode === 0 && this.barSpace === 0) {
+                console.log('🌊 Drawing fluid spectrum visualization');
                 this.drawFluidSpectrum(); // Use fluid drawing for mode 0 with no bar space
             } else {
                 this.drawBars();
@@ -12947,6 +13273,7 @@
             });
             
             this.initializeSettingsControls();
+            this.initializeBackgroundImageControls();
             this.updateUI();
         }
         
@@ -13061,6 +13388,370 @@
                     this.saveSettings();
                 });
             }
+        }
+
+        initializeBackgroundImageControls() {
+            // Load saved background image from visualizer
+            if (this.visualizer) {
+                this.visualizer.loadBackgroundImage();
+            }
+
+            // Background image button - toggle ON/OFF only
+            const backgroundImgBtn = document.getElementById('backgroundImgBtn');
+            const backgroundSelectImageBtn = document.getElementById('backgroundSelectImageBtn');
+            const backgroundImageFile = document.getElementById('backgroundImageFile');
+            
+            if (backgroundImgBtn) {
+                // Initialize button state
+                this.updateBackgroundToggleButton();
+                
+                backgroundImgBtn.addEventListener('click', () => {
+                    if (this.visualizer) {
+                        console.log('🔘 Background IMG button clicked - current state:', {
+                            enabled: this.visualizer.backgroundImageEnabled,
+                            hasImage: !!this.visualizer.backgroundImage
+                        });
+                        
+                        // Toggle background image enabled state
+                        this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
+                        this.visualizer.saveBackgroundImage();
+                        this.updateBackgroundToggleButton();
+                        
+                        console.log('🔘 Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
+                        
+                        // Force redraw of visualization
+                        if (this.visualizer.audioMotion) {
+                            console.log('🔄 Forcing visualization redraw after background toggle');
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+
+            if (backgroundSelectImageBtn) {
+                backgroundSelectImageBtn.addEventListener('click', () => {
+                    if (backgroundImageFile) {
+                        backgroundImageFile.click();
+                    }
+                });
+            }
+
+            // File input handler
+            if (backgroundImageFile) {
+                backgroundImageFile.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    console.log('📁 Background image file selected:', {
+                        name: file?.name,
+                        type: file?.type,
+                        size: file?.size,
+                        sizeMB: file ? (file.size / (1024 * 1024)).toFixed(2) + 'MB' : 'N/A'
+                    });
+                    
+                    if (file) {
+                        // Validate file type
+                        if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+                            console.error('❌ Invalid file type:', file.type);
+                            alert('Please select a JPG or PNG image file.');
+                            return;
+                        }
+
+                        // Validate file size (2MB limit)
+                        if (file.size > 2 * 1024 * 1024) {
+                            console.error('❌ File too large:', file.size, 'bytes');
+                            alert('File size must be less than 2MB.');
+                            return;
+                        }
+
+                        console.log('✅ File validation passed, reading...');
+                        // Read file as data URL
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            console.log('📖 File read successfully, data URL length:', e.target.result.length);
+                            if (this.visualizer) {
+                                this.visualizer.backgroundImage = e.target.result;
+                                this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
+                                this.visualizer.backgroundImageFileName = file.name;
+                                this.visualizer.backgroundImageFileSize = file.size;
+                                this.visualizer.cachedBackgroundImage = null; // Clear cached image
+                                this.visualizer.saveBackgroundImage();
+                                this.updateBackgroundImageUI();
+                                console.log('💾 Background image saved and enabled');
+                            }
+                        };
+                        reader.onerror = (e) => {
+                            console.error('❌ File read error:', e);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Settings panel toggle
+            const backgroundSettingsBtn = document.getElementById('backgroundSettingsBtn');
+            const backgroundSettingsPanel = document.getElementById('backgroundSettingsPanel');
+            const backgroundSettingsClose = document.getElementById('backgroundSettingsClose');
+
+            if (backgroundSettingsBtn && backgroundSettingsPanel) {
+                backgroundSettingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = backgroundSettingsPanel.style.display !== 'none';
+                    backgroundSettingsPanel.style.display = isVisible ? 'none' : 'block';
+                });
+            }
+
+            if (backgroundSettingsClose && backgroundSettingsPanel) {
+                backgroundSettingsClose.addEventListener('click', () => {
+                    backgroundSettingsPanel.style.display = 'none';
+                });
+            }
+
+            // Close panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (backgroundSettingsPanel && !backgroundSettingsPanel.contains(e.target) && 
+                    !backgroundSettingsBtn.contains(e.target)) {
+                    backgroundSettingsPanel.style.display = 'none';
+                }
+            });
+
+            // Opacity slider
+            const opacitySlider = document.getElementById('backgroundOpacitySlider');
+            const opacityValue = document.getElementById('backgroundOpacityValue');
+            
+            if (opacitySlider && opacityValue) {
+                opacitySlider.value = this.visualizer ? this.visualizer.backgroundImageOpacity : 100;
+                opacityValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageOpacity : 100}%`;
+                
+                opacitySlider.addEventListener('input', (e) => {
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageOpacity = parseInt(e.target.value);
+                        opacityValue.textContent = `${this.visualizer.backgroundImageOpacity}%`;
+                        this.visualizer.saveBackgroundImage();
+                    }
+                });
+            }
+
+            // Saturation slider
+            const saturationSlider = document.getElementById('backgroundSaturationSlider');
+            const saturationValue = document.getElementById('backgroundSaturationValue');
+            
+            if (saturationSlider && saturationValue) {
+                saturationSlider.value = this.visualizer ? this.visualizer.backgroundImageSaturation : 100;
+                saturationValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageSaturation : 100}%`;
+                
+                saturationSlider.addEventListener('input', (e) => {
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageSaturation = parseInt(e.target.value);
+                        saturationValue.textContent = `${this.visualizer.backgroundImageSaturation}%`;
+                        this.visualizer.saveBackgroundImage();
+                    }
+                });
+            }
+
+            // Posterization slider
+            const posterizeSlider = document.getElementById('backgroundPosterizeSlider');
+            const posterizeValue = document.getElementById('backgroundPosterizeValue');
+            
+            if (posterizeSlider && posterizeValue) {
+                posterizeSlider.value = this.visualizer ? this.visualizer.backgroundImagePosterize : 16;
+                posterizeValue.textContent = this.visualizer ? this.visualizer.backgroundImagePosterize : 16;
+                
+                posterizeSlider.addEventListener('input', (e) => {
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImagePosterize = parseInt(e.target.value);
+                        posterizeValue.textContent = this.visualizer.backgroundImagePosterize;
+                        this.visualizer.saveBackgroundImage();
+                    }
+                });
+            }
+
+            // Contrast slider
+            const contrastSlider = document.getElementById('backgroundContrastSlider');
+            const contrastValue = document.getElementById('backgroundContrastValue');
+            
+            if (contrastSlider && contrastValue) {
+                contrastSlider.value = this.visualizer ? this.visualizer.backgroundImageContrast : 100;
+                contrastValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageContrast : 100}%`;
+                
+                contrastSlider.addEventListener('input', (e) => {
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageContrast = parseInt(e.target.value);
+                        contrastValue.textContent = `${this.visualizer.backgroundImageContrast}%`;
+                        this.visualizer.saveBackgroundImage();
+                    }
+                });
+            }
+
+            // Size buttons
+            const sizeButtons = document.querySelectorAll('.size-btn[data-size]');
+            sizeButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (this.visualizer) {
+                        const size = e.target.getAttribute('data-size');
+                        this.visualizer.backgroundImageSize = size;
+                        this.visualizer.saveBackgroundImage();
+                        
+                        // Update active state
+                        sizeButtons.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                });
+            });
+
+            // Clear background button
+            const clearBtn = document.getElementById('backgroundClearBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    if (this.visualizer) {
+                        this.visualizer.clearBackgroundImage();
+                        this.updateBackgroundImageUI();
+                    }
+                });
+            }
+
+            // Initialize UI state
+            this.updateBackgroundImageUI();
+        }
+
+        updateBackgroundToggleButton() {
+            const backgroundImgBtn = document.getElementById('backgroundImgBtn');
+            if (backgroundImgBtn) {
+                if (this.visualizer && this.visualizer.backgroundImageEnabled && this.visualizer.backgroundImage) {
+                    backgroundImgBtn.classList.add('active');
+                    backgroundImgBtn.querySelector('.background-text').textContent = 'Background IMG: On';
+                } else {
+                    backgroundImgBtn.classList.remove('active');
+                    backgroundImgBtn.querySelector('.background-text').textContent = 'Background IMG: Off';
+                }
+            }
+        }
+
+        updateBackgroundToggleButton() {
+            const backgroundImgBtn = document.getElementById('backgroundImgBtn');
+            if (backgroundImgBtn && this.visualizer) {
+                const textSpan = backgroundImgBtn.querySelector('.background-text');
+                if (textSpan) {
+                    textSpan.textContent = this.visualizer.backgroundImageEnabled ? 'Background IMG: ON' : 'Background IMG: OFF';
+                }
+                backgroundImgBtn.classList.toggle('active', this.visualizer.backgroundImageEnabled);
+                
+                console.log('🔄 Background toggle button updated:', {
+                    enabled: this.visualizer.backgroundImageEnabled,
+                    hasImage: !!this.visualizer.backgroundImage,
+                    buttonText: textSpan?.textContent,
+                    buttonActive: backgroundImgBtn.classList.contains('active')
+                });
+                
+                // Debug summary
+                this.debugBackgroundImageState();
+            }
+        }
+
+        debugBackgroundImageState() {
+            if (!this.visualizer) return;
+            
+            console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
+                'Image Data': this.visualizer.backgroundImage ? `Present (${this.visualizer.backgroundImage.length} chars)` : 'Missing',
+                'Enabled': this.visualizer.backgroundImageEnabled,
+                'Opacity': this.visualizer.backgroundImageOpacity + '%',
+                'Saturation': this.visualizer.backgroundImageSaturation + '%',
+                'Button Text': document.querySelector('#backgroundImgBtn .background-text')?.textContent,
+                'Button Active': document.querySelector('#backgroundImgBtn')?.classList.contains('active'),
+                'Canvas Elements': {
+                    'Main Canvas': document.querySelector('#visualizationCanvas') ? 'Present' : 'Missing',
+                    'Capture Canvas': document.querySelector('#captureCanvas') ? 'Present' : 'Missing',
+                    'Composite Canvas': document.querySelector('#compositeCanvas') ? 'Present' : 'Missing',
+                    'All Canvas Elements': document.querySelectorAll('canvas').length + ' found'
+                },
+                'Layer Order': [
+                    'Layer 0: Background Image',
+                    'Layer 1: Video (if active)',
+                    'Layer 2: AudioMotion Visualization',
+                    'Layer 3: Infinite Zoom',
+                    'Layer 4: Kaleidoscope',
+                    'Layer 5: Video Effects'
+                ]
+            });
+        }
+
+        updateBackgroundImageUI() {
+            const backgroundImgBtn = document.getElementById('backgroundImgBtn');
+            const backgroundFileInfo = document.getElementById('backgroundFileInfo');
+            const backgroundFileName = document.getElementById('backgroundFileName');
+            const backgroundFileSize = document.getElementById('backgroundFileSize');
+            const backgroundImagePreview = document.getElementById('backgroundImagePreview');
+
+            // Update toggle button
+            this.updateBackgroundToggleButton();
+
+            // Update sliders
+            const opacitySlider = document.getElementById('backgroundOpacitySlider');
+            const opacityValue = document.getElementById('backgroundOpacityValue');
+            const saturationSlider = document.getElementById('backgroundSaturationSlider');
+            const saturationValue = document.getElementById('backgroundSaturationValue');
+            const posterizeSlider = document.getElementById('backgroundPosterizeSlider');
+            const posterizeValue = document.getElementById('backgroundPosterizeValue');
+            const contrastSlider = document.getElementById('backgroundContrastSlider');
+            const contrastValue = document.getElementById('backgroundContrastValue');
+
+            if (this.visualizer) {
+                if (opacitySlider && opacityValue) {
+                    opacitySlider.value = this.visualizer.backgroundImageOpacity;
+                    opacityValue.textContent = `${this.visualizer.backgroundImageOpacity}%`;
+                }
+                if (saturationSlider && saturationValue) {
+                    saturationSlider.value = this.visualizer.backgroundImageSaturation;
+                    saturationValue.textContent = `${this.visualizer.backgroundImageSaturation}%`;
+                }
+                if (posterizeSlider && posterizeValue) {
+                    posterizeSlider.value = this.visualizer.backgroundImagePosterize;
+                    posterizeValue.textContent = this.visualizer.backgroundImagePosterize;
+                }
+                if (contrastSlider && contrastValue) {
+                    contrastSlider.value = this.visualizer.backgroundImageContrast;
+                    contrastValue.textContent = `${this.visualizer.backgroundImageContrast}%`;
+                }
+
+                // Update size buttons
+                const sizeButtons = document.querySelectorAll('.size-btn[data-size]');
+                sizeButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-size') === this.visualizer.backgroundImageSize) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            if (backgroundFileInfo && backgroundFileName && backgroundFileSize && backgroundImagePreview) {
+                if (this.visualizer && this.visualizer.backgroundImage) {
+                    backgroundFileInfo.style.display = 'block';
+                    
+                    // Display filename and file size
+                    const filename = this.visualizer.backgroundImageFileName || 'Background Image';
+                    const fileSize = this.visualizer.backgroundImageFileSize || 0;
+                    const fileSizeText = fileSize > 0 ? this.formatFileSize(fileSize) : '';
+                    
+                    backgroundFileName.textContent = filename;
+                    backgroundFileSize.textContent = fileSizeText;
+                    
+                    // Create preview image
+                    const img = new Image();
+                    img.onload = () => {
+                        backgroundImagePreview.innerHTML = '';
+                        backgroundImagePreview.appendChild(img);
+                    };
+                    img.src = this.visualizer.backgroundImage;
+                } else {
+                    backgroundFileInfo.style.display = 'none';
+                }
+            }
+        }
+
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
         
         updateUI() {
@@ -13261,6 +13952,17 @@
             // Clear canvas with black background
             this.compositeCtx.fillStyle = '#000000';
             this.compositeCtx.fillRect(0, 0, width, height);
+            
+            // Draw background image if available and enabled
+            if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
+                console.log('🎥 RecordManager: Drawing background image in composite');
+                this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
+            } else {
+                console.log('🎥 RecordManager: Background image skipped -', {
+                    hasImage: !!this.visualizer.backgroundImage,
+                    enabled: this.visualizer.backgroundImageEnabled
+                });
+            }
             
             // Debug logging for kaleidoscope state
             if (this.visualizer.kaleidoscopeEnabled) {
@@ -14288,6 +14990,17 @@
                     this.captureCtx.fillStyle = this.visualizer.backgroundColor || '#000000';
                     this.captureCtx.fillRect(0, 0, this.captureCanvas.width, this.captureCanvas.height);
 
+                    // Layer 0: Background Image (if available and enabled)
+                    if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
+                        console.log('📡 StreamManager Layer 0: Drawing background image');
+                        this.visualizer.drawBackgroundImage(this.captureCtx, this.captureCanvas.width, this.captureCanvas.height);
+                    } else {
+                        console.log('📡 StreamManager Layer 0: Background image skipped -', {
+                            hasImage: !!this.visualizer.backgroundImage,
+                            enabled: this.visualizer.backgroundImageEnabled
+                        });
+                    }
+
                     // Layer 1: Video background - ONLY IF KALEIDOSCOPE VIDEO IS NOT ACTIVE
                     if ((this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && !(this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo)) { // Create temporary canvas for video if needed
                         if (!this.tempVideoCanvas) {
@@ -14879,6 +15592,18 @@
             this.kaleidoscopeApplyToViz = true; // Default to ON
             this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
             this.kaleidoscopeRings = 1; // Number of rings
+
+            // Background image properties
+            this.backgroundImage = null;
+            this.backgroundImageEnabled = false; // Default to OFF
+            this.backgroundImageOpacity = 100;
+            this.backgroundImageSaturation = 100;
+            this.backgroundImagePosterize = 16; // Default to no posterization
+            this.backgroundImageContrast = 100; // Default to normal contrast
+            this.backgroundImageSize = 'original'; // Default sizing: 'fit', 'fill', 'stretch', 'original'
+            this.backgroundImageFileName = '';
+            this.backgroundImageFileSize = 0;
+            this.cachedBackgroundImage = null; // Cached image for synchronous drawing
             this.kaleidoscopeRingSpacing = 0.2; // Spacing between rings (as percentage)
             this.kaleidoscopeShape = 'triangle'; // 'triangle', 'petal', 'rectangle'
             this.kaleidoscopeRingSpeedMultiplier = 0.5; // How much each ring's speed differs
@@ -19383,7 +20108,7 @@ https://rogueamoeba.com/loopback/
                         if (i % 2 === 0) {
                             // Draw main visualization if enabled and available
                             if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
-                                this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                             }
                             
                             // Draw infinite zoom if active and enabled for kaleidoscope
@@ -19394,7 +20119,7 @@ https://rogueamoeba.com/loopback/
                             this.kaleidoscopeVizCtx.scale(1, -1);
                             // Draw main visualization if enabled and available
                             if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
-                                this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            this.kaleidoscopeVizCtx.drawImage(this.audioMotion.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                             }
                             
                             // Draw infinite zoom if active and enabled for kaleidoscope
@@ -19540,6 +20265,202 @@ https://rogueamoeba.com/loopback/
             }
         }
 
+        // Background Image Methods
+        loadBackgroundImage() {
+            try {
+                const saved = localStorage.getItem('gitup_background_image');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.backgroundImage = data.imageData;
+                    this.backgroundImageEnabled = data.enabled || false;
+                    this.backgroundImageOpacity = data.opacity || 100;
+                    this.backgroundImageSaturation = data.saturation || 100;
+                    this.backgroundImagePosterize = data.posterize || 16;
+                    this.backgroundImageContrast = data.contrast || 100;
+                    this.backgroundImageSize = data.size || 'original';
+                    this.backgroundImageFileName = data.fileName || '';
+                    this.backgroundImageFileSize = data.fileSize || 0;
+                    return true;
+                }
+            } catch (e) {
+                console.error('Error loading background image:', e);
+            }
+            return false;
+        }
+
+        saveBackgroundImage() {
+            try {
+                const data = {
+                    imageData: this.backgroundImage,
+                    enabled: this.backgroundImageEnabled,
+                    opacity: this.backgroundImageOpacity,
+                    saturation: this.backgroundImageSaturation,
+                    posterize: this.backgroundImagePosterize,
+                    contrast: this.backgroundImageContrast,
+                    size: this.backgroundImageSize,
+                    fileName: this.backgroundImageFileName,
+                    fileSize: this.backgroundImageFileSize
+                };
+                localStorage.setItem('gitup_background_image', JSON.stringify(data));
+            } catch (e) {
+                console.error('Error saving background image:', e);
+            }
+        }
+
+        clearBackgroundImage() {
+            this.backgroundImage = null;
+            this.backgroundImageEnabled = false;
+            this.backgroundImageOpacity = 100;
+            this.backgroundImageSaturation = 100;
+            this.backgroundImagePosterize = 16;
+            this.backgroundImageContrast = 100;
+            this.backgroundImageSize = 'original';
+            this.backgroundImageFileName = '';
+            this.backgroundImageFileSize = 0;
+            this.cachedBackgroundImage = null; // Clear cached image
+            localStorage.removeItem('gitup_background_image');
+        }
+
+        drawBackgroundImage(ctx, canvasWidth, canvasHeight) {
+            console.log('🎨 drawBackgroundImage called:', {
+                hasImage: !!this.backgroundImage,
+                enabled: this.backgroundImageEnabled,
+                opacity: this.backgroundImageOpacity,
+                saturation: this.backgroundImageSaturation,
+                canvasSize: `${canvasWidth}x${canvasHeight}`,
+                contextType: ctx.constructor.name
+            });
+
+            if (!this.backgroundImage || !this.backgroundImageEnabled) {
+                console.log('❌ Background image not drawn - missing image or disabled');
+                return;
+            }
+
+            // Use cached image if available, otherwise create and cache it
+            if (!this.cachedBackgroundImage) {
+                this.cachedBackgroundImage = new Image();
+                this.cachedBackgroundImage.onload = () => {
+                    console.log('🖼️ Background image cached:', {
+                        imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
+                        dataUrlLength: this.backgroundImage.length
+                    });
+                };
+                this.cachedBackgroundImage.onerror = (e) => {
+                    console.error('❌ Background image failed to load:', e);
+                    this.cachedBackgroundImage = null;
+                };
+                this.cachedBackgroundImage.src = this.backgroundImage;
+            }
+
+            // Only draw if image is loaded
+            if (this.cachedBackgroundImage && this.cachedBackgroundImage.complete && this.cachedBackgroundImage.naturalWidth > 0) {
+                console.log('🖼️ Drawing cached background image:', {
+                    imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
+                    dataUrlLength: this.backgroundImage.length
+                });
+
+                // Calculate dimensions based on sizing option
+                const imgAspect = this.cachedBackgroundImage.width / this.cachedBackgroundImage.height;
+                const canvasAspect = canvasWidth / canvasHeight;
+                
+                let drawWidth, drawHeight, drawX, drawY;
+                
+                switch (this.backgroundImageSize) {
+                    case 'fit':
+                        // Scale to fit within canvas while maintaining aspect ratio
+                        if (imgAspect > canvasAspect) {
+                            drawWidth = canvasWidth;
+                            drawHeight = canvasWidth / imgAspect;
+                        } else {
+                            drawHeight = canvasHeight;
+                            drawWidth = canvasHeight * imgAspect;
+                        }
+                        drawX = (canvasWidth - drawWidth) / 2;
+                        drawY = (canvasHeight - drawHeight) / 2;
+                        break;
+                        
+                    case 'fill':
+                        // Scale to fill entire canvas, cropping if necessary
+                        if (imgAspect > canvasAspect) {
+                            drawHeight = canvasHeight;
+                            drawWidth = canvasHeight * imgAspect;
+                            drawX = (canvasWidth - drawWidth) / 2;
+                            drawY = 0;
+                        } else {
+                            drawWidth = canvasWidth;
+                            drawHeight = canvasWidth / imgAspect;
+                            drawX = 0;
+                            drawY = (canvasHeight - drawHeight) / 2;
+                        }
+                        break;
+                        
+                    case 'stretch':
+                        // Scale to fill entire canvas, distorting aspect ratio
+                        drawWidth = canvasWidth;
+                        drawHeight = canvasHeight;
+                        drawX = 0;
+                        drawY = 0;
+                        break;
+                        
+                    case 'original':
+                    default:
+                        // Display at original size, centered
+                        drawWidth = this.cachedBackgroundImage.width;
+                        drawHeight = this.cachedBackgroundImage.height;
+                        drawX = (canvasWidth - drawWidth) / 2;
+                        drawY = (canvasHeight - drawHeight) / 2;
+                        break;
+                }
+
+                console.log('📐 Background image draw calculations:', {
+                    imgAspect,
+                    canvasAspect,
+                    drawX, drawY, drawWidth, drawHeight
+                });
+
+                ctx.save();
+                ctx.globalAlpha = this.backgroundImageOpacity / 100;
+                console.log('🎭 Applied opacity:', ctx.globalAlpha);
+                
+                // Build filter string for all effects
+                const filters = [];
+                
+                // Apply posterization effect (same as video posterization)
+                if (this.backgroundImagePosterize < 16) {
+                    const steps = this.backgroundImagePosterize;
+                    const posterizeAmount = (16 - steps) / 16;
+                    filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+                    filters.push(`brightness(95%)`);
+                    filters.push(`saturate(200%)`);
+                    if (steps < 8) {
+                        filters.push(`contrast(150%)`);
+                    }
+                }
+                
+                // Apply contrast filter
+                if (this.backgroundImageContrast !== 100) {
+                    filters.push(`contrast(${this.backgroundImageContrast}%)`);
+                }
+                
+                // Apply saturation filter
+                if (this.backgroundImageSaturation !== 100) {
+                    filters.push(`saturate(${this.backgroundImageSaturation}%)`);
+                }
+                
+                // Apply all filters
+                if (filters.length > 0) {
+                    ctx.filter = filters.join(' ');
+                    console.log('🎨 Applied background image filters:', ctx.filter);
+                }
+                
+                ctx.drawImage(this.cachedBackgroundImage, drawX, drawY, drawWidth, drawHeight);
+                console.log('✅ Background image drawn successfully');
+                ctx.restore();
+            } else {
+                console.log('⏳ Background image not ready yet, skipping draw');
+            }
+        }
+
         savePresets() {
             try {
                 localStorage.setItem('gitup_presets', JSON.stringify(this.savedPresets));
@@ -19574,6 +20495,12 @@ https://rogueamoeba.com/loopback/
         toggleVisualization() {
             this.visualizationEnabled = !this.visualizationEnabled;
 
+            console.log('🔄 AM Visualization toggled:', {
+                enabled: this.visualizationEnabled,
+                backgroundImageEnabled: this.backgroundImageEnabled,
+                hasBackgroundImage: !!this.backgroundImage
+            });
+
             // Update button text
             const btn = document.getElementById('vizToggleBtn');
             if (btn) {
@@ -19585,6 +20512,8 @@ https://rogueamoeba.com/loopback/
                 if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                     this.audioMotion.animate();
                 } else { // Stop main visualization but keep animation loop for Infinite Zoom
+                    console.log('🔄 Forcing visualization redraw after AM toggle');
+                    this.audioMotion.draw();
                     // Don't cancel animation frame - let it continue for Infinite Zoom
                     // The animation loop will handle skipping main visualization when disabled
                     // Clear the canvas only if video is NOT active
@@ -22421,6 +23350,88 @@ https://rogueamoeba.com/loopback/
                     window.visualizer.infiniteZoom.resize();
                 }
             });
+
+            // Global debug function for background image
+            window.debugBackgroundImage = function() {
+                if (window.visualizer && window.visualizer.recordManager) {
+                    window.visualizer.recordManager.debugBackgroundImageState();
+                } else {
+                    console.log('❌ Visualizer or RecordManager not available');
+                }
+            };
+
+            // Global function to test background image loading
+            window.testBackgroundImage = function() {
+                console.log('🧪 Testing background image functionality...');
+                if (window.visualizer) {
+                    console.log('Current state:', {
+                        hasImage: !!window.visualizer.backgroundImage,
+                        enabled: window.visualizer.backgroundImageEnabled,
+                        opacity: window.visualizer.backgroundImageOpacity,
+                        saturation: window.visualizer.backgroundImageSaturation
+                    });
+                    
+                    // Test drawing on a temporary canvas
+                    const testCanvas = document.createElement('canvas');
+                    testCanvas.width = 800;
+                    testCanvas.height = 600;
+                    const testCtx = testCanvas.getContext('2d');
+                    
+                    console.log('Testing drawBackgroundImage...');
+                    window.visualizer.drawBackgroundImage(testCtx, 800, 600);
+                    
+                    // Add test canvas to page for visual inspection
+                    testCanvas.style.position = 'fixed';
+                    testCanvas.style.top = '10px';
+                    testCanvas.style.right = '10px';
+                    testCanvas.style.border = '2px solid red';
+                    testCanvas.style.zIndex = '9999';
+                    testCanvas.id = 'debug-test-canvas';
+                    document.body.appendChild(testCanvas);
+                    
+                    console.log('Test canvas added to page (red border)');
+                }
+            };
+
+            // Global function to inspect main canvas
+            window.inspectMainCanvas = function() {
+                console.log('🔍 Inspecting main canvas...');
+                const mainCanvas = document.querySelector('#visualizationCanvas');
+                if (mainCanvas) {
+                    console.log('Main canvas found:', {
+                        width: mainCanvas.width,
+                        height: mainCanvas.height,
+                        style: mainCanvas.style.cssText,
+                        computedStyle: window.getComputedStyle(mainCanvas)
+                    });
+                    
+                    // Check if canvas has content
+                    const ctx = mainCanvas.getContext('2d');
+                    const imageData = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+                    const hasContent = imageData.data.some(pixel => pixel !== 0);
+                    console.log('Canvas has content:', hasContent);
+                    
+                    // Create a copy of the canvas for inspection
+                    const copyCanvas = document.createElement('canvas');
+                    copyCanvas.width = mainCanvas.width;
+                    copyCanvas.height = mainCanvas.height;
+                    const copyCtx = copyCanvas.getContext('2d');
+                    copyCtx.drawImage(mainCanvas, 0, 0);
+                    
+                    copyCanvas.style.position = 'fixed';
+                    copyCanvas.style.top = '100px';
+                    copyCanvas.style.right = '10px';
+                    copyCanvas.style.border = '2px solid blue';
+                    copyCanvas.style.zIndex = '9999';
+                    copyCanvas.id = 'debug-main-canvas-copy';
+                    document.body.appendChild(copyCanvas);
+                    
+                    console.log('Main canvas copy added to page (blue border)');
+                } else {
+                    console.log('❌ Main canvas not found');
+                    console.log('Available canvas elements:', document.querySelectorAll('canvas'));
+                }
+            };
         });
 
         // Global function for closing info popup
