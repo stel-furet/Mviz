@@ -176,6 +176,15 @@
         </div>
         <!-- End header-left -->
 
+        <!-- Theme Switcher -->
+        <div class="theme-switcher">
+            <select id="themeSelector" class="theme-select">
+                <option value="steel-gray">Steel Gray</option>
+                <option value="sunset">Sunset</option>
+                <option value="aurora">Aurora</option>
+            </select>
+        </div>
+
         </div>
     <!-- End header-content -->
 </header>
@@ -1338,19 +1347,76 @@
         }
 
         :root {
-            --accent-color: #2969b0;
-            --text-primary: #ffffff;
-            --text-secondary: #ffffff;
-            --hover-color: #2a2a2a;
-            --error-color: #b8312f;
+            /* Default Steel Gray Theme */
+            --primary-bg: #111827;
+            --secondary-bg: #1f2937;
+            --accent-color: #6b7280;
+            --highlight-color: #9ca3af;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --hover-color: #374151;
+            --error-color: #ef4444;
+            --border-color: #4b5563;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+
+        /* Steel Gray Theme (Default) */
+        [data-theme="steel-gray"] {
+            --primary-bg: #111827;
+            --secondary-bg: #1f2937;
+            --accent-color: #6b7280;
+            --highlight-color: #9ca3af;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --hover-color: #374151;
+            --error-color: #ef4444;
+            --border-color: #4b5563;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+
+        /* Sunset Theme */
+        [data-theme="sunset"] {
+            --primary-bg: #1c1917;
+            --secondary-bg: #292524;
+            --accent-color: #f97316;
+            --highlight-color: #fb923c;
+            --text-primary: #fef3c7;
+            --text-secondary: #fde68a;
+            --hover-color: #451a03;
+            --error-color: #dc2626;
+            --border-color: #78350f;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --info-color: #2563eb;
+        }
+
+        /* Aurora Theme */
+        [data-theme="aurora"] {
+            --primary-bg: #2c3e50;
+            --secondary-bg: #34495e;
+            --accent-color: #667eea;
+            --highlight-color: #764ba2;
+            --text-primary: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --hover-color: #2c3e50;
+            --error-color: #e74c3c;
+            --border-color: #5d6d7e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
         }
 
         html,
         body {
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--primary-bg, #f5f3e9);
+            background: var(--primary-bg);
             color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         body {
@@ -1360,24 +1426,319 @@
 
         .app-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             flex: 1;
-            background: var(--primary-bg, #f5f3e9);
+            background: var(--primary-bg);
             transition: background 0.3s ease;
+            height: calc(100vh - 80px); /* Adjust for header height */
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 200px;
+            background: var(--secondary-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 50px;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            display: none;
+        }
+
+        .sidebar.collapsed .section-title {
+            display: none;
+        }
+
+        .sidebar.collapsed .section-content {
+            display: none;
+        }
+
+        .sidebar.collapsed .section-icon {
+            display: block;
+        }
+
+        .section-icon {
+            display: none;
+            text-align: center;
+            padding: 12px 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            font-weight: bold;
+        }
+
+        .section-icon:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--hover-color);
+        }
+
+        .sidebar-toggle {
+            background: var(--accent-color);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--highlight-color);
+            transform: scale(1.05);
+        }
+
+        .sidebar-title {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 8px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px 8px;
+            margin: 0;
+            background: var(--hover-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .section-title:hover {
+            background: var(--accent-color);
+            color: var(--text-primary);
+        }
+
+        .section-content.collapsed {
+            display: none;
+        }
+
+        .section-title.collapsed::after {
+            content: '▶';
+            float: right;
+            transition: transform 0.3s ease;
+            font-size: 10px;
+        }
+
+        .section-title::after {
+            content: '▼';
+            float: right;
+            transition: transform 0.3s ease;
+            font-size: 10px;
+        }
+
+        .section-content {
+            padding: 8px 16px 16px;
+        }
+
+        /* Sidebar Control Groups */
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-mode-btn {
+            background: var(--accent-color);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            width: 90%;
+            max-width: 90%;
+            margin-bottom: 8px;
+        }
+
+        .input-mode-btn:hover {
+            background: var(--highlight-color);
+            transform: translateY(-1px);
+        }
+
+        .input-mode-btn.active {
+            background: var(--success-color);
+        }
+
+        .audio-device-select {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 90%;
+            max-width: 90%;
+        }
+
+        .audio-device-select:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        .audio-device-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+        }
+
+        .audio-device-select option {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+        }
+
+        /* Dropdown styles for sidebar */
+        .dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .dropdown-toggle {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            width: 90%;
+            max-width: 90%;
+            text-align: left;
+            position: relative;
+        }
+
+        .dropdown-toggle:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        .dropdown-toggle::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-toggle.open::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item:hover {
+            background: var(--hover-color);
+        }
+
+        /* Main area adjustments */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--primary-bg);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed + .main-area {
+            margin-left: 0;
         }
 
         .header {
-            background: var(--secondary-bg, #1a1a1a);
+            background: var(--secondary-bg);
             padding: 12px 16px;
-            border-bottom: 2px solid var(--border-color, #898989);
+            border-bottom: 2px solid var(--border-color);
             flex-shrink: 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
             position: relative;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .header.gradient-mode {
-            background: linear-gradient(135deg, var(--secondary-bg, #1a1a1a) 0%, #151515 100%);
+            background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--primary-bg) 100%);
         }
 
         .header-content {
@@ -1432,6 +1793,42 @@
             height: 1px;
             background: rgba(255, 255, 255, 0.3);
             margin: 8px 0;
+        }
+
+        /* Theme Switcher Styles */
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-select {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .theme-select:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        .theme-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+        }
+
+        .theme-select option {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
         }
 
         /* Two-column layout for Visualizations section */
@@ -5067,6 +5464,108 @@
     </style>
 </header>
 <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+                <span class="toggle-icon">☰</span>
+            </button>
+            <h3 class="sidebar-title">Controls</h3>
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Audio Input Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Audio Input">♪</div>
+                <h4 class="section-title" onclick="toggleSection('audio')">Audio Input</h4>
+                <div class="section-content" id="sidebarAudioInput">
+                    <!-- Live Audio Input -->
+                    <div class="control-group">
+                        <button class="input-mode-btn" id="sidebarInputModeBtn" title="Toggle Live Audio Input">
+                            <span class="input-mode-text">Live Audio</span>
+                        </button>
+                        <select class="audio-device-select" id="sidebarAudioDeviceSelect" style="display: none;">
+                            <option value="">Select Audio Input...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Playlist -->
+                    <div class="control-group">
+                        <div class="dropdown playlist-dropdown">
+                            <div class="dropdown-label">Playlist</div>
+                            <button class="dropdown-toggle" id="sidebarPlaylistToggle">Select Track</button>
+                            <div class="dropdown-content" id="sidebarPlaylistDropdown">
+                                <!-- Playlist content will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Input Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Video Input">▶</div>
+                <h4 class="section-title" onclick="toggleSection('video')">Video Input</h4>
+                <div class="section-content" id="sidebarVideoInput">
+                    <!-- Video controls will be moved here -->
+                </div>
+            </div>
+
+            <!-- Visualizations Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Visualizations">◊</div>
+                <h4 class="section-title" onclick="toggleSection('visualizations')">Visualizations</h4>
+                <div class="section-content" id="sidebarVisualizations">
+                    <!-- Visualization controls will be moved here -->
+                </div>
+            </div>
+
+            <!-- Background Image Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Background">■</div>
+                <h4 class="section-title" onclick="toggleSection('background')">Background</h4>
+                <div class="section-content" id="sidebarBackground">
+                    <!-- Background image controls will be moved here -->
+                </div>
+            </div>
+
+            <!-- Layers Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Layers">☰</div>
+                <h4 class="section-title" onclick="toggleSection('layers')">Layers</h4>
+                <div class="section-content" id="sidebarLayers">
+                    <!-- Layer management will be added here -->
+                </div>
+            </div>
+
+            <!-- Autopilot Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Autopilot">◯</div>
+                <h4 class="section-title" onclick="toggleSection('autopilot')">Autopilot</h4>
+                <div class="section-content" id="sidebarAutopilot">
+                    <!-- Autopilot controls will be moved here -->
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Output">◉</div>
+                <h4 class="section-title" onclick="toggleSection('output')">Output</h4>
+                <div class="section-content" id="sidebarOutput">
+                    <!-- Output controls will be moved here -->
+                </div>
+            </div>
+
+            <!-- Global Presets Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Presets">◊</div>
+                <h4 class="section-title" onclick="toggleSection('presets')">Presets</h4>
+                <div class="section-content" id="sidebarPresets">
+                    <!-- Global preset controls will be moved here -->
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <main class="main-area">
         <div class="visualization-container" id="visualizationContainer">
@@ -23338,11 +23837,254 @@ https://rogueamoeba.com/loopback/
                 }
             }
 
+            // Theme System Functions
+            function initializeThemeSystem() {
+                const themeSelector = document.getElementById('themeSelector');
+                if (!themeSelector) return;
+
+                // Load saved theme or default to steel-gray
+                const savedTheme = localStorage.getItem('vizzy-theme') || 'steel-gray';
+                themeSelector.value = savedTheme;
+                applyTheme(savedTheme);
+
+                // Add event listener for theme changes
+                themeSelector.addEventListener('change', (e) => {
+                    const selectedTheme = e.target.value;
+                    applyTheme(selectedTheme);
+                    localStorage.setItem('vizzy-theme', selectedTheme);
+                });
+            }
+
+            function applyTheme(themeName) {
+                // Remove existing theme classes
+                document.body.classList.remove('theme-steel-gray', 'theme-sunset', 'theme-aurora');
+                
+                // Apply new theme
+                document.body.setAttribute('data-theme', themeName);
+                document.body.classList.add(`theme-${themeName}`);
+                
+                // Update any elements that need theme-specific styling
+                updateThemeElements(themeName);
+            }
+
+            function updateThemeElements(themeName) {
+                // Update any elements that need special theme handling
+                const themeColors = {
+                    'steel-gray': {
+                        primary: '#111827',
+                        secondary: '#1f2937',
+                        accent: '#6b7280'
+                    },
+                    'sunset': {
+                        primary: '#1c1917',
+                        secondary: '#292524',
+                        accent: '#f97316'
+                    },
+                    'aurora': {
+                        primary: '#2c3e50',
+                        secondary: '#34495e',
+                        accent: '#667eea'
+                    }
+                };
+
+                const colors = themeColors[themeName] || themeColors['steel-gray'];
+                
+                // Update any custom elements that need theme colors
+                // This will be expanded as we add more theme-aware components
+                console.log(`Theme applied: ${themeName}`, colors);
+            }
+
+            // Sidebar System Functions
+            function initializeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                
+                if (!sidebar || !sidebarToggle) return;
+
+                // Load saved sidebar state or default to expanded
+                const savedState = localStorage.getItem('vizzy-sidebar-collapsed');
+                const isCollapsed = savedState === 'true';
+                
+                if (isCollapsed) {
+                    sidebar.classList.add('collapsed');
+                }
+
+                // Add toggle functionality
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    const isNowCollapsed = sidebar.classList.contains('collapsed');
+                    localStorage.setItem('vizzy-sidebar-collapsed', isNowCollapsed.toString());
+                    
+                    // Update toggle icon
+                    const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
+                    if (toggleIcon) {
+                        toggleIcon.textContent = isNowCollapsed ? '☰' : '✕';
+                    }
+                });
+
+                // Initialize with correct icon
+                const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '☰' : '✕';
+                }
+
+                // Initialize sidebar controls
+                initializeSidebarControls();
+            }
+
+            function initializeSidebarControls() {
+                // Connect sidebar audio controls to existing functionality
+                const sidebarInputModeBtn = document.getElementById('sidebarInputModeBtn');
+                const sidebarAudioDeviceSelect = document.getElementById('sidebarAudioDeviceSelect');
+                const sidebarPlaylistToggle = document.getElementById('sidebarPlaylistToggle');
+                const sidebarPlaylistDropdown = document.getElementById('sidebarPlaylistDropdown');
+
+                // Connect to existing controls
+                const originalInputModeBtn = document.getElementById('inputModeBtn');
+                const originalAudioDeviceSelect = document.getElementById('audioDeviceSelect');
+                const originalPlaylistToggle = document.getElementById('playlistToggle');
+                const originalPlaylistDropdown = document.getElementById('playlistDropdown');
+
+                if (sidebarInputModeBtn) {
+                    // Connect sidebar button directly to visualizer functionality
+                    sidebarInputModeBtn.addEventListener('click', () => {
+                        if (window.visualizer && window.visualizer.recordManager) {
+                            // Toggle input mode
+                            const isCurrentlyPlaylist = window.visualizer.inputMode === 'playlist';
+                            window.visualizer.inputMode = isCurrentlyPlaylist ? 'microphone' : 'playlist';
+                            
+                            // Update button state
+                            updateSidebarAudioButton();
+                            
+                            // Show/hide device selector
+                            const deviceSelect = document.getElementById('sidebarAudioDeviceSelect');
+                            if (deviceSelect) {
+                                deviceSelect.style.display = isCurrentlyPlaylist ? 'block' : 'none';
+                            }
+                        }
+                    });
+                }
+
+                if (sidebarAudioDeviceSelect) {
+                    // Connect device selection directly to visualizer
+                    sidebarAudioDeviceSelect.addEventListener('change', async (e) => {
+                        const deviceId = e.target.value;
+                        if (window.visualizer && window.visualizer.recordManager) {
+                            try {
+                                // Update the visualizer's audio input
+                                await window.visualizer.recordManager.setAudioInput(deviceId);
+                                console.log('Audio input changed to:', deviceId);
+                            } catch (error) {
+                                console.error('Error changing audio input:', error);
+                            }
+                        }
+                    });
+
+                    // Populate device list when visualizer is ready
+                    if (window.visualizer && window.visualizer.recordManager) {
+                        populateAudioDevices();
+                    }
+                }
+
+                if (sidebarPlaylistToggle) {
+                    // Connect playlist dropdown directly
+                    sidebarPlaylistToggle.addEventListener('click', () => {
+                        const dropdown = document.getElementById('sidebarPlaylistDropdown');
+                        if (dropdown) {
+                            dropdown.classList.toggle('show');
+                            sidebarPlaylistToggle.classList.toggle('open');
+                        }
+                    });
+
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', (e) => {
+                        if (!sidebarPlaylistToggle.contains(e.target) && !sidebarPlaylistDropdown.contains(e.target)) {
+                            sidebarPlaylistDropdown.classList.remove('show');
+                            sidebarPlaylistToggle.classList.remove('open');
+                        }
+                    });
+                }
+
+                // Initialize button states
+                updateSidebarAudioButton();
+                updateSidebarPlaylistButton();
+            }
+
+            function updateSidebarAudioButton() {
+                const sidebarBtn = document.getElementById('sidebarInputModeBtn');
+                
+                if (sidebarBtn && window.visualizer) {
+                    const isMicrophoneMode = window.visualizer.inputMode === 'microphone';
+                    sidebarBtn.classList.toggle('active', isMicrophoneMode);
+                    
+                    const textElement = sidebarBtn.querySelector('.input-mode-text');
+                    if (textElement) {
+                        textElement.textContent = isMicrophoneMode ? 'Live Audio' : 'Playlist';
+                    }
+                }
+            }
+
+            function updateSidebarPlaylistButton() {
+                const sidebarBtn = document.getElementById('sidebarPlaylistToggle');
+                const originalBtn = document.getElementById('playlistToggle');
+                
+                if (sidebarBtn && originalBtn) {
+                    sidebarBtn.textContent = originalBtn.textContent;
+                }
+            }
+
+            async function populateAudioDevices() {
+                const select = document.getElementById('sidebarAudioDeviceSelect');
+                if (!select) return;
+
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const audioInputs = devices.filter(device => device.kind === 'audioinput');
+                    
+                    // Clear existing options
+                    select.innerHTML = '<option value="">Select Audio Input...</option>';
+                    
+                    // Add device options
+                    audioInputs.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.textContent = device.label || `Audio Input ${audioInputs.indexOf(device) + 1}`;
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error getting audio devices:', error);
+                }
+            }
+
+            // Global function for toggling sections
+            window.toggleSection = function(sectionName) {
+                const sectionContent = document.getElementById(`sidebar${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}`);
+                const sectionTitle = sectionContent?.previousElementSibling;
+                
+                if (sectionContent && sectionTitle) {
+                    sectionContent.classList.toggle('collapsed');
+                    sectionTitle.classList.toggle('collapsed');
+                    
+                    // Update arrow direction
+                    if (sectionTitle.classList.contains('collapsed')) {
+                        sectionTitle.innerHTML = sectionTitle.textContent.replace('▼', '▶');
+                    } else {
+                        sectionTitle.innerHTML = sectionTitle.textContent.replace('▶', '▼');
+                    }
+                }
+            }
+
             // Initialize the visualizer
             let visualizer;
 
         document.addEventListener('DOMContentLoaded', () => {
             window.visualizer = new GitItUpVisualizer();
+            
+            // Initialize Theme System
+            initializeThemeSystem();
+            
+            // Initialize Sidebar
+            initializeSidebar();
             
             // Add resize listener for Infinite Zoom
             window.addEventListener('resize', () => {
