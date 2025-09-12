@@ -548,9 +548,14 @@
         <!-- Infinite Zoom -->
         <div class="kaleidoscope-controls">
             <div class="dropdown-label">Infinite Zoom</div>
-            <button class="dropdown-toggle kaleidoscope-btn" id="infiniteZoomBtn" title="Infinite Zoom">
-                <span class="kaleidoscope-btn-text">Infinite Zoom Off</span>
-            </button>
+            <div class="button-group">
+                <button class="dropdown-toggle kaleidoscope-btn" id="infiniteZoomBtn" title="Infinite Zoom">
+                    <span class="kaleidoscope-btn-text">Infinite Zoom Off</span>
+                </button>
+                <button class="gear-btn" id="infiniteZoomGearBtn" title="Infinite Zoom Settings">
+                    <span class="gear-icon">⚙️</span>
+                </button>
+            </div>
 
             <!-- Infinite Zoom settings panel -->
             <div class="kaleidoscope-panel" id="infiniteZoomPanel" style="display: none;">
@@ -3572,6 +3577,34 @@
             transform: rotate(90deg) scale(1.1);
         }
 
+        .gear-btn {
+            background: var(--hover-color);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+
+        .gear-btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg, #f5f3e9);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .kaleidoscope-panel {
             position: absolute;
             top: calc(100% + 0px);
@@ -5448,8 +5481,7 @@
             if (window.visualizer && window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
                 // Check if Infinite Zoom is being captured via kaleidoscope
                 const isCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
-                                                window.visualizer.kaleidoscopeApplyToViz && 
-                                                window.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                    (window.visualizer.kaleidoscopeApplyToViz || window.visualizer.kaleidoscopeApplyToInfiniteZoom);
                 
                 let audioFeatures = null;
                 
@@ -5482,13 +5514,13 @@
                     }
                 }
                 
-                // Always update Infinite Zoom (needed for kaleidoscope to capture)
+                // Update Infinite Zoom (always needed for kaleidoscope to capture)
                 window.visualizer.infiniteZoom.update(audioFeatures);
                 
                 // Always draw Infinite Zoom (needed for kaleidoscope to capture)
                 window.visualizer.infiniteZoom.draw();
                 
-                // Hide/show canvas based on whether it's being captured via kaleidoscope
+                // Hide canvas when captured via kaleidoscope to prevent background layer
                 if (isCapturedViaKaleidoscope) {
                     window.visualizer.infiniteZoom.canvas.style.display = 'none';
                 } else {
@@ -14844,7 +14876,7 @@
             this.kaleidoscopeCenterX = 0.5;
             this.kaleidoscopeCenterY = 0.5;
             this.kaleidoscopeApplyToVideo = false;
-            this.kaleidoscopeApplyToViz = false;
+            this.kaleidoscopeApplyToViz = true; // Default to ON
             this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
             this.kaleidoscopeRings = 1; // Number of rings
             this.kaleidoscopeRingSpacing = 0.2; // Spacing between rings (as percentage)
@@ -20255,11 +20287,38 @@ https://rogueamoeba.com/loopback/
                 });
             }
             
-            // Infinite Zoom button
+            // Infinite Zoom toggle button
             const infiniteZoomBtn = document.getElementById('infiniteZoomBtn');
             if (infiniteZoomBtn) {
                 infiniteZoomBtn.addEventListener('click', () => {
-                    this.toggleInfiniteZoom();
+                    // Toggle IZ on/off
+                    if (this.infiniteZoom) {
+                        if (this.infiniteZoom.isActive) {
+                            this.infiniteZoom.stop();
+                            const btnText = infiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
+                            btnText.textContent = 'Infinite Zoom Off';
+                            infiniteZoomBtn.classList.remove('active');
+                        } else {
+                            this.infiniteZoom.initialize();
+                            this.infiniteZoom.start();
+                            const btnText = infiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
+                            btnText.textContent = 'Infinite Zoom On';
+                            infiniteZoomBtn.classList.add('active');
+                        }
+                    }
+                });
+            }
+
+            // Infinite Zoom gear button
+            const infiniteZoomGearBtn = document.getElementById('infiniteZoomGearBtn');
+            if (infiniteZoomGearBtn) {
+                infiniteZoomGearBtn.addEventListener('click', () => {
+                    // Only toggle settings panel, don't affect IZ state
+                    const panel = document.getElementById('infiniteZoomPanel');
+                    if (panel) {
+                        const isVisible = panel.style.display !== 'none';
+                        panel.style.display = isVisible ? 'none' : 'block';
+                    }
                 });
             }
             
@@ -20716,6 +20775,12 @@ https://rogueamoeba.com/loopback/
             // Toggle buttons for applying to video/viz
             const kaleidoscopeVideoBtn = document.getElementById('kaleidoscopeVideoBtn');
             if (kaleidoscopeVideoBtn) {
+                // Set initial state
+                kaleidoscopeVideoBtn.textContent = `Apply to Video: ${
+                    this.kaleidoscopeApplyToVideo ? 'On' : 'Off'
+                }`;
+                kaleidoscopeVideoBtn.classList.toggle('active', this.kaleidoscopeApplyToVideo);
+                
                 kaleidoscopeVideoBtn.addEventListener('click', () => {
                     this.kaleidoscopeApplyToVideo = !this.kaleidoscopeApplyToVideo;
                     kaleidoscopeVideoBtn.textContent = `Apply to Video: ${
@@ -20733,7 +20798,7 @@ https://rogueamoeba.com/loopback/
 
                         // Force immediate redraw
                         this.applyKaleidoscopeEffect();
-                    } else if (!this.kaleidoscopeApplyToViz) {
+                    } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToInfiniteZoom) {
                         this.stopKaleidoscopeAnimation();
                         this.kaleidoscopeEnabled = false;
                     }
@@ -20753,6 +20818,12 @@ https://rogueamoeba.com/loopback/
 
             const kaleidoscopeVizBtn = document.getElementById('kaleidoscopeVizBtn');
             if (kaleidoscopeVizBtn) {
+                // Set initial state
+                kaleidoscopeVizBtn.textContent = `Apply to Viz: ${
+                    this.kaleidoscopeApplyToViz ? 'On' : 'Off'
+                }`;
+                kaleidoscopeVizBtn.classList.toggle('active', this.kaleidoscopeApplyToViz);
+                
                 kaleidoscopeVizBtn.addEventListener('click', () => {
                     this.kaleidoscopeApplyToViz = !this.kaleidoscopeApplyToViz;
                     kaleidoscopeVizBtn.textContent = `Apply to Viz: ${
@@ -20767,7 +20838,7 @@ https://rogueamoeba.com/loopback/
                             this.initKaleidoscope();
                             this.startKaleidoscopeAnimation();
                         }
-                    } else if (!this.kaleidoscopeApplyToVideo) {
+                    } else if (!this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom) {
                         this.stopKaleidoscopeAnimation();
                         this.kaleidoscopeEnabled = false;
                     }
@@ -20804,6 +20875,29 @@ https://rogueamoeba.com/loopback/
                         this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
                     }`;
                     kaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+
+                    // Enable kaleidoscope if turning on IZ, disable if all are off
+                    if (this.kaleidoscopeApplyToInfiniteZoom) {
+                        if (!this.kaleidoscopeEnabled) {
+                            this.kaleidoscopeEnabled = true;
+                            this.initKaleidoscope();
+                            this.startKaleidoscopeAnimation();
+                        }
+                    } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo) {
+                        this.stopKaleidoscopeAnimation();
+                        this.kaleidoscopeEnabled = false;
+                    }
+
+                    // Update main button state
+                    const btn = document.getElementById('kaleidoscopeBtn');
+                    const btnText = btn.querySelector('.kaleidoscope-btn-text');
+                    if (this.kaleidoscopeEnabled) {
+                        btnText.textContent = 'Kaleidoscope On';
+                        btn.classList.add('active');
+                    } else {
+                        btnText.textContent = 'Kaleidoscope Off';
+                        btn.classList.remove('active');
+                    }
 
                     // Apply kaleidoscope effect if enabled
                     if (this.kaleidoscopeEnabled) {
