@@ -1106,10 +1106,10 @@
         /* Embedded Playlist Manager in Sidebar */
         .embedded-playlist-manager {
             width: 100%;
-            max-width: 275px;
-            height: 400px;
+            max-width: 270px;
+            height: 405px;
             overflow-y: auto;
-            border: 1px solid var(--border-color);
+            border: none;
             border-radius: 6px;
             background: var(--secondary-bg);
             padding: 8px;
@@ -1123,15 +1123,11 @@
             margin-bottom: 2px;
         }
 
-        .embedded-playlist-manager .track-artwork {
-            width: 30px;
-            height: 30px;
-            margin-right: 8px;
-        }
 
         .embedded-playlist-manager .track-title {
             font-size: 12px;
             font-weight: 500;
+            text-align: left;
         }
 
         .embedded-playlist-manager .track-details {
@@ -1143,10 +1139,14 @@
         }
 
         .embedded-playlist-manager .track-play-btn,
+        .embedded-playlist-manager .track-pause-btn,
         .embedded-playlist-manager .track-remove-btn {
             width: 20px;
             height: 20px;
             font-size: 10px;
+            opacity: 1;
+            visibility: visible;
+            display: inline-block;
         }
 
         /* Playlist Actions for Embedded */
@@ -1173,6 +1173,71 @@
         .embedded-playlist-manager .playlist-actions-dropdown button:hover {
             background: var(--accent-color);
             border-color: var(--accent-color);
+        }
+
+        /* Background Image Controls in Sidebar - Embedded Style */
+        .sidebar .background-file-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: var(--hover-color);
+            border-radius: 4px;
+        }
+
+        .sidebar .file-preview-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sidebar .image-preview {
+            width: 40px;
+            height: 40px;
+            background: var(--border-color);
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .sidebar .file-details {
+            flex: 1;
+        }
+
+        .sidebar .file-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .sidebar .file-size {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .sidebar .size-btn {
+            flex: 1;
+            padding: 6px 8px;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .size-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .sidebar .clear-btn {
+            background: #ff4444;
+            color: white;
+        }
+
+        .sidebar .clear-btn:hover {
+            background: #cc3333;
         }
 
         .sidebar-content {
@@ -4403,6 +4468,11 @@
             color: white;
         }
 
+        .track-pause-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
         .track-remove-btn:hover {
             background: #ff4444;
             color: white;
@@ -5584,7 +5654,80 @@
                 <div class="section-icon" title="Background">■</div>
                 <h4 class="section-title" onclick="toggleSection('background')">Background</h4>
                 <div class="section-content" id="sidebarBackground">
-                    <!-- Background image controls will be moved here -->
+                    <!-- Background Image Toggle -->
+                    <div class="control-group">
+                        <button class="dropdown-toggle viz-toggle-btn" id="sidebarBackgroundImgBtn" title="Toggle Background Image">
+                            <span class="background-text">Background IMG: OFF</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Image Selection -->
+                    <div class="control-group">
+                        <div class="group-label">Image</div>
+                        <button class="control-btn" id="sidebarBackgroundSelectImageBtn">Select Image</button>
+                        <input type="file" id="sidebarBackgroundImageFile" accept=".jpg,.jpeg,.png" style="display: none;">
+                        <div class="background-file-info" id="sidebarBackgroundFileInfo" style="display: none;">
+                            <div class="file-preview-container">
+                                <div class="image-preview" id="sidebarBackgroundImagePreview"></div>
+                                <div class="file-details">
+                                    <div class="file-name" id="sidebarBackgroundFileName"></div>
+                                    <div class="file-size" id="sidebarBackgroundFileSize"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Opacity -->
+                    <div class="control-group">
+                        <div class="group-label">Opacity</div>
+                        <div class="slider-container">
+                            <input type="range" id="sidebarBackgroundOpacitySlider" class="control-slider" min="0" max="100" value="100">
+                            <span class="slider-value" id="sidebarBackgroundOpacityValue">100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Saturation -->
+                    <div class="control-group">
+                        <div class="group-label">Saturation</div>
+                        <div class="slider-container">
+                            <input type="range" id="sidebarBackgroundSaturationSlider" class="control-slider" min="0" max="200" value="100">
+                            <span class="slider-value" id="sidebarBackgroundSaturationValue">100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Posterization -->
+                    <div class="control-group">
+                        <div class="group-label">Posterization</div>
+                        <div class="slider-container">
+                            <input type="range" id="sidebarBackgroundPosterizeSlider" class="control-slider" min="0" max="16" value="16">
+                            <span class="slider-value" id="sidebarBackgroundPosterizeValue">16</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Contrast -->
+                    <div class="control-group">
+                        <div class="group-label">Contrast</div>
+                        <div class="slider-container">
+                            <input type="range" id="sidebarBackgroundContrastSlider" class="control-slider" min="0" max="200" value="100">
+                            <span class="slider-value" id="sidebarBackgroundContrastValue">100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Sizing -->
+                    <div class="control-group">
+                        <div class="group-label">Sizing</div>
+                        <div class="button-group">
+                            <button class="size-btn" id="sidebarBackgroundSizeFit" data-size="fit">Fit</button>
+                            <button class="size-btn" id="sidebarBackgroundSizeFill" data-size="fill">Fill</button>
+                            <button class="size-btn" id="sidebarBackgroundSizeStretch" data-size="stretch">Stretch</button>
+                            <button class="size-btn active" id="sidebarBackgroundSizeOriginal" data-size="original">Original</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Clear Background -->
+                    <div class="control-group">
+                        <button class="control-btn clear-btn" id="sidebarBackgroundClearBtn">Clear Background</button>
+                    </div>
                 </div>
             </div>
 
@@ -13145,7 +13288,6 @@
                 
                 html += `
                     <div class="track-item ${needsRescanClass}" data-track-id="${track.id}" data-track-index="${index}" draggable="true">
-                        <img class="track-artwork" src="${track.artwork}" alt="Album artwork" />
                         <div class="track-info">
                             <div class="track-title">${this.escapeHtml(track.title)}</div>
                             <div class="track-details">
@@ -13156,6 +13298,7 @@
                         </div>
                         <div class="track-actions">
                             <button class="track-play-btn" title="${isPlayable ? 'Play Track' : 'Rescan folder to play'}" ${!isPlayable ? 'disabled' : ''}>▶</button>
+                            <button class="track-pause-btn" title="Pause Track" style="display: none;">⏸</button>
                             <button class="track-remove-btn" title="Remove Track">×</button>
                         </div>
                     </div>
@@ -13187,6 +13330,33 @@
                     const trackId = trackItem?.dataset.trackId;
                     if (trackId) {
                         this.playTrack(trackId);
+                        // Show pause button, hide play button
+                        const pauseBtn = trackItem.querySelector('.track-pause-btn');
+                        if (pauseBtn) {
+                            btn.style.display = 'none';
+                            pauseBtn.style.display = 'inline-block';
+                        }
+                    }
+                });
+            });
+            
+            // Track pause buttons
+            document.querySelectorAll('.track-pause-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const trackItem = btn.closest('.track-item');
+                    const trackId = trackItem?.dataset.trackId;
+                    if (trackId) {
+                        // Pause the track
+                        if (this.visualizer && this.visualizer.isPlaying) {
+                            this.visualizer.pause();
+                        }
+                        // Show play button, hide pause button
+                        const playBtn = trackItem.querySelector('.track-play-btn');
+                        if (playBtn) {
+                            btn.style.display = 'none';
+                            playBtn.style.display = 'inline-block';
+                        }
                     }
                 });
             });
@@ -14120,6 +14290,268 @@
 
             // Initialize UI state
             this.updateBackgroundImageUI();
+            
+            // Initialize Sidebar Background Controls
+            this.initializeSidebarBackgroundControls();
+        }
+        
+        initializeSidebarBackgroundControls() {
+            // Sidebar background image button - toggle ON/OFF only
+            const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
+            const sidebarBackgroundSelectImageBtn = document.getElementById('sidebarBackgroundSelectImageBtn');
+            const sidebarBackgroundImageFile = document.getElementById('sidebarBackgroundImageFile');
+            
+            if (sidebarBackgroundImgBtn) {
+                // Initialize button state
+                this.updateSidebarBackgroundToggleButton();
+                
+                sidebarBackgroundImgBtn.addEventListener('click', () => {
+                    if (this.visualizer) {
+                        console.log('🔘 Sidebar Background IMG button clicked - current state:', {
+                            enabled: this.visualizer.backgroundImageEnabled,
+                            hasImage: !!this.visualizer.backgroundImage
+                        });
+                        
+                        // Toggle background image enabled state
+                        this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
+                        this.visualizer.saveBackgroundImage();
+                        this.updateSidebarBackgroundToggleButton();
+                        this.updateBackgroundToggleButton(); // Also update original button
+                        
+                        console.log('🔘 Sidebar Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
+                        
+                        // Force redraw of visualization
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+
+            if (sidebarBackgroundSelectImageBtn) {
+                sidebarBackgroundSelectImageBtn.addEventListener('click', () => {
+                    if (sidebarBackgroundImageFile) {
+                        sidebarBackgroundImageFile.click();
+                    }
+                });
+            }
+
+            // File input handler
+            if (sidebarBackgroundImageFile) {
+                sidebarBackgroundImageFile.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    console.log('📁 Sidebar Background image file selected:', {
+                        name: file?.name,
+                        type: file?.type,
+                        size: file?.size,
+                        lastModified: file?.lastModified
+                    });
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            console.log('📖 Sidebar File read successfully, data URL length:', e.target.result.length);
+                            if (this.visualizer) {
+                                this.visualizer.backgroundImage = e.target.result;
+                                this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
+                                this.visualizer.backgroundImageFileName = file.name;
+                                this.visualizer.backgroundImageFileSize = file.size;
+                                this.visualizer.cachedBackgroundImage = null; // Clear cached image
+                                this.visualizer.saveBackgroundImage();
+                                this.updateSidebarBackgroundImageUI();
+                                this.updateBackgroundImageUI(); // Also update original UI
+                                console.log('💾 Sidebar Background image saved and enabled');
+                            }
+                        };
+                        reader.onerror = (e) => {
+                            console.error('❌ Sidebar File read error:', e);
+                            this.showError('Failed to read image file');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Note: Settings panel removed - all controls are now embedded directly in sidebar
+
+            // Initialize all sidebar sliders and controls
+            this.initializeSidebarBackgroundSliders();
+            this.initializeSidebarBackgroundSizeButtons();
+            this.initializeSidebarBackgroundClearButton();
+            
+            // Initialize UI state
+            this.updateSidebarBackgroundImageUI();
+        }
+        
+        initializeSidebarBackgroundSliders() {
+            // Opacity slider
+            const sidebarOpacitySlider = document.getElementById('sidebarBackgroundOpacitySlider');
+            const sidebarOpacityValue = document.getElementById('sidebarBackgroundOpacityValue');
+            
+            if (sidebarOpacitySlider && sidebarOpacityValue) {
+                sidebarOpacitySlider.value = this.visualizer ? this.visualizer.backgroundImageOpacity : 100;
+                sidebarOpacityValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageOpacity : 100}%`;
+                
+                sidebarOpacitySlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    sidebarOpacityValue.textContent = `${value}%`;
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageOpacity = value;
+                        this.visualizer.saveBackgroundImage();
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+
+            // Saturation slider
+            const sidebarSaturationSlider = document.getElementById('sidebarBackgroundSaturationSlider');
+            const sidebarSaturationValue = document.getElementById('sidebarBackgroundSaturationValue');
+            
+            if (sidebarSaturationSlider && sidebarSaturationValue) {
+                sidebarSaturationSlider.value = this.visualizer ? this.visualizer.backgroundImageSaturation : 100;
+                sidebarSaturationValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageSaturation : 100}%`;
+                
+                sidebarSaturationSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    sidebarSaturationValue.textContent = `${value}%`;
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageSaturation = value;
+                        this.visualizer.saveBackgroundImage();
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+
+            // Posterization slider
+            const sidebarPosterizeSlider = document.getElementById('sidebarBackgroundPosterizeSlider');
+            const sidebarPosterizeValue = document.getElementById('sidebarBackgroundPosterizeValue');
+            
+            if (sidebarPosterizeSlider && sidebarPosterizeValue) {
+                sidebarPosterizeSlider.value = this.visualizer ? this.visualizer.backgroundImagePosterize : 16;
+                sidebarPosterizeValue.textContent = `${this.visualizer ? this.visualizer.backgroundImagePosterize : 16}`;
+                
+                sidebarPosterizeSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    sidebarPosterizeValue.textContent = `${value}`;
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImagePosterize = value;
+                        this.visualizer.saveBackgroundImage();
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+
+            // Contrast slider
+            const sidebarContrastSlider = document.getElementById('sidebarBackgroundContrastSlider');
+            const sidebarContrastValue = document.getElementById('sidebarBackgroundContrastValue');
+            
+            if (sidebarContrastSlider && sidebarContrastValue) {
+                sidebarContrastSlider.value = this.visualizer ? this.visualizer.backgroundImageContrast : 100;
+                sidebarContrastValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageContrast : 100}%`;
+                
+                sidebarContrastSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    sidebarContrastValue.textContent = `${value}%`;
+                    if (this.visualizer) {
+                        this.visualizer.backgroundImageContrast = value;
+                        this.visualizer.saveBackgroundImage();
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            }
+        }
+        
+        initializeSidebarBackgroundSizeButtons() {
+            const sizeButtons = [
+                'sidebarBackgroundSizeFit',
+                'sidebarBackgroundSizeFill', 
+                'sidebarBackgroundSizeStretch',
+                'sidebarBackgroundSizeOriginal'
+            ];
+            
+            sizeButtons.forEach(buttonId => {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        // Remove active class from all buttons
+                        sizeButtons.forEach(id => {
+                            const btn = document.getElementById(id);
+                            if (btn) btn.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked button
+                        button.classList.add('active');
+                        
+                        // Update visualizer
+                        if (this.visualizer) {
+                            this.visualizer.backgroundImageSize = button.dataset.size;
+                            this.visualizer.saveBackgroundImage();
+                            if (this.visualizer.audioMotion) {
+                                this.visualizer.audioMotion.draw();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        
+        initializeSidebarBackgroundClearButton() {
+            const sidebarClearBtn = document.getElementById('sidebarBackgroundClearBtn');
+            if (sidebarClearBtn) {
+                sidebarClearBtn.addEventListener('click', () => {
+                    if (this.visualizer) {
+                        this.visualizer.clearBackgroundImage();
+                        this.updateSidebarBackgroundImageUI();
+                        this.updateBackgroundImageUI(); // Also update original UI
+                    }
+                });
+            }
+        }
+        
+        updateSidebarBackgroundToggleButton() {
+            const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
+            if (sidebarBackgroundImgBtn && this.visualizer) {
+                const textSpan = sidebarBackgroundImgBtn.querySelector('.background-text');
+                if (textSpan) {
+                    textSpan.textContent = this.visualizer.backgroundImageEnabled ? 'Background IMG: ON' : 'Background IMG: OFF';
+                }
+                sidebarBackgroundImgBtn.classList.toggle('active', this.visualizer.backgroundImageEnabled);
+            }
+        }
+        
+        updateSidebarBackgroundImageUI() {
+            const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
+            const sidebarBackgroundFileInfo = document.getElementById('sidebarBackgroundFileInfo');
+            const sidebarBackgroundFileName = document.getElementById('sidebarBackgroundFileName');
+            const sidebarBackgroundFileSize = document.getElementById('sidebarBackgroundFileSize');
+            const sidebarBackgroundImagePreview = document.getElementById('sidebarBackgroundImagePreview');
+
+            if (sidebarBackgroundImgBtn) {
+                if (this.visualizer && this.visualizer.backgroundImageEnabled && this.visualizer.backgroundImage) {
+                    sidebarBackgroundImgBtn.classList.add('active');
+                    sidebarBackgroundImgBtn.querySelector('.background-text').textContent = 'Background IMG: ON';
+                } else {
+                    sidebarBackgroundImgBtn.classList.remove('active');
+                    sidebarBackgroundImgBtn.querySelector('.background-text').textContent = 'Background IMG: OFF';
+                }
+            }
+
+            if (this.visualizer && this.visualizer.backgroundImage && this.visualizer.backgroundImageFileName) {
+                if (sidebarBackgroundFileInfo) sidebarBackgroundFileInfo.style.display = 'block';
+                if (sidebarBackgroundFileName) sidebarBackgroundFileName.textContent = this.visualizer.backgroundImageFileName;
+                if (sidebarBackgroundFileSize) sidebarBackgroundFileSize.textContent = this.formatFileSize(this.visualizer.backgroundImageFileSize);
+                if (sidebarBackgroundImagePreview) sidebarBackgroundImagePreview.style.backgroundImage = `url(${this.visualizer.backgroundImage})`;
+            } else {
+                if (sidebarBackgroundFileInfo) sidebarBackgroundFileInfo.style.display = 'none';
+            }
         }
 
         updateBackgroundToggleButton() {
