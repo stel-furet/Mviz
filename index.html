@@ -6059,7 +6059,21 @@
             <!-- Empty Drawers for Collapsed Sidebar -->
             <div class="drawer drawer-hidden" id="drawerScenes"></div>
             <div class="drawer drawer-hidden" id="drawerAudio"></div>
-            <div class="drawer drawer-hidden" id="drawerVideo"></div>
+            <div class="drawer drawer-hidden" id="drawerVideo">
+                <!-- Video ON/OFF Toggle -->
+                <div class="drawer-control-group drawer-control-group-first">
+                    <div class="drawer-label">Video</div>
+                    <button class="drawer-toggle-btn" id="drawerVideoToggleBtn" title="Toggle Video">OFF</button>
+                </div>
+
+                <!-- Video Input Dropdown -->
+                <div class="drawer-control-group">
+                    <div class="drawer-label">Video Input</div>
+                    <select class="drawer-preset-selector" id="drawerVideoDeviceSelect" title="Select Video Input">
+                        <option value="">Select Video Input...</option>
+                    </select>
+                </div>
+            </div>
             <div class="drawer drawer-hidden" id="drawerVisualizations">
                 <!-- VIZ ON/OFF Toggle -->
                 <div class="drawer-control-group drawer-control-group-first">
@@ -17573,6 +17587,13 @@
             fileOption.textContent = '📁 Video from file' + (this.videoFile ? ` (${this.videoFile.name})` : '');
             select.appendChild(fileOption);
             
+            // Update drawer select as well
+            const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
+            if (drawerSelect) {
+                drawerSelect.innerHTML = select.innerHTML;
+                drawerSelect.value = select.value;
+            }
+            
             console.log('Video device list updated. Total options:', select.options.length);
         }
 
@@ -17644,6 +17665,14 @@
                 if (selectedOption) {
                     console.log('Selected video source:', selectedOption.textContent);
                 }
+            }
+            
+            // Also update the drawer select
+            const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
+            if (drawerSelect) {
+                // Copy the updated options and value from the original
+                drawerSelect.innerHTML = deviceSelect.innerHTML;
+                drawerSelect.value = deviceSelect.value;
             }
         }
 
@@ -23154,6 +23183,11 @@ https://rogueamoeba.com/loopback/
                         videoToggleBtn.classList.remove('active');
                     }
                 }
+                
+                // Also update the drawer video toggle button
+                if (typeof updateDrawerVideoToggle === 'function') {
+                    updateDrawerVideoToggle();
+                }
             };
 
             const videoDeviceSelect = document.getElementById('videoDeviceSelect');
@@ -25139,6 +25173,53 @@ https://rogueamoeba.com/loopback/
                         }
                     });
                 }
+
+                // Video ON/OFF Toggle - connect to existing functionality
+                const drawerVideoToggleBtn = document.getElementById('drawerVideoToggleBtn');
+                const originalVideoToggleBtn = document.getElementById('videoToggleBtn');
+
+                if (drawerVideoToggleBtn && originalVideoToggleBtn) {
+                    // Sync initial state
+                    updateDrawerVideoToggle();
+                    
+                    // Connect click handler
+                    drawerVideoToggleBtn.addEventListener('click', () => {
+                        // Call the video toggle function directly
+                        if (window.visualizer && window.visualizer.toggleVideoPlayback) {
+                            window.visualizer.toggleVideoPlayback();
+                        }
+                        // Update drawer button state
+                        updateDrawerVideoToggle();
+                    });
+                }
+
+                // Video Input Dropdown - connect to existing functionality
+                const drawerVideoDeviceSelect = document.getElementById('drawerVideoDeviceSelect');
+                const originalVideoDeviceSelect = document.getElementById('videoDeviceSelect');
+
+                if (drawerVideoDeviceSelect && originalVideoDeviceSelect) {
+                    // Sync initial state and options
+                    updateDrawerVideoInput();
+                    
+                    // Handle selection change
+                    drawerVideoDeviceSelect.addEventListener('change', async (e) => {
+                        const value = e.target.value;
+                        
+                        // Update the original select to match
+                        originalVideoDeviceSelect.value = value;
+                        
+                        // Trigger the original change event
+                        originalVideoDeviceSelect.dispatchEvent(new Event('change'));
+                        
+                        // Update the display to show the selected input name
+                        if (window.visualizer && window.visualizer.updateVideoDropdownDisplay) {
+                            window.visualizer.updateVideoDropdownDisplay();
+                        }
+                        
+                        // The drawer should already be in sync since updateVideoDeviceList() updates it
+                        // No need to call updateDrawerVideoInput() here
+                    });
+                }
             }
 
             // Helper functions to sync drawer states with original controls
@@ -25208,6 +25289,28 @@ https://rogueamoeba.com/loopback/
                     drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
                 }
             }
+
+            function updateDrawerVideoToggle() {
+                const drawerBtn = document.getElementById('drawerVideoToggleBtn');
+                const originalBtn = document.getElementById('videoToggleBtn');
+                if (drawerBtn && originalBtn) {
+                    drawerBtn.textContent = originalBtn.textContent;
+                    drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
+                }
+            }
+
+            function updateDrawerVideoInput() {
+                const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
+                const originalSelect = document.getElementById('videoDeviceSelect');
+                if (drawerSelect && originalSelect) {
+                    // Copy options from original to drawer
+                    drawerSelect.innerHTML = originalSelect.innerHTML;
+                    
+                    // Sync selected value
+                    drawerSelect.value = originalSelect.value;
+                }
+            }
+
 
             // Global function for toggling sections
             window.toggleSection = function(sectionName) {
