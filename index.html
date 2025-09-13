@@ -6058,7 +6058,15 @@
 
             <!-- Empty Drawers for Collapsed Sidebar -->
             <div class="drawer drawer-hidden" id="drawerScenes"></div>
-            <div class="drawer drawer-hidden" id="drawerAudio"></div>
+            <div class="drawer drawer-hidden" id="drawerAudio">
+                <!-- Audio Input Dropdown -->
+                <div class="drawer-control-group drawer-control-group-first">
+                    <div class="drawer-label">Audio Input</div>
+                    <select class="drawer-preset-selector" id="drawerAudioDeviceSelect" title="Select Audio Input">
+                        <option value="">Select Audio Input...</option>
+                    </select>
+                </div>
+            </div>
             <div class="drawer drawer-hidden" id="drawerVideo">
                 <!-- Video ON/OFF Toggle -->
                 <div class="drawer-control-group drawer-control-group-first">
@@ -17449,6 +17457,13 @@
             helpOption.value = 'help';
             helpOption.textContent = '❓ How to capture system audio...';
             select.appendChild(helpOption);
+            
+            // Update drawer select as well
+            const drawerSelect = document.getElementById('drawerAudioDeviceSelect');
+            if (drawerSelect) {
+                drawerSelect.innerHTML = select.innerHTML;
+                drawerSelect.value = select.value;
+            }
         }
 
         async toggleInputMode() {
@@ -24684,6 +24699,11 @@ https://rogueamoeba.com/loopback/
                     if (toggleIcon) {
                         toggleIcon.textContent = isNowCollapsed ? '☰' : '✕';
                     }
+                    
+                    // Close any open drawers when toggling sidebar
+                    if (typeof closeAllDrawers === 'function') {
+                        closeAllDrawers();
+                    }
                 });
 
 
@@ -25220,6 +25240,29 @@ https://rogueamoeba.com/loopback/
                         // No need to call updateDrawerVideoInput() here
                     });
                 }
+
+                // Audio Input Dropdown - connect to existing functionality
+                const drawerAudioDeviceSelect = document.getElementById('drawerAudioDeviceSelect');
+                const originalAudioDeviceSelect = document.getElementById('audioDeviceSelect');
+
+                if (drawerAudioDeviceSelect && originalAudioDeviceSelect) {
+                    // Sync initial state and options
+                    updateDrawerAudioInput();
+                    
+                    // Handle selection change
+                    drawerAudioDeviceSelect.addEventListener('change', async (e) => {
+                        const value = e.target.value;
+                        
+                        // Update the original select to match
+                        originalAudioDeviceSelect.value = value;
+                        
+                        // Trigger the original change event
+                        originalAudioDeviceSelect.dispatchEvent(new Event('change'));
+                        
+                        // Sync back to drawer
+                        updateDrawerAudioInput();
+                    });
+                }
             }
 
             // Helper functions to sync drawer states with original controls
@@ -25302,6 +25345,18 @@ https://rogueamoeba.com/loopback/
             function updateDrawerVideoInput() {
                 const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
                 const originalSelect = document.getElementById('videoDeviceSelect');
+                if (drawerSelect && originalSelect) {
+                    // Copy options from original to drawer
+                    drawerSelect.innerHTML = originalSelect.innerHTML;
+                    
+                    // Sync selected value
+                    drawerSelect.value = originalSelect.value;
+                }
+            }
+
+            function updateDrawerAudioInput() {
+                const drawerSelect = document.getElementById('drawerAudioDeviceSelect');
+                const originalSelect = document.getElementById('audioDeviceSelect');
                 if (drawerSelect && originalSelect) {
                     // Copy options from original to drawer
                     drawerSelect.innerHTML = originalSelect.innerHTML;
