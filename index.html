@@ -1017,7 +1017,9 @@
 
         /* Sidebar Styles */
         .sidebar {
-            width: 200px;
+            width: max-content;
+            min-width: 240px;
+            max-width: 300px;
             background: var(--secondary-bg);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -1067,6 +1069,7 @@
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 12px;
             background: var(--hover-color);
         }
@@ -1092,11 +1095,84 @@
             transform: scale(1.05);
         }
 
+
         .sidebar-title {
             color: var(--text-primary);
             font-size: 16px;
             font-weight: 600;
             margin: 0;
+        }
+
+        /* Embedded Playlist Manager in Sidebar */
+        .embedded-playlist-manager {
+            width: 100%;
+            max-width: 275px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--secondary-bg);
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        /* Compact Track Items for Embedded Playlist */
+        .embedded-playlist-manager .track-item {
+            min-height: 35px;
+            padding: 4px 6px;
+            margin-bottom: 2px;
+        }
+
+        .embedded-playlist-manager .track-artwork {
+            width: 30px;
+            height: 30px;
+            margin-right: 8px;
+        }
+
+        .embedded-playlist-manager .track-title {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .embedded-playlist-manager .track-details {
+            font-size: 10px;
+        }
+
+        .embedded-playlist-manager .track-actions {
+            gap: 2px;
+        }
+
+        .embedded-playlist-manager .track-play-btn,
+        .embedded-playlist-manager .track-remove-btn {
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+        }
+
+        /* Playlist Actions for Embedded */
+        .embedded-playlist-manager .playlist-actions-dropdown {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .embedded-playlist-manager .playlist-actions-dropdown button {
+            flex: 1;
+            min-width: 0;
+            padding: 4px 8px;
+            font-size: 12px;
+            background: var(--hover-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .embedded-playlist-manager .playlist-actions-dropdown button:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
         .sidebar-content {
@@ -5061,38 +5137,34 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
+            <h3 class="sidebar-title">VIZZY</h3>
             <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
                 <span class="toggle-icon">☰</span>
             </button>
-            <h3 class="sidebar-title">Controls</h3>
         </div>
         
         <div class="sidebar-content">
             <!-- Audio Input Section -->
             <div class="sidebar-section">
-                <div class="section-icon" title="Audio Input">♪</div>
-                <h4 class="section-title" onclick="toggleSection('audio')">Audio Input</h4>
+                <div class="section-icon" title="Audio">♪</div>
+                <h4 class="section-title" onclick="toggleSection('audio')">Audio</h4>
                 <div class="section-content" id="sidebarAudioInput">
                     <!-- Live Audio Input -->
                     <div class="control-group">
-                        <button class="input-mode-btn" id="inputModeBtn" title="Toggle Live Audio Input">
-                            <span class="input-mode-text">Live Audio</span>
-                        </button>
-                        <select class="audio-device-select" id="audioDeviceSelect" style="display: none;">
+                        <div class="dropdown-label">Audio Input</div>
+                        <select class="audio-device-select" id="audioDeviceSelect">
                             <option value="">Select Audio Input...</option>
                         </select>
                     </div>
                     
-                    <!-- Playlist -->
+                    <!-- Playlist Manager (Embedded) -->
                     <div class="control-group">
-                        <div class="dropdown playlist-dropdown">
-                            <div class="dropdown-label">Playlist</div>
-                            <button class="dropdown-toggle" id="playlistToggle">Select Track</button>
-                            <div class="dropdown-content" id="playlistDropdown">
-                                <!-- Playlist content will be populated here -->
-                            </div>
+                        <div class="dropdown-label">Playlist</div>
+                        <div class="embedded-playlist-manager" id="playlistDropdown">
+                            <!-- Playlist content will be populated here -->
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
@@ -11951,23 +12023,8 @@
                 console.log('Output tab test activated');
             };
             
-            // Add debug for playlist button clicks
-            setTimeout(() => {
-                const playlistToggle = document.getElementById('playlistToggle');
-                if (playlistToggle) {
-                    playlistToggle.addEventListener('click', (e) => {
-                        console.log('Playlist button clicked in new panel');
-                        const dropdown = document.getElementById('playlistDropdown');
-                        if (dropdown) {
-                            console.log('Dropdown found, content length:', dropdown.innerHTML.length);
-                            console.log('Dropdown display:', dropdown.style.display);
-                            console.log('Dropdown classes:', dropdown.classList.toString());
-                        } else {
-                            console.error('Playlist dropdown not found when button clicked');
-                        }
-                    });
-                }
-            }, 1000);
+            // Note: playlistToggle button was removed when we embedded the playlist
+            // The playlist is now permanently visible in the Audio section
         }
         
         generateAppIcon() {
@@ -12046,12 +12103,6 @@
             if (!dropdown) return;
             
             dropdown.innerHTML = `
-                <!-- Panel Header with Close Button -->
-                <div class="panel-header">
-                    <span>Playlist Manager</span>
-                    <button class="panel-close-btn" id="playlistPanelClose">×</button>
-                </div>
-                
                 <!-- Playlist Actions -->
                 <div class="playlist-actions-dropdown">
                     <button class="playlist-scan-btn" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
@@ -12105,24 +12156,8 @@
         }
         
         initializeCloseButton() {
-            const closeBtn = document.getElementById('playlistPanelClose');
-            console.log('Initializing close button, found:', !!closeBtn);
-            
-            if (closeBtn) {
-                // Remove any existing listeners
-                closeBtn.replaceWith(closeBtn.cloneNode(true));
-                const newCloseBtn = document.getElementById('playlistPanelClose');
-                
-                newCloseBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    console.log('Close button clicked');
-                    this.visualizer.closePlaylistPanel();
-                });
-                
-                console.log('✅ Close button event handler attached');
-            } else {
-                console.warn('❌ Close button not found for initialization');
-            }
+            // Close button removed - playlist is now embedded in sidebar
+            console.log('Playlist is embedded - no close button needed');
         }
         
         showRescanNotification() {
@@ -13013,10 +13048,10 @@
             console.log('- TracksContainer exists:', !!tracksContainer);
             console.log('- Has new content:', !!hasNewContent);
             
-            // Check for the specific panel header to confirm it's our new content
-            const hasPanelHeader = dropdown && dropdown.innerHTML.includes('playlistPanelClose');
+            // Check for playlist actions to confirm it's our new content
+            const hasPlaylistActions = dropdown && dropdown.innerHTML.includes('playlist-actions-dropdown');
             
-            if (!hasPanelHeader && dropdown) {
+            if (!hasPlaylistActions && dropdown) {
                 console.log('Dropdown missing panel header, populating with new content...');
                 this.populatePlaylistDropdown();
                 
@@ -13428,19 +13463,8 @@
         }
         
         updateTrackDropdown() {
-            // Update the track selection dropdown (the "Select Track" button)
-            const playlistToggle = document.getElementById('playlistToggle');
-            if (!playlistToggle || !this.currentPlaylist) return;
-            
-            // Update button text to show current track or track count
-            const trackCount = this.currentPlaylist.tracks.length;
-            if (trackCount > 0) {
-                playlistToggle.textContent = `${trackCount} tracks loaded`;
-            } else {
-                playlistToggle.textContent = 'Select Track';
-            }
-            
-            console.log('Track selection button updated');
+            // Playlist is now embedded - no dropdown button to update
+            console.log('Playlist is embedded - no dropdown button to update');
         }
         
         playTrack(trackId) {
@@ -16603,6 +16627,14 @@
         }
 
         async initializeFirstTrack() {
+            // Add a small delay to ensure blob URLs are fully accessible
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            if (this.playlist.length === 0) {
+                console.warn('No tracks in playlist to initialize');
+                return;
+            }
+            
             await this.preloadTrack(0);
             this.audioInitialized = true;
         }
@@ -16664,8 +16696,6 @@
         }
 
         async toggleInputMode() {
-            const btn = document.getElementById('inputModeBtn');
-            const btnText = btn.querySelector('.input-mode-text');
             const deviceSelect = document.getElementById('audioDeviceSelect');
 
             if (this.inputMode === 'playlist') {
@@ -16718,8 +16748,6 @@
                     }
 
                     this.updateDeviceList();
-                    deviceSelect.style.display = 'block';
-                    btnText.textContent = 'Select Input';
                     this.inputMode = 'selecting';
 
                 } catch (e) {
@@ -16730,9 +16758,6 @@
                 }
             } else {
                 this.stopLiveInput();
-                btnText.textContent = 'Audio Input';
-                btn.classList.remove('live-mode');
-                deviceSelect.style.display = 'none';
                 this.inputMode = 'playlist';
                 this.resumePlaylist();
             }
@@ -17056,12 +17081,12 @@
         }
 
         initializePlaylistUI() {
-            // Prevent dropdown from closing when clicking inside playlist content
+            // Prevent clicks inside embedded playlist from bubbling up
             const playlistDropdown = document.getElementById('playlistDropdown');
             if (playlistDropdown) {
                 playlistDropdown.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    console.log('Click inside playlist dropdown - preventing close');
+                    console.log('Click inside embedded playlist - preventing bubble');
                 });
             }
             
@@ -17920,25 +17945,8 @@
         }
 
         closePlaylistPanel() {
-            const playlistDropdown = document.getElementById('playlistDropdown');
-            if (playlistDropdown) {
-                // Use the same method as the dropdown system
-                playlistDropdown.classList.remove('show');
-                
-                // Reset any inline styles that might interfere
-                playlistDropdown.style.display = '';
-                
-                // Find the parent dropdown and reset its state
-                const parentDropdown = playlistDropdown.closest('.dropdown');
-                if (parentDropdown) {
-                    const toggle = parentDropdown.querySelector('.dropdown-toggle');
-                    if (toggle) {
-                        toggle.classList.remove('active');
-                    }
-                }
-                
-                console.log('✅ Playlist panel closed properly');
-            }
+            // Playlist is now embedded - no close functionality needed
+            console.log('Playlist is embedded - no close functionality needed');
         }
 
         updatePlaylistFromManager(playlist) {
@@ -18052,41 +18060,8 @@
         }
 
         initializeCloseButtonHandler() {
-            const closeBtn = document.getElementById('playlistPanelClose');
-            const dropdown = document.getElementById('playlistDropdown');
-            
-            console.log('GitItUpVisualizer: Close button found:', !!closeBtn);
-            console.log('GitItUpVisualizer: Dropdown found:', !!dropdown);
-            
-            if (dropdown) {
-                console.log('Dropdown content length:', dropdown.innerHTML.length);
-                console.log('Dropdown contains panel-header:', dropdown.innerHTML.includes('panel-header'));
-                console.log('Dropdown contains playlistPanelClose:', dropdown.innerHTML.includes('playlistPanelClose'));
-            }
-            
-            if (closeBtn) {
-                // Remove any existing listeners
-                const newCloseBtn = closeBtn.cloneNode(true);
-                closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-                
-                newCloseBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    console.log('Playlist panel close button clicked');
-                    this.closePlaylistPanel();
-                });
-                
-                console.log('✅ GitItUpVisualizer: Close button event handler attached');
-            } else if (this.closeButtonRetries < 3) {
-                // Limit retries to prevent infinite loop
-                this.closeButtonRetries = (this.closeButtonRetries || 0) + 1;
-                console.warn(`❌ GitItUpVisualizer: Close button not found, retry ${this.closeButtonRetries}/3`);
-                
-                setTimeout(() => {
-                    this.initializeCloseButtonHandler();
-                }, 500);
-            } else {
-                console.error('❌ Close button initialization failed after 3 attempts');
-            }
+            // Close button removed - playlist is now embedded in sidebar
+            console.log('Playlist is embedded - no close button handler needed');
         }
 
         async startVideoInput(deviceId) {
@@ -19726,10 +19701,7 @@
                     this.audioMotion.isConnected = true;
                 }
 
-                const btn = document.getElementById('inputModeBtn');
-                const btnText = btn.querySelector('.input-mode-text');
-                btn.classList.add('live-mode');
-                btnText.textContent = 'LIVE INPUT';
+                // Audio input button removed - using select dropdown
                 this.inputMode = 'microphone';
 
                 document.getElementById('trackTitle').textContent = 'Live Audio Input';
@@ -21312,15 +21284,12 @@ https://rogueamoeba.com/loopback/
 
             setupDropdown('colorSchemeToggle', 'colorSchemeDropdown');
             setupDropdown('vizModeToggle', 'vizModeDropdown');
-            setupDropdown('playlistToggle', 'playlistDropdown');
+            // Playlist is now embedded - no dropdown setup needed
 
-            // Close dropdowns when clicking outside (except playlist dropdown)
+            // Close dropdowns when clicking outside
             document.addEventListener('click', () => {
                 document.querySelectorAll('.dropdown-content').forEach(d => {
-                    // Skip playlist dropdown - it has its own close button
-                    if (d.id !== 'playlistDropdown') {
                     d.classList.remove('show');
-                    }
                 });
             });
 
@@ -22509,13 +22478,7 @@ https://rogueamoeba.com/loopback/
                 });
             }
 
-            // Audio input mode button
-            const inputBtn = document.getElementById('inputModeBtn');
-            if (inputBtn) {
-                inputBtn.addEventListener('click', () => {
-                    this.toggleInputMode();
-                });
-            }
+            // Audio input mode button (removed - now using select dropdown)
 
             // Audio device selector
             const deviceSelect = document.getElementById('audioDeviceSelect');
@@ -23152,7 +23115,7 @@ https://rogueamoeba.com/loopback/
 
                             trackDiv.addEventListener('click', () => {
                                 this.selectTrack(currentTrackIndex);
-                                document.getElementById('playlistDropdown').classList.remove('show');
+                                // No need to close - playlist is embedded
                             });
 
                             dropdown.appendChild(trackDiv);
@@ -23556,10 +23519,24 @@ https://rogueamoeba.com/loopback/
                 }
 
                 async preloadTrack(index) {
-                    if (index < 0 || index >= this.playlist.length) 
+                    if (index < 0 || index >= this.playlist.length) {
+                        console.warn(`Invalid track index: ${index} (playlist length: ${this.playlist.length})`);
                         return;
+                    }
                     
+                    const track = this.playlist[index];
+                    if (!track || !track.url) {
+                        console.warn(`Track at index ${index} has no URL:`, track);
+                        this.showError('Track has no valid URL - may need rescan');
+                        return;
+                    }
 
+                    // Validate URL before attempting to load
+                    if (!track.url.startsWith('blob:') && !track.url.startsWith('http')) {
+                        console.warn(`Invalid track URL format: ${track.url}`);
+                        this.showError('Invalid track URL format');
+                        return;
+                    }
 
                     try {
                         if (this.audio) {
@@ -23571,19 +23548,27 @@ https://rogueamoeba.com/loopback/
 
                         this.audio = new Audio();
                         this.audio.crossOrigin = 'anonymous';
-                        this.audio.src = this.playlist[index].url;
+                        this.audio.src = track.url;
                         this.audio.volume = this.volume;
+
+                        console.log(`Loading track ${index}: "${track.name}" from ${track.url.substring(0, 50)}...`);
 
                         await new Promise((resolve, reject) => {
                             this.audio.addEventListener('canplay', resolve, {once: true});
-                            this.audio.addEventListener('error', reject, {once: true});
-                            setTimeout(() => resolve(), 3000);
+                            this.audio.addEventListener('error', (e) => {
+                                console.error('Audio loading error:', e);
+                                reject(new Error(`Failed to load audio: ${e.type}`));
+                            }, {once: true});
+                            setTimeout(() => {
+                                console.warn('Audio loading timeout after 5 seconds');
+                                reject(new Error('Audio loading timeout'));
+                            }, 5000);
                         });
 
                         this.audio.addEventListener('timeupdate', () => this.updateProgress());
                         this.audio.addEventListener('ended', () => this.handleTrackEnd());
                         this.audio.addEventListener('error', (e) => {
-                            console.error('Audio error:', e);
+                            console.error('Audio playback error:', e);
                             this.showError('Failed to load audio track');
                         });
 
@@ -23594,6 +23579,8 @@ https://rogueamoeba.com/loopback/
                         this.currentTrackIndex = index;
                         this.updateTrackInfo();
                         this.updatePlaylistDropdown();
+                        
+                        console.log(`✅ Successfully loaded track ${index}: "${track.name}"`);
 
                     } catch (error) {
                         console.error('Failed to preload track:', error);
@@ -23780,8 +23767,12 @@ https://rogueamoeba.com/loopback/
                 updateTrackInfo() {
                     const track = this.playlist[this.currentTrackIndex];
                     if (track) {
-                        document.getElementById('trackTitle').textContent = track.name;
-                        document.getElementById('playlistToggle').textContent = track.name;
+                        const trackTitle = document.getElementById('trackTitle');
+                        if (trackTitle) {
+                            trackTitle.textContent = track.name;
+                        }
+                        // Note: playlistToggle was removed when we embedded the playlist
+                        // The track name is now displayed in the embedded playlist manager
                     }
                     const fsTrackTitle = document.getElementById('fsTrackTitle');
                     if (fsTrackTitle) {
@@ -23919,6 +23910,7 @@ https://rogueamoeba.com/loopback/
                     }
                 });
 
+
                 // Initialize with correct icon
                 const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
                 if (toggleIcon) {
@@ -23937,9 +23929,9 @@ https://rogueamoeba.com/loopback/
                 const sidebarPlaylistDropdown = document.getElementById('sidebarPlaylistDropdown');
 
                 // Connect to existing controls
-                const originalInputModeBtn = document.getElementById('inputModeBtn');
+                // originalInputModeBtn removed - using select dropdown
                 const originalAudioDeviceSelect = document.getElementById('audioDeviceSelect');
-                const originalPlaylistToggle = document.getElementById('playlistToggle');
+                // originalPlaylistToggle removed - playlist is now embedded
                 const originalPlaylistDropdown = document.getElementById('playlistDropdown');
 
                 if (sidebarInputModeBtn) {
@@ -24022,12 +24014,7 @@ https://rogueamoeba.com/loopback/
             }
 
             function updateSidebarPlaylistButton() {
-                const sidebarBtn = document.getElementById('sidebarPlaylistToggle');
-                const originalBtn = document.getElementById('playlistToggle');
-                
-                if (sidebarBtn && originalBtn) {
-                    sidebarBtn.textContent = originalBtn.textContent;
-                }
+                // playlistToggle button removed - playlist is now embedded in Audio section
             }
 
             async function populateAudioDevices() {
@@ -24055,7 +24042,17 @@ https://rogueamoeba.com/loopback/
 
             // Global function for toggling sections
             window.toggleSection = function(sectionName) {
-                const sectionContent = document.getElementById(`sidebar${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}`);
+                // Handle special cases for Audio and Video sections
+                let elementId;
+                if (sectionName === 'audio') {
+                    elementId = 'sidebarAudioInput';
+                } else if (sectionName === 'video') {
+                    elementId = 'sidebarVideoInput';
+                } else {
+                    elementId = `sidebar${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}`;
+                }
+                
+                const sectionContent = document.getElementById(elementId);
                 const sectionTitle = sectionContent?.previousElementSibling;
                 
                 if (sectionContent && sectionTitle) {
