@@ -1027,6 +1027,198 @@
             pointer-events: none;
         }
 
+        /* Drawer Control Styles */
+        .drawer-control-group {
+            margin-bottom: 12px;
+            padding: 0 8px;
+        }
+
+        .drawer-control-group-first {
+            margin-top: 8px;
+        }
+
+        .drawer-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .drawer-toggle-btn {
+            width: 100%;
+            padding: 6px 8px;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .drawer-toggle-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .drawer-toggle-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .drawer-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .drawer-dropdown-toggle {
+            width: 100%;
+            padding: 6px 8px;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .drawer-dropdown-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .drawer-dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .drawer-dropdown-content.show {
+            display: block;
+        }
+
+        .drawer-dropdown-item {
+            padding: 6px 8px;
+            font-size: 11px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .drawer-dropdown-item:hover {
+            background: var(--hover-color);
+        }
+
+        .drawer-dropdown-item.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .drawer-preset-selector {
+            width: 100%;
+            padding: 6px 8px;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .drawer-preset-selector:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .drawer-btn-text {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .drawer-icon-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .drawer-icon-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--primary-bg);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .drawer-icon-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--accent-color);
+        }
+
+        .drawer-icon-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .drawer-icon {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .drawer-preset-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .drawer-preset-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-color);
+            background: var(--primary-bg);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .drawer-preset-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--accent-color);
+        }
+
+        .drawer-preset-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
         .header {
             background: var(--secondary-bg);
             padding: 12px 16px;
@@ -5868,7 +6060,73 @@
             <div class="drawer drawer-hidden" id="drawerScenes"></div>
             <div class="drawer drawer-hidden" id="drawerAudio"></div>
             <div class="drawer drawer-hidden" id="drawerVideo"></div>
-            <div class="drawer drawer-hidden" id="drawerVisualizations"></div>
+            <div class="drawer drawer-hidden" id="drawerVisualizations">
+                <!-- VIZ ON/OFF Toggle -->
+                <div class="drawer-control-group drawer-control-group-first">
+                    <div class="drawer-label">Visualization</div>
+                    <button class="drawer-toggle-btn" id="drawerVizToggleBtn" title="Toggle Visualization">ON</button>
+                </div>
+
+                <!-- Presets Dropdown (Load Only) -->
+                <div class="drawer-control-group">
+                    <div class="drawer-label">Presets</div>
+                    <select class="drawer-preset-selector" id="drawerPresetSelector" title="Load Saved Preset">
+                        <option value="">Load Preset...</option>
+                    </select>
+                </div>
+
+                <!-- Spectrum Dropdown -->
+                <div class="drawer-control-group">
+                    <div class="drawer-label">Spectrum</div>
+                    <div class="drawer-dropdown">
+                        <button class="drawer-dropdown-toggle" id="drawerVizModeToggle">Spectrum</button>
+                        <div class="drawer-dropdown-content" id="drawerVizModeDropdown">
+                            <div class="drawer-dropdown-item active" data-mode="0">Spectrum</div>
+                            <div class="drawer-dropdown-item" data-mode="1">Mirror Wave</div>
+                            <div class="drawer-dropdown-item" data-mode="2">Classic LED</div>
+                            <div class="drawer-dropdown-item" data-mode="3">Stereo</div>
+                            <div class="drawer-dropdown-item" data-mode="4">Radial Spectrum</div>
+                            <div class="drawer-dropdown-item" data-mode="5">Energy</div>
+                            <div class="drawer-dropdown-item" data-mode="6">Mirror</div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Infinite Zoom Toggle -->
+            <div class="drawer-control-group">
+                <div class="drawer-label">Infinite Zoom</div>
+                <button class="drawer-toggle-btn" id="drawerInfiniteZoomBtn" title="Infinite Zoom">
+                    <span class="drawer-btn-text">Infinite Zoom Off</span>
+                </button>
+            </div>
+
+            <!-- Kaleidoscope Section -->
+            <div class="drawer-control-group">
+                <div class="drawer-label">Kaleidoscope</div>
+                <div class="drawer-icon-row">
+                    <button class="drawer-icon-btn" id="drawerKaleidoscopeVideoBtn" title="Apply to Video">
+                        <span class="drawer-icon">⏺</span>
+                    </button>
+                    <button class="drawer-icon-btn" id="drawerKaleidoscopeVizBtn" title="Apply to Viz">
+                        <span class="drawer-icon">◈</span>
+                    </button>
+                    <button class="drawer-icon-btn" id="drawerKaleidoscopeInfiniteZoomBtn" title="Infinite Zoom">
+                        <span class="drawer-icon">∞</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kaleidoscope Presets -->
+            <div class="drawer-control-group">
+                <div class="drawer-label">Presets</div>
+                <div class="drawer-preset-buttons">
+                    <button class="drawer-preset-btn" id="drawerKelPreset1" title="Classic">◆</button>
+                    <button class="drawer-preset-btn" id="drawerKelPreset2" title="Flower">❀</button>
+                    <button class="drawer-preset-btn" id="drawerKelPreset3" title="Crystal">◇</button>
+                    <button class="drawer-preset-btn" id="drawerKelPreset4" title="Mandala">◈</button>
+                </div>
+            </div>
+            </div>
             <div class="drawer drawer-hidden" id="drawerBackground"></div>
             <div class="drawer drawer-hidden" id="drawerOutput"></div>
             <div class="drawer drawer-hidden" id="drawerLayers"></div>
@@ -24582,15 +24840,17 @@ https://rogueamoeba.com/loopback/
                 const drawer = document.getElementById(drawerId);
                 if (!drawer) return;
 
-                // Close all other drawers first
+                // Check if this drawer is currently visible
+                const isCurrentlyVisible = drawer.classList.contains('drawer-visible');
+                
+                // Close all drawers first
                 closeAllDrawers();
-
-                // Toggle this drawer
-                if (drawer.classList.contains('drawer-hidden')) {
+                
+                // If this drawer was not visible, show it
+                if (!isCurrentlyVisible) {
                     showDrawer(drawer);
-                } else {
-                    hideDrawer(drawer);
                 }
+                // If it was visible, it stays closed (toggled off)
             }
 
             function showDrawer(drawer) {
@@ -24637,6 +24897,316 @@ https://rogueamoeba.com/loopback/
                 drawers.forEach(drawer => {
                     hideDrawer(drawer);
                 });
+            }
+
+            // Drawer Control Functionality
+            function initializeDrawerControls() {
+                // VIZ ON/OFF Toggle - connect to existing functionality
+                const drawerVizToggleBtn = document.getElementById('drawerVizToggleBtn');
+                const originalVizToggleBtn = document.getElementById('vizToggleBtn');
+                
+                if (drawerVizToggleBtn && originalVizToggleBtn) {
+                    // Sync initial state
+                    updateDrawerVizToggle();
+                    
+                    // Connect click handler
+                    drawerVizToggleBtn.addEventListener('click', () => {
+                        // Call the visualization toggle function directly instead of triggering click
+                        if (window.visualizer && window.visualizer.toggleVisualization) {
+                            window.visualizer.toggleVisualization();
+                        }
+                        // Update drawer button state
+                        updateDrawerVizToggle();
+                    });
+                }
+
+                // Spectrum Dropdown - connect to existing functionality
+                const drawerVizModeToggle = document.getElementById('drawerVizModeToggle');
+                const drawerVizModeDropdown = document.getElementById('drawerVizModeDropdown');
+                const originalVizModeToggle = document.getElementById('vizModeToggle');
+                const originalVizModeDropdown = document.getElementById('vizModeDropdown');
+                
+                if (drawerVizModeToggle && originalVizModeToggle) {
+                    // Sync initial state
+                    updateDrawerVizMode();
+                    
+                    // Connect dropdown toggle
+                    drawerVizModeToggle.addEventListener('click', () => {
+                        drawerVizModeDropdown.classList.toggle('show');
+                    });
+                    
+                    // Connect dropdown items
+                    const drawerItems = drawerVizModeDropdown.querySelectorAll('.drawer-dropdown-item');
+                    const originalItems = originalVizModeDropdown.querySelectorAll('.dropdown-item');
+                    
+                    drawerItems.forEach((item, index) => {
+                        item.addEventListener('click', () => {
+                            // Call the visualization mode change function directly
+                            const mode = item.getAttribute('data-mode');
+                            if (window.visualizer && window.visualizer.setVisualizationMode) {
+                                window.visualizer.setVisualizationMode(parseInt(mode));
+                            }
+                            // Update drawer state
+                            updateDrawerVizMode();
+                            // Close drawer dropdown
+                            drawerVizModeDropdown.classList.remove('show');
+                        });
+                    });
+                }
+
+                // Presets Dropdown - connect to existing functionality
+                const drawerPresetSelector = document.getElementById('drawerPresetSelector');
+                const originalPresetSelector = document.getElementById('presetSelector');
+                
+                if (drawerPresetSelector && originalPresetSelector) {
+                    // Sync options
+                    syncPresetOptions();
+                    
+                    // Connect change handler
+                    drawerPresetSelector.addEventListener('change', (e) => {
+                        // Set the original selector's value and trigger its change event
+                        originalPresetSelector.value = e.target.value;
+                        originalPresetSelector.dispatchEvent(new Event('change'));
+                    });
+                }
+
+                // Kaleidoscope Video Toggle - connect to existing functionality
+                const drawerKaleidoscopeVideoBtn = document.getElementById('drawerKaleidoscopeVideoBtn');
+                const originalKaleidoscopeVideoBtn = document.getElementById('kaleidoscopeVideoBtn');
+
+                if (drawerKaleidoscopeVideoBtn && originalKaleidoscopeVideoBtn) {
+                    // Sync initial state
+                    updateDrawerKaleidoscopeVideo();
+                    
+                    // Connect click handler
+                    drawerKaleidoscopeVideoBtn.addEventListener('click', () => {
+                        // Use the exact same logic as the original button
+                        if (window.visualizer) {
+                            window.visualizer.kaleidoscopeApplyToVideo = !window.visualizer.kaleidoscopeApplyToVideo;
+                            originalKaleidoscopeVideoBtn.textContent = `Apply to Video: ${
+                                window.visualizer.kaleidoscopeApplyToVideo ? 'On' : 'Off'
+                            }`;
+                            originalKaleidoscopeVideoBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToVideo);
+
+                            // Enable kaleidoscope if turning on
+                            if (window.visualizer.kaleidoscopeApplyToVideo) {
+                                if (!window.visualizer.kaleidoscopeEnabled) {
+                                    window.visualizer.kaleidoscopeEnabled = true;
+                                    window.visualizer.initKaleidoscope();
+                                    window.visualizer.startKaleidoscopeAnimation();
+                                }
+                            }
+                        }
+                        // Update drawer button state
+                        updateDrawerKaleidoscopeVideo();
+                    });
+                }
+
+                // Kaleidoscope Viz Toggle - connect to existing functionality
+                const drawerKaleidoscopeVizBtn = document.getElementById('drawerKaleidoscopeVizBtn');
+                const originalKaleidoscopeVizBtn = document.getElementById('kaleidoscopeVizBtn');
+
+                if (drawerKaleidoscopeVizBtn && originalKaleidoscopeVizBtn) {
+                    // Sync initial state
+                    updateDrawerKaleidoscopeViz();
+                    
+                    // Connect click handler
+                    drawerKaleidoscopeVizBtn.addEventListener('click', () => {
+                        // Use the exact same logic as the original button
+                        if (window.visualizer) {
+                            window.visualizer.kaleidoscopeApplyToViz = !window.visualizer.kaleidoscopeApplyToViz;
+                            originalKaleidoscopeVizBtn.textContent = `Apply to Viz: ${
+                                window.visualizer.kaleidoscopeApplyToViz ? 'On' : 'Off'
+                            }`;
+                            originalKaleidoscopeVizBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToViz);
+
+                            // Enable kaleidoscope if turning on, disable if both are off
+                            if (window.visualizer.kaleidoscopeApplyToViz) {
+                                if (!window.visualizer.kaleidoscopeEnabled) {
+                                    window.visualizer.kaleidoscopeEnabled = true;
+                                    window.visualizer.initKaleidoscope();
+                                    window.visualizer.startKaleidoscopeAnimation();
+                                }
+                            } else if (!window.visualizer.kaleidoscopeApplyToVideo && !window.visualizer.kaleidoscopeApplyToInfiniteZoom) {
+                                window.visualizer.stopKaleidoscopeAnimation();
+                                window.visualizer.kaleidoscopeEnabled = false;
+                            }
+                        }
+                        // Update drawer button state
+                        updateDrawerKaleidoscopeViz();
+                    });
+                }
+
+                // Kaleidoscope Infinite Zoom Toggle - connect to existing functionality
+                const drawerKaleidoscopeInfiniteZoomBtn = document.getElementById('drawerKaleidoscopeInfiniteZoomBtn');
+                const originalKaleidoscopeInfiniteZoomBtn = document.getElementById('kaleidoscopeInfiniteZoomBtn');
+
+                if (drawerKaleidoscopeInfiniteZoomBtn && originalKaleidoscopeInfiniteZoomBtn) {
+                    // Sync initial state
+                    updateDrawerKaleidoscopeInfiniteZoom();
+                    
+                    // Connect click handler
+                    drawerKaleidoscopeInfiniteZoomBtn.addEventListener('click', () => {
+                        // Use the exact same logic as the original button
+                        if (window.visualizer) {
+                            window.visualizer.kaleidoscopeApplyToInfiniteZoom = !window.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                            originalKaleidoscopeInfiniteZoomBtn.textContent = `Infinite Zoom: ${
+                                window.visualizer.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
+                            }`;
+                            originalKaleidoscopeInfiniteZoomBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToInfiniteZoom);
+
+                            // Enable kaleidoscope if turning on IZ, disable if all are off
+                            if (window.visualizer.kaleidoscopeApplyToInfiniteZoom) {
+                                if (!window.visualizer.kaleidoscopeEnabled) {
+                                    window.visualizer.kaleidoscopeEnabled = true;
+                                    window.visualizer.initKaleidoscope();
+                                    window.visualizer.startKaleidoscopeAnimation();
+                                }
+                            } else if (!window.visualizer.kaleidoscopeApplyToViz && !window.visualizer.kaleidoscopeApplyToVideo) {
+                                window.visualizer.stopKaleidoscopeAnimation();
+                                window.visualizer.kaleidoscopeEnabled = false;
+                            }
+                        }
+                        // Update drawer button state
+                        updateDrawerKaleidoscopeInfiniteZoom();
+                    });
+                }
+
+                // Infinite Zoom Toggle - connect to existing functionality
+                const drawerInfiniteZoomBtn = document.getElementById('drawerInfiniteZoomBtn');
+                const originalInfiniteZoomBtn = document.getElementById('infiniteZoomBtn');
+
+                if (drawerInfiniteZoomBtn && originalInfiniteZoomBtn) {
+                    // Sync initial state
+                    updateDrawerInfiniteZoom();
+                    
+                    // Connect click handler
+                    drawerInfiniteZoomBtn.addEventListener('click', () => {
+                        // Use the exact same logic as the original button
+                        if (window.visualizer && window.visualizer.infiniteZoom) {
+                            if (window.visualizer.infiniteZoom.isActive) {
+                                window.visualizer.infiniteZoom.stop();
+                                const btnText = originalInfiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
+                                btnText.textContent = 'Infinite Zoom Off';
+                                originalInfiniteZoomBtn.classList.remove('active');
+                            } else {
+                                window.visualizer.infiniteZoom.initialize();
+                                window.visualizer.infiniteZoom.start();
+                                const btnText = originalInfiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
+                                btnText.textContent = 'Infinite Zoom On';
+                                originalInfiniteZoomBtn.classList.add('active');
+                            }
+                        }
+                        // Update drawer button state
+                        updateDrawerInfiniteZoom();
+                    });
+                }
+
+                // Kaleidoscope Preset Buttons - connect to existing functionality
+                const drawerKelPreset1 = document.getElementById('drawerKelPreset1');
+                const drawerKelPreset2 = document.getElementById('drawerKelPreset2');
+                const drawerKelPreset3 = document.getElementById('drawerKelPreset3');
+                const drawerKelPreset4 = document.getElementById('drawerKelPreset4');
+
+                if (drawerKelPreset1) {
+                    drawerKelPreset1.addEventListener('click', () => {
+                        if (window.visualizer && window.visualizer.kaleidoscopePresets) {
+                            window.visualizer.applyKaleidoscopePreset(window.visualizer.kaleidoscopePresets[0]);
+                        }
+                    });
+                }
+
+                if (drawerKelPreset2) {
+                    drawerKelPreset2.addEventListener('click', () => {
+                        if (window.visualizer && window.visualizer.kaleidoscopePresets) {
+                            window.visualizer.applyKaleidoscopePreset(window.visualizer.kaleidoscopePresets[1]);
+                        }
+                    });
+                }
+
+                if (drawerKelPreset3) {
+                    drawerKelPreset3.addEventListener('click', () => {
+                        if (window.visualizer && window.visualizer.kaleidoscopePresets) {
+                            window.visualizer.applyKaleidoscopePreset(window.visualizer.kaleidoscopePresets[2]);
+                        }
+                    });
+                }
+
+                if (drawerKelPreset4) {
+                    drawerKelPreset4.addEventListener('click', () => {
+                        if (window.visualizer && window.visualizer.kaleidoscopePresets) {
+                            window.visualizer.applyKaleidoscopePreset(window.visualizer.kaleidoscopePresets[3]);
+                        }
+                    });
+                }
+            }
+
+            // Helper functions to sync drawer states with original controls
+            function updateDrawerVizToggle() {
+                const drawerBtn = document.getElementById('drawerVizToggleBtn');
+                const originalBtn = document.getElementById('vizToggleBtn');
+                if (drawerBtn && originalBtn) {
+                    drawerBtn.textContent = originalBtn.textContent;
+                    // Remove active class first, then add it if original is active
+                    drawerBtn.classList.remove('active');
+                    if (originalBtn.classList.contains('active')) {
+                        drawerBtn.classList.add('active');
+                    }
+                }
+            }
+
+            function updateDrawerVizMode() {
+                const drawerToggle = document.getElementById('drawerVizModeToggle');
+                const originalToggle = document.getElementById('vizModeToggle');
+                if (drawerToggle && originalToggle) {
+                    drawerToggle.textContent = originalToggle.textContent;
+                }
+            }
+
+            function syncPresetOptions() {
+                const drawerSelector = document.getElementById('drawerPresetSelector');
+                const originalSelector = document.getElementById('presetSelector');
+                if (drawerSelector && originalSelector) {
+                    // Copy options from original to drawer
+                    drawerSelector.innerHTML = originalSelector.innerHTML;
+                }
+            }
+
+            function updateDrawerKaleidoscopeVideo() {
+                const drawerBtn = document.getElementById('drawerKaleidoscopeVideoBtn');
+                const originalBtn = document.getElementById('kaleidoscopeVideoBtn');
+                if (drawerBtn && originalBtn) {
+                    drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
+                }
+            }
+
+            function updateDrawerKaleidoscopeViz() {
+                const drawerBtn = document.getElementById('drawerKaleidoscopeVizBtn');
+                const originalBtn = document.getElementById('kaleidoscopeVizBtn');
+                if (drawerBtn && originalBtn) {
+                    drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
+                }
+            }
+
+            function updateDrawerKaleidoscopeInfiniteZoom() {
+                const drawerBtn = document.getElementById('drawerKaleidoscopeInfiniteZoomBtn');
+                const originalBtn = document.getElementById('kaleidoscopeInfiniteZoomBtn');
+                if (drawerBtn && originalBtn) {
+                    drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
+                }
+            }
+
+            function updateDrawerInfiniteZoom() {
+                const drawerBtn = document.getElementById('drawerInfiniteZoomBtn');
+                const originalBtn = document.getElementById('infiniteZoomBtn');
+                if (drawerBtn && originalBtn) {
+                    const drawerText = drawerBtn.querySelector('.drawer-btn-text');
+                    const originalText = originalBtn.querySelector('.kaleidoscope-btn-text');
+                    if (drawerText && originalText) {
+                        drawerText.textContent = originalText.textContent;
+                    }
+                    drawerBtn.classList.toggle('active', originalBtn.classList.contains('active'));
+                }
             }
 
             // Global function for toggling sections
@@ -24687,6 +25257,9 @@ https://rogueamoeba.com/loopback/
             
             // Initialize Drawers
             initializeDrawers();
+            
+            // Initialize Drawer Controls
+            initializeDrawerControls();
             
             // Initialize Video Devices
             if (window.visualizer && window.visualizer.initializeVideoInput) {
