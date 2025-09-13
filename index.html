@@ -234,219 +234,7 @@
     <div class="panel-content">
         <!-- AI AUTOPILOT Section -->
         <div class="autopilot-section">
-            <div class="dropdown-label">AI Autopilot</div>
-            <div class="control-with-settings">
-                <button class="dropdown-toggle" id="aiAutopilotBtn" title="Activate AI Autopilot">
-                    Activate
-                </button>
-                <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
-            </div>
-            <div class="control-with-settings" style="margin-top: 8px;">
-                <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
-                    📊 Learning Analytics
-                </button>
-                
-                <!-- AI Autopilot Settings Panel -->
-                <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>AI Autopilot Settings</span>
-                    <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
-                </div>
-
-                <div class="autopilot-settings-content">
-                    <!-- Left Column -->
-                    <div class="autopilot-column">
-                <!-- Autopilot Scope -->
-                <div class="control-group">
-                    <div class="group-label">Autopilot Scope</div>
-                    <div class="preset-buttons">
-                                <button class="scope-btn" data-scope="bars">Bars</button>
-                        <button class="scope-btn" data-scope="radial">Radial</button>
-                        <button class="scope-btn" data-scope="energy">Energy</button>
-                                <button class="scope-btn active" data-scope="all">All</button>
-                    </div>
-                </div>
-
-                <!-- Color Schemes Toggle -->
-                <div class="control-group">
-                    <div class="group-label">Color Automation</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
-                    </div>
-                </div>
-
-                <!-- Change Timing -->
-                <div class="control-group">
-                    <div class="group-label">Change Timing</div>
-                    <div class="preset-buttons">
-                        <button class="timing-btn active" data-timing="instant">Instant</button>
-                        <button class="timing-btn" data-timing="smooth">Smooth</button>
-                        <button class="timing-btn" data-timing="slow">Slow</button>
-                        <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
-                    </div>
-                </div>
-
-                <!-- Sensitivity -->
-                <div class="control-group">
-                    <div class="group-label">Sensitivity</div>
-                    <div class="preset-buttons">
-                        <button class="sensitivity-btn" data-sensitivity="low">Low</button>
-                        <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
-                        <button class="sensitivity-btn" data-sensitivity="high">High</button>
-                    </div>
-                </div>
-
-                <!-- Genre Selection -->
-                <div class="control-group">
-                    <div class="group-label">Genre Detection</div>
-                    <div class="preset-buttons">
-                        <button class="genre-btn active" data-genre="auto">Auto Detect</button>
-                        <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
-                        <button class="genre-btn" data-genre="rock">Rock</button>
-                        <button class="genre-btn" data-genre="electronic">Electronic</button>
-                        <button class="genre-btn" data-genre="reggae">Reggae</button>
-                        <button class="genre-btn" data-genre="country">Country</button>
-                        <button class="genre-btn" data-genre="funk">Funk</button>
-                        <button class="genre-btn" data-genre="ambient">Ambient</button>
-                        <button class="genre-btn" data-genre="punk">Punk</button>
-                        <button class="genre-btn" data-genre="jazz">Jazz</button>
-                        <button class="genre-btn" data-genre="classical">Classical</button>
-                    </div>
-                </div>
-
-                <!-- Parameter Control -->
-                <div class="control-group">
-                    <div class="group-label">Parameter Control</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
-                    </div>
-                </div>
-
-                <!-- Video Effects -->
-                <div class="control-group">
-                    <div class="group-label">Video Effects</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn active" id="enableVideoEffectsBtn">Video Effects: On</button>
-                    </div>
-                </div>
-
-                        <!-- Learning Controls -->
-                        <div class="control-group">
-                            <div class="group-label">Learning Controls</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn active" id="enableLearningBtn">Learning: On</button>
-                            </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="resetLearningBtn">Reset Learning Data</button>
-                            </div>
-                        </div>
-
-                        <!-- Adaptive Tuning Controls -->
-                        <div class="control-group">
-                            <div class="group-label">Adaptive Tuning</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn active" id="enableAdaptiveTuningBtn">Adaptive Tuning: On</button>
-                            </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="forceOptimizationBtn">Force Optimization</button>
-                            </div>
-                        </div>
-
-                        <!-- Predictive Behavior Controls -->
-                        <div class="control-group">
-                            <div class="group-label">Predictive Behavior</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn active" id="enablePredictiveBehaviorBtn">Predictive Behavior: On</button>
-                            </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="testPredictionBtn">Test Prediction</button>
-                            </div>
-                        </div>
-
-                        <!-- Multi-layered Intelligence Controls -->
-                        <div class="control-group">
-                            <div class="group-label">Multi-layered Intelligence</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn active" id="enableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: On</button>
-                            </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="testIntelligenceBtn">Test Intelligence</button>
-                            </div>
-                        </div>
-
-                        <!-- Test Button -->
-                        <div class="control-group">
-                            <div class="group-label">Test</div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
-                            </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="testParametersBtn">Test Parameters</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="autopilot-column">
-                <!-- Current Genre Display -->
-                <div class="control-group">
-                    <div class="group-label">Current Genre</div>
-                    <div class="info-display" id="currentGenreDisplay">Unknown</div>
-                </div>
-
-                <!-- Genre Confidence -->
-                <div class="control-group">
-                    <div class="group-label">Confidence</div>
-                    <div class="info-display" id="genreConfidenceDisplay">0%</div>
-                </div>
-
-                        <!-- Learning Analytics -->
-                <div class="control-group">
-                            <div class="group-label">Learning Analytics</div>
-                            <div class="info-display" id="learningProgressDisplay">Learning: 0%</div>
-                            <div class="info-display" id="patternCountDisplay">Patterns: 0</div>
-                            <div class="info-display" id="successRateDisplay">Success Rate: 0%</div>
-                        </div>
-
-                        <!-- Adaptive Tuning Analytics -->
-                        <div class="control-group">
-                            <div class="group-label">Adaptive Tuning</div>
-                            <div class="info-display" id="performanceDisplay">Performance: 0%</div>
-                            <div class="info-display" id="optimizationCountDisplay">Optimizations: 0</div>
-                            <div class="info-display" id="performanceTrendDisplay">Trend: Stable</div>
-                        </div>
-
-                        <!-- User Feedback -->
-                        <div class="control-group">
-                            <div class="group-label">User Feedback</div>
-                    <div class="button-container">
-                                <button class="effect-toggle-btn" id="thumbsUpBtn">👍 Like Current Settings</button>
-                    </div>
-                            <div class="button-container">
-                                <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
-                </div>
-                            <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
-                </div>
-
-                        <!-- Predictive Behavior Analytics -->
-                        <div class="control-group">
-                            <div class="group-label">Predictive Analytics</div>
-                            <div class="info-display" id="predictionCountDisplay">Predictions: 0</div>
-                            <div class="info-display" id="predictionAccuracyDisplay">Accuracy: 0%</div>
-                            <div class="info-display" id="predictionConfidenceDisplay">Confidence: 80%</div>
-                        </div>
-
-                        <!-- Multi-layered Intelligence Analytics -->
-                        <div class="control-group">
-                            <div class="group-label">Intelligence Analytics</div>
-                            <div class="info-display" id="intelligenceDecisionsDisplay">Decisions: 0</div>
-                            <div class="info-display" id="metaLearningDisplay">Meta-Learning: 0%</div>
-                            <div class="info-display" id="layerPerformanceDisplay">Performance: Balanced</div>
-                        </div>
-                    </div>
-                </div>
-                </div>
-            </div>
+            <!-- AI Autopilot controls moved to sidebar -->
         </div>
 
         <!-- Learning Analytics Dashboard Modal -->
@@ -605,232 +393,12 @@
     <div class="panel-content">
         <!-- Live Display -->
         <div class="panel-row">
-            <div class="control-with-settings">
-                <button class="dropdown-toggle" id="liveDisplayBtn" title="Open Live Display Window">
-                    Live Display
-                </button>
-                <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
-                
-                <!-- Display Settings Panel -->
-                <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
-                <div class="panel-header">
-                    <span>Display Settings</span>
-                    <button class="panel-close-btn" id="displaySettingsClose">×</button>
-                </div>
-
-                <!-- Presentation Mode -->
-                <div class="control-group">
-                    <div class="group-label">Presentation Mode</div>
-                    <div class="preset-buttons">
-                        <button class="display-mode-btn active" data-mode="original">Original</button>
-                        <button class="display-mode-btn" data-mode="fit">Fit</button>
-                        <button class="display-mode-btn" data-mode="fill">Fill</button>
-                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
-                        <button class="display-mode-btn" data-mode="performance">Performance</button>
-                    </div>
-                </div>
-
-                <!-- Quality Settings -->
-                <div class="control-group">
-                    <div class="group-label">Capture Quality</div>
-                    <div class="slider-container">
-                        <label>Resolution</label>
-                        <select id="captureResolution" class="quality-select">
-                            <option value="3840">4K (3840px)</option>
-                            <option value="2560" selected>2K (2560px)</option>
-                            <option value="1920">1080p (1920px)</option>
-                            <option value="1280">720p (1280px)</option>
-                            <option value="960">SD (960px)</option>
-            </select>
-        </div>
-                    <div class="slider-container">
-                        <label>Frame Rate</label>
-                        <select id="captureFrameRate" class="quality-select">
-                            <option value="60" selected>60 FPS</option>
-                            <option value="30">30 FPS</option>
-                            <option value="24">24 FPS</option>
-                            <option value="15">15 FPS</option>
-                        </select>
-    </div>
-                    <div class="slider-container">
-                        <label>Bitrate</label>
-                        <input type="range" id="captureBitrate" min="1" max="50" value="30" step="0.5">
-                        <span id="captureBitrateValue">30 Mbps</span>
-                    </div>
-                </div>
-
-                <!-- Aspect Ratio -->
-                <div class="control-group">
-                    <div class="group-label">Aspect Ratio</div>
-                    <div class="preset-buttons">
-                        <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
-                        <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
-                        <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                        <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                        <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
-                    </div>
-                </div>
-
-                <!-- Display Enhancement -->
-                <div class="control-group">
-                    <div class="group-label">Display Enhancement</div>
-                    <div class="slider-container">
-                        <label>Sharpness</label>
-                        <input type="range" id="displaySharpness" min="0" max="100" value="0">
-                        <span id="displaySharpnessValue">0%</span>
-                    </div>
-                    <div class="slider-container">
-                        <label>Letterbox Color</label>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="color" id="letterboxColor" value="#000000" style="width: 50px; height: 30px;">
-                            <span id="letterboxColorValue">#000000</span>
-                        </div>
-                    </div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="mirrorBackgroundBtn">Mirror Background: Off</button>
-                    </div>
-                    <div class="slider-container" id="mirrorBlurContainer" style="display: none;">
-                        <label>Background Blur</label>
-                        <input type="range" id="mirrorBackgroundBlur" min="0" max="50" value="20">
-                        <span id="mirrorBackgroundBlurValue">20px</span>
-                    </div>
-                </div>
-
-                <!-- Quick Presets -->
-                <div class="control-group">
-                    <div class="group-label">Quick Presets</div>
-                    <div class="preset-buttons">
-                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
-                        <button class="display-preset-btn" data-preset="presentation">Presentation</button>
-                        <button class="display-preset-btn" data-preset="social">Social Media</button>
-                        <button class="display-preset-btn" data-preset="performance">Performance</button>
-                        <button class="display-preset-btn" data-preset="projector">Projector</button>
-    </div>
-                </div>
-
-                <!-- Capture Settings -->
-                <div class="control-group">
-                    <div class="group-label">Capture Settings</div>
-                    <div class="button-container">
-                        <button class="effect-toggle-btn" id="captureVisualizationBtn">Capture Visualization: On</button>
-                        <button class="effect-toggle-btn" id="captureVideoBtn">Capture Video: On</button>
-                    </div>
-                </div>
-                </div>
-            </div>
+            <!-- Live Display button and settings moved to sidebar -->
         </div>
 
         <!-- Record -->
         <div class="panel-row">
-            <div class="record-controls">
-                <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
-                    <span class="record-text">Record</span>
-                    <span class="record-timer" style="display: none;">00:00</span>
-                </button>
-                <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
-
-                <!-- Record Settings Panel -->
-                <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
-                    <div class="panel-header">
-                        <span>Recording Settings</span>
-                        <button class="panel-close-btn" id="recordSettingsClose">×</button>
-                    </div>
-
-                    <!-- Resolution -->
-                    <div class="control-group">
-                        <div class="group-label">Resolution</div>
-                        <select id="recordResolutionSelect" class="control-select">
-                            <option value="canvas">Canvas Size</option>
-                            <option value="720p">720p (1280×720)</option>
-                            <option value="1080p" selected>1080p (1920×1080)</option>
-                            <option value="4k">4K (3840×2160)</option>
-                        </select>
-                    </div>
-
-                    <!-- Aspect Ratio -->
-                    <div class="control-group">
-                        <div class="group-label">Aspect Ratio</div>
-                        <div class="preset-buttons">
-                            <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
-                            <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
-                            <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                            <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                        </div>
-                    </div>
-
-                    <!-- Visualization Aspect Ratio -->
-                    <div class="control-group">
-                        <div class="group-label">Visualization</div>
-                        <div class="button-container">
-                            <button class="effect-toggle-btn active" id="recordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
-                        </div>
-                    </div>
-
-                    <!-- Frame Rate -->
-                    <div class="control-group">
-                        <div class="group-label">Frame Rate</div>
-                        <div class="preset-buttons">
-                            <button class="framerate-btn active" data-fps="30">30 FPS</button>
-                            <button class="framerate-btn" data-fps="60">60 FPS</button>
-                        </div>
-                    </div>
-
-                    <!-- Video Quality -->
-                    <div class="control-group">
-                        <div class="group-label">Video Quality</div>
-                        <select id="recordVideoQualitySelect" class="control-select">
-                            <option value="auto" selected>Auto</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div>
-
-                    <!-- Audio Quality -->
-                    <div class="control-group">
-                        <div class="group-label">Audio Quality</div>
-                        <select id="recordAudioQualitySelect" class="control-select">
-                            <option value="auto" selected>Auto</option>
-                            <option value="high">High (320 kbps)</option>
-                            <option value="medium">Medium (192 kbps)</option>
-                            <option value="low">Low (128 kbps)</option>
-                        </select>
-                    </div>
-
-                    <!-- File Settings -->
-                    <div class="control-group">
-                        <div class="group-label">File Settings</div>
-                        <div class="file-location-display" id="recordFileLocation">
-                            📥 Downloads folder
-                        </div>
-                        <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
-                        <div class="input-container">
-                            <label>Filename</label>
-                            <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
-                            <span class="file-extension">.webm</span>
-                        </div>
-                    </div>
-
-                    <!-- Recording Info -->
-                    <div class="control-group">
-                        <div class="group-label">Recording Info</div>
-                        <div class="recording-info">
-                            <div class="info-item">
-                                <span class="info-label">Output:</span>
-                                <span id="recordingOutput">1920×1080 @ 30fps</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Format:</span>
-                                <span id="recordingFormat">WebM (VP9/Opus)</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Est. Size:</span>
-                                <span id="recordingEstSize">~50 MB/min</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Record button and settings moved to sidebar -->
         </div>
 
         <!-- Background Image -->
@@ -1018,7 +586,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: max-content;
-            min-width: 240px;
+            min-width: 300px;
             max-width: 300px;
             background: var(--secondary-bg);
             border-right: 1px solid var(--border-color);
@@ -1030,7 +598,8 @@
         }
 
         .sidebar.collapsed {
-            width: 50px;
+            width: 60px !important;
+            min-width: 0 !important;
         }
 
         .sidebar.collapsed .sidebar-title {
@@ -1278,11 +847,8 @@
             display: none;
         }
 
-        .section-title.collapsed::after {
-            content: '▶';
-            float: right;
-            transition: transform 0.3s ease;
-            font-size: 10px;
+        .section-content.expanded {
+            display: flex;
         }
 
         .section-title::after {
@@ -1291,6 +857,14 @@
             transition: transform 0.3s ease;
             font-size: 10px;
         }
+
+        .section-title.collapsed::after {
+            content: '▶';
+            float: right;
+            transition: transform 0.3s ease;
+            font-size: 10px;
+        }
+
 
         .section-content {
             padding: 8px 16px 16px;
@@ -1498,7 +1072,7 @@
         }
 
         .section-content {
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: flex-start;
             gap: 8px;
@@ -5015,7 +4589,44 @@
             padding: 12px;
             z-index: 5000;
             min-width: 320px;
-            max-width: 400px;
+        }
+
+        /* Sidebar-specific display settings panel positioning */
+        .sidebar .display-settings-panel {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            margin-top: 10px;
+            width: 100%;
+            min-width: auto;
+            max-width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Sidebar-specific record settings panel positioning */
+        .sidebar .record-settings-panel {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            margin-top: 10px;
+            width: 100%;
+            min-width: auto;
+            max-width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Sidebar-specific autopilot settings panel positioning */
+        .sidebar .autopilot-settings-panel {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            margin-top: 10px;
+            width: 100%;
+            min-width: auto;
+            max-width: 100%;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
@@ -5214,11 +4825,20 @@
         </div>
         
         <div class="sidebar-content">
+            <!-- Scenes Section (formerly Presets) -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Scenes">◊</div>
+                <h4 class="section-title collapsed" onclick="toggleSection('presets')">Scenes</h4>
+                <div class="section-content collapsed" id="sidebarPresets">
+                    <!-- Global preset controls will be moved here -->
+                </div>
+            </div>
+
             <!-- Audio Input Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Audio">♪</div>
-                <h4 class="section-title" onclick="toggleSection('audio')">Audio</h4>
-                <div class="section-content" id="sidebarAudioInput">
+                <h4 class="section-title collapsed" onclick="toggleSection('audio')">Audio</h4>
+                <div class="section-content collapsed" id="sidebarAudioInput">
                     <!-- Live Audio Input -->
                     <div class="control-group">
                         <div class="dropdown-label">Audio Input</div>
@@ -5229,11 +4849,11 @@
                     
                     <!-- Playlist Manager (Embedded) -->
                     <div class="control-group">
-                        <div class="dropdown-label">Playlist</div>
+                            <div class="dropdown-label">Playlist</div>
                         <div class="embedded-playlist-manager" id="playlistDropdown">
-                            <!-- Playlist content will be populated here -->
+                                <!-- Playlist content will be populated here -->
+                            </div>
                         </div>
-                    </div>
                     
                 </div>
             </div>
@@ -5241,8 +4861,8 @@
             <!-- Video Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Video">▶</div>
-                <h4 class="section-title" onclick="toggleSection('video')">Video</h4>
-                <div class="section-content" id="sidebarVideoInput">
+                <h4 class="section-title collapsed" onclick="toggleSection('video')">Video</h4>
+                <div class="section-content collapsed" id="sidebarVideoInput">
                     <!-- Video Input Controls -->
                     <div class="control-group">
                         <div class="dropdown-label">Video Input</div>
@@ -5391,8 +5011,8 @@
             <!-- Visualizations Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Visualizations">◊</div>
-                <h4 class="section-title" onclick="toggleSection('visualizations')">Visualizations</h4>
-                <div class="section-content" id="sidebarVisualizations">
+                <h4 class="section-title collapsed" onclick="toggleSection('visualizations')">Visualizations</h4>
+                <div class="section-content collapsed" id="sidebarVisualizations">
                     <!-- Spectrum Controls (with ON button and Random) -->
                     <div class="spectrum-controls-container">
                         <div class="dropdown-label">Spectrum</div>
@@ -5652,8 +5272,8 @@
             <!-- Background Image Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Background">■</div>
-                <h4 class="section-title" onclick="toggleSection('background')">Background</h4>
-                <div class="section-content" id="sidebarBackground">
+                <h4 class="section-title collapsed" onclick="toggleSection('background')">Background</h4>
+                <div class="section-content collapsed" id="sidebarBackground">
                     <!-- Background Image Toggle -->
                     <div class="control-group">
                         <button class="dropdown-toggle viz-toggle-btn" id="sidebarBackgroundImgBtn" title="Toggle Background Image">
@@ -5674,18 +5294,18 @@
                                     <div class="file-size" id="sidebarBackgroundFileSize"></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
+                </div>
+            </div>
+
                     <!-- Opacity -->
                     <div class="control-group">
                         <div class="group-label">Opacity</div>
                         <div class="slider-container">
                             <input type="range" id="sidebarBackgroundOpacitySlider" class="control-slider" min="0" max="100" value="100">
                             <span class="slider-value" id="sidebarBackgroundOpacityValue">100%</span>
-                        </div>
-                    </div>
-                    
+                </div>
+            </div>
+
                     <!-- Saturation -->
                     <div class="control-group">
                         <div class="group-label">Saturation</div>
@@ -5731,11 +5351,248 @@
                 </div>
             </div>
 
+            <!-- Output Section -->
+            <div class="sidebar-section">
+                <div class="section-icon" title="Output">◉</div>
+                <h4 class="section-title collapsed" onclick="toggleSection('output')">Output</h4>
+                <div class="section-content collapsed" id="sidebarOutput">
+                    <!-- Live Display -->
+                    <div class="control-group">
+                        <div class="control-with-settings">
+                            <button class="dropdown-toggle" id="liveDisplayBtn" title="Open Live Display Window">
+                                Live Display
+                            </button>
+                            <button id="displaySettingsBtn" class="video-settings-toggle" title="Display Settings">⚙</button>
+                        </div>
+                    </div>
+
+                    <!-- Display Settings Panel -->
+                    <div class="display-settings-panel" id="displaySettingsPanel" style="display: none;">
+                        <div class="panel-header">
+                            <span>Display Settings</span>
+                            <button class="panel-close-btn" id="displaySettingsClose">×</button>
+                        </div>
+
+                        <!-- Presentation Mode -->
+                        <div class="control-group">
+                            <div class="group-label">Presentation Mode</div>
+                            <div class="preset-buttons">
+                                <button class="display-mode-btn active" data-mode="original">Original</button>
+                                <button class="display-mode-btn" data-mode="fit">Fit</button>
+                                <button class="display-mode-btn" data-mode="fill">Fill</button>
+                                <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                                <button class="display-mode-btn" data-mode="performance">Performance</button>
+                            </div>
+                        </div>
+
+                        <!-- Quality Settings -->
+                        <div class="control-group">
+                            <div class="group-label">Capture Quality</div>
+                            <div class="slider-container">
+                                <label>Resolution</label>
+                                <select id="captureResolution" class="quality-select">
+                                    <option value="3840">4K (3840px)</option>
+                                    <option value="2560" selected>2K (2560px)</option>
+                                    <option value="1920">1080p (1920px)</option>
+                                    <option value="1280">720p (1280px)</option>
+                                    <option value="960">SD (960px)</option>
+                                </select>
+                            </div>
+                            <div class="slider-container">
+                                <label>Frame Rate</label>
+                                <select id="captureFrameRate" class="quality-select">
+                                    <option value="60" selected>60 FPS</option>
+                                    <option value="30">30 FPS</option>
+                                    <option value="24">24 FPS</option>
+                                    <option value="15">15 FPS</option>
+                                </select>
+                            </div>
+                            <div class="slider-container">
+                                <label>Bitrate</label>
+                                <input type="range" id="captureBitrate" min="1" max="50" value="30" step="0.5">
+                                <span id="captureBitrateValue">30 Mbps</span>
+                            </div>
+                        </div>
+
+                        <!-- Aspect Ratio -->
+                        <div class="control-group">
+                            <div class="group-label">Aspect Ratio</div>
+                            <div class="preset-buttons">
+                                <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                                <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                                <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                                <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                                <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
+                            </div>
+                        </div>
+
+                        <!-- Display Enhancement -->
+                        <div class="control-group">
+                            <div class="group-label">Display Enhancement</div>
+                            <div class="slider-container">
+                                <label>Sharpness</label>
+                                <input type="range" id="displaySharpness" min="0" max="100" value="0">
+                                <span id="displaySharpnessValue">0%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label>Letterbox Color</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="color" id="letterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                                    <span id="letterboxColorValue">#000000</span>
+                                </div>
+                            </div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="mirrorBackgroundBtn">Mirror Background: Off</button>
+                            </div>
+                            <div class="slider-container" id="mirrorBlurContainer" style="display: none;">
+                                <label>Background Blur</label>
+                                <input type="range" id="mirrorBackgroundBlur" min="0" max="50" value="20">
+                                <span id="mirrorBackgroundBlurValue">20px</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Presets -->
+                        <div class="control-group">
+                            <div class="group-label">Quick Presets</div>
+                            <div class="preset-buttons">
+                                <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                                <button class="display-preset-btn" data-preset="presentation">Presentation</button>
+                                <button class="display-preset-btn" data-preset="social">Social Media</button>
+                                <button class="display-preset-btn" data-preset="performance">Performance</button>
+                                <button class="display-preset-btn" data-preset="projector">Projector</button>
+                            </div>
+                        </div>
+
+                        <!-- Capture Settings -->
+                        <div class="control-group">
+                            <div class="group-label">Capture Settings</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn" id="captureVisualizationBtn">Capture Visualization: On</button>
+                                <button class="effect-toggle-btn" id="captureVideoBtn">Capture Video: On</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Record -->
+                    <div class="control-group">
+                        <div class="control-with-settings">
+                            <button class="dropdown-toggle" id="recordBtn" title="Record Visualization">
+                                <span class="record-text">Record</span>
+                                <span class="record-timer" style="display: none;">00:00</span>
+                            </button>
+                            <button id="recordSettingsBtn" class="video-settings-toggle" title="Recording Settings">⚙</button>
+                        </div>
+                    </div>
+
+                    <!-- Record Settings Panel -->
+                    <div class="record-settings-panel" id="recordSettingsPanel" style="display: none;">
+                        <div class="panel-header">
+                            <span>Recording Settings</span>
+                            <button class="panel-close-btn" id="recordSettingsClose">×</button>
+                        </div>
+
+                        <!-- Resolution -->
+                        <div class="control-group">
+                            <div class="group-label">Resolution</div>
+                            <select id="recordResolutionSelect" class="control-select">
+                                <option value="canvas">Canvas Size</option>
+                                <option value="720p">720p (1280×720)</option>
+                                <option value="1080p" selected>1080p (1920×1080)</option>
+                                <option value="4k">4K (3840×2160)</option>
+                            </select>
+                        </div>
+
+                        <!-- Aspect Ratio -->
+                        <div class="control-group">
+                            <div class="group-label">Aspect Ratio</div>
+                            <div class="preset-buttons">
+                                <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                                <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                                <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                                <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                            </div>
+                        </div>
+
+                        <!-- Visualization Aspect Ratio -->
+                        <div class="control-group">
+                            <div class="group-label">Visualization</div>
+                            <div class="button-container">
+                                <button class="effect-toggle-btn active" id="recordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
+                            </div>
+                        </div>
+
+                        <!-- Frame Rate -->
+                        <div class="control-group">
+                            <div class="group-label">Frame Rate</div>
+                            <div class="preset-buttons">
+                                <button class="framerate-btn active" data-fps="30">30 FPS</button>
+                                <button class="framerate-btn" data-fps="60">60 FPS</button>
+                            </div>
+                        </div>
+
+                        <!-- Video Quality -->
+                        <div class="control-group">
+                            <div class="group-label">Video Quality</div>
+                            <select id="recordVideoQualitySelect" class="control-select">
+                                <option value="auto" selected>Auto</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <!-- Audio Quality -->
+                        <div class="control-group">
+                            <div class="group-label">Audio Quality</div>
+                            <select id="recordAudioQualitySelect" class="control-select">
+                                <option value="auto" selected>Auto</option>
+                                <option value="high">High (320 kbps)</option>
+                                <option value="medium">Medium (192 kbps)</option>
+                                <option value="low">Low (128 kbps)</option>
+                            </select>
+                        </div>
+
+                        <!-- File Settings -->
+                        <div class="control-group">
+                            <div class="group-label">File Settings</div>
+                            <div class="file-location-display" id="recordFileLocation">
+                                📥 Downloads folder
+                            </div>
+                            <button class="control-btn" id="recordChooseLocationBtn">Choose Location</button>
+                            <div class="input-container">
+                                <label>Filename</label>
+                                <input type="text" id="recordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
+                                <span class="file-extension">.webm</span>
+                            </div>
+                        </div>
+
+                        <!-- Recording Info -->
+                        <div class="control-group">
+                            <div class="group-label">Recording Info</div>
+                            <div class="recording-info">
+                                <div class="info-item">
+                                    <span class="info-label">Output:</span>
+                                    <span id="recordingOutput">1920×1080 @ 30fps</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Format:</span>
+                                    <span id="recordingFormat">WebM (VP9/Opus)</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Est. Size:</span>
+                                    <span id="recordingEstSize">~50 MB/min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Layers Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Layers">☰</div>
-                <h4 class="section-title" onclick="toggleSection('layers')">Layers</h4>
-                <div class="section-content" id="sidebarLayers">
+                <h4 class="section-title collapsed" onclick="toggleSection('layers')">Layers</h4>
+                <div class="section-content collapsed" id="sidebarLayers">
                     <!-- Layer management will be added here -->
                 </div>
             </div>
@@ -5743,29 +5600,228 @@
             <!-- Autopilot Section -->
             <div class="sidebar-section">
                 <div class="section-icon" title="Autopilot">◯</div>
-                <h4 class="section-title" onclick="toggleSection('autopilot')">Autopilot</h4>
-                <div class="section-content" id="sidebarAutopilot">
-                    <!-- Autopilot controls will be moved here -->
+                <h4 class="section-title collapsed" onclick="toggleSection('autopilot')">Autopilot</h4>
+                <div class="section-content collapsed" id="sidebarAutopilot">
+                    <!-- AI AUTOPILOT Section -->
+                    <div class="autopilot-section">
+                        <div class="dropdown-label">AI Autopilot</div>
+                        <div class="control-with-settings">
+                            <button class="dropdown-toggle" id="aiAutopilotBtn" title="Activate AI Autopilot">
+                                Activate
+                            </button>
+                            <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
+                        </div>
+                        <div class="control-with-settings" style="margin-top: 8px;">
+                            <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
+                                📊 Learning Analytics
+                            </button>
+                        </div>
+
+                        <!-- AI Autopilot Settings Panel -->
+                        <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
+                            <div class="panel-header">
+                                <span>AI Autopilot Settings</span>
+                                <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
+                            </div>
+
+                            <div class="autopilot-settings-content">
+                                <!-- Left Column -->
+                                <div class="autopilot-column">
+                                    <!-- Autopilot Scope -->
+                                    <div class="control-group">
+                                        <div class="group-label">Autopilot Scope</div>
+                                        <div class="preset-buttons">
+                                            <button class="scope-btn" data-scope="bars">Bars</button>
+                                            <button class="scope-btn" data-scope="radial">Radial</button>
+                                            <button class="scope-btn" data-scope="energy">Energy</button>
+                                            <button class="scope-btn active" data-scope="all">All</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Color Schemes Toggle -->
+                                    <div class="control-group">
+                                        <div class="group-label">Color Automation</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Change Timing -->
+                                    <div class="control-group">
+                                        <div class="group-label">Change Timing</div>
+                                        <div class="preset-buttons">
+                                            <button class="timing-btn active" data-timing="instant">Instant</button>
+                                            <button class="timing-btn" data-timing="smooth">Smooth</button>
+                                            <button class="timing-btn" data-timing="slow">Slow</button>
+                                            <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sensitivity -->
+                                    <div class="control-group">
+                                        <div class="group-label">Sensitivity</div>
+                                        <div class="preset-buttons">
+                                            <button class="sensitivity-btn" data-sensitivity="low">Low</button>
+                                            <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
+                                            <button class="sensitivity-btn" data-sensitivity="high">High</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Genre Selection -->
+                                    <div class="control-group">
+                                        <div class="group-label">Genre Detection</div>
+                                        <div class="preset-buttons">
+                                            <button class="genre-btn active" data-genre="auto">Auto Detect</button>
+                                            <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
+                                            <button class="genre-btn" data-genre="rock">Rock</button>
+                                            <button class="genre-btn" data-genre="electronic">Electronic</button>
+                                            <button class="genre-btn" data-genre="reggae">Reggae</button>
+                                            <button class="genre-btn" data-genre="country">Country</button>
+                                            <button class="genre-btn" data-genre="funk">Funk</button>
+                                            <button class="genre-btn" data-genre="ambient">Ambient</button>
+                                            <button class="genre-btn" data-genre="punk">Punk</button>
+                                            <button class="genre-btn" data-genre="jazz">Jazz</button>
+                                            <button class="genre-btn" data-genre="classical">Classical</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Parameter Control -->
+                                    <div class="control-group">
+                                        <div class="group-label">Parameter Control</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Video Effects -->
+                                    <div class="control-group">
+                                        <div class="group-label">Video Effects</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enableVideoEffectsBtn">Video Effects: On</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Learning Controls -->
+                                    <div class="control-group">
+                                        <div class="group-label">Learning Controls</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enableLearningBtn">Learning: On</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="resetLearningBtn">Reset Learning Data</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Adaptive Tuning Controls -->
+                                    <div class="control-group">
+                                        <div class="group-label">Adaptive Tuning</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enableAdaptiveTuningBtn">Adaptive Tuning: On</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="forceOptimizationBtn">Force Optimization</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Predictive Behavior Controls -->
+                                    <div class="control-group">
+                                        <div class="group-label">Predictive Behavior</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enablePredictiveBehaviorBtn">Predictive Behavior: On</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="testPredictionBtn">Test Prediction</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Multi-layered Intelligence Controls -->
+                                    <div class="control-group">
+                                        <div class="group-label">Multi-layered Intelligence</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn active" id="enableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: On</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="testIntelligenceBtn">Test Intelligence</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Test Button -->
+                                    <div class="control-group">
+                                        <div class="group-label">Test</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="testParametersBtn">Test Parameters</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div class="autopilot-column">
+                                    <!-- Current Genre Display -->
+                                    <div class="control-group">
+                                        <div class="group-label">Current Genre</div>
+                                        <div class="info-display" id="currentGenreDisplay">Unknown</div>
+                                    </div>
+
+                                    <!-- Genre Confidence -->
+                                    <div class="control-group">
+                                        <div class="group-label">Confidence</div>
+                                        <div class="info-display" id="genreConfidenceDisplay">0%</div>
+                                    </div>
+
+                                    <!-- Learning Analytics -->
+                                    <div class="control-group">
+                                        <div class="group-label">Learning Analytics</div>
+                                        <div class="info-display" id="learningProgressDisplay">Learning: 0%</div>
+                                        <div class="info-display" id="patternCountDisplay">Patterns: 0</div>
+                                        <div class="info-display" id="successRateDisplay">Success Rate: 0%</div>
+                                    </div>
+
+                                    <!-- Adaptive Tuning Analytics -->
+                                    <div class="control-group">
+                                        <div class="group-label">Adaptive Tuning</div>
+                                        <div class="info-display" id="performanceDisplay">Performance: 0%</div>
+                                        <div class="info-display" id="optimizationCountDisplay">Optimizations: 0</div>
+                                        <div class="info-display" id="performanceTrendDisplay">Trend: Stable</div>
+                                    </div>
+
+                                    <!-- User Feedback -->
+                                    <div class="control-group">
+                                        <div class="group-label">User Feedback</div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="thumbsUpBtn">👍 Like Current Settings</button>
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
+                                        </div>
+                                        <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
+                                    </div>
+
+                                    <!-- Predictive Behavior Analytics -->
+                                    <div class="control-group">
+                                        <div class="group-label">Predictive Analytics</div>
+                                        <div class="info-display" id="predictionCountDisplay">Predictions: 0</div>
+                                        <div class="info-display" id="predictionAccuracyDisplay">Accuracy: 0%</div>
+                                        <div class="info-display" id="predictionConfidenceDisplay">Confidence: 80%</div>
+                                    </div>
+
+                                    <!-- Multi-layered Intelligence Analytics -->
+                                    <div class="control-group">
+                                        <div class="group-label">Intelligence Analytics</div>
+                                        <div class="info-display" id="intelligenceDecisionsDisplay">Decisions: 0</div>
+                                        <div class="info-display" id="metaLearningDisplay">Meta-Learning: 0%</div>
+                                        <div class="info-display" id="layerPerformanceDisplay">Performance: Balanced</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Output Section -->
-            <div class="sidebar-section">
-                <div class="section-icon" title="Output">◉</div>
-                <h4 class="section-title" onclick="toggleSection('output')">Output</h4>
-                <div class="section-content" id="sidebarOutput">
-                    <!-- Output controls will be moved here -->
-                </div>
-            </div>
 
-            <!-- Global Presets Section -->
-            <div class="sidebar-section">
-                <div class="section-icon" title="Presets">◊</div>
-                <h4 class="section-title" onclick="toggleSection('presets')">Presets</h4>
-                <div class="section-content" id="sidebarPresets">
-                    <!-- Global preset controls will be moved here -->
-                </div>
-            </div>
         </div>
     </aside>
 
@@ -15937,10 +15993,10 @@
                         console.log('📡 StreamManager Layer 0: Drawing background image');
                         this.visualizer.drawBackgroundImage(this.captureCtx, this.captureCanvas.width, this.captureCanvas.height);
                     } else {
-                        console.log('📡 StreamManager Layer 0: Background image skipped -', {
-                            hasImage: !!this.visualizer.backgroundImage,
-                            enabled: this.visualizer.backgroundImageEnabled
-                        });
+                        // console.log('📡 StreamManager Layer 0: Background image skipped -', {
+                        //     hasImage: !!this.visualizer.backgroundImage,
+                        //     enabled: this.visualizer.backgroundImageEnabled
+                        // });
                     }
 
                     // Layer 1: Video background - ONLY IF KALEIDOSCOPE VIDEO IS NOT ACTIVE
@@ -19119,7 +19175,7 @@
                 // Show controls panel (if it exists)
                 const controlsPanel = document.getElementById('videoControlsPanel');
                 if (controlsPanel) {
-                    controlsPanel.style.display = 'block';
+                controlsPanel.style.display = 'block';
                 }
 
 
@@ -24488,14 +24544,20 @@ https://rogueamoeba.com/loopback/
                 const sectionTitle = sectionContent?.previousElementSibling;
                 
                 if (sectionContent && sectionTitle) {
-                    sectionContent.classList.toggle('collapsed');
-                    sectionTitle.classList.toggle('collapsed');
+                    const isCollapsed = sectionContent.classList.contains('collapsed');
                     
-                    // Update arrow direction
-                    if (sectionTitle.classList.contains('collapsed')) {
-                        sectionTitle.innerHTML = sectionTitle.textContent.replace('▼', '▶');
-                    } else {
+                    if (isCollapsed) {
+                        // Expand section
+                        sectionContent.classList.remove('collapsed');
+                        sectionContent.classList.add('expanded');
+                        sectionTitle.classList.remove('collapsed');
                         sectionTitle.innerHTML = sectionTitle.textContent.replace('▶', '▼');
+                    } else {
+                        // Collapse section
+                        sectionContent.classList.add('collapsed');
+                        sectionContent.classList.remove('expanded');
+                        sectionTitle.classList.add('collapsed');
+                        sectionTitle.innerHTML = sectionTitle.textContent.replace('▼', '▶');
                     }
                 }
             }
