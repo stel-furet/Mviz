@@ -155,9 +155,11 @@
 <header class="header">
     <button class="info-button" id="infoBtn" title="About GitItUp">i</button>
     <div class="header-content">
-        <div class="header-left" style="display: none;">
-            <!-- Old sections hidden - using new tabbed interface -->
-            </div>
+        <!-- Logo on the left -->
+        <div class="logo">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTgiIGN5PSIxOCIgcj0iMTgiIGZpbGw9IiMyOTY5YjAiLz4KPHBhdGggZD0iTTE4IDZMMjIgMTBIMTRMMTggNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xOCAzMEwyMiAyNkgxNEwxOCAzMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik02IDE4TDEwIDE0VjIyTDYgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMzAgMThMMjYgMTRWMjJMMzAgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" alt="Vizzy Logo" />
+            <h1>Vizzy</h1>
+        </div>
 
         <!-- Old sections cleanup area -->
         <div style="display: none;">
@@ -189,23 +191,7 @@
     <!-- End header-content -->
 </header>
 
-<!-- New Tabbed Header Interface (Hidden until Phase 5) -->
-<div class="tab-header" id="tabHeader">
-    <!-- App Icon -->
-    <img class="app-icon" id="appIcon" src="" alt="Vizzy App Icon" />
-    
-    <!-- Tab Group (Centered) -->
-    <div class="tab-group">
-        <button class="tab-item" id="audioTab" data-section="audio">Audio</button>
-        <button class="tab-item" id="videoTab" data-section="video">Video</button>
-        <button class="tab-item" id="visualizationsTab" data-section="visualizations">Visualizations</button>
-        <button class="tab-item" id="autopilotTab" data-section="autopilot">Autopilot</button>
-        <button class="tab-item" id="outputTab" data-section="output">Output</button>
-    </div>
-    
-    <!-- Spacer for balance -->
-    <div class="tab-spacer"></div>
-</div>
+<!-- Tab header removed - functionality moved to sidebar -->
 
 <!-- Section Panels (Hidden until opened) -->
 <div class="section-panel" id="audioPanel">
@@ -1032,6 +1018,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
+            width: 100%;
         }
 
         .header-left {
@@ -1085,6 +1072,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-right: 20px;
         }
 
         .theme-select {
@@ -12158,79 +12146,17 @@
             console.log('✓ Tabbed interface activated');
             
             // Phase 3 test: Add temporary test function for Audio + Video tabs
-            window.testAudioTab = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                const audioPanel = document.getElementById('audioPanel');
-                const audioTab = document.getElementById('audioTab');
-                
-                if (tabHeader) tabHeader.style.display = 'flex';
-                if (audioPanel) audioPanel.classList.add('show');
-                if (audioTab) audioTab.classList.add('active');
-                
-                console.log('Audio tab test activated');
-            };
+            // testAudioTab removed - functionality moved to sidebar
             
-            window.testVideoTab = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                const videoPanel = document.getElementById('videoPanel');
-                const videoTab = document.getElementById('videoTab');
-                
-                if (tabHeader) tabHeader.style.display = 'flex';
-                if (videoPanel) videoPanel.classList.add('show');
-                if (videoTab) videoTab.classList.add('active');
-                
-                console.log('Video tab test activated');
-            };
+            // testVideoTab removed - functionality moved to sidebar
             
-            window.testAllTabs = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                if (tabHeader) tabHeader.style.display = 'flex';
-                
-                ['audio', 'video', 'visualizations', 'autopilot', 'output'].forEach(section => {
-                    const panel = document.getElementById(`${section}Panel`);
-                    const tab = document.getElementById(`${section}Tab`);
-                    if (panel) panel.classList.add('show');
-                    if (tab) tab.classList.add('active');
-                });
-                
-                console.log('All tabs activated for testing - check functionality');
-            };
+            // testAllTabs removed - functionality moved to sidebar
             
-            window.testAutopilotTab = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                const autopilotPanel = document.getElementById('autopilotPanel');
-                const autopilotTab = document.getElementById('autopilotTab');
-                
-                if (tabHeader) tabHeader.style.display = 'flex';
-                if (autopilotPanel) autopilotPanel.classList.add('show');
-                if (autopilotTab) autopilotTab.classList.add('active');
-                
-                console.log('Autopilot tab test activated');
-            };
+            // testAutopilotTab removed - functionality moved to sidebar
             
-            window.testVisualizationsTab = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                const vizPanel = document.getElementById('visualizationsPanel');
-                const vizTab = document.getElementById('visualizationsTab');
-                
-                if (tabHeader) tabHeader.style.display = 'flex';
-                if (vizPanel) vizPanel.classList.add('show');
-                if (vizTab) vizTab.classList.add('active');
-                
-                console.log('Visualizations tab test activated');
-            };
+            // testVisualizationsTab removed - functionality moved to sidebar
             
-            window.testOutputTab = () => {
-                const tabHeader = document.getElementById('tabHeader');
-                const outputPanel = document.getElementById('outputPanel');
-                const outputTab = document.getElementById('outputTab');
-                
-                if (tabHeader) tabHeader.style.display = 'flex';
-                if (outputPanel) outputPanel.classList.add('show');
-                if (outputTab) outputTab.classList.add('active');
-                
-                console.log('Output tab test activated');
-            };
+            // testOutputTab removed - functionality moved to sidebar
             
             // Note: playlistToggle button was removed when we embedded the playlist
             // The playlist is now permanently visible in the Audio section
@@ -12658,18 +12584,13 @@
                 
                 // Add click-outside handler to close panels
                 document.addEventListener('click', (e) => {
-                    if (!document.body.classList.contains('tab-interface-active')) return;
-                    
-                    const tabHeader = document.getElementById('tabHeader');
+                    // Tab header removed - click outside handler simplified
                     const openPanel = document.querySelector('.section-panel.show');
                     
-                    // If clicking outside tab header and open panel, close all panels
-                    if (tabHeader && !tabHeader.contains(e.target) && 
-                        (!openPanel || !openPanel.contains(e.target))) {
-                        
-                        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('show'));
-                        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                        console.log('All panels closed (click outside)');
+                    // If clicking outside open panel, close it
+                    if (openPanel && !openPanel.contains(e.target)) {
+                        openPanel.classList.remove('show');
+                        console.log('Panel closed (click outside)');
                     }
                 });
                 
@@ -12697,12 +12618,8 @@
                     document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('show'));
                     document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
                     
-                    // Position panel left-aligned to the tab
-                    const tabRect = tab.getBoundingClientRect();
-                    const headerRect = document.getElementById('tabHeader').getBoundingClientRect();
-                    const leftOffset = tabRect.left - headerRect.left;
-                    
-                    panel.style.left = `${leftOffset}px`;
+                    // Panel positioning simplified - no tab header reference needed
+                    panel.style.left = '0px';
                     panel.style.transform = 'none';
                     
                     // Open this panel
