@@ -159,7 +159,7 @@
         <div class="logo">
             <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTgiIGN5PSIxOCIgcj0iMTgiIGZpbGw9IiMyOTY5YjAiLz4KPHBhdGggZD0iTTE4IDZMMjIgMTBIMTRMMTggNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xOCAzMEwyMiAyNkgxNEwxOCAzMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik02IDE4TDEwIDE0VjIyTDYgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMzAgMThMMjYgMTRWMjJMMzAgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" alt="Vizzy Logo" />
             <h1>Vizzy</h1>
-        </div>
+            </div>
 
         <!-- Old sections cleanup area -->
         <div style="display: none;">
@@ -998,6 +998,35 @@
             margin-left: 0;
         }
 
+        /* Drawer System Styles */
+        .drawer {
+            position: fixed;
+            left: 60px; /* Position to the right of collapsed sidebar */
+            min-width: 200px;
+            min-height: 80px;
+            background: var(--secondary-bg);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .drawer-visible {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer-hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .header {
             background: var(--secondary-bg);
             padding: 12px 16px;
@@ -1072,7 +1101,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-right: 20px;
+            margin-right: 30px;
         }
 
         .theme-select {
@@ -2973,6 +3002,22 @@
         .loop-btn.active.gradient-mode,
         .transparent-btn.active.gradient-mode {
             background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color) 100%);
+        }
+
+        /* Output controls in footer */
+        .output-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .output-controls .control-btn {
+            width: 80px !important;
+            min-width: 80px !important;
+            max-width: 80px !important;
+            font-size: 12px;
+            padding: 6px 10px;
+            white-space: nowrap;
         }
 
         .presets-container {
@@ -5586,12 +5631,12 @@
                                 Activate
                             </button>
                             <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
-                        </div>
+                </div>
                         <div class="control-with-settings" style="margin-top: 8px;">
                             <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
                                 📊 Learning Analytics
                             </button>
-                        </div>
+            </div>
 
                         <!-- AI Autopilot Settings Panel -->
                         <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
@@ -5611,16 +5656,16 @@
                                             <button class="scope-btn" data-scope="radial">Radial</button>
                                             <button class="scope-btn" data-scope="energy">Energy</button>
                                             <button class="scope-btn active" data-scope="all">All</button>
-                                        </div>
-                                    </div>
+                </div>
+            </div>
 
                                     <!-- Color Schemes Toggle -->
                                     <div class="control-group">
                                         <div class="group-label">Color Automation</div>
                                         <div class="button-container">
                                             <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
-                                        </div>
-                                    </div>
+                </div>
+            </div>
 
                                     <!-- Change Timing -->
                                     <div class="control-group">
@@ -5819,6 +5864,15 @@
                 </div>
             </div>
 
+            <!-- Empty Drawers for Collapsed Sidebar -->
+            <div class="drawer drawer-hidden" id="drawerScenes"></div>
+            <div class="drawer drawer-hidden" id="drawerAudio"></div>
+            <div class="drawer drawer-hidden" id="drawerVideo"></div>
+            <div class="drawer drawer-hidden" id="drawerVisualizations"></div>
+            <div class="drawer drawer-hidden" id="drawerBackground"></div>
+            <div class="drawer drawer-hidden" id="drawerOutput"></div>
+            <div class="drawer drawer-hidden" id="drawerLayers"></div>
+            <div class="drawer drawer-hidden" id="drawerAutopilot"></div>
 
         </div>
     </aside>
@@ -5985,6 +6039,17 @@
             <input type="color" class="color-picker-input" id="bgColorPicker" value="#000000">
         </div>
         <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+        
+        <!-- Live Display and Record buttons for quick access -->
+        <div class="output-controls">
+            <button class="control-btn" id="liveDisplayBtn" title="Open Live Display Window">
+                Live Display
+            </button>
+            <button class="control-btn" id="recordBtn" title="Record Visualization">
+                <span class="record-text">Record</span>
+                <span class="record-timer" style="display: none;">00:00</span>
+            </button>
+        </div>
     </div>
 </footer>
 <script>
@@ -13896,9 +13961,9 @@
         }
         
         initializeUI() {
-            // Record button click handler
-            const recordBtn = document.getElementById('recordBtn');
-            if (recordBtn) {
+            // Record button click handler - both sidebar and footer
+            const recordBtns = document.querySelectorAll('#recordBtn');
+            recordBtns.forEach(recordBtn => {
                 recordBtn.addEventListener('click', () => {
                     if (this.isRecording) {
                         this.stopRecording();
@@ -13906,7 +13971,7 @@
                         this.startRecording();
                     }
                 });
-            }
+            });
             
             // Settings button click handler
             const settingsBtn = document.getElementById('recordSettingsBtn');
@@ -14786,14 +14851,16 @@
                 this.recordingStartTime = Date.now();
                 this.recordedChunks = [];
                 
-                // Update UI
-                const recordBtn = document.getElementById('recordBtn');
+                // Update UI - both sidebar and footer buttons
+                const recordBtns = document.querySelectorAll('#recordBtn');
+                recordBtns.forEach(recordBtn => {
                 const recordText = recordBtn.querySelector('.record-text');
                 const recordTimer = recordBtn.querySelector('.record-timer');
                 
                 recordBtn.classList.add('recording');
                 recordText.style.display = 'none';
                 recordTimer.style.display = 'inline';
+                });
                 
                 // Start timer
                 this.updateTimer();
@@ -15404,10 +15471,10 @@
                 timeString = `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
             }
             
-            const recordTimer = document.querySelector('.record-timer');
-            if (recordTimer) {
+            const recordTimers = document.querySelectorAll('.record-timer');
+            recordTimers.forEach(recordTimer => {
                 recordTimer.textContent = timeString;
-            }
+            });
         }
         
         stopRecording() {
@@ -15439,8 +15506,9 @@
             this.compositeCanvas = null;
             this.compositeCtx = null;
             
-            // Update UI
-            const recordBtn = document.getElementById('recordBtn');
+            // Update UI - both sidebar and footer buttons
+            const recordBtns = document.querySelectorAll('#recordBtn');
+            recordBtns.forEach(recordBtn => {
             const recordText = recordBtn.querySelector('.record-text');
             const recordTimer = recordBtn.querySelector('.record-timer');
             
@@ -15448,6 +15516,7 @@
             recordText.style.display = 'inline';
             recordTimer.style.display = 'none';
             recordTimer.textContent = '00:00';
+            });
             
             console.log('Recording stopped');
         }
@@ -15671,12 +15740,12 @@
                     this.isStreaming = true;
                     // Set this BEFORE opening so we're ready
 
-                    // Update button state immediately
-                    const btn = document.getElementById('liveDisplayBtn');
-                    if (btn) {
+                    // Update button state immediately - both sidebar and footer buttons
+                    const btns = document.querySelectorAll('#liveDisplayBtn');
+                    btns.forEach(btn => {
                         btn.classList.add('active');
                         btn.textContent = 'Stop Display';
-                    }
+                    });
                 }
             }
         }
@@ -16380,12 +16449,12 @@
                 this.pc = null;
             }
             
-            // Update button state
-            const btn = document.getElementById('liveDisplayBtn');
-            if (btn) {
+            // Update button state - both sidebar and footer buttons
+            const btns = document.querySelectorAll('#liveDisplayBtn');
+            btns.forEach(btn => {
                 btn.classList.remove('active');
                 btn.textContent = 'Live Display';
-            }
+            });
         }
 
         stopStreaming() {
@@ -16426,12 +16495,12 @@
             }
             this.displayWindow = null;
 
-            // Update button state
-            const btn = document.getElementById('liveDisplayBtn');
-            if (btn) {
+            // Update button state - both sidebar and footer buttons
+            const btns = document.querySelectorAll('#liveDisplayBtn');
+            btns.forEach(btn => {
                 btn.classList.remove('active');
                 btn.textContent = 'Live Display';
-            }
+            });
         }
     }
 
@@ -21854,15 +21923,15 @@ https://rogueamoeba.com/loopback/
             }
 
 
-            // Live Display button
-            const liveDisplayBtn = document.getElementById('liveDisplayBtn');
-            if (liveDisplayBtn) {
+            // Live Display button - both sidebar and footer
+            const liveDisplayBtns = document.querySelectorAll('#liveDisplayBtn');
+            liveDisplayBtns.forEach(liveDisplayBtn => {
                 liveDisplayBtn.addEventListener('click', () => {
                     if (this.streamManager) {
                         this.streamManager.toggleLiveDisplay();
                     }
                 });
-            }
+            });
 
             // Display Settings Panel Controls
             // Close button
@@ -24455,6 +24524,121 @@ https://rogueamoeba.com/loopback/
                 }
             }
 
+            // Drawer System Functions
+            function initializeDrawers() {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar) return;
+
+                // Get all section icons
+                const sectionIcons = sidebar.querySelectorAll('.section-icon');
+                
+                sectionIcons.forEach(icon => {
+                    icon.addEventListener('click', (e) => {
+                        // Only work when sidebar is collapsed
+                        if (!sidebar.classList.contains('collapsed')) return;
+                        
+                        e.stopPropagation();
+                        
+                        // Get the section name from the icon's title
+                        const sectionName = icon.getAttribute('title');
+                        const drawerId = getDrawerId(sectionName);
+                        
+                        if (drawerId) {
+                            toggleDrawer(drawerId);
+                        }
+                    });
+                });
+
+                // Add click-outside-to-close functionality
+                document.addEventListener('click', (e) => {
+                    // Only close drawers if sidebar is collapsed
+                    if (!sidebar.classList.contains('collapsed')) return;
+                    
+                    // Check if click is outside any drawer
+                    const isDrawerClick = e.target.closest('.drawer');
+                    const isIconClick = e.target.closest('.section-icon');
+                    
+                    if (!isDrawerClick && !isIconClick) {
+                        closeAllDrawers();
+                    }
+                });
+            }
+
+            function getDrawerId(sectionName) {
+                const drawerMap = {
+                    'Scenes': 'drawerScenes',
+                    'Audio': 'drawerAudio', 
+                    'Video': 'drawerVideo',
+                    'Visualizations': 'drawerVisualizations',
+                    'Background': 'drawerBackground',
+                    'Output': 'drawerOutput',
+                    'Layers': 'drawerLayers',
+                    'Autopilot': 'drawerAutopilot'
+                };
+                return drawerMap[sectionName];
+            }
+
+            function toggleDrawer(drawerId) {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+
+                // Close all other drawers first
+                closeAllDrawers();
+
+                // Toggle this drawer
+                if (drawer.classList.contains('drawer-hidden')) {
+                    showDrawer(drawer);
+                } else {
+                    hideDrawer(drawer);
+                }
+            }
+
+            function showDrawer(drawer) {
+                // Position the drawer relative to its section container
+                const sectionName = getSectionNameFromDrawerId(drawer.id);
+                const sectionIcon = document.querySelector(`.section-icon[title="${sectionName}"]`);
+                
+                if (sectionIcon) {
+                    // Find the parent section container
+                    const sectionContainer = sectionIcon.closest('.sidebar-section');
+                    if (sectionContainer) {
+                        // Use getBoundingClientRect for accurate viewport positioning
+                        const sectionRect = sectionContainer.getBoundingClientRect();
+                        // Subtract 8px to align with visual top of section
+                        drawer.style.top = `${sectionRect.top - 8}px`;
+                    }
+                }
+                
+                drawer.classList.remove('drawer-hidden');
+                drawer.classList.add('drawer-visible');
+            }
+
+            function getSectionNameFromDrawerId(drawerId) {
+                const sectionMap = {
+                    'drawerScenes': 'Scenes',
+                    'drawerAudio': 'Audio',
+                    'drawerVideo': 'Video', 
+                    'drawerVisualizations': 'Visualizations',
+                    'drawerBackground': 'Background',
+                    'drawerOutput': 'Output',
+                    'drawerLayers': 'Layers',
+                    'drawerAutopilot': 'Autopilot'
+                };
+                return sectionMap[drawerId];
+            }
+
+            function hideDrawer(drawer) {
+                drawer.classList.remove('drawer-visible');
+                drawer.classList.add('drawer-hidden');
+            }
+
+            function closeAllDrawers() {
+                const drawers = document.querySelectorAll('.drawer');
+                drawers.forEach(drawer => {
+                    hideDrawer(drawer);
+                });
+            }
+
             // Global function for toggling sections
             window.toggleSection = function(sectionName) {
                 // Handle special cases for Audio and Video sections
@@ -24500,6 +24684,9 @@ https://rogueamoeba.com/loopback/
             
             // Initialize Sidebar
             initializeSidebar();
+            
+            // Initialize Drawers
+            initializeDrawers();
             
             // Initialize Video Devices
             if (window.visualizer && window.visualizer.initializeVideoInput) {
