@@ -592,6 +592,13 @@
             display: block;
         }
 
+        /* Hide Output, Layers, and Autopilot sections when sidebar is collapsed */
+        .sidebar.collapsed .sidebar-section:nth-child(6),  /* Output section */
+        .sidebar.collapsed .sidebar-section:nth-child(7),  /* Layers section */
+        .sidebar.collapsed .sidebar-section:nth-child(8) { /* Autopilot section */
+            display: none;
+        }
+
         .section-icon {
             display: none;
             text-align: center;
@@ -6333,7 +6340,7 @@
         </div>
         <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
         
-        <!-- Live Display and Record buttons for quick access -->
+        <!-- Live Display, Record, and Autopilot buttons for quick access -->
         <div class="output-controls">
             <button class="control-btn" id="liveDisplayBtn" title="Open Live Display Window">
                 Live Display
@@ -6341,6 +6348,9 @@
             <button class="control-btn" id="recordBtn" title="Record Visualization">
                 <span class="record-text">Record</span>
                 <span class="record-timer" style="display: none;">00:00</span>
+            </button>
+            <button class="control-btn" id="footerAutopilotBtn" title="Toggle AI Autopilot">
+                <span class="autopilot-text">Autopilot</span>
             </button>
         </div>
     </div>
@@ -10361,6 +10371,25 @@
                 } else {
                     btn.textContent = 'Activate';
                     btn.classList.remove('active');
+                }
+            }
+            
+            // Also update footer autopilot button
+            this.updateFooterAutopilotButton();
+        }
+        
+        updateFooterAutopilotButton() {
+            const footerBtn = document.getElementById('footerAutopilotBtn');
+            if (footerBtn) {
+                const textSpan = footerBtn.querySelector('.autopilot-text');
+                if (textSpan) {
+                    if (this.isActive) {
+                        textSpan.textContent = 'Active';
+                        footerBtn.classList.add('active');
+                    } else {
+                        textSpan.textContent = 'Autopilot';
+                        footerBtn.classList.remove('active');
+                    }
                 }
             }
         }
@@ -17997,6 +18026,28 @@
                         } else {
                             this.aiAutopilot.activate();
                         }
+                    }
+                });
+            }
+
+            // Footer Autopilot button
+            const footerAutopilotBtn = document.getElementById('footerAutopilotBtn');
+            if (footerAutopilotBtn) {
+                // Initialize button state
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.updateFooterAutopilotButton();
+                }
+                
+                footerAutopilotBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Footer Autopilot button clicked');
+                    if (this.aiAutopilot) {
+                        if (this.aiAutopilot.isActive) {
+                            this.aiAutopilot.deactivate();
+                        } else {
+                            this.aiAutopilot.activate();
+                        }
+                        // The updateUI() method will be called by activate/deactivate, which will update both buttons
                     }
                 });
             }
