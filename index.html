@@ -6149,7 +6149,20 @@
                 </div>
             </div>
             </div>
-            <div class="drawer drawer-hidden" id="drawerBackground"></div>
+            <div class="drawer drawer-hidden" id="drawerBackground">
+                <!-- Background Image ON/OFF Toggle -->
+                <div class="drawer-control-group drawer-control-group-first">
+                    <div class="drawer-label">Background Image</div>
+                    <button class="drawer-toggle-btn" id="drawerBackgroundImgBtn" title="Toggle Background Image">OFF</button>
+                </div>
+
+                <!-- Background Image Selection -->
+                <div class="drawer-control-group">
+                    <div class="drawer-label">Image</div>
+                    <button class="drawer-toggle-btn" id="drawerBackgroundSelectImageBtn" title="Select Background Image">Select Image</button>
+                    <input type="file" id="drawerBackgroundImageFile" accept=".jpg,.jpeg,.png" style="display: none;">
+                </div>
+            </div>
             <div class="drawer drawer-hidden" id="drawerOutput"></div>
             <div class="drawer drawer-hidden" id="drawerLayers"></div>
             <div class="drawer drawer-hidden" id="drawerAutopilot"></div>
@@ -25263,6 +25276,92 @@ https://rogueamoeba.com/loopback/
                         updateDrawerAudioInput();
                     });
                 }
+
+                // Background Image Toggle - connect to existing functionality
+                const drawerBackgroundImgBtn = document.getElementById('drawerBackgroundImgBtn');
+                const originalBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
+
+                if (drawerBackgroundImgBtn && originalBackgroundImgBtn) {
+                    // Sync initial state
+                    updateDrawerBackgroundToggle();
+                    
+                    // Connect click handler
+                    drawerBackgroundImgBtn.addEventListener('click', () => {
+                        // Toggle background image enabled state directly
+                        if (window.visualizer) {
+                            window.visualizer.backgroundImageEnabled = !window.visualizer.backgroundImageEnabled;
+                            window.visualizer.saveBackgroundImage();
+                            
+                            // Force redraw of visualization
+                            if (window.visualizer.audioMotion) {
+                                window.visualizer.audioMotion.draw();
+                            }
+                        }
+                        
+                        // Update drawer button state
+                        updateDrawerBackgroundToggle();
+                    });
+                }
+
+                // Background Image Selection - connect to existing functionality
+                const drawerBackgroundSelectImageBtn = document.getElementById('drawerBackgroundSelectImageBtn');
+                const drawerBackgroundImageFile = document.getElementById('drawerBackgroundImageFile');
+
+                if (drawerBackgroundSelectImageBtn && drawerBackgroundImageFile) {
+                    // Connect click handler to trigger file input
+                    drawerBackgroundSelectImageBtn.addEventListener('click', () => {
+                        drawerBackgroundImageFile.click();
+                    });
+                    
+                    // Handle file selection
+                    drawerBackgroundImageFile.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            console.log('📁 Drawer Background image file selected:', {
+                                name: file.name,
+                                type: file.type,
+                                size: file.size
+                            });
+                            
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                console.log('📖 Drawer File read successfully, data URL length:', e.target.result.length);
+                                if (window.visualizer) {
+                                    window.visualizer.backgroundImage = e.target.result;
+                                    window.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
+                                    window.visualizer.backgroundImageFileName = file.name;
+                                    window.visualizer.backgroundImageFileSize = file.size;
+                                    window.visualizer.cachedBackgroundImage = null; // Clear cached image
+                                    window.visualizer.saveBackgroundImage();
+                                    
+                                    // Update all UI elements
+                                    if (window.visualizer.updateBackgroundImageUI) {
+                                        window.visualizer.updateBackgroundImageUI();
+                                    }
+                                    if (window.visualizer.updateSidebarBackgroundImageUI) {
+                                        window.visualizer.updateSidebarBackgroundImageUI();
+                                    }
+                                    
+                                    // Update drawer button state
+                                    updateDrawerBackgroundToggle();
+                                    
+                                    // Force redraw of visualization
+                                    if (window.visualizer.audioMotion) {
+                                        window.visualizer.audioMotion.draw();
+                                    }
+                                    
+                                    console.log('💾 Drawer Background image saved and enabled');
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        } else if (file) {
+                            console.error('❌ Invalid file type selected:', file.type);
+                        }
+                        
+                        // Reset file input for reselection
+                        e.target.value = '';
+                    });
+                }
             }
 
             // Helper functions to sync drawer states with original controls
@@ -25363,6 +25462,21 @@ https://rogueamoeba.com/loopback/
                     
                     // Sync selected value
                     drawerSelect.value = originalSelect.value;
+                }
+            }
+
+            function updateDrawerBackgroundToggle() {
+                const drawerBtn = document.getElementById('drawerBackgroundImgBtn');
+                const originalBtn = document.getElementById('sidebarBackgroundImgBtn');
+                if (drawerBtn && originalBtn) {
+                    // Get the text from the original button's span
+                    const originalTextSpan = originalBtn.querySelector('.background-text');
+                    const text = originalTextSpan ? originalTextSpan.textContent : 'OFF';
+                    
+                    // Extract just the ON/OFF part
+                    const isOn = text.includes('ON');
+                    drawerBtn.textContent = isOn ? 'ON' : 'OFF';
+                    drawerBtn.classList.toggle('active', isOn);
                 }
             }
 
