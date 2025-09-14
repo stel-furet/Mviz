@@ -1934,6 +1934,7 @@ class RecordManager {
                             this.visualizer.cachedBackgroundImage = null; // Clear cached image
                             this.visualizer.saveBackgroundImage();
                             this.updateBackgroundImageUI();
+                            this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             console.log('💾 Background image saved and enabled');
                         }
                     };
@@ -2139,6 +2140,7 @@ class RecordManager {
                             this.visualizer.saveBackgroundImage();
                             this.updateSidebarBackgroundImageUI();
                             this.updateBackgroundImageUI(); // Also update original UI
+                            this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             console.log('💾 Sidebar Background image saved and enabled');
                         }
                     };
@@ -4271,6 +4273,19 @@ class GitItUpVisualizer {
         this.currentVideoDeviceId = null;
         this.availableVideoDevices = [];
 
+        // Live Audio Toggle properties
+        this.liveAudioEnabled = false;
+        this.lastAudioDeviceId = null;
+
+        // Background Image properties
+        this.backgroundImageEnabled = false;
+        this.backgroundImage = null;
+        this.backgroundImageOpacity = 100;
+        this.backgroundImageSaturation = 100;
+        this.backgroundImagePosterize = 16;
+        this.backgroundImageContrast = 100;
+        this.backgroundImageSize = 'original';
+
         // Viz ON/OFF Toggle
         this.visualizationEnabled = true;
 
@@ -5268,12 +5283,11 @@ class GitItUpVisualizer {
         const footerBtn = document.getElementById('footerLiveAudioBtn');
         if (!footerBtn) return;
 
-        // Check if live input is active - audio uses 'microphone' mode
-        const isActive = this.inputMode === 'microphone' && this.currentDeviceId;
+        // Check if live audio is enabled
+        const isActive = this.liveAudioEnabled;
         
         console.log('A button state check:', {
-            inputMode: this.inputMode,
-            currentDeviceId: this.currentDeviceId,
+            liveAudioEnabled: this.liveAudioEnabled,
             isActive: isActive
         });
         
@@ -5300,6 +5314,352 @@ class GitItUpVisualizer {
             footerBtn.classList.add('active');
         } else {
             footerBtn.classList.remove('active');
+        }
+    }
+
+    async toggleLiveAudio() {
+        const toggleBtn = document.getElementById('liveAudioToggleBtn');
+        const deviceSelect = document.getElementById('audioDeviceSelect');
+
+        if (this.liveAudioEnabled) {
+            // Turn OFF live audio
+            this.stopLiveInput();
+            this.liveAudioEnabled = false;
+            this.inputMode = 'playlist';
+            this.currentDeviceId = null;
+            
+            // Update UI
+            toggleBtn.textContent = 'OFF';
+            toggleBtn.classList.remove('active');
+            if (deviceSelect) {
+                deviceSelect.value = '';
+            }
+            
+            // Resume playlist
+            this.resumePlaylist();
+            
+        } else {
+            // Turn ON live audio
+            if (this.lastAudioDeviceId) {
+                // Use last selected device
+                await this.startLiveInput(this.lastAudioDeviceId);
+            } else {
+                // Show device selector
+                await this.initializeAudioInput();
+                if (deviceSelect) {
+                    deviceSelect.style.display = 'block';
+                }
+            }
+            
+            this.liveAudioEnabled = true;
+            
+            // Update UI
+            toggleBtn.textContent = 'ON';
+            toggleBtn.classList.add('active');
+        }
+        
+        // Update footer button state
+        this.updateFooterLiveAudioButton();
+    }
+
+    showBackgroundImageSelection() {
+        // Show the background image control panel
+        this.createBackgroundImagePanel();
+    }
+
+    createBackgroundImagePanel() {
+        // Remove existing panel if any
+        const existingPanel = document.getElementById('backgroundImagePanel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+
+        // Create panel container
+        const panel = document.createElement('div');
+        panel.id = 'backgroundImagePanel';
+        panel.className = 'background-image-panel';
+        
+        // Get button position for panel positioning
+        const button = document.getElementById('footerLiveBackgroundBtn');
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Position panel above button, left-aligned
+        panel.style.position = 'fixed';
+        panel.style.top = `${buttonRect.top - 4}px`; // 4px gap above button
+        panel.style.left = `${buttonRect.left}px`;
+        panel.style.transform = 'translateY(-100%)'; // Position bottom of panel at top of button
+        panel.style.zIndex = '10000';
+        panel.style.background = 'var(--secondary-bg)';
+        panel.style.border = '1px solid var(--border-color)';
+        panel.style.borderRadius = '8px';
+        panel.style.padding = '15px';
+        panel.style.minWidth = '250px';
+        panel.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        
+        // Panel content - match sidebar styling exactly
+        panel.innerHTML = `
+            <div class="panel-header">
+                <h4 style="margin: 0 0 15px 0; color: var(--text-primary);">Background Image</h4>
+                <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">×</button>
+            </div>
+            
+            <!-- Background Image Toggle -->
+            <div class="control-group">
+                <button class="dropdown-toggle viz-toggle-btn" id="panelBackgroundToggle" title="Toggle Background Image">
+                    <span class="background-text">Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}</span>
+                </button>
+            </div>
+            
+            <!-- Image Selection -->
+            <div class="control-group">
+                <div class="group-label">Image</div>
+                <button class="control-btn" id="panelBackgroundSelect">Select Image</button>
+                <div class="background-file-info" id="panelBackgroundFileInfo" style="display: none;">
+                    <div class="file-preview-container">
+                        <div class="image-preview" id="panelBackgroundImagePreview"></div>
+                        <div class="file-details">
+                            <div class="file-name" id="panelBackgroundFileName"></div>
+                            <div class="file-size" id="panelBackgroundFileSize"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Opacity -->
+            <div class="control-group">
+                <div class="group-label">Opacity</div>
+                <div class="slider-container">
+                    <input type="range" id="panelOpacitySlider" class="control-slider" min="0" max="100" value="${this.backgroundImageOpacity || 100}">
+                    <span class="slider-value" id="panelOpacityValue">${this.backgroundImageOpacity || 100}%</span>
+                </div>
+            </div>
+
+            <!-- Saturation -->
+            <div class="control-group">
+                <div class="group-label">Saturation</div>
+                <div class="slider-container">
+                    <input type="range" id="panelSaturationSlider" class="control-slider" min="0" max="200" value="${this.backgroundImageSaturation || 100}">
+                    <span class="slider-value" id="panelSaturationValue">${this.backgroundImageSaturation || 100}%</span>
+                </div>
+            </div>
+            
+            <!-- Posterization -->
+            <div class="control-group">
+                <div class="group-label">Posterization</div>
+                <div class="slider-container">
+                    <input type="range" id="panelPosterizeSlider" class="control-slider" min="0" max="16" value="${this.backgroundImagePosterize || 16}">
+                    <span class="slider-value" id="panelPosterizeValue">${this.backgroundImagePosterize || 16}</span>
+                </div>
+            </div>
+            
+            <!-- Contrast -->
+            <div class="control-group">
+                <div class="group-label">Contrast</div>
+                <div class="slider-container">
+                    <input type="range" id="panelContrastSlider" class="control-slider" min="0" max="200" value="${this.backgroundImageContrast || 100}">
+                    <span class="slider-value" id="panelContrastValue">${this.backgroundImageContrast || 100}%</span>
+                </div>
+            </div>
+            
+            <!-- Sizing -->
+            <div class="control-group">
+                <div class="group-label">Sizing</div>
+                <div class="button-group">
+                    <button class="size-btn" id="panelBackgroundSizeFit" data-size="fit">Fit</button>
+                    <button class="size-btn" id="panelBackgroundSizeFill" data-size="fill">Fill</button>
+                    <button class="size-btn" id="panelBackgroundSizeStretch" data-size="stretch">Stretch</button>
+                    <button class="size-btn active" id="panelBackgroundSizeOriginal" data-size="original">Original</button>
+                </div>
+            </div>
+            
+            <!-- Clear Background -->
+            <div class="control-group">
+                <button class="control-btn clear-btn" id="panelBackgroundClear">Clear Background</button>
+            </div>
+        `;
+        
+        // Add event listeners
+        this.setupBackgroundPanelEvents(panel);
+        
+        // Add to document
+        document.body.appendChild(panel);
+        
+        // Update active states
+        this.updateBackgroundPanelStates(panel);
+    }
+
+    setupBackgroundPanelEvents(panel) {
+        // Close button
+        const closeBtn = panel.querySelector('.close-btn');
+        closeBtn.addEventListener('click', () => {
+            panel.remove();
+        });
+        
+        // Toggle button
+        const toggleBtn = panel.querySelector('#panelBackgroundToggle');
+        toggleBtn.addEventListener('click', () => {
+            this.toggleBackgroundImage();
+            const backgroundText = toggleBtn.querySelector('.background-text');
+            backgroundText.textContent = `Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}`;
+            toggleBtn.classList.toggle('active', this.backgroundImageEnabled);
+        });
+        
+        // Select image button
+        const selectBtn = panel.querySelector('#panelBackgroundSelect');
+        selectBtn.addEventListener('click', () => {
+            const backgroundImageFile = document.getElementById('backgroundImageFile');
+            if (backgroundImageFile) {
+                backgroundImageFile.click();
+            }
+        });
+        
+        // Opacity slider
+        const opacitySlider = panel.querySelector('#panelOpacitySlider');
+        const opacityValue = panel.querySelector('#panelOpacityValue');
+        opacitySlider.addEventListener('input', (e) => {
+            this.backgroundImageOpacity = parseInt(e.target.value);
+            opacityValue.textContent = `${this.backgroundImageOpacity}%`;
+            this.saveBackgroundImage();
+        });
+        
+        // Saturation slider
+        const saturationSlider = panel.querySelector('#panelSaturationSlider');
+        const saturationValue = panel.querySelector('#panelSaturationValue');
+        saturationSlider.addEventListener('input', (e) => {
+            this.backgroundImageSaturation = parseInt(e.target.value);
+            saturationValue.textContent = `${this.backgroundImageSaturation}%`;
+            this.saveBackgroundImage();
+        });
+        
+        // Posterize slider
+        const posterizeSlider = panel.querySelector('#panelPosterizeSlider');
+        const posterizeValue = panel.querySelector('#panelPosterizeValue');
+        posterizeSlider.addEventListener('input', (e) => {
+            this.backgroundImagePosterize = parseInt(e.target.value);
+            posterizeValue.textContent = this.backgroundImagePosterize;
+            this.saveBackgroundImage();
+        });
+        
+        // Contrast slider
+        const contrastSlider = panel.querySelector('#panelContrastSlider');
+        const contrastValue = panel.querySelector('#panelContrastValue');
+        contrastSlider.addEventListener('input', (e) => {
+            this.backgroundImageContrast = parseInt(e.target.value);
+            contrastValue.textContent = `${this.backgroundImageContrast}%`;
+            this.saveBackgroundImage();
+        });
+        
+        // Size buttons
+        const sizeBtns = panel.querySelectorAll('.size-btn');
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const size = e.target.getAttribute('data-size');
+                this.backgroundImageSize = size;
+                this.saveBackgroundImage();
+                
+                // Update active state
+                sizeBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+        
+        // Clear button
+        const clearBtn = panel.querySelector('#panelBackgroundClear');
+        clearBtn.addEventListener('click', () => {
+            this.clearBackgroundImage();
+            this.updateFooterBackgroundButton(); // Update B button state
+            panel.remove();
+        });
+    }
+
+    updateBackgroundPanelStates(panel) {
+        // Update toggle button
+        const toggleBtn = panel.querySelector('#panelBackgroundToggle');
+        const backgroundText = toggleBtn.querySelector('.background-text');
+        backgroundText.textContent = `Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}`;
+        toggleBtn.classList.toggle('active', this.backgroundImageEnabled);
+        
+        // Update size buttons
+        const sizeBtns = panel.querySelectorAll('.size-btn');
+        sizeBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-size') === this.backgroundImageSize);
+        });
+    }
+
+    toggleBackgroundImage() {
+        // Toggle background image enabled state using existing functionality
+        this.backgroundImageEnabled = !this.backgroundImageEnabled;
+        this.saveBackgroundImage();
+        this.updateFooterBackgroundButton();
+        
+        console.log('Background image toggled to:', this.backgroundImageEnabled);
+    }
+
+    updateFooterBackgroundButton() {
+        const footerBtn = document.getElementById('footerLiveBackgroundBtn');
+        if (!footerBtn) return;
+
+        // Check if background image is enabled
+        const isActive = this.backgroundImageEnabled && this.backgroundImage;
+        
+        if (isActive) {
+            footerBtn.classList.add('active');
+        } else {
+            footerBtn.classList.remove('active');
+        }
+    }
+
+    saveBackgroundImage() {
+        // Save background image settings to localStorage
+        const settings = {
+            backgroundImage: this.backgroundImage,
+            backgroundImageEnabled: this.backgroundImageEnabled,
+            backgroundImageOpacity: this.backgroundImageOpacity || 100,
+            backgroundImageSaturation: this.backgroundImageSaturation || 100,
+            backgroundImagePosterize: this.backgroundImagePosterize || 16,
+            backgroundImageContrast: this.backgroundImageContrast || 100,
+            backgroundImageSize: this.backgroundImageSize || 'medium'
+        };
+        localStorage.setItem('backgroundImageSettings', JSON.stringify(settings));
+    }
+
+    clearBackgroundImage() {
+        // Clear background image and reset settings
+        this.backgroundImage = null;
+        this.backgroundImageEnabled = false;
+        this.backgroundImageOpacity = 100;
+        this.backgroundImageSaturation = 100;
+        this.backgroundImagePosterize = 16;
+        this.backgroundImageContrast = 100;
+        this.backgroundImageSize = 'original';
+        this.saveBackgroundImage();
+        this.updateFooterBackgroundButton();
+        
+        // Update sidebar UI if it exists
+        if (window.visualizer && window.visualizer.updateBackgroundImageUI) {
+            window.visualizer.updateBackgroundImageUI();
+        }
+    }
+
+    loadBackgroundImageSettings() {
+        // Load background image settings from localStorage
+        try {
+            const saved = localStorage.getItem('backgroundImageSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                this.backgroundImage = settings.backgroundImage || null;
+                this.backgroundImageEnabled = settings.backgroundImageEnabled || false;
+                this.backgroundImageOpacity = settings.backgroundImageOpacity || 100;
+                this.backgroundImageSaturation = settings.backgroundImageSaturation || 100;
+                this.backgroundImagePosterize = settings.backgroundImagePosterize || 16;
+                this.backgroundImageContrast = settings.backgroundImageContrast || 100;
+                this.backgroundImageSize = settings.backgroundImageSize || 'medium';
+                
+                // Update footer button state
+                this.updateFooterBackgroundButton();
+            }
+        } catch (error) {
+            console.error('Error loading background image settings:', error);
         }
     }
 
@@ -8363,6 +8723,8 @@ class GitItUpVisualizer {
             // Audio input button removed - using select dropdown
             this.inputMode = 'microphone';
             this.currentDeviceId = deviceId;
+            this.lastAudioDeviceId = deviceId; // Store for toggle functionality
+            this.liveAudioEnabled = true; // Enable live audio toggle
 
             document.getElementById('trackTitle').textContent = 'Live Audio Input';
             document.getElementById('playBtn').disabled = true;
@@ -8371,6 +8733,19 @@ class GitItUpVisualizer {
 
             // Update footer Live Audio button state
             this.updateFooterLiveAudioButton();
+            
+            // Update sidebar audio device selector to show selected device
+            const deviceSelect = document.getElementById('audioDeviceSelect');
+            if (deviceSelect) {
+                deviceSelect.value = deviceId;
+            }
+            
+            // Update live audio toggle button
+            const toggleBtn = document.getElementById('liveAudioToggleBtn');
+            if (toggleBtn) {
+                toggleBtn.textContent = 'ON';
+                toggleBtn.classList.add('active');
+            }
 
         } catch (e) {
             console.error('Failed to start live input:', e);
@@ -8394,6 +8769,22 @@ class GitItUpVisualizer {
 
         // Update footer Live Audio button state
         this.updateFooterLiveAudioButton();
+        
+        // Clear sidebar audio device selector
+        const deviceSelect = document.getElementById('audioDeviceSelect');
+        if (deviceSelect) {
+            deviceSelect.value = '';
+        }
+        
+        // Update live audio toggle button
+        const toggleBtn = document.getElementById('liveAudioToggleBtn');
+        if (toggleBtn) {
+            toggleBtn.textContent = 'OFF';
+            toggleBtn.classList.remove('active');
+        }
+        
+        // Update live audio state
+        this.liveAudioEnabled = false;
     }
 
     resumePlaylist() {
@@ -11158,6 +11549,16 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Live Audio Toggle button
+        const liveAudioToggleBtn = document.getElementById('liveAudioToggleBtn');
+        if (liveAudioToggleBtn) {
+            liveAudioToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleLiveAudio();
+            });
+        }
+
         // Footer Live Audio button
         const footerLiveAudioBtn = document.getElementById('footerLiveAudioBtn');
         if (footerLiveAudioBtn) {
@@ -11166,7 +11567,14 @@ https://rogueamoeba.com/loopback/
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Footer Live Audio button clicked');
-                this.showAudioInputMenu();
+                
+                // If live audio is ON, toggle it OFF
+                if (this.liveAudioEnabled) {
+                    this.toggleLiveAudio();
+                } else {
+                    // If live audio is OFF, show device selection menu
+                    this.showAudioInputMenu();
+                }
             });
         } else {
             console.error('Footer Live Audio button not found');
@@ -11191,6 +11599,27 @@ https://rogueamoeba.com/loopback/
             });
         } else {
             console.error('Footer Live Video button not found');
+        }
+
+        // Footer Live Background button
+        const footerLiveBackgroundBtn = document.getElementById('footerLiveBackgroundBtn');
+        if (footerLiveBackgroundBtn) {
+            console.log('Footer Live Background button found, adding event listener');
+            footerLiveBackgroundBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Live Background button clicked');
+                
+                // If background image is enabled, toggle it off
+                if (this.backgroundImageEnabled) {
+                    this.toggleBackgroundImage();
+                } else {
+                    // Otherwise show background image selection
+                    this.showBackgroundImageSelection();
+                }
+            });
+        } else {
+            console.error('Footer Live Background button not found');
         }
 
 
@@ -12598,6 +13027,16 @@ if (window.visualizer && window.visualizer.initializeVideoInput) {
 if (window.visualizer && window.visualizer.updateFooterLiveVideoButton) {
     window.visualizer.updateFooterLiveVideoButton();
 }
+
+        // Initialize Background Button State
+        if (window.visualizer && window.visualizer.updateFooterBackgroundButton) {
+            window.visualizer.updateFooterBackgroundButton();
+        }
+
+        // Load background image settings
+        if (window.visualizer && window.visualizer.loadBackgroundImageSettings) {
+            window.visualizer.loadBackgroundImageSettings();
+        }
 
 // Load saved video source
 if (window.visualizer && window.visualizer.loadVideoSource) {

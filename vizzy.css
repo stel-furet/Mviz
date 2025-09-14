@@ -2707,10 +2707,40 @@
             pointer-events: none;
         }
 
+/* Live Background Button Styles */
+.live-background-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+    margin-left: 15px; /* 15px gap from Previous Track button */
+}
+
+.live-background-btn .background-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.live-background-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-background-btn.active .background-icon {
+    color: var(--primary-bg);
+}
+
+.live-background-btn:hover .background-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.live-background-btn.active:hover .background-icon {
+    color: var(--primary-bg);
+}
+
 /* Live Audio Button Styles */
 .live-audio-btn {
     margin-right: 0px; /* No gap - buttons are adjacent */
-    margin-left: 15px; /* 15px gap from Previous Track button */
 }
 
 .live-audio-btn .audio-icon {
