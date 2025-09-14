@@ -2756,7 +2756,23 @@
 
 /* Live Video Button Styles */
 .live-video-btn {
-    margin-right: 15px; /* 15px gap from Play button */
+    margin-right: 15px; /* 15px gap from Playlist button */
+}
+
+/* Playlist Button Styles */
+.playlist-btn {
+    margin-right: 8px; /* 8px gap from Previous Track button */
+}
+
+.playlist-btn .playlist-icon {
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.playlist-btn:hover .playlist-icon {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .live-video-btn .video-icon {
@@ -2847,14 +2863,37 @@
         }
 
         .output-controls .control-btn {
-            width: 60px !important;
+            width: auto !important;
             min-width: 60px !important;
-            max-width: 60px !important;
-            height: 36px;
+            height: 36px !important;
             font-size: 11px;
-            padding: 0;
+            padding: 8px 12px !important;
             margin-top: 0;
             white-space: nowrap;
+        }
+
+        /* Footer Transport Buttons - Override general control-btn rules */
+        .footer .playback-controls .control-btn {
+            width: auto !important;
+            min-width: 60px !important;
+            height: 36px !important;
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+            white-space: nowrap !important;
+        }
+
+        /* Icon buttons should be 36px wide */
+        .footer .playback-controls .live-background-btn,
+        .footer .playback-controls .live-audio-btn,
+        .footer .playback-controls .live-video-btn,
+        .footer .playback-controls #prevBtn,
+        .footer .playback-controls #playBtn,
+        .footer .playback-controls #nextBtn,
+        .footer .playback-controls .loop-btn {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            padding: 0 !important;
         }
 
         .presets-container {

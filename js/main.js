@@ -4965,7 +4965,7 @@ class GitItUpVisualizer {
         dropdown.className = 'footer-audio-dropdown';
         dropdown.style.cssText = `
             position: fixed;
-            top: ${buttonRect.top - 200}px;
+            top: ${buttonRect.top - 4}px;
             left: ${buttonRect.left}px;
             background: var(--secondary-bg);
             border: 1px solid var(--border-color);
@@ -4973,8 +4973,7 @@ class GitItUpVisualizer {
             padding: 15px;
             z-index: 10000;
             min-width: 250px;
-            max-height: 200px;
-            overflow-y: auto;
+            transform: translateY(-100%);
         `;
 
         // Create header
@@ -5126,7 +5125,7 @@ class GitItUpVisualizer {
         dropdown.id = 'footerVideoInputDropdown';
         dropdown.style.cssText = `
             position: fixed;
-            top: ${buttonRect.top - 200}px;
+            top: ${buttonRect.top - 4}px;
             left: ${buttonRect.left}px;
             background: var(--secondary-bg);
             border: 1px solid var(--border-color);
@@ -5134,8 +5133,7 @@ class GitItUpVisualizer {
             padding: 15px;
             z-index: 10000;
             min-width: 250px;
-            max-height: 200px;
-            overflow-y: auto;
+            transform: translateY(-100%);
         `;
 
         // Create header
@@ -5660,6 +5658,90 @@ class GitItUpVisualizer {
             }
         } catch (error) {
             console.error('Error loading background image settings:', error);
+        }
+    }
+
+    showPlaylistPanel() {
+        // Create playlist panel
+        this.createPlaylistPanel();
+    }
+
+    createPlaylistPanel() {
+        // Remove existing panel if any
+        const existingPanel = document.getElementById('playlistPanel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+
+        // Create panel container
+        const panel = document.createElement('div');
+        panel.id = 'playlistPanel';
+        panel.className = 'playlist-panel';
+        
+        // Get button position for panel positioning
+        const button = document.getElementById('footerPlaylistBtn');
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Position panel above button, left-aligned
+        panel.style.position = 'fixed';
+        panel.style.top = `${buttonRect.top - 4}px`;
+        panel.style.left = `${buttonRect.left}px`;
+        panel.style.transform = 'translateY(-100%)';
+        panel.style.zIndex = '10000';
+        panel.style.background = 'var(--secondary-bg)';
+        panel.style.border = '1px solid var(--border-color)';
+        panel.style.borderRadius = '8px';
+        panel.style.padding = '15px';
+        panel.style.minWidth = '300px';
+        panel.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        
+        // Panel content - duplicate sidebar playlist functionality
+        panel.innerHTML = `
+            <div class="panel-header">
+                <h4 style="margin: 0 0 15px 0; color: var(--text-primary);">Playlist</h4>
+                <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">×</button>
+            </div>
+            
+            <!-- Playlist Controls -->
+            <div class="control-group">
+                <div class="group-label">Playlist</div>
+                <div class="embedded-playlist-manager" id="panelPlaylistDropdown">
+                    <!-- Playlist content will be populated here -->
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners
+        this.setupPlaylistPanelEvents(panel);
+        
+        // Add to document
+        document.body.appendChild(panel);
+        
+        // Initialize playlist content
+        this.initializePlaylistPanelContent(panel);
+    }
+
+    setupPlaylistPanelEvents(panel) {
+        // Close button
+        const closeBtn = panel.querySelector('.close-btn');
+        closeBtn.addEventListener('click', () => {
+            panel.remove();
+        });
+    }
+
+    initializePlaylistPanelContent(panel) {
+        // Get the existing playlist dropdown content from sidebar
+        const sidebarPlaylist = document.getElementById('playlistDropdown');
+        const panelPlaylist = panel.querySelector('#panelPlaylistDropdown');
+        
+        if (sidebarPlaylist && panelPlaylist) {
+            // Clone the existing playlist content
+            panelPlaylist.innerHTML = sidebarPlaylist.innerHTML;
+            
+            // Re-initialize playlist functionality for the panel
+            if (this.playlistManager) {
+                this.playlistManager.initializePlaylistDropdown(panelPlaylist);
+            }
         }
     }
 
@@ -11620,6 +11702,22 @@ https://rogueamoeba.com/loopback/
             });
         } else {
             console.error('Footer Live Background button not found');
+        }
+
+        // Footer Playlist button
+        const footerPlaylistBtn = document.getElementById('footerPlaylistBtn');
+        if (footerPlaylistBtn) {
+            console.log('Footer Playlist button found, adding event listener');
+            footerPlaylistBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Playlist button clicked');
+                
+                // Show playlist panel
+                this.showPlaylistPanel();
+            });
+        } else {
+            console.error('Footer Playlist button not found');
         }
 
 
