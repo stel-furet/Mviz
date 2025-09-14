@@ -804,7 +804,7 @@ class SpectrumAnalyzer {
                 }
             } else {
                 // Clear canvas for transparency when background image is active
-                console.log('🧹 Clearing canvas for background image transparency');
+                // console.log('🧹 Clearing canvas for background image transparency');
                 this.ctx.clearRect(0, 0, width, height);
             }
         } else { // Clear canvas for transparency when video is active
@@ -814,7 +814,7 @@ class SpectrumAnalyzer {
 
         // Draw background image if available (only in main visualization, not in capture)
         if (hasBackgroundImage) {
-            console.log('🖼️ Drawing background image in main visualization');
+            // console.log('🖼️ Drawing background image in main visualization');
             window.visualizer.drawBackgroundImage(this.ctx, width, height);
         }
 
@@ -826,7 +826,7 @@ class SpectrumAnalyzer {
             })`;
             this.ctx.fillRect(0, 0, width, height);
         } else if (hasBackgroundImage) {
-            console.log('✅ Skipping overlay - background image is active');
+            // console.log('✅ Skipping overlay - background image is active');
         } else {
             console.log('✅ No overlay - background image should be visible');
         }

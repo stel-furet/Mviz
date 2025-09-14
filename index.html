@@ -113,133 +113,6 @@ CS<!DOCTYPE html>
             <!-- AI Autopilot controls moved to sidebar -->
         </div>
 
-        <!-- Learning Analytics Dashboard Modal -->
-        <div class="learning-analytics-modal" id="learningAnalyticsModal" style="display: none;">
-            <div class="analytics-modal-content">
-                <div class="analytics-modal-header">
-                    <h2>📊 Learning Analytics Dashboard</h2>
-                    <div class="analytics-controls">
-                        <label for="updateFrequency">Update Frequency:</label>
-                        <select id="updateFrequency" class="frequency-select">
-                            <option value="1000">1 second</option>
-                            <option value="2000">2 seconds</option>
-                            <option value="3000">3 seconds</option>
-                            <option value="5000" selected>5 seconds</option>
-                            <option value="10000">10 seconds</option>
-                            <option value="15000">15 seconds</option>
-                            <option value="20000">20 seconds</option>
-                        </select>
-                        <button class="export-btn" id="exportLearningDataBtn">Export Data</button>
-                        <button class="reset-btn" id="resetLearningDataBtn">Reset All Data</button>
-                    </div>
-                    <button class="analytics-close-btn" id="analyticsCloseBtn">×</button>
-                </div>
-                
-                <div class="analytics-content">
-                    <!-- Learning Progress Section -->
-                    <div class="analytics-section">
-                        <h3>🧠 Learning Progress</h3>
-                        <div class="analytics-grid">
-                            <div class="analytics-card">
-                                <div class="card-title">Pattern Learning</div>
-                                <div class="card-value" id="dashboardPatternCount">0</div>
-                                <div class="card-subtitle">Patterns Learned</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Success Rate</div>
-                                <div class="card-value" id="dashboardSuccessRate">0%</div>
-                                <div class="card-subtitle">Learning Accuracy</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Learning Progress</div>
-                                <div class="card-value" id="dashboardLearningProgress">0%</div>
-                                <div class="card-subtitle">Overall Progress</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- User Feedback Section -->
-                    <div class="analytics-section">
-                        <h3>👤 User Feedback</h3>
-                        <div class="analytics-grid">
-                            <div class="analytics-card">
-                                <div class="card-title">Total Feedback</div>
-                                <div class="card-value" id="dashboardTotalFeedback">0</div>
-                                <div class="card-subtitle">Interactions</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Satisfaction</div>
-                                <div class="card-value" id="dashboardSatisfaction">0%</div>
-                                <div class="card-subtitle">User Satisfaction</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Positive</div>
-                                <div class="card-value" id="dashboardPositiveFeedback">0</div>
-                                <div class="card-subtitle">👍 Likes</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Predictive Behavior Section -->
-                    <div class="analytics-section">
-                        <h3>🎯 Predictive Behavior</h3>
-                        <div class="analytics-grid">
-                            <div class="analytics-card">
-                                <div class="card-title">Predictions Made</div>
-                                <div class="card-value" id="dashboardPredictions">0</div>
-                                <div class="card-subtitle">Total Predictions</div>
-                                <div class="card-description">Mode changes, parameter adjustments, and timing predictions based on audio analysis.</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Prediction Accuracy</div>
-                                <div class="card-value" id="dashboardPredictionAccuracy">0%</div>
-                                <div class="card-subtitle">Success Rate</div>
-                                <div class="card-description">Percentage of executed predictions out of total predictions made. Calculated from recent prediction history.</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Confidence Level</div>
-                                <div class="card-value" id="dashboardConfidence">80%</div>
-                                <div class="card-subtitle">Current Threshold</div>
-                                <div class="card-description">Minimum confidence required to execute predictions. Higher values mean more conservative decision-making.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Adaptive Tuning Section -->
-                    <div class="analytics-section">
-                        <h3>⚙️ Adaptive Tuning</h3>
-                        <div class="analytics-grid">
-                            <div class="analytics-card">
-                                <div class="card-title">Optimizations</div>
-                                <div class="card-value" id="dashboardOptimizations">0</div>
-                                <div class="card-subtitle">Parameter Optimizations</div>
-                                <div class="card-description">Successful parameter adjustments that accurately produce expected results. For example, applying dark color schemes with slow graphics to ambient tracks.</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Performance</div>
-                                <div class="card-value" id="dashboardPerformance">0%</div>
-                                <div class="card-subtitle">Current Performance</div>
-                                <div class="card-description">Combined score based on audio response (60%) and user feedback (40%). Measures how well parameters match the current audio context.</div>
-                            </div>
-                            <div class="analytics-card">
-                                <div class="card-title">Trend</div>
-                                <div class="card-value" id="dashboardTrend">Stable</div>
-                                <div class="card-subtitle">Performance Trend</div>
-                                <div class="card-description">Direction of performance over time: Improving (getting better), Declining (getting worse), or Stable (consistent performance).</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity Section -->
-                    <div class="analytics-section">
-                        <h3>📈 Recent Activity</h3>
-                        <div class="activity-log" id="activityLog">
-                            <div class="activity-item">System initialized</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- DMX COPILOT Section -->
         <div class="autopilot-section">
@@ -1155,7 +1028,7 @@ CS<!DOCTYPE html>
                 </div>
                         <div class="control-with-settings" style="margin-top: 8px;">
                             <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
-                                📊 Learning Analytics
+                                Learning Analytics
                             </button>
             </div>
 
@@ -1613,6 +1486,134 @@ CS<!DOCTYPE html>
         </select>
 
         <button class="fs-random-btn" id="fsRandomBtn">Random</button>
+    </div>
+</div>
+
+<!-- Learning Analytics Dashboard Modal -->
+<div class="learning-analytics-modal" id="learningAnalyticsModal" style="display: none;">
+    <div class="analytics-modal-content">
+        <div class="analytics-modal-header">
+            <h2>📊 Learning Analytics Dashboard</h2>
+            <div class="analytics-controls">
+                <label for="updateFrequency">Update Frequency:</label>
+                <select id="updateFrequency" class="frequency-select">
+                    <option value="1000">1 second</option>
+                    <option value="2000">2 seconds</option>
+                    <option value="3000">3 seconds</option>
+                    <option value="5000" selected>5 seconds</option>
+                    <option value="10000">10 seconds</option>
+                    <option value="15000">15 seconds</option>
+                    <option value="20000">20 seconds</option>
+                </select>
+                <button class="export-btn" id="exportLearningDataBtn">Export Data</button>
+                <button class="reset-btn" id="resetLearningDataBtn">Reset All Data</button>
+            </div>
+            <button class="analytics-close-btn" id="analyticsCloseBtn">×</button>
+        </div>
+        
+        <div class="analytics-content">
+            <!-- Learning Progress Section -->
+            <div class="analytics-section">
+                <h3>🧠 Learning Progress</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="card-title">Pattern Learning</div>
+                        <div class="card-value" id="dashboardPatternCount">0</div>
+                        <div class="card-subtitle">Patterns Learned</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Success Rate</div>
+                        <div class="card-value" id="dashboardSuccessRate">0%</div>
+                        <div class="card-subtitle">Learning Accuracy</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Learning Progress</div>
+                        <div class="card-value" id="dashboardLearningProgress">0%</div>
+                        <div class="card-subtitle">Overall Progress</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Feedback Section -->
+            <div class="analytics-section">
+                <h3>👤 User Feedback</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="card-title">Total Feedback</div>
+                        <div class="card-value" id="dashboardTotalFeedback">0</div>
+                        <div class="card-subtitle">Interactions</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Satisfaction</div>
+                        <div class="card-value" id="dashboardSatisfaction">0%</div>
+                        <div class="card-subtitle">User Satisfaction</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Positive</div>
+                        <div class="card-value" id="dashboardPositiveFeedback">0</div>
+                        <div class="card-subtitle">👍 Likes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictive Behavior Section -->
+            <div class="analytics-section">
+                <h3>🎯 Predictive Behavior</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="card-title">Predictions Made</div>
+                        <div class="card-value" id="dashboardPredictions">0</div>
+                        <div class="card-subtitle">Total Predictions</div>
+                        <div class="card-description">Mode changes, parameter adjustments, and timing predictions based on audio analysis.</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Prediction Accuracy</div>
+                        <div class="card-value" id="dashboardPredictionAccuracy">0%</div>
+                        <div class="card-subtitle">Success Rate</div>
+                        <div class="card-description">Percentage of executed predictions out of total predictions made. Calculated from recent prediction history.</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Confidence Level</div>
+                        <div class="card-value" id="dashboardConfidence">80%</div>
+                        <div class="card-subtitle">Current Threshold</div>
+                        <div class="card-description">Minimum confidence required to execute predictions. Higher values mean more conservative decision-making.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adaptive Tuning Section -->
+            <div class="analytics-section">
+                <h3>⚙️ Adaptive Tuning</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="card-title">Optimizations</div>
+                        <div class="card-value" id="dashboardOptimizations">0</div>
+                        <div class="card-subtitle">Parameter Optimizations</div>
+                        <div class="card-description">Successful parameter adjustments that accurately produce expected results. For example, applying dark color schemes with slow graphics to ambient tracks.</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Performance</div>
+                        <div class="card-value" id="dashboardPerformance">0%</div>
+                        <div class="card-subtitle">Current Performance</div>
+                        <div class="card-description">Combined score based on audio response (60%) and user feedback (40%). Measures how well parameters match the current audio context.</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="card-title">Trend</div>
+                        <div class="card-value" id="dashboardTrend">Stable</div>
+                        <div class="card-subtitle">Performance Trend</div>
+                        <div class="card-description">Direction of performance over time: Improving (getting better), Declining (getting worse), or Stable (consistent performance).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="analytics-section">
+                <h3>📈 Recent Activity</h3>
+                <div class="activity-log" id="activityLog">
+                    <div class="activity-item">System initialized</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

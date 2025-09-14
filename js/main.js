@@ -5777,9 +5777,15 @@ class GitItUpVisualizer {
         // Learning Analytics Dashboard controls
         const learningAnalyticsBtn = document.getElementById('learningAnalyticsBtn');
         if (learningAnalyticsBtn) {
-            learningAnalyticsBtn.addEventListener('click', () => {
+            console.log('Learning Analytics button found, adding event listener');
+            learningAnalyticsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Learning Analytics button clicked');
                 this.openLearningAnalyticsDashboard();
             });
+        } else {
+            console.error('Learning Analytics button not found!');
         }
 
         const analyticsCloseBtn = document.getElementById('analyticsCloseBtn');
@@ -6012,13 +6018,18 @@ class GitItUpVisualizer {
 
     // Learning Analytics Dashboard Methods
     openLearningAnalyticsDashboard() {
+        console.log('Opening Learning Analytics Dashboard...');
         const modal = document.getElementById('learningAnalyticsModal');
         if (modal) {
+            console.log('Modal found, setting display to flex');
             modal.style.display = 'flex';
             this.updateDashboardAnalytics();
             this.logActivity('Learning Analytics Dashboard opened');
+        } else {
+            console.error('Learning Analytics Modal not found!');
         }
     }
+
 
     closeLearningAnalyticsDashboard() {
         const modal = document.getElementById('learningAnalyticsModal');
@@ -9062,14 +9073,14 @@ https://rogueamoeba.com/loopback/
     }
 
     drawBackgroundImage(ctx, canvasWidth, canvasHeight) {
-        console.log('🎨 drawBackgroundImage called:', {
-            hasImage: !!this.backgroundImage,
-            enabled: this.backgroundImageEnabled,
-            opacity: this.backgroundImageOpacity,
-            saturation: this.backgroundImageSaturation,
-            canvasSize: `${canvasWidth}x${canvasHeight}`,
-            contextType: ctx.constructor.name
-        });
+        // console.log('🎨 drawBackgroundImage called:', {
+        //     hasImage: !!this.backgroundImage,
+        //     enabled: this.backgroundImageEnabled,
+        //     opacity: this.backgroundImageOpacity,
+        //     saturation: this.backgroundImageSaturation,
+        //     canvasSize: `${canvasWidth}x${canvasHeight}`,
+        //     contextType: ctx.constructor.name
+        // });
 
         if (!this.backgroundImage || !this.backgroundImageEnabled) {
             console.log('❌ Background image not drawn - missing image or disabled');
@@ -9094,10 +9105,10 @@ https://rogueamoeba.com/loopback/
 
         // Only draw if image is loaded
         if (this.cachedBackgroundImage && this.cachedBackgroundImage.complete && this.cachedBackgroundImage.naturalWidth > 0) {
-            console.log('🖼️ Drawing cached background image:', {
-                imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
-                dataUrlLength: this.backgroundImage.length
-            });
+            // console.log('🖼️ Drawing cached background image:', {
+            //     imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
+            //     dataUrlLength: this.backgroundImage.length
+            // });
 
             // Calculate dimensions based on sizing option
             const imgAspect = this.cachedBackgroundImage.width / this.cachedBackgroundImage.height;
@@ -9152,15 +9163,15 @@ https://rogueamoeba.com/loopback/
                     break;
             }
 
-            console.log('📐 Background image draw calculations:', {
-                imgAspect,
-                canvasAspect,
-                drawX, drawY, drawWidth, drawHeight
-            });
+            // console.log('📐 Background image draw calculations:', {
+            //     imgAspect,
+            //     canvasAspect,
+            //     drawX, drawY, drawWidth, drawHeight
+            // });
 
             ctx.save();
             ctx.globalAlpha = this.backgroundImageOpacity / 100;
-            console.log('🎭 Applied opacity:', ctx.globalAlpha);
+            // console.log('🎭 Applied opacity:', ctx.globalAlpha);
             
             // Build filter string for all effects
             const filters = [];
@@ -9194,7 +9205,7 @@ https://rogueamoeba.com/loopback/
             }
             
             ctx.drawImage(this.cachedBackgroundImage, drawX, drawY, drawWidth, drawHeight);
-            console.log('✅ Background image drawn successfully');
+            // console.log('✅ Background image drawn successfully');
             ctx.restore();
         } else {
             console.log('⏳ Background image not ready yet, skipping draw');
@@ -12258,4 +12269,19 @@ window.inspectMainCanvas = function() {
         console.log('Available canvas elements:', document.querySelectorAll('canvas'));
     }
 };
+
+// Global function for testing Learning Analytics Modal
+window.testLearningAnalytics = () => {
+    console.log('Testing Learning Analytics Modal...');
+    const modal = document.getElementById('learningAnalyticsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        console.log('Modal should now be visible');
+    } else {
+        console.error('Modal not found!');
+    }
+};
 });
+

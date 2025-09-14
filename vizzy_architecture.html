@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vizzy Architecture Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #111827;
+            --secondary-bg: #1f2937;
+            --accent-color: #6b7280;
+            --highlight-color: #9ca3af;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --hover-color: #374151;
+            --error-color: #ef4444;
+            --border-color: #4b5563;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--highlight-color);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            background: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            border-color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: var(--highlight-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .section h3 {
+            color: var(--text-primary);
+            margin: 20px 0 15px 0;
+        }
+
+        .section h4 {
+            color: var(--text-secondary);
+            margin: 15px 0 10px 0;
+        }
+
+        .class-card {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+
+        .class-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .class-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--highlight-color);
+        }
+
+        .class-file {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .method-list {
+            margin: 15px 0;
+        }
+
+        .method-item {
+            background: var(--secondary-bg);
+            border-left: 3px solid var(--accent-color);
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .method-name {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .method-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .dependency-list {
+            margin: 10px 0;
+        }
+
+        .dependency-item {
+            display: inline-block;
+            background: var(--hover-color);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.8rem;
+        }
+
+        .architecture-diagram {
+            background: var(--primary-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .layer {
+            background: var(--secondary-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .layer::before {
+            content: attr(data-layer);
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable::before {
+            content: '▶';
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .expandable.expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .expandable-content {
+            display: none;
+            margin-top: 15px;
+            padding-left: 20px;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .expandable.expanded .expandable-content {
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-complete {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-partial {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .status-planned {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .file-structure {
+            font-family: 'Courier New', monospace;
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .file-item {
+            margin: 5px 0;
+            padding: 5px 0;
+        }
+
+        .file-size {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vizzy Architecture</h1>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
+            <div class="nav-tab" onclick="showTab('architecture')">Architecture</div>
+            <div class="nav-tab" onclick="showTab('visualization')">Visualization Pipeline</div>
+            <div class="nav-tab" onclick="showTab('ai-system')">AI Autopilot System</div>
+            <div class="nav-tab" onclick="showTab('webrtc')">WebRTC & Streaming</div>
+            <div class="nav-tab" onclick="showTab('ui-themes')">UI & Themes</div>
+            <div class="nav-tab" onclick="showTab('file-structure')">File Structure</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="section">
+                <h2>Application Overview</h2>
+                <p>Vizzy is an advanced music visualizer with live display capabilities, multiple visualization modes, and professional features for live performance and studio use.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li><strong>Audio Input System</strong> - Microphone and playlist support</li>
+                    <li><strong>Multiple Visualization Modes</strong> - Spectrum, Mirror Wave, LED, Stereo, etc.</li>
+                    <li><strong>Kaleidoscope Effects</strong> - Advanced visual effects</li>
+                    <li><strong>Infinite Zoom</strong> - Dynamic zoom effects</li>
+                    <li><strong>Background Image Support</strong> - Custom backgrounds with effects</li>
+                    <li><strong>Video Input Integration</strong> - Live video source support</li>
+                    <li><strong>Recording System</strong> - Canvas recording capabilities</li>
+                    <li><strong>Live Display</strong> - WebRTC streaming to external displays</li>
+                    <li><strong>AI Autopilot</strong> - Automated visualization management</li>
+                    <li><strong>Theme System</strong> - Steel Gray, Sunset, Aurora themes</li>
+                    <li><strong>Playlist Management</strong> - File management and metadata parsing</li>
+                </ul>
+
+                <h3>Current Status</h3>
+                <p><span class="status-badge status-complete">Phase 1: 85% Complete</span> - UI Overhaul in progress</p>
+                <p><span class="status-badge status-partial">AI Autopilot: 60% Complete</span> - Core systems implemented</p>
+                <p><span class="status-badge status-complete">WebRTC: 100% Complete</span> - Live display functionality working</p>
+            </div>
+        </div>
+
+        <!-- Architecture Tab -->
+        <div id="architecture" class="tab-content">
+            <div class="section">
+                <h2>System Architecture</h2>
+                
+                <div class="architecture-diagram">
+                    <h3>Application Layers</h3>
+                    <div class="layer" data-layer="Presentation Layer">
+                        <strong>UI Components & Themes</strong><br>
+                        Sidebar, Drawers, Controls, Theme System
+                    </div>
+                    <div class="layer" data-layer="Application Layer">
+                        <strong>Core Application Logic</strong><br>
+                        GitItUpVisualizer, PlaylistManager, RecordManager
+                    </div>
+                    <div class="layer" data-layer="AI Intelligence Layer">
+                        <strong>AI Autopilot System</strong><br>
+                        MultiLayeredIntelligenceSystem, DecisionEngine, PatternLearning
+                    </div>
+                    <div class="layer" data-layer="Visualization Layer">
+                        <strong>Rendering Pipeline</strong><br>
+                        SpectrumAnalyzer, InfiniteZoom, Kaleidoscope Effects
+                    </div>
+                    <div class="layer" data-layer="Audio Processing Layer">
+                        <strong>Audio Analysis</strong><br>
+                        AudioAnalyzer, HarmonicAnalyzer, GenreDetector
+                    </div>
+                    <div class="layer" data-layer="Streaming Layer">
+                        <strong>WebRTC & Recording</strong><br>
+                        StreamManager, RecordManager, Canvas Capture
+                    </div>
+                </div>
+
+                <h3>Core Classes</h3>
+                
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">GitItUpVisualizer</span>
+                        <span class="class-file">main.js</span>
+                    </div>
+                    <p><strong>Primary Application Controller</strong> - Main orchestrator class that manages all application state, audio processing, visualization rendering, and user interactions.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">constructor()</div>
+                            <div class="method-description">Initializes all application components, audio systems, and UI state</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">initializeAudio()</div>
+                            <div class="method-description">Sets up audio input, Web Audio API, and spectrum analysis</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">updateVisualization()</div>
+                            <div class="method-description">Main rendering loop that updates all visual elements</div>
+                        </div>
+                    </div>
+                    <h4>Key Dependencies:</h4>
+                    <div class="dependency-list">
+                        <span class="dependency-item">SpectrumAnalyzer</span>
+                        <span class="dependency-item">AIAutopilot</span>
+                        <span class="dependency-item">StreamManager</span>
+                        <span class="dependency-item">RecordManager</span>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">SpectrumAnalyzer</span>
+                        <span class="class-file">spectrum-analyzer.js</span>
+                    </div>
+                    <p><strong>Audio Visualization Engine</strong> - Core rendering system that processes audio data and creates real-time spectrum visualizations. Handles Web Audio API integration, frequency analysis, and multiple visualization modes including spectrum bars, radial displays, and stereo visualizations. Manages audio input from microphones or audio files, processes frequency data through FFT analysis, and renders visualizations with customizable parameters like color schemes, bar spacing, gradients, and effects.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">draw()</div>
+                            <div class="method-description">Main rendering method that draws spectrum visualizations with background, bars, peaks, and effects</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">update()</div>
+                            <div class="method-description">Processes audio data from Web Audio API and updates visualization parameters in real-time</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">setOptions()</div>
+                            <div class="method-description">Updates visualization settings (mode, colors, effects) and triggers redraw with smooth transitions</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">connectAudio()</div>
+                            <div class="method-description">Connects to audio input sources and sets up Web Audio API processing chain</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">drawBars()</div>
+                            <div class="method-description">Renders frequency bars with customizable styling, gradients, and effects</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">drawRadial()</div>
+                            <div class="method-description">Renders circular/radial spectrum visualization with configurable radius and styling</div>
+                        </div>
+                    </div>
+                    <h4>Key Dependencies:</h4>
+                    <div class="dependency-list">
+                        <span class="dependency-item">Web Audio API</span>
+                        <span class="dependency-item">Canvas 2D Context</span>
+                        <span class="dependency-item">AudioMotion Library</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Pipeline Tab -->
+        <div id="visualization" class="tab-content">
+            <div class="section">
+                <h2>Visualization Pipeline</h2>
+                
+                <div class="architecture-diagram">
+                    <h3>Canvas Layering System</h3>
+                    <div class="layer" data-layer="Background Layer">
+                        <strong>Background Image</strong><br>
+                        Custom background images with effects (opacity, saturation, posterization)
+                    </div>
+                    <div class="layer" data-layer="Video Layer">
+                        <strong>Video Input Layer</strong><br>
+                        Live camera feed or video files with effects (grayscale, sepia, blur, saturation, posterize, vignette, invert, mirror, pulse)
+                    </div>
+                    <div class="layer" data-layer="Main Visualization">
+                        <strong>Spectrum Visualization</strong><br>
+                        AudioMotion-based spectrum analysis and rendering
+                    </div>
+                    <div class="layer" data-layer="Infinite Zoom Layer">
+                        <strong>Infinite Zoom Effects</strong><br>
+                        Dynamic zoom visualization with audio-reactive objects
+                    </div>
+                    <div class="layer" data-layer="Kaleidoscope Layer">
+                        <strong>Kaleidoscope Effects</strong><br>
+                        Mirror and kaleidoscope transformations
+                    </div>
+                    <div class="layer" data-layer="Composite Output">
+                        <strong>Final Composite</strong><br>
+                        All layers composited for recording and streaming
+                    </div>
+                </div>
+
+                <h3>Visualization Modes</h3>
+                <div class="expandable">
+                    <h4>Spectrum Modes</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Mode 0 - Spectrum</strong>: Classic frequency spectrum bars</li>
+                            <li><strong>Mode 1 - Mirror Wave</strong>: Dual-vertical mirrored visualization</li>
+                            <li><strong>Mode 2 - Classic LED</strong>: LED-style bar display</li>
+                            <li><strong>Mode 3 - Stereo</strong>: Left/right channel separation</li>
+                            <li><strong>Mode 4 - Radial Spectrum</strong>: Circular frequency display</li>
+                            <li><strong>Mode 5 - Energy</strong>: Energy-based visualization</li>
+                            <li><strong>Mode 6 - Mirror</strong>: Horizontal mirroring effects</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Advanced Effects</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Infinite Zoom</strong>: Dynamic zoom with audio-reactive objects</li>
+                            <li><strong>Kaleidoscope</strong>: Mirror and kaleidoscope transformations</li>
+                            <li><strong>Background Effects</strong>: Image/video backgrounds with filters</li>
+                            <li><strong>Morphing</strong>: Smooth transitions between visualization modes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI System Tab -->
+        <div id="ai-system" class="tab-content">
+            <div class="section">
+                <h2>AI Autopilot System</h2>
+                
+                <div class="architecture-diagram">
+                    <h3>AI Decision Making Pipeline</h3>
+                    <div class="layer" data-layer="Audio Analysis">
+                        <strong>Audio Feature Extraction</strong><br>
+                        Energy, Beat, Tempo, Frequency Analysis
+                    </div>
+                    <div class="layer" data-layer="Multi-Layer Intelligence">
+                        <strong>Decision Layers</strong><br>
+                        Reactive, Predictive, Strategic Decision Making
+                    </div>
+                    <div class="layer" data-layer="Learning Systems">
+                        <strong>Machine Learning</strong><br>
+                        Pattern Learning, Adaptive Tuning, Meta Learning
+                    </div>
+                    <div class="layer" data-layer="Execution">
+                        <strong>Action Execution</strong><br>
+                        Mode Changes, Parameter Adjustments, Video Effects
+                    </div>
+                </div>
+
+                <h3>AI Classes</h3>
+                
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">AIAutopilot</span>
+                        <span class="class-file">audio-system.js</span>
+                    </div>
+                    <p><strong>AI Autopilot Controller</strong> - Main AI system that orchestrates automated visualization management. Integrates multiple AI components including audio analysis, decision making, parameter control, and pattern learning. Manages autopilot settings like scope (bars/radial/energy/all), sensitivity levels, and change timing. Coordinates between reactive, predictive, and strategic decision layers to make intelligent choices about visualization modes, parameters, and effects based on real-time audio analysis.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">makeAdvancedDecisions()</div>
+                            <div class="method-description">Main decision-making method that analyzes audio features and executes intelligent changes</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">setIntensity()</div>
+                            <div class="method-description">Sets autopilot intensity level (low/medium/high) affecting decision frequency and aggressiveness</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">setScope()</div>
+                            <div class="method-description">Sets autopilot scope to control which visualization modes it can change</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">toggleAutopilot()</div>
+                            <div class="method-description">Enables/disables autopilot system and manages decision-making loop</div>
+                        </div>
+                    </div>
+                    <h4>Key Dependencies:</h4>
+                    <div class="dependency-list">
+                        <span class="dependency-item">AudioAnalyzer</span>
+                        <span class="dependency-item">DecisionEngine</span>
+                        <span class="dependency-item">ParameterController</span>
+                        <span class="dependency-item">MultiLayeredIntelligenceSystem</span>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">MultiLayeredIntelligenceSystem</span>
+                        <span class="class-file">ai-autopilot.js</span>
+                    </div>
+                    <p><strong>Main AI Orchestrator</strong> - Coordinates all AI decision-making layers and resolves conflicts between different intelligence systems.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">makeIntelligentDecision()</div>
+                            <div class="method-description">Main decision-making method that analyzes audio context and makes optimal choices</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">getLayerDecisions()</div>
+                            <div class="method-description">Gets decisions from reactive, predictive, and strategic layers</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">executeDecision()</div>
+                            <div class="method-description">Executes the final decision with parameter adjustments and mode changes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">PredictiveBehaviorSystem</span>
+                        <span class="class-file">ai-autopilot.js</span>
+                    </div>
+                    <p><strong>Predictive Intelligence</strong> - Analyzes audio patterns and predicts optimal actions for future audio context.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">predictOptimalActions()</div>
+                            <div class="method-description">Analyzes audio context and predicts the best actions to take</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">predictModeChange()</div>
+                            <div class="method-description">Determines if a mode change would be beneficial</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">predictParameterAdjustments()</div>
+                            <div class="method-description">Predicts optimal parameter adjustments for current audio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">PatternLearningSystem</span>
+                        <span class="class-file">ai-autopilot.js</span>
+                    </div>
+                    <p><strong>Machine Learning Engine</strong> - Learns from user behavior and audio patterns to improve decision-making over time.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">learnFromPattern()</div>
+                            <div class="method-description">Learns from audio patterns and user interactions</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">predictUserPreference()</div>
+                            <div class="method-description">Predicts user preferences based on learned patterns</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Planned AI Features (From ODP)</h3>
+                <div class="expandable">
+                    <h4>Phase 1: Foundation & Core Features</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Complete AI Autopilot System</strong> - Finish remaining 40% of implementation</li>
+                            <li><strong>Advanced Audio Analysis</strong> - Enhanced beat detection, tempo analysis, energy monitoring</li>
+                            <li><strong>Decision Engine Implementation</strong> - Rule-based decision system with energy-based presets</li>
+                            <li><strong>Genre Detection System</strong> - Automatic music genre recognition</li>
+                            <li><strong>User Learning Module</strong> - Record and learn from user overrides</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Phase 2: Advanced Integration</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>DMX Copilot System</strong> - Drive visualizations through lighting DMX signals</li>
+                            <li><strong>MIDI Copilot System</strong> - MIDI input for visualization control</li>
+                            <li><strong>OSC System</strong> - Open Sound Control integration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebRTC Tab -->
+        <div id="webrtc" class="tab-content">
+            <div class="section">
+                <h2>WebRTC & Streaming System</h2>
+                
+                <div class="architecture-diagram">
+                    <h3>Streaming Architecture</h3>
+                    <div class="layer" data-layer="Canvas Capture">
+                        <strong>Canvas Capture</strong><br>
+                        Composite canvas capture with high-quality settings
+                    </div>
+                    <div class="layer" data-layer="WebRTC Connection">
+                        <strong>Peer Connection</strong><br>
+                        RTCPeerConnection with ICE candidates and SDP negotiation
+                    </div>
+                    <div class="layer" data-layer="Display Window">
+                        <strong>External Display</strong><br>
+                        Separate window for live display output
+                    </div>
+                    <div class="layer" data-layer="Broadcast Channel">
+                        <strong>Communication</strong><br>
+                        BroadcastChannel for window communication
+                    </div>
+                </div>
+
+                <h3>Streaming Classes</h3>
+                
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">StreamManager</span>
+                        <span class="class-file">main.js</span>
+                    </div>
+                    <p><strong>WebRTC Streaming Controller</strong> - Manages live display streaming to external windows via WebRTC. Handles peer connection setup, ICE candidate negotiation, canvas capture, and real-time video streaming. Creates composite canvas that captures all visualization layers, sets up high-quality video encoding parameters, and manages communication between main window and display window through BroadcastChannel API. Supports multiple display windows and configurable streaming quality settings.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">startStreaming()</div>
+                            <div class="method-description">Initiates WebRTC peer connection, creates capture canvas, and starts real-time streaming to display window</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">setupCaptureCanvas()</div>
+                            <div class="method-description">Creates composite canvas that captures all visualization layers for streaming output</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">stopStreaming()</div>
+                            <div class="method-description">Stops streaming, closes peer connections, and cleans up all resources</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">handleIceCandidate()</div>
+                            <div class="method-description">Processes ICE candidates for WebRTC connection establishment</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">startCapture()</div>
+                            <div class="method-description">Begins continuous canvas capture and streaming animation loop</div>
+                        </div>
+                    </div>
+                    <h4>Key Dependencies:</h4>
+                    <div class="dependency-list">
+                        <span class="dependency-item">WebRTC API</span>
+                        <span class="dependency-item">BroadcastChannel API</span>
+                        <span class="dependency-item">Canvas Capture Stream</span>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">RecordManager</span>
+                        <span class="class-file">main.js</span>
+                    </div>
+                    <p><strong>Recording System</strong> - Handles video/audio recording of the visualization canvas using MediaRecorder API. Creates composite canvas that captures all visualization layers including background images, video inputs, spectrum visualizations, and effects. Manages recording quality settings, file format selection, and automatic file saving. Supports both video-only and video+audio recording with configurable bitrates and frame rates.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">startRecording()</div>
+                            <div class="method-description">Begins recording with MediaRecorder API, sets up composite canvas and audio streams</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">compositeFrame()</div>
+                            <div class="method-description">Composites all visualization layers (background, video, spectrum, effects) for recording output</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">stopRecording()</div>
+                            <div class="method-description">Stops recording, processes final video file, and triggers download</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">setupCompositeCanvas()</div>
+                            <div class="method-description">Creates high-resolution composite canvas for recording capture</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">getAudioStream()</div>
+                            <div class="method-description">Captures audio stream from Web Audio API for video+audio recording</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">updateTimer()</div>
+                            <div class="method-description">Updates recording timer display and manages recording duration</div>
+                        </div>
+                    </div>
+                    <h4>Key Dependencies:</h4>
+                    <div class="dependency-list">
+                        <span class="dependency-item">MediaRecorder API</span>
+                        <span class="dependency-item">Canvas 2D Context</span>
+                        <span class="dependency-item">Web Audio API</span>
+                        <span class="dependency-item">File System Access API</span>
+                    </div>
+                </div>
+
+                <h3>Planned Streaming Features</h3>
+                <div class="expandable">
+                    <h4>Multiple WebRTC Streams</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Independent Display Outputs</strong> - Multiple simultaneous streams</li>
+                            <li><strong>Video Splitting</strong> - Side-by-side video display</li>
+                            <li><strong>Display-Specific Settings</strong> - Independent configurations per display</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Wireless Display Support</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Wireless Display Protocol</strong> - Support for wireless display standards</li>
+                            <li><strong>iPad Version</strong> - Native iPad application</li>
+                            <li><strong>Mobile Optimization</strong> - Touch-friendly interface</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI & Themes Tab -->
+        <div id="ui-themes" class="tab-content">
+            <div class="section">
+                <h2>UI System & Themes</h2>
+                
+                <h3>Theme System</h3>
+                <div class="class-card">
+                    <div class="class-header">
+                        <span class="class-name">Theme System</span>
+                        <span class="class-file">theme-system.js</span>
+                    </div>
+                    <p><strong>Theme Management</strong> - Handles theme switching and CSS variable management.</p>
+                    <div class="method-list">
+                        <div class="method-item">
+                            <div class="method-name">initializeThemeSystem()</div>
+                            <div class="method-description">Initializes theme system and loads saved theme</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">applyTheme()</div>
+                            <div class="method-description">Applies selected theme and updates CSS variables</div>
+                        </div>
+                        <div class="method-item">
+                            <div class="method-name">updateThemeElements()</div>
+                            <div class="method-description">Updates all theme-dependent UI elements</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Available Themes</h3>
+                <ul>
+                    <li><strong>Steel Gray</strong> - Default professional theme with cool grays</li>
+                    <li><strong>Sunset</strong> - Warm orange and amber color scheme</li>
+                    <li><strong>Aurora</strong> - Cool blue and purple gradient theme</li>
+                </ul>
+
+                <h3>UI Components</h3>
+                <div class="expandable">
+                    <h4>Sidebar System</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Collapsible Sidebar</strong> - 8 main sections with expand/collapse</li>
+                            <li><strong>Audio Controls</strong> - Input mode, device selection, volume</li>
+                            <li><strong>Visualization Controls</strong> - Mode selection, color schemes, presets</li>
+                            <li><strong>Video Controls</strong> - Video input, effects, background settings</li>
+                            <li><strong>Recording Controls</strong> - Start/stop recording, quality settings</li>
+                            <li><strong>Live Display Controls</strong> - WebRTC streaming controls</li>
+                            <li><strong>AI Autopilot Controls</strong> - Autopilot settings and controls</li>
+                            <li><strong>Playlist Management</strong> - File management and metadata</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Drawer System</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>Contextual Drawers</strong> - Slide-out panels for detailed controls</li>
+                            <li><strong>Visualization Drawer</strong> - Advanced visualization settings</li>
+                            <li><strong>Video Drawer</strong> - Video input and effects controls</li>
+                            <li><strong>Background Drawer</strong> - Background image and effects</li>
+                            <li><strong>Kaleidoscope Drawer</strong> - Kaleidoscope effect controls</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Structure Tab -->
+        <div id="file-structure" class="tab-content">
+            <div class="section">
+                <h2>File Structure</h2>
+                
+                <div class="file-structure">
+                    <div class="file-item">📁 Mviz/</div>
+                    <div class="file-item">├── 📄 index.html <span class="file-size">(1,686 lines)</span></div>
+                    <div class="file-item">├── 📄 vizzy.css <span class="file-size">(4,573 lines)</span></div>
+                    <div class="file-item">├── 📁 js/</div>
+                    <div class="file-item">│   ├── 📄 main.js <span class="file-size">(515.7 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 spectrum-analyzer.js <span class="file-size">(60.1 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 ai-autopilot.js <span class="file-size">(62.8 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 audio-system.js <span class="file-size">(46.0 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 ui-controls.js <span class="file-size">(33.0 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 playlist-manager.js <span class="file-size">(68.7 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 theme-system.js <span class="file-size">(1.8 KB)</span></div>
+                    <div class="file-item">│   ├── 📄 visualizations.js <span class="file-size">(14.6 KB)</span></div>
+                    <div class="file-item">│   └── 📄 metadata-parser.js <span class="file-size">(5.3 KB)</span></div>
+                    <div class="file-item">├── 📄 ODP.md <span class="file-size">Development Plan</span></div>
+                    <div class="file-item">├── 📄 ODP.html <span class="file-size">Interactive Plan</span></div>
+                    <div class="file-item">└── 📄 vizzy_architecture.html <span class="file-size">This Document</span></div>
+                </div>
+
+                <h3>JavaScript Module Organization</h3>
+                <div class="expandable">
+                    <h4>Core Application (main.js)</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>GitItUpVisualizer</strong> - Main application controller</li>
+                            <li><strong>ParameterController</strong> - Parameter management</li>
+                            <li><strong>GenreDetector</strong> - Music genre detection</li>
+                            <li><strong>HarmonicAnalyzer</strong> - Harmonic analysis</li>
+                            <li><strong>StructureDetector</strong> - Musical structure detection</li>
+                            <li><strong>AudioAnalyzer</strong> - Audio feature extraction</li>
+                            <li><strong>DecisionEngine</strong> - AI decision making</li>
+                            <li><strong>RecordManager</strong> - Video/audio recording</li>
+                            <li><strong>StreamManager</strong> - WebRTC streaming</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>AI System (ai-autopilot.js)</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>PredictiveBehaviorSystem</strong> - Predictive intelligence</li>
+                            <li><strong>MultiLayeredIntelligenceSystem</strong> - Main AI orchestrator</li>
+                            <li><strong>ReactiveDecisionLayer</strong> - Immediate response layer</li>
+                            <li><strong>PredictiveDecisionLayer</strong> - Future-focused decisions</li>
+                            <li><strong>StrategicDecisionLayer</strong> - Long-term optimization</li>
+                            <li><strong>ContextAnalyzer</strong> - Context analysis</li>
+                            <li><strong>ConflictResolver</strong> - Decision conflict resolution</li>
+                            <li><strong>MetaLearningSystem</strong> - Meta-learning capabilities</li>
+                            <li><strong>AdaptiveTuningSystem</strong> - Adaptive parameter tuning</li>
+                            <li><strong>PatternLearningSystem</strong> - Pattern learning and recognition</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Visualization System (spectrum-analyzer.js)</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>SpectrumAnalyzer</strong> - Main visualization engine</li>
+                            <li>Audio spectrum analysis and rendering</li>
+                            <li>Multiple visualization modes</li>
+                            <li>Real-time audio processing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable">
+                    <h4>Audio System (audio-system.js)</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><strong>InfiniteZoomVisualization</strong> - Infinite zoom effects</li>
+                            <li><strong>AIAutopilot</strong> - AI autopilot controller</li>
+                            <li>Audio feature extraction</li>
+                            <li>Real-time audio analysis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Add expandable functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const expandables = document.querySelectorAll('.expandable');
+            expandables.forEach(expandable => {
+                expandable.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
