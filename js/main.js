@@ -4265,6 +4265,12 @@ class GitItUpVisualizer {
         this.streamSource = null;
         this.availableDevices = [];
 
+        // Video input properties
+        this.videoInputMode = 'none';
+        this.videoStream = null;
+        this.currentVideoDeviceId = null;
+        this.availableVideoDevices = [];
+
         // Viz ON/OFF Toggle
         this.visualizationEnabled = true;
 
@@ -4917,6 +4923,387 @@ class GitItUpVisualizer {
         }
     }
 
+    showAudioInputMenu() {
+        // Create a custom dropdown menu for audio input selection
+        this.createAudioInputDropdown();
+    }
+
+    createAudioInputDropdown() {
+        // Remove existing dropdown if it exists
+        const existingDropdown = document.getElementById('footerAudioInputDropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+        }
+
+        // Get button position
+        const button = document.getElementById('footerLiveAudioBtn');
+        if (!button) {
+            console.error('Footer Live Audio button not found');
+            return;
+        }
+
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Create dropdown container
+        const dropdown = document.createElement('div');
+        dropdown.id = 'footerAudioInputDropdown';
+        dropdown.className = 'footer-audio-dropdown';
+        dropdown.style.cssText = `
+            position: fixed;
+            top: ${buttonRect.top - 200}px;
+            left: ${buttonRect.left}px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 10000;
+            min-width: 250px;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+
+        // Create header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+        
+        const title = document.createElement('h3');
+        title.textContent = 'Audio Input';
+        title.style.cssText = `
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        `;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        `;
+        closeBtn.onclick = () => dropdown.remove();
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        dropdown.appendChild(header);
+
+        // Create device list
+        const deviceList = document.createElement('div');
+        deviceList.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        `;
+
+        // Add devices
+        this.availableDevices.forEach(device => {
+            const deviceBtn = document.createElement('button');
+            deviceBtn.style.cssText = `
+                background: var(--hover-color);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 8px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: left;
+                transition: all 0.2s ease;
+                font-size: 12px;
+            `;
+            
+            let displayName = device.label || `Input ${device.deviceId.substr(0, 5)}`;
+            if (displayName.includes('BlackHole') || displayName.includes('Loopback') || displayName.includes('Virtual') || displayName.includes('Soundflower')) {
+                displayName = '🎵 ' + displayName;
+            }
+            
+            deviceBtn.textContent = displayName;
+            deviceBtn.onclick = async () => {
+                await this.startLiveInput(device.deviceId);
+                dropdown.remove();
+            };
+            
+            deviceBtn.onmouseover = () => {
+                deviceBtn.style.background = '#404040';
+            };
+            deviceBtn.onmouseout = () => {
+                deviceBtn.style.background = 'var(--hover-color)';
+            };
+            
+            deviceList.appendChild(deviceBtn);
+        });
+
+        // Add help option
+        const helpBtn = document.createElement('button');
+        helpBtn.style.cssText = `
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            margin-top: 8px;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        `;
+        helpBtn.textContent = '❓ System audio help...';
+        helpBtn.onclick = () => {
+            this.showSystemAudioHelp();
+            dropdown.remove();
+        };
+        
+        deviceList.appendChild(helpBtn);
+        dropdown.appendChild(deviceList);
+
+        // Add to page
+        document.body.appendChild(dropdown);
+
+        // Close dropdown when clicking outside
+        const closeOnOutsideClick = (e) => {
+            if (!dropdown.contains(e.target) && e.target !== button) {
+                dropdown.remove();
+                document.removeEventListener('click', closeOnOutsideClick);
+            }
+        };
+        
+        // Add click listener after a short delay to prevent immediate closing
+        setTimeout(() => {
+            document.addEventListener('click', closeOnOutsideClick);
+        }, 100);
+
+        console.log('Custom audio input dropdown created');
+    }
+
+    showVideoInputMenu() {
+        // Create a simple custom dropdown for video input selection
+        this.createVideoInputDropdown();
+    }
+
+    createVideoInputDropdown() {
+        // Remove existing dropdown if it exists
+        const existingDropdown = document.getElementById('footerVideoInputDropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+        }
+
+        // Get button position
+        const button = document.getElementById('footerLiveVideoBtn');
+        if (!button) {
+            console.error('Footer Live Video button not found');
+            return;
+        }
+
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Create dropdown container
+        const dropdown = document.createElement('div');
+        dropdown.id = 'footerVideoInputDropdown';
+        dropdown.style.cssText = `
+            position: fixed;
+            top: ${buttonRect.top - 200}px;
+            left: ${buttonRect.left}px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 10000;
+            min-width: 250px;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+
+        // Create header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+        
+        const title = document.createElement('h3');
+        title.textContent = 'Video Input';
+        title.style.cssText = `
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        `;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        `;
+        closeBtn.onclick = () => dropdown.remove();
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        dropdown.appendChild(header);
+
+        // Create device list
+        const deviceList = document.createElement('div');
+        deviceList.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        `;
+
+        // Add video devices
+        this.availableVideoDevices.forEach(device => {
+            const deviceBtn = document.createElement('button');
+            const isActive = this.videoMode === 'camera' && this.currentVideoDeviceId === device.deviceId;
+            
+            deviceBtn.style.cssText = `
+                background: ${isActive ? 'var(--accent-color)' : 'var(--hover-color)'};
+                border: 1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'};
+                color: ${isActive ? 'white' : 'var(--text-primary)'};
+                padding: 8px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: left;
+                transition: all 0.2s ease;
+                font-size: 12px;
+            `;
+            
+            let displayName = device.label || `Camera ${device.deviceId.substr(0, 5)}`;
+            if (displayName.includes('FaceTime') || displayName.includes('Built-in') || displayName.includes('USB')) {
+                displayName = '📹 ' + displayName;
+            }
+            
+            // Add active indicator
+            if (isActive) {
+                displayName = '● ' + displayName;
+            }
+            
+            deviceBtn.textContent = displayName;
+            deviceBtn.onclick = async () => {
+                // Use existing video input system
+                await this.startVideoInput(device.deviceId);
+                dropdown.remove();
+            };
+            
+            deviceBtn.onmouseover = () => {
+                if (!isActive) {
+                    deviceBtn.style.background = '#404040';
+                }
+            };
+            deviceBtn.onmouseout = () => {
+                if (!isActive) {
+                    deviceBtn.style.background = 'var(--hover-color)';
+                }
+            };
+            
+            deviceList.appendChild(deviceBtn);
+        });
+
+        // Add help option
+        const helpBtn = document.createElement('button');
+        helpBtn.style.cssText = `
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            margin-top: 8px;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        `;
+        helpBtn.textContent = '❓ Video input help...';
+        helpBtn.onclick = () => {
+            alert('Video Input Help:\n\n' +
+                  '• Select a camera or video device from the list\n' +
+                  '• Built-in cameras will show as "📹 Built-in Camera"\n' +
+                  '• External USB cameras will show as "📹 USB Camera"\n' +
+                  '• The video feed will appear in the visualization\n' +
+                  '• Click the V button again to stop video input');
+            dropdown.remove();
+        };
+        
+        deviceList.appendChild(helpBtn);
+        dropdown.appendChild(deviceList);
+
+        // Add to page
+        document.body.appendChild(dropdown);
+
+        // Close dropdown when clicking outside
+        const closeOnOutsideClick = (e) => {
+            if (!dropdown.contains(e.target) && e.target !== button) {
+                dropdown.remove();
+                document.removeEventListener('click', closeOnOutsideClick);
+            }
+        };
+        
+        // Add click listener after a short delay to prevent immediate closing
+        setTimeout(() => {
+            document.addEventListener('click', closeOnOutsideClick);
+        }, 100);
+
+        console.log('Custom video input dropdown created');
+    }
+
+
+    updateFooterLiveAudioButton() {
+        const footerBtn = document.getElementById('footerLiveAudioBtn');
+        if (!footerBtn) return;
+
+        // Check if live input is active - audio uses 'microphone' mode
+        const isActive = this.inputMode === 'microphone' && this.currentDeviceId;
+        
+        console.log('A button state check:', {
+            inputMode: this.inputMode,
+            currentDeviceId: this.currentDeviceId,
+            isActive: isActive
+        });
+        
+        if (isActive) {
+            footerBtn.classList.add('active');
+        } else {
+            footerBtn.classList.remove('active');
+        }
+    }
+
+    updateFooterLiveVideoButton() {
+        const footerBtn = document.getElementById('footerLiveVideoBtn');
+        if (!footerBtn) return;
+
+        // Check if video is active using existing video system
+        const isActive = this.videoMode === 'camera' || this.videoMode === 'file';
+        
+        console.log('V button state check:', {
+            videoMode: this.videoMode,
+            isActive: isActive
+        });
+        
+        if (isActive) {
+            footerBtn.classList.add('active');
+        } else {
+            footerBtn.classList.remove('active');
+        }
+    }
+
+
     async toggleInputMode() {
         const deviceSelect = document.getElementById('audioDeviceSelect');
 
@@ -4981,7 +5368,9 @@ class GitItUpVisualizer {
         } else {
             this.stopLiveInput();
             this.inputMode = 'playlist';
+            this.currentDeviceId = null;
             this.resumePlaylist();
+            // Footer button state will be updated by stopLiveInput()
         }
     }
 
@@ -7973,11 +8362,15 @@ class GitItUpVisualizer {
 
             // Audio input button removed - using select dropdown
             this.inputMode = 'microphone';
+            this.currentDeviceId = deviceId;
 
             document.getElementById('trackTitle').textContent = 'Live Audio Input';
             document.getElementById('playBtn').disabled = true;
             document.getElementById('nextBtn').disabled = true;
             document.getElementById('prevBtn').disabled = true;
+
+            // Update footer Live Audio button state
+            this.updateFooterLiveAudioButton();
 
         } catch (e) {
             console.error('Failed to start live input:', e);
@@ -7998,6 +8391,9 @@ class GitItUpVisualizer {
             }
             this.streamSource = null;
         }
+
+        // Update footer Live Audio button state
+        this.updateFooterLiveAudioButton();
     }
 
     resumePlaylist() {
@@ -10676,6 +11072,9 @@ https://rogueamoeba.com/loopback/
             if (typeof updateDrawerVideoToggle === 'function') {
                 updateDrawerVideoToggle();
             }
+            
+            // Update footer video button
+            this.updateFooterLiveVideoButton();
         };
 
         const videoDeviceSelect = document.getElementById('videoDeviceSelect');
@@ -10757,6 +11156,41 @@ https://rogueamoeba.com/loopback/
                     await this.startLiveInput(deviceId);
                 }
             });
+        }
+
+        // Footer Live Audio button
+        const footerLiveAudioBtn = document.getElementById('footerLiveAudioBtn');
+        if (footerLiveAudioBtn) {
+            console.log('Footer Live Audio button found, adding event listener');
+            footerLiveAudioBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Live Audio button clicked');
+                this.showAudioInputMenu();
+            });
+        } else {
+            console.error('Footer Live Audio button not found');
+        }
+
+        // Footer Live Video button
+        const footerLiveVideoBtn = document.getElementById('footerLiveVideoBtn');
+        if (footerLiveVideoBtn) {
+            console.log('Footer Live Video button found, adding event listener');
+            footerLiveVideoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Live Video button clicked');
+                
+                // If video is already active, toggle it off
+                if (this.videoMode === 'camera' || this.videoMode === 'file') {
+                    this.stopVideoInput();
+                } else {
+                    // Otherwise show device selection menu
+                    this.showVideoInputMenu();
+                }
+            });
+        } else {
+            console.error('Footer Live Video button not found');
         }
 
 
@@ -12138,6 +12572,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new GitItUpVisualizer();
 
+// Initialize footer Live Audio button state
+if (window.visualizer && window.visualizer.updateFooterLiveAudioButton) {
+    window.visualizer.updateFooterLiveAudioButton();
+}
+
 // Initialize Theme System
 initializeThemeSystem();
 
@@ -12153,6 +12592,11 @@ initializeDrawerControls();
 // Initialize Video Devices
 if (window.visualizer && window.visualizer.initializeVideoInput) {
     window.visualizer.initializeVideoInput();
+}
+
+// Initialize Video Button State
+if (window.visualizer && window.visualizer.updateFooterLiveVideoButton) {
+    window.visualizer.updateFooterLiveVideoButton();
 }
 
 // Load saved video source

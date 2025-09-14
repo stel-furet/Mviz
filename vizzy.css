@@ -2707,6 +2707,68 @@
             pointer-events: none;
         }
 
+/* Live Audio Button Styles */
+.live-audio-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+    margin-left: 15px; /* 15px gap from Previous Track button */
+}
+
+.live-audio-btn .audio-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.live-audio-btn:hover .audio-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Live Video Button Styles */
+.live-video-btn {
+    margin-right: 15px; /* 15px gap from Play button */
+}
+
+.live-video-btn .video-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+    transition: color 0.3s ease;
+}
+
+.live-video-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-video-btn.active .video-icon {
+    color: var(--primary-bg); /* Use primary background color for contrast */
+}
+
+.live-video-btn:hover .video-icon {
+    color: rgba(255, 255, 255, 0.9); /* Slightly more opaque on hover */
+}
+
+.live-video-btn.active:hover .video-icon {
+    color: var(--primary-bg); /* Keep primary background color on hover when active */
+}
+
+/* Live Audio Button Active State - Must come after general control-btn rules */
+.live-audio-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-audio-btn.active .audio-icon {
+    color: var(--primary-bg);
+}
+
+.live-audio-btn.active:hover .audio-icon {
+    color: var(--primary-bg);
+}
+
         .control-btn:hover,
         .fullscreen-btn:hover,
         .loop-btn:hover,
