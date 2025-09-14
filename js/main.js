@@ -9267,18 +9267,7 @@ https://rogueamoeba.com/loopback/
                 this.audioMotion.draw();
                 // Don't cancel animation frame - let it continue for Infinite Zoom
                 // The animation loop will handle skipping main visualization when disabled
-                // Clear the canvas only if video is NOT active
-                if (this.audioMotion.ctx && this.audioMotion.canvas) { // Check if video is active
-                    const container = document.getElementById('visualizationContainer');
-                    const isVideoActive = container && container.classList.contains('video-active');
-
-                    if (! isVideoActive) { // Only clear canvas if no video is playing
-                        this.audioMotion.ctx.fillStyle = this.backgroundColor;
-                        this.audioMotion.ctx.fillRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
-                    } else { // If video is active, just clear the canvas to transparent
-                        this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
-                    }
-                }
+                // Let the spectrum analyzer handle all background drawing (including background images)
                 // Hide kaleidoscope viz canvas if active (but NOT video kaleidoscope)
                 if (this.kaleidoscopeVizCanvas) {
                     this.kaleidoscopeVizCanvas.style.display = 'none';

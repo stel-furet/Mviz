@@ -832,6 +832,12 @@ class SpectrumAnalyzer {
         }
 
         // Draw based on mode - radial takes precedence over channel layout
+        // Only draw main visualization elements if visualization is enabled
+        if (window.visualizer && !window.visualizer.visualizationEnabled) {
+            // Visualization is disabled - only background image and video should be visible
+            return;
+        }
+        
         // console.log('🎨 Drawing visualization elements:', {
         //     radial: this.radial,
         //     channelLayout: this.channelLayout,
