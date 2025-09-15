@@ -497,7 +497,7 @@
 
         .dropdown-content {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 4px);
             left: 0;
             right: 0;
             background: var(--secondary-bg);
@@ -1518,7 +1518,7 @@
             z-index: 1000;
             max-height: 300px;
             overflow-y: auto;
-            margin-top: 4px;
+            top: calc(100% + 4px);
         }
 
         .dropdown-content.show {
@@ -2581,7 +2581,7 @@
             transition: all 0.3s ease;
             font-size: 12px;
             width: auto !important; /* Match visualizer button width */
-            min-width: 60px !important; /* Match visualizer button min-width */
+            min-width: 80px !important; /* Increased min-width for better spacing */
             height: 36px !important; /* Match visualizer button height */
         }
 
@@ -2727,10 +2727,41 @@
             pointer-events: none;
         }
 
+/* Live Color Button Styles */
+.live-color-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+    margin-left: 15px; /* 15px gap from Previous Track button */
+}
+
+.live-color-btn .color-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.live-color-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-color-btn.active .color-icon {
+    color: var(--primary-bg);
+}
+
+.live-color-btn:hover .color-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.live-color-btn.active:hover .color-icon {
+    color: var(--primary-bg);
+}
+
 /* Live Background Button Styles */
 .live-background-btn {
     margin-right: 0px; /* No gap - buttons are adjacent */
-    margin-left: 15px; /* 15px gap from Previous Track button */
+    margin-left: 0px; /* No gap - adjacent to C button */
 }
 
 .live-background-btn .background-icon {
@@ -2782,6 +2813,7 @@
 /* Visualizer Button Styles */
 .visualizer-btn {
     margin-right: 1px; /* 1px gap to ON/OFF button */
+    height: 36px !important; /* Match other visualizer buttons */
 }
 .visualizer-btn .visualizer-icon {
     font-size: 11px;
@@ -2804,15 +2836,107 @@
     color: var(--primary-bg);
 }
 
-/* Visualizer Controls Container */
-.visualizer-controls {
+        /* Visualizer Controls Container */
+        .visualizer-controls {
+            display: flex;
+            flex-direction: row; /* Single row */
+            gap: 0px; /* No gap - handled by individual button margins */
+            margin-left: 10px;
+            margin-right: 10px;
+            align-items: center; /* Center align in header */
+        }
+
+        /* Header Controls Container */
+.header-controls-container {
     display: flex;
-    flex-direction: row; /* Single row */
-    gap: 0px; /* No gap - handled by individual button margins */
-    margin-left: 10px;
-    margin-right: 10px;
-    align-items: flex-start; /* Top-align the container */
+    flex-direction: row;
+    align-items: center;
+    gap: 15px; /* 15px gap between input-controls and visualizer-controls */
 }
+
+/* Advanced Visualization Controls */
+.advanced-viz {
+    display: flex;
+    flex-direction: row;
+    gap: 0px; /* No gap - handled by individual button margins */
+    margin-left: 14px; /* 14px left margin */
+    align-items: center;
+}
+
+/* Add 14px right margin to visualizer-controls */
+.header .visualizer-controls {
+    margin-left: 20px;
+    margin-right: 14px; /* 14px right margin */
+    align-items: center;
+}
+
+/* Kaleidoscope Button in Header */
+.header .kaleidoscope-btn {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    white-space: nowrap;
+    width: auto !important;
+    min-width: 80px !important;
+}
+
+.header .kaleidoscope-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.header .kaleidoscope-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Kaleidoscope Panel in Header */
+.header .kaleidoscope-panel {
+    position: fixed;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    z-index: 10000;
+    min-width: 250px;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+        /* Input Controls in Header */
+        .input-controls {
+            display: flex;
+            flex-direction: row;
+            gap: 0px; /* No gap - handled by individual button margins */
+            align-items: center;
+        }
+
+        /* Header-specific visualizer controls styling */
+        .header .visualizer-controls {
+            margin-left: 20px;
+            margin-right: 20px;
+            align-items: center;
+        }
+
+        /* Header-specific button overrides to prevent footer CSS interference */
+        .header .visualizer-toggle-btn {
+            width: 36px !important; /* Force 36px wide for ON/OFF */
+            min-width: 36px !important;
+            max-width: 36px !important;
+            padding: 0 !important;
+        }
+
+        .header .morph-btn {
+            padding: 8px 16px !important; /* Add proper spacing for Start Morph */
+            white-space: nowrap !important; /* Prevent text wrapping */
+        }
 
 /* Visualizer Toggle Button - Match B A V styling */
 .visualizer-toggle-btn {
@@ -2859,7 +2983,8 @@
 
 /* Playlist Button Styles */
 .playlist-btn {
-    margin-right: 8px; /* 8px gap from Previous Track button */
+    margin-left: 14px; /* 14px gap to the left of playlist button */
+    margin-right: 0px; /* No gap - matches gap between play and prev track */
 }
 
 .playlist-btn .playlist-icon {
@@ -2981,11 +3106,10 @@
         }
 
         /* Icon buttons should be 36px wide */
+        .footer .playback-controls .live-color-btn,
         .footer .playback-controls .live-background-btn,
         .footer .playback-controls .live-audio-btn,
         .footer .playback-controls .live-video-btn,
-        .footer .playback-controls .visualizer-toggle-btn,
-        .footer .playback-controls .visualizer-random-btn,
         .footer .playback-controls #prevBtn,
         .footer .playback-controls #playBtn,
         .footer .playback-controls #nextBtn,
@@ -3713,7 +3837,7 @@
 
         .playlist-dropdown .dropdown-content {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 4px);
             left: 0;
             z-index: 1000;
             background: var(--secondary-bg, #1a1a1a);
@@ -4451,7 +4575,7 @@
             position: absolute !important;
             max-height: 400px !important;
             overflow-y: auto !important;
-            top: 100% !important;
+            top: calc(100% + 4px) !important;
             left: 0 !important;
         }
 

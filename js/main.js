@@ -4252,7 +4252,7 @@ class GitItUpVisualizer {
         this.volume = 0.7;
         this.previousVolume = 0.7;
         this.isMuted = false;
-        this.currentMode = 0;
+        this.currentMode = 4;
         this.loopMode = 'off';
         this.currentColorScheme = 'default';
         this.backgroundColor = '#000000';
@@ -4879,7 +4879,7 @@ class GitItUpVisualizer {
         try {
             console.log('Creating SpectrumAnalyzer instance...');
 
-            this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[0]);
+            this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
 
             console.log('SpectrumAnalyzer initialized successfully');
 
@@ -4939,6 +4939,13 @@ class GitItUpVisualizer {
     }
 
     showAudioInputMenu() {
+        // Check if dropdown is already open, if so close it
+        const existingDropdown = document.getElementById('footerAudioInputDropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+            return;
+        }
+        
         // Create a custom dropdown menu for audio input selection
         this.createAudioInputDropdown();
     }
@@ -4965,7 +4972,7 @@ class GitItUpVisualizer {
         dropdown.className = 'footer-audio-dropdown';
         dropdown.style.cssText = `
             position: fixed;
-            top: ${buttonRect.top - 4}px;
+            top: ${buttonRect.bottom + 4}px;
             left: ${buttonRect.left}px;
             background: var(--secondary-bg);
             border: 1px solid var(--border-color);
@@ -4973,7 +4980,6 @@ class GitItUpVisualizer {
             padding: 15px;
             z-index: 10000;
             min-width: 250px;
-            transform: translateY(-100%);
         `;
 
         // Create header
@@ -5100,6 +5106,13 @@ class GitItUpVisualizer {
     }
 
     showVideoInputMenu() {
+        // Check if dropdown is already open, if so close it
+        const existingDropdown = document.getElementById('footerVideoInputDropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+            return;
+        }
+        
         // Create a simple custom dropdown for video input selection
         this.createVideoInputDropdown();
     }
@@ -5125,7 +5138,7 @@ class GitItUpVisualizer {
         dropdown.id = 'footerVideoInputDropdown';
         dropdown.style.cssText = `
             position: fixed;
-            top: ${buttonRect.top - 4}px;
+            top: ${buttonRect.bottom + 4}px;
             left: ${buttonRect.left}px;
             background: var(--secondary-bg);
             border: 1px solid var(--border-color);
@@ -5133,7 +5146,6 @@ class GitItUpVisualizer {
             padding: 15px;
             z-index: 10000;
             min-width: 250px;
-            transform: translateY(-100%);
         `;
 
         // Create header
@@ -5420,7 +5432,137 @@ class GitItUpVisualizer {
         this.updateFooterLiveAudioButton();
     }
 
+    showColorPicker() {
+        // Check if panel is already open, if so close it
+        const existingPanel = document.getElementById('colorPickerPanel');
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+        
+        // Create a custom color picker panel positioned relative to C button
+        this.createColorPickerPanel();
+    }
+
+    createColorPickerPanel() {
+        // Remove existing panel if any
+        const existingPanel = document.getElementById('colorPickerPanel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+
+        // Get C button position
+        const button = document.getElementById('footerLiveColorBtn');
+        if (!button) {
+            console.error('Footer Live Color button not found');
+            return;
+        }
+
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Create panel container
+        const panel = document.createElement('div');
+        panel.id = 'colorPickerPanel';
+        panel.className = 'color-picker-panel';
+        panel.style.cssText = `
+            position: fixed;
+            top: ${buttonRect.bottom + 4}px;
+            left: ${buttonRect.left}px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 10000;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        `;
+
+        // Create header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+        
+        const title = document.createElement('h3');
+        title.textContent = 'Background Color';
+        title.style.cssText = `
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        `;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        closeBtn.addEventListener('click', () => {
+            panel.remove();
+        });
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        
+        // Create color picker input
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = 'panelColorPicker';
+        colorInput.value = this.backgroundColor || '#000000';
+        colorInput.style.cssText = `
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        
+        // Add change event listener
+        colorInput.addEventListener('change', (e) => {
+            this.setBackgroundColor(e.target.value);
+        });
+        
+        panel.appendChild(header);
+        panel.appendChild(colorInput);
+        document.body.appendChild(panel);
+        
+        // Close panel when clicking outside
+        const closeOnOutsideClick = (e) => {
+            if (!panel.contains(e.target) && e.target !== button) {
+                panel.remove();
+                document.removeEventListener('click', closeOnOutsideClick);
+            }
+        };
+        
+        // Delay the outside click listener to prevent immediate closure
+        setTimeout(() => {
+            document.addEventListener('click', closeOnOutsideClick);
+        }, 100);
+    }
+
     showBackgroundImageSelection() {
+        // Check if panel is already open, if so close it
+        const existingPanel = document.getElementById('backgroundImagePanel');
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+        
         // Show the background image control panel
         this.createBackgroundImagePanel();
     }
@@ -5441,11 +5583,10 @@ class GitItUpVisualizer {
         const button = document.getElementById('footerLiveBackgroundBtn');
         const buttonRect = button.getBoundingClientRect();
         
-        // Position panel above button, left-aligned
+        // Position panel below button, left-aligned
         panel.style.position = 'fixed';
-        panel.style.top = `${buttonRect.top - 4}px`; // 4px gap above button
+        panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
         panel.style.left = `${buttonRect.left}px`;
-        panel.style.transform = 'translateY(-100%)'; // Position bottom of panel at top of button
         panel.style.zIndex = '10000';
         panel.style.background = 'var(--secondary-bg)';
         panel.style.border = '1px solid var(--border-color)';
@@ -5727,6 +5868,13 @@ class GitItUpVisualizer {
     }
 
     showVisualizerPanel() {
+        // Check if panel is already open, if so close it
+        const existingPanel = document.getElementById('visualizerPanel');
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+        
         // Create visualizer panel
         this.createVisualizerPanel();
     }
@@ -5905,7 +6053,7 @@ class GitItUpVisualizer {
         panel.className = 'visualizer-panel';
         panel.style.cssText = `
             position: fixed;
-            top: ${buttonRect.top - 4}px;
+            top: ${buttonRect.bottom + 4}px;
             left: ${buttonRect.left}px;
             background: var(--secondary-bg);
             border: 1px solid var(--border-color);
@@ -5913,7 +6061,6 @@ class GitItUpVisualizer {
             padding: 15px;
             z-index: 10000;
             min-width: 250px;
-            transform: translateY(-100%);
         `;
 
         // Create header
@@ -9756,6 +9903,36 @@ https://rogueamoeba.com/loopback/
             }
         }
     }
+
+    toggleHeaderKaleidoscope() {
+        const panel = document.getElementById('headerKaleidoscopePanel');
+        const btn = document.getElementById('headerKaleidoscopeBtn');
+        const btnText = btn.querySelector('.kaleidoscope-btn-text');
+
+        // Toggle panel visibility
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            if (isVisible) {
+                panel.style.display = 'none';
+            } else {
+                // Position panel below button like video panel
+                const buttonRect = btn.getBoundingClientRect();
+                panel.style.position = 'fixed';
+                panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.display = 'block';
+            }
+
+            // Update button based on kaleidoscope state (not panel state)
+            if (this.kaleidoscopeEnabled) {
+                btnText.textContent = 'Kaleidoscope On';
+                btn.classList.add('active');
+            } else {
+                btnText.textContent = 'Kaleidoscope Off';
+                btn.classList.remove('active');
+            }
+        }
+    }
     
     toggleInfiniteZoom() {
         const panel = document.getElementById('infiniteZoomPanel');
@@ -11345,6 +11522,14 @@ https://rogueamoeba.com/loopback/
             });
         }
         
+        // Header Kaleidoscope button
+        const headerKaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
+        if (headerKaleidoscopeBtn) {
+            headerKaleidoscopeBtn.addEventListener('click', () => {
+                this.toggleHeaderKaleidoscope();
+            });
+        }
+        
         // Infinite Zoom toggle button
         const infiniteZoomBtn = document.getElementById('infiniteZoomBtn');
         if (infiniteZoomBtn) {
@@ -11660,6 +11845,13 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        const headerKaleidoscopeCloseBtn = document.getElementById('headerKaleidoscopeCloseBtn');
+        if (headerKaleidoscopeCloseBtn) {
+            headerKaleidoscopeCloseBtn.addEventListener('click', () => {
+                document.getElementById('headerKaleidoscopePanel').style.display = 'none';
+            });
+        }
+
         // Beat rotation toggle
         const beatRotationBtn = document.getElementById('kaleidoscopeBeatRotationBtn');
         if (beatRotationBtn) {
@@ -11699,12 +11891,31 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header Kaleidoscope sliders
+        const headerKaleidoscopeSegments = document.getElementById('headerKaleidoscopeSegments');
+        if (headerKaleidoscopeSegments) {
+            headerKaleidoscopeSegments.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.setKaleidoscopeSegments(value);
+                document.getElementById('headerKaleidoscopeSegmentsValue').textContent = value;
+            });
+        }
+
         const kaleidoscopeSpeed = document.getElementById('kaleidoscopeSpeed');
         if (kaleidoscopeSpeed) {
             kaleidoscopeSpeed.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 this.setKaleidoscopeSpeed(value);
                 document.getElementById('kaleidoscopeSpeedValue').textContent = value;
+            });
+        }
+
+        const headerKaleidoscopeSpeed = document.getElementById('headerKaleidoscopeSpeed');
+        if (headerKaleidoscopeSpeed) {
+            headerKaleidoscopeSpeed.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                this.setKaleidoscopeSpeed(value);
+                document.getElementById('headerKaleidoscopeSpeedValue').textContent = value;
             });
         }
 
@@ -11717,12 +11928,30 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        const headerKaleidoscopeScale = document.getElementById('headerKaleidoscopeScale');
+        if (headerKaleidoscopeScale) {
+            headerKaleidoscopeScale.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.setKaleidoscopeScale(value);
+                document.getElementById('headerKaleidoscopeScaleValue').textContent = `${value}%`;
+            });
+        }
+
         const kaleidoscopeCenterX = document.getElementById('kaleidoscopeCenterX');
         if (kaleidoscopeCenterX) {
             kaleidoscopeCenterX.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 this.setKaleidoscopeCenterX(value);
                 document.getElementById('kaleidoscopeCenterXValue').textContent = `${value}%`;
+            });
+        }
+
+        const headerKaleidoscopeCenterX = document.getElementById('headerKaleidoscopeCenterX');
+        if (headerKaleidoscopeCenterX) {
+            headerKaleidoscopeCenterX.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.setKaleidoscopeCenterX(value);
+                document.getElementById('headerKaleidoscopeCenterXValue').textContent = `${value}%`;
             });
         }
 
@@ -11792,6 +12021,18 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        const headerKaleidoscopeRings = document.getElementById('headerKaleidoscopeRings');
+        if (headerKaleidoscopeRings) {
+            headerKaleidoscopeRings.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.kaleidoscopeRings = value;
+                document.getElementById('headerKaleidoscopeRingsValue').textContent = value;
+                if (this.kaleidoscopeEnabled) {
+                    this.applyKaleidoscopeEffect();
+                }
+            });
+        }
+
         // Ring spacing control
         const kaleidoscopeRingSpacing = document.getElementById('kaleidoscopeRingSpacing');
         if (kaleidoscopeRingSpacing) {
@@ -11799,6 +12040,18 @@ https://rogueamoeba.com/loopback/
                 const value = parseInt(e.target.value);
                 this.kaleidoscopeRingSpacing = value / 100;
                 document.getElementById('kaleidoscopeRingSpacingValue').textContent = `${value}%`;
+                if (this.kaleidoscopeEnabled) {
+                    this.applyKaleidoscopeEffect();
+                }
+            });
+        }
+
+        const headerKaleidoscopeRingSpacing = document.getElementById('headerKaleidoscopeRingSpacing');
+        if (headerKaleidoscopeRingSpacing) {
+            headerKaleidoscopeRingSpacing.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.kaleidoscopeRingSpacing = value / 100;
+                document.getElementById('headerKaleidoscopeRingSpacingValue').textContent = `${value}%`;
                 if (this.kaleidoscopeEnabled) {
                     this.applyKaleidoscopeEffect();
                 }
@@ -11827,6 +12080,15 @@ https://rogueamoeba.com/loopback/
                 const value = parseInt(e.target.value);
                 this.setKaleidoscopeCenterY(value);
                 document.getElementById('kaleidoscopeCenterYValue').textContent = `${value}%`;
+            });
+        }
+
+        const headerKaleidoscopeCenterY = document.getElementById('headerKaleidoscopeCenterY');
+        if (headerKaleidoscopeCenterY) {
+            headerKaleidoscopeCenterY.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.setKaleidoscopeCenterY(value);
+                document.getElementById('headerKaleidoscopeCenterYValue').textContent = `${value}%`;
             });
         }
 
@@ -11960,6 +12222,124 @@ https://rogueamoeba.com/loopback/
                 // Apply kaleidoscope effect if enabled
                 if (this.kaleidoscopeEnabled) {
                     this.applyKaleidoscopeEffect();
+                }
+            });
+        }
+
+        // Header Kaleidoscope toggle buttons
+        const headerKaleidoscopeVideoBtn = document.getElementById('headerKaleidoscopeVideoBtn');
+        if (headerKaleidoscopeVideoBtn) {
+            headerKaleidoscopeVideoBtn.textContent = `Apply to Video: ${
+                this.kaleidoscopeApplyToVideo ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeVideoBtn.classList.toggle('active', this.kaleidoscopeApplyToVideo);
+            
+            headerKaleidoscopeVideoBtn.addEventListener('click', () => {
+                this.kaleidoscopeApplyToVideo = !this.kaleidoscopeApplyToVideo;
+                headerKaleidoscopeVideoBtn.textContent = `Apply to Video: ${
+                    this.kaleidoscopeApplyToVideo ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeVideoBtn.classList.toggle('active', this.kaleidoscopeApplyToVideo);
+
+                // Enable kaleidoscope if turning on
+                if (this.kaleidoscopeApplyToVideo) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToInfiniteZoom) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
+
+                // Update main button state
+                const btn = document.getElementById('kaleidoscopeBtn');
+                const btnText = btn.querySelector('.kaleidoscope-btn-text');
+                if (this.kaleidoscopeEnabled) {
+                    btnText.textContent = 'Kaleidoscope On';
+                    btn.classList.add('active');
+                } else {
+                    btnText.textContent = 'Kaleidoscope Off';
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        const headerKaleidoscopeVizBtn = document.getElementById('headerKaleidoscopeVizBtn');
+        if (headerKaleidoscopeVizBtn) {
+            headerKaleidoscopeVizBtn.textContent = `Apply to Viz: ${
+                this.kaleidoscopeApplyToViz ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeVizBtn.classList.toggle('active', this.kaleidoscopeApplyToViz);
+            
+            headerKaleidoscopeVizBtn.addEventListener('click', () => {
+                this.kaleidoscopeApplyToViz = !this.kaleidoscopeApplyToViz;
+                headerKaleidoscopeVizBtn.textContent = `Apply to Viz: ${
+                    this.kaleidoscopeApplyToViz ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeVizBtn.classList.toggle('active', this.kaleidoscopeApplyToViz);
+
+                // Enable kaleidoscope if turning on, disable if both are off
+                if (this.kaleidoscopeApplyToViz) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
+
+                // Update main button state
+                const btn = document.getElementById('kaleidoscopeBtn');
+                const btnText = btn.querySelector('.kaleidoscope-btn-text');
+                if (this.kaleidoscopeEnabled) {
+                    btnText.textContent = 'Kaleidoscope On';
+                    btn.classList.add('active');
+                } else {
+                    btnText.textContent = 'Kaleidoscope Off';
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        const headerKaleidoscopeInfiniteZoomBtn = document.getElementById('headerKaleidoscopeInfiniteZoomBtn');
+        if (headerKaleidoscopeInfiniteZoomBtn) {
+            headerKaleidoscopeInfiniteZoomBtn.textContent = `Infinite Zoom: ${
+                this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+            
+            headerKaleidoscopeInfiniteZoomBtn.addEventListener('click', () => {
+                this.kaleidoscopeApplyToInfiniteZoom = !this.kaleidoscopeApplyToInfiniteZoom;
+                headerKaleidoscopeInfiniteZoomBtn.textContent = `Infinite Zoom: ${
+                    this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+
+                // Enable kaleidoscope if turning on IZ, disable if all are off
+                if (this.kaleidoscopeApplyToInfiniteZoom) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
+
+                // Update main button state
+                const btn = document.getElementById('kaleidoscopeBtn');
+                const btnText = btn.querySelector('.kaleidoscope-btn-text');
+                if (this.kaleidoscopeEnabled) {
+                    btnText.textContent = 'Kaleidoscope On';
+                    btn.classList.add('active');
+                } else {
+                    btnText.textContent = 'Kaleidoscope Off';
+                    btn.classList.remove('active');
                 }
             });
         }
@@ -12222,6 +12602,22 @@ https://rogueamoeba.com/loopback/
             });
         } else {
             console.error('Footer Live Video button not found');
+        }
+
+        // Footer Live Color button
+        const footerLiveColorBtn = document.getElementById('footerLiveColorBtn');
+        if (footerLiveColorBtn) {
+            console.log('Footer Live Color button found, adding event listener');
+            footerLiveColorBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Live Color button clicked');
+                
+                // Show color picker
+                this.showColorPicker();
+            });
+        } else {
+            console.error('Footer Live Color button not found');
         }
 
         // Footer Live Background button

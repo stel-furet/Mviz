@@ -51,6 +51,140 @@
             <h1>Vizzy</h1>
             </div>
 
+        <!-- Control Groups Container -->
+        <div class="header-controls-container">
+            <!-- Input Controls -->
+            <div class="input-controls" id="input-controls">
+                <button class="control-btn live-color-btn" id="footerLiveColorBtn" title="Background Color">
+                    <span class="color-icon">C</span>
+                </button>
+                <button class="control-btn live-background-btn" id="footerLiveBackgroundBtn" title="Background Image">
+                    <span class="background-icon">B</span>
+                </button>
+                <button class="control-btn live-video-btn" id="footerLiveVideoBtn" title="Live Video Input">
+                    <span class="video-icon">V</span>
+                </button>
+                <button class="control-btn live-audio-btn" id="footerLiveAudioBtn" title="Live Audio Input">
+                    <span class="audio-icon">A</span>
+                </button>
+            </div>
+
+            <!-- Visualizer Controls -->
+            <div class="visualizer-controls">
+            <button class="control-btn visualizer-btn" id="footerVisualizerBtn" title="Visualizer">
+                <span class="visualizer-icon">Visualizer</span>
+            </button>
+            <button class="control-btn visualizer-toggle-btn" id="footerVisualizerToggleBtn" title="Toggle Visualization">
+                <span class="toggle-text">ON</span>
+            </button>
+            <button class="control-btn visualizer-random-btn" id="footerVisualizerRandomBtn" title="Random Mode">
+                <span class="random-text">RANDOM</span>
+            </button>
+            <button class="control-btn morph-btn" id="footerMorphBtn" title="Morph between visualizations">
+                <span class="morph-btn-text">Start Morph</span>
+            </button>
+            <select class="morph-speed-select" id="footerMorphSpeedSelect">
+                <option value="slow">Slow</option>
+                <option value="medium" selected>Medium</option>
+                <option value="fast">Fast</option>
+                <option value="ultra">Ultra</option>
+                <option value="energy">Energy</option>
+            </select>
+            <div class="energy-container" id="footerEnergyContainer" style="display: none;">
+                <div class="energy-label">Energy</div>
+                <div class="energy-bar">
+                    <div class="energy-fill" id="footerEnergyFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Visualization Controls -->
+        <div class="advanced-viz" id="advanced-viz">
+            <button class="control-btn kaleidoscope-btn" id="headerKaleidoscopeBtn" title="Kaleidoscope">
+                <span class="kaleidoscope-btn-text">Kaleidoscope</span>
+            </button>
+            
+            <!-- Kaleidoscope settings panel -->
+            <div class="kaleidoscope-panel" id="headerKaleidoscopePanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Kaleidoscope Settings</span>
+                    <button class="panel-close-btn" id="headerKaleidoscopeCloseBtn">×</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="slider-container">
+                        <label>Segments</label>
+                        <input type="range" id="headerKaleidoscopeSegments" min="2" max="24" value="6" step="1">
+                        <span id="headerKaleidoscopeSegmentsValue">6</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Rings</label>
+                        <input type="range" id="headerKaleidoscopeRings" min="1" max="5" value="1" step="1">
+                        <span id="headerKaleidoscopeRingsValue">1</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Ring Spacing</label>
+                        <input type="range" id="headerKaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
+                        <span id="headerKaleidoscopeRingSpacingValue">20%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Rotation Speed</label>
+                        <input type="range" id="headerKaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
+                        <span id="headerKaleidoscopeSpeedValue">0</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Scale</label>
+                        <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10">
+                        <span id="headerKaleidoscopeScaleValue">100%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Center X</label>
+                        <input type="range" id="headerKaleidoscopeCenterX" min="0" max="100" value="50" step="1">
+                        <span id="headerKaleidoscopeCenterXValue">50%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Center Y</label>
+                        <input type="range" id="headerKaleidoscopeCenterY" min="0" max="100" value="50" step="1">
+                        <span id="headerKaleidoscopeCenterYValue">50%</span>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
+                        <button class="effect-toggle-btn" id="headerKaleidoscopeVizBtn">Apply to Viz: On</button>
+                        <button class="effect-toggle-btn" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="effect-toggle-btn" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
+                    </div>
+                    <div class="apply-container"></div>
+
+                    <div class="control-group">
+                        <div class="group-label">Beat Reaction</div>
+                        <div class="button-container">
+                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatBtn">Beat React: Off</button>
+                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatRotationBtn">Rotation: Off</button>
+                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatShapeBtn">Shape: Off</button>
+                        </div>
+                        <div class="slider-container" id="headerBeatSensitivityContainer" style="display: none;">
+                            <label>Sensitivity</label>
+                            <input type="range" id="headerKaleidoscopeBeatSensitivity" min="10" max="100" value="50" step="10">
+                            <span id="headerKaleidoscopeBeatSensitivityValue">50%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
+                        <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
         <!-- Old sections cleanup area -->
         <div style="display: none;">
             <!-- Hidden playlist data for backward compatibility -->
@@ -438,13 +572,13 @@
                         <div class="dropdown-label">Spectrum</div>
                         <div class="control-with-settings">
                             <div class="dropdown">
-                                <button class="dropdown-toggle" id="vizModeToggle">Spectrum</button>
+                                <button class="dropdown-toggle" id="vizModeToggle">Radial Spectrum</button>
                                 <div class="dropdown-content" id="vizModeDropdown">
-                                    <div class="dropdown-item active" data-mode="0">Spectrum</div>
+                                    <div class="dropdown-item" data-mode="0">Spectrum</div>
                                     <div class="dropdown-item" data-mode="1">Mirror Wave</div>
                                     <div class="dropdown-item" data-mode="2">Classic LED</div>
                                     <div class="dropdown-item" data-mode="3">Stereo</div>
-                                    <div class="dropdown-item" data-mode="4">Radial Spectrum</div>
+                                    <div class="dropdown-item active" data-mode="4">Radial Spectrum</div>
                                     <div class="dropdown-item" data-mode="5">Energy</div>
                                     <div class="dropdown-item" data-mode="6">Mirror</div>
                                 </div>
@@ -1308,13 +1442,13 @@
                 <div class="drawer-control-group">
                     <div class="drawer-label">Spectrum</div>
                     <div class="drawer-dropdown">
-                        <button class="drawer-dropdown-toggle" id="drawerVizModeToggle">Spectrum</button>
+                        <button class="drawer-dropdown-toggle" id="drawerVizModeToggle">Radial Spectrum</button>
                         <div class="drawer-dropdown-content" id="drawerVizModeDropdown">
-                            <div class="drawer-dropdown-item active" data-mode="0">Spectrum</div>
+                            <div class="drawer-dropdown-item" data-mode="0">Spectrum</div>
                             <div class="drawer-dropdown-item" data-mode="1">Mirror Wave</div>
                             <div class="drawer-dropdown-item" data-mode="2">Classic LED</div>
                             <div class="drawer-dropdown-item" data-mode="3">Stereo</div>
-                            <div class="drawer-dropdown-item" data-mode="4">Radial Spectrum</div>
+                            <div class="drawer-dropdown-item active" data-mode="4">Radial Spectrum</div>
                             <div class="drawer-dropdown-item" data-mode="5">Energy</div>
                             <div class="drawer-dropdown-item" data-mode="6">Mirror</div>
                         </div>
@@ -1632,42 +1766,6 @@
 <footer class="footer">
     <div class="controls">
                     <div class="playback-controls">
-                        <button class="control-btn live-background-btn" id="footerLiveBackgroundBtn" title="Background Image">
-                            <span class="background-icon">B</span>
-                        </button>
-                        <button class="control-btn live-audio-btn" id="footerLiveAudioBtn" title="Live Audio Input">
-                            <span class="audio-icon">A</span>
-                        </button>
-                        <button class="control-btn live-video-btn" id="footerLiveVideoBtn" title="Live Video Input">
-                            <span class="video-icon">V</span>
-                        </button>
-                <div class="visualizer-controls">
-                    <button class="control-btn visualizer-btn" id="footerVisualizerBtn" title="Visualizer">
-                        <span class="visualizer-icon">Visualizer</span>
-                    </button>
-                    <button class="control-btn visualizer-toggle-btn" id="footerVisualizerToggleBtn" title="Toggle Visualization">
-                        <span class="toggle-text">ON</span>
-                    </button>
-                    <button class="control-btn visualizer-random-btn" id="footerVisualizerRandomBtn" title="Random Mode">
-                        <span class="random-text">RNDM</span>
-                    </button>
-                    <button class="control-btn morph-btn" id="footerMorphBtn" title="Morph between visualizations">
-                        <span class="morph-btn-text">Start Morph</span>
-                    </button>
-                    <select class="morph-speed-select" id="footerMorphSpeedSelect">
-                        <option value="slow">Slow</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="fast">Fast</option>
-                        <option value="ultra">Ultra</option>
-                        <option value="energy">Energy</option>
-                    </select>
-                    <div class="energy-container" id="footerEnergyContainer" style="display: none;">
-                        <div class="energy-label">Energy</div>
-                        <div class="energy-bar">
-                            <div class="energy-fill" id="footerEnergyFill"></div>
-                        </div>
-                    </div>
-                </div>
                         <button class="control-btn playlist-btn" id="footerPlaylistBtn" title="Playlist">
                             <span class="playlist-icon">Playlist</span>
                         </button>
@@ -1701,14 +1799,7 @@
             </div>
         </div>
 
-        <div class="color-picker-wrapper">
-            <button class="transparent-btn" id="bgColorBtn" title="Set Background Color">
-                <svg class="eyedropper-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1 2v12c0 .55.45 1 1 1s1-.45 1-1V8h-2zm1 14l-2 2h4l-2-2z"/>
-                </svg>
-            </button>
-            <input type="color" class="color-picker-input" id="bgColorPicker" value="#000000">
-        </div>
+        <input type="color" class="color-picker-input" id="bgColorPicker" value="#000000" style="display: none;">
         <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
         
         <!-- Live Display, Record, and Autopilot buttons for quick access -->
