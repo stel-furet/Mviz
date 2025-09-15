@@ -103,6 +103,9 @@
             <button class="control-btn kaleidoscope-btn" id="headerKaleidoscopeBtn" title="Kaleidoscope">
                 <span class="kaleidoscope-btn-text">Kaleidoscope</span>
             </button>
+            <button class="control-btn infinite-zoom-btn" id="headerInfiniteZoomBtn" title="Infinite Zoom">
+                <span class="infinite-zoom-btn-text">Infinite Zoom</span>
+            </button>
             
             <!-- Kaleidoscope settings panel -->
             <div class="kaleidoscope-panel" id="headerKaleidoscopePanel" style="display: none;">
@@ -112,40 +115,52 @@
                 </div>
 
                 <div class="control-group">
+                    <div class="group-label">Segments</div>
                     <div class="slider-container">
-                        <label>Segments</label>
-                        <input type="range" id="headerKaleidoscopeSegments" min="2" max="24" value="6" step="1">
+                        <input type="range" id="headerKaleidoscopeSegments" min="2" max="24" value="6" step="1" class="slider">
                         <span id="headerKaleidoscopeSegmentsValue">6</span>
                     </div>
-                    <div class="slider-container">
-                        <label>Rings</label>
-                        <input type="range" id="headerKaleidoscopeRings" min="1" max="5" value="1" step="1">
-                        <span id="headerKaleidoscopeRingsValue">1</span>
+                    <div class="control-group">
+                        <div class="group-label">Rings</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeRings" min="1" max="5" value="1" step="1" class="slider">
+                            <span id="headerKaleidoscopeRingsValue">1</span>
+                        </div>
                     </div>
-                    <div class="slider-container">
-                        <label>Ring Spacing</label>
-                        <input type="range" id="headerKaleidoscopeRingSpacing" min="5" max="30" value="20" step="5">
-                        <span id="headerKaleidoscopeRingSpacingValue">20%</span>
+                    <div class="control-group">
+                        <div class="group-label">Ring Spacing</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeRingSpacing" min="5" max="30" value="20" step="5" class="slider">
+                            <span id="headerKaleidoscopeRingSpacingValue">20%</span>
+                        </div>
                     </div>
-                    <div class="slider-container">
-                        <label>Rotation Speed</label>
-                        <input type="range" id="headerKaleidoscopeSpeed" min="0" max="6" value="0" step="0.25">
-                        <span id="headerKaleidoscopeSpeedValue">0</span>
+                    <div class="control-group">
+                        <div class="group-label">Rotation Speed</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeSpeed" min="0" max="6" value="0" step="0.25" class="slider">
+                            <span id="headerKaleidoscopeSpeedValue">0</span>
+                        </div>
                     </div>
-                    <div class="slider-container">
-                        <label>Scale</label>
-                        <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10">
-                        <span id="headerKaleidoscopeScaleValue">100%</span>
+                    <div class="control-group">
+                        <div class="group-label">Scale</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10" class="slider">
+                            <span id="headerKaleidoscopeScaleValue">100%</span>
+                        </div>
                     </div>
-                    <div class="slider-container">
-                        <label>Center X</label>
-                        <input type="range" id="headerKaleidoscopeCenterX" min="0" max="100" value="50" step="1">
-                        <span id="headerKaleidoscopeCenterXValue">50%</span>
+                    <div class="control-group">
+                        <div class="group-label">Center X</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeCenterX" min="0" max="100" value="50" step="1" class="slider">
+                            <span id="headerKaleidoscopeCenterXValue">50%</span>
+                        </div>
                     </div>
-                    <div class="slider-container">
-                        <label>Center Y</label>
-                        <input type="range" id="headerKaleidoscopeCenterY" min="0" max="100" value="50" step="1">
-                        <span id="headerKaleidoscopeCenterYValue">50%</span>
+                    <div class="control-group">
+                        <div class="group-label">Center Y</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerKaleidoscopeCenterY" min="0" max="100" value="50" step="1" class="slider">
+                            <span id="headerKaleidoscopeCenterYValue">50%</span>
+                        </div>
                     </div>
                     <div class="button-container">
                         <button class="effect-toggle-btn" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
@@ -179,6 +194,101 @@
                         <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
                         <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
                         <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Infinite Zoom settings panel -->
+            <div class="infinite-zoom-panel" id="headerInfiniteZoomPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Infinite Zoom Settings</span>
+                    <button class="panel-close-btn" id="headerInfiniteZoomCloseBtn">×</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="button-container">
+                        <select id="headerInfiniteZoomShapeSelect" class="dropdown-select">
+                            <option value="circle">Circle</option>
+                            <option value="square">Square</option>
+                            <option value="rectangle">Rectangle</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="star">Star</option>
+                            <option value="mushroom">Mushroom</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Color Randomness</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider">
+                            <span id="headerInfiniteZoomColorRandomValue">0.5</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Min Size</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider">
+                            <span id="headerInfiniteZoomMinSizeValue">2</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Max Size</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider">
+                            <span id="headerInfiniteZoomMaxSizeValue">20</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Density</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider">
+                            <span id="headerInfiniteZoomDensityValue">50</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Speed</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
+                            <span id="headerInfiniteZoomSpeedValue">50</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Rotation</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider">
+                            <span id="headerInfiniteZoomRotationValue">0.0</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="group-label">Opacity</div>
+                        <div class="slider-container">
+                            <input type="range" id="headerInfiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
+                            <span id="headerInfiniteZoomOpacityValue">100%</span>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button id="headerInfiniteZoomBeatReactBtn" class="toggle-btn">Beat React: Off</button>
+                    </div>
+                    <div class="control-group" id="headerInfiniteZoomBeatReactControls" style="display: none;">
+                        <div class="group-label">Beat Reaction Controls</div>
+                        <div class="control-group">
+                            <div class="group-label">Sensitivity</div>
+                            <div class="slider-container">
+                                <input type="range" id="headerInfiniteZoomSensitivitySlider" min="0" max="100" step="1" value="14" class="slider">
+                                <span id="headerInfiniteZoomSensitivityValue">14%</span>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerInfiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerInfiniteZoomBeatRotationBtn" class="toggle-btn">Beat Rotation: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerInfiniteZoomBeatDensityBtn" class="toggle-btn">Beat Density: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerInfiniteZoomBeatShapeBtn" class="toggle-btn">Beat Shape: Off</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -801,8 +911,8 @@
                                     <h4>Beat Reaction Controls</h4>
                                     <div class="control-item">
                                         <label for="infiniteZoomSensitivitySlider">Sensitivity:</label>
-                                        <input type="range" id="infiniteZoomSensitivitySlider" min="0" max="100" step="1" value="100" class="slider">
-                                        <span id="infiniteZoomSensitivityValue">100%</span>
+                                        <input type="range" id="infiniteZoomSensitivitySlider" min="0" max="100" step="1" value="14" class="slider">
+                                        <span id="infiniteZoomSensitivityValue">14%</span>
                                     </div>
                                     <div class="button-container">
                                         <button id="infiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>

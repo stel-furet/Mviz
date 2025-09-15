@@ -1769,8 +1769,8 @@
         }
 
         .panel-header span {
-            font-size: 12px;
-            color: var(--text-primary);
+            font-size: 14px;
+            color: var(--text-secondary);
             font-weight: 600;
         }
 
@@ -1807,7 +1807,7 @@
 
         .group-label {
             font-size: 11px;
-            color: var(--accent-color);
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 8px;
@@ -2899,15 +2899,266 @@
 /* Kaleidoscope Panel in Header */
 .header .kaleidoscope-panel {
     position: fixed;
-    background: var(--secondary-bg);
-    border: 1px solid var(--border-color);
+    background: var(--secondary-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #898989);
     border-radius: 8px;
-    padding: 15px;
+    padding: 16px;
     z-index: 10000;
-    min-width: 250px;
+    min-width: 320px;
     max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transform-origin: top left;
+}
+
+.header .kaleidoscope-panel .panel-header {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+/* Group labels in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .group-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+/* Slider container styling in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.header .kaleidoscope-panel .slider-container span {
+    min-width: 40px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Slider styling in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .slider {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.header .kaleidoscope-panel .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.header .kaleidoscope-panel .slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+/* Button container styling in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .button-container {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+/* Control group styling in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .control-group {
+    margin: 12px 0;
+}
+
+/* Toggle buttons in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .effect-toggle-btn {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.header .kaleidoscope-panel .effect-toggle-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.header .kaleidoscope-panel .effect-toggle-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Infinite Zoom Button in Header */
+.header .infinite-zoom-btn {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    white-space: nowrap;
+    width: auto !important;
+    min-width: 80px !important;
+    margin-left: 8px; /* 8px gap from Kaleidoscope button */
+}
+
+.header .infinite-zoom-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.header .infinite-zoom-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Infinite Zoom Panel in Header */
+.header .infinite-zoom-panel {
+    position: fixed;
+    background: var(--secondary-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #898989);
+    border-radius: 8px;
+    padding: 16px;
+    z-index: 10000;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transform-origin: top left;
+}
+
+.header .infinite-zoom-panel .panel-header {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+/* Toggle buttons in header Infinite Zoom panel - Match background image controls exactly */
+.header .infinite-zoom-panel .toggle-btn {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.header .infinite-zoom-panel .toggle-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.header .infinite-zoom-panel .toggle-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Slider styling in header Infinite Zoom panel - Match background image controls */
+.header .infinite-zoom-panel .slider {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.header .infinite-zoom-panel .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.header .infinite-zoom-panel .slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+/* Dropdown select styling in header Infinite Zoom panel */
+.header .infinite-zoom-panel .dropdown-select {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+}
+
+/* Slider container styling in header Infinite Zoom panel - Match background image controls */
+.header .infinite-zoom-panel .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.header .infinite-zoom-panel .group-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.header .infinite-zoom-panel .slider-container span {
+    min-width: 40px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Button container styling in header Infinite Zoom panel - Match background image controls */
+.header .infinite-zoom-panel .button-container {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+/* Control group styling in header Infinite Zoom panel */
+.header .infinite-zoom-panel .control-group {
+    margin: 12px 0;
+}
+
+.header .infinite-zoom-panel .control-group h4 {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin: 8px 0 4px 0;
+}
+
+.header .infinite-zoom-panel .control-item {
+    margin: 6px 0;
 }
 
         /* Input Controls in Header */

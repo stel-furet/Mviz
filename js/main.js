@@ -9962,6 +9962,43 @@ https://rogueamoeba.com/loopback/
         }
     }
 
+    toggleHeaderInfiniteZoom() {
+        const panel = document.getElementById('headerInfiniteZoomPanel');
+        const btn = document.getElementById('headerInfiniteZoomBtn');
+        const btnText = btn.querySelector('.infinite-zoom-btn-text');
+        
+        // Toggle panel visibility
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            if (isVisible) {
+                panel.style.display = 'none';
+            } else {
+                // Position panel below button like video panel
+                const buttonRect = btn.getBoundingClientRect();
+                panel.style.position = 'fixed';
+                panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.display = 'block';
+            }
+            
+            if (!isVisible) {
+                // Panel is opening - toggle infinite zoom state
+                if (this.infiniteZoom) {
+                    if (this.infiniteZoom.isActive) {
+                        this.infiniteZoom.stop();
+                        btnText.textContent = 'Infinite Zoom Off';
+                        btn.classList.remove('active');
+                    } else {
+                        this.infiniteZoom.initialize();
+                        this.infiniteZoom.start();
+                        btnText.textContent = 'Infinite Zoom On';
+                        btn.classList.add('active');
+                    }
+                }
+            }
+        }
+    }
+
     startKaleidoscopeAnimation() {
         const animate = () => {
             if (!this.kaleidoscopeEnabled) 
@@ -11529,6 +11566,36 @@ https://rogueamoeba.com/loopback/
                 this.toggleHeaderKaleidoscope();
             });
         }
+
+        // Header Infinite Zoom button
+        const headerInfiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
+        if (headerInfiniteZoomBtn) {
+            headerInfiniteZoomBtn.addEventListener('click', () => {
+                this.toggleHeaderInfiniteZoom();
+            });
+        }
+
+        // Click outside to close panels
+        document.addEventListener('click', (e) => {
+            const kaleidoscopePanel = document.getElementById('headerKaleidoscopePanel');
+            const infiniteZoomPanel = document.getElementById('headerInfiniteZoomPanel');
+            const kaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
+            const infiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
+
+            // Close Kaleidoscope panel if clicking outside
+            if (kaleidoscopePanel && kaleidoscopePanel.style.display !== 'none') {
+                if (!kaleidoscopePanel.contains(e.target) && !kaleidoscopeBtn.contains(e.target)) {
+                    kaleidoscopePanel.style.display = 'none';
+                }
+            }
+
+            // Close Infinite Zoom panel if clicking outside
+            if (infiniteZoomPanel && infiniteZoomPanel.style.display !== 'none') {
+                if (!infiniteZoomPanel.contains(e.target) && !infiniteZoomBtn.contains(e.target)) {
+                    infiniteZoomPanel.style.display = 'none';
+                }
+            }
+        });
         
         // Infinite Zoom toggle button
         const infiniteZoomBtn = document.getElementById('infiniteZoomBtn');
@@ -11587,6 +11654,18 @@ https://rogueamoeba.com/loopback/
                 }
             });
         }
+
+        // Header Infinite Zoom shape selection
+        const headerInfiniteZoomShapeSelect = document.getElementById('headerInfiniteZoomShapeSelect');
+        if (headerInfiniteZoomShapeSelect) {
+            headerInfiniteZoomShapeSelect.addEventListener('change', (e) => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.shape = e.target.value;
+                    this.infiniteZoom.updateObjectShapes();
+                    console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
+                }
+            });
+        }
         
         // Infinite Zoom color randomness slider
         const infiniteZoomColorRandomSlider = document.getElementById('infiniteZoomColorRandomSlider');
@@ -11595,6 +11674,23 @@ https://rogueamoeba.com/loopback/
             infiniteZoomColorRandomSlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 infiniteZoomColorRandomValue.textContent = value.toFixed(1);
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.colorRandomness = value;
+                    // Update existing objects with new color randomness
+                    this.infiniteZoom.objects.forEach(obj => {
+                        obj.color = this.infiniteZoom.generateColor();
+                    });
+                }
+            });
+        }
+
+        // Header Infinite Zoom color randomness slider
+        const headerInfiniteZoomColorRandomSlider = document.getElementById('headerInfiniteZoomColorRandomSlider');
+        const headerInfiniteZoomColorRandomValue = document.getElementById('headerInfiniteZoomColorRandomValue');
+        if (headerInfiniteZoomColorRandomSlider && headerInfiniteZoomColorRandomValue) {
+            headerInfiniteZoomColorRandomSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                headerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
                 if (this.infiniteZoom) {
                     this.infiniteZoom.colorRandomness = value;
                     // Update existing objects with new color randomness
@@ -11830,6 +11926,176 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header Infinite Zoom controls - connect all remaining sliders and buttons
+        const headerInfiniteZoomMinSizeSlider = document.getElementById('headerInfiniteZoomMinSizeSlider');
+        const headerInfiniteZoomMinSizeValue = document.getElementById('headerInfiniteZoomMinSizeValue');
+        if (headerInfiniteZoomMinSizeSlider && headerInfiniteZoomMinSizeValue) {
+            headerInfiniteZoomMinSizeSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomMinSizeValue.textContent = value;
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.minSize = value;
+                    // Update existing objects with new size range
+                    this.infiniteZoom.objects.forEach(obj => {
+                        obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
+                    });
+                }
+            });
+        }
+
+        const headerInfiniteZoomMaxSizeSlider = document.getElementById('headerInfiniteZoomMaxSizeSlider');
+        const headerInfiniteZoomMaxSizeValue = document.getElementById('headerInfiniteZoomMaxSizeValue');
+        if (headerInfiniteZoomMaxSizeSlider && headerInfiniteZoomMaxSizeValue) {
+            headerInfiniteZoomMaxSizeSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomMaxSizeValue.textContent = value;
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.maxSize = value;
+                    // Update existing objects with new size range
+                    this.infiniteZoom.objects.forEach(obj => {
+                        obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
+                    });
+                }
+            });
+        }
+
+        const headerInfiniteZoomDensitySlider = document.getElementById('headerInfiniteZoomDensitySlider');
+        const headerInfiniteZoomDensityValue = document.getElementById('headerInfiniteZoomDensityValue');
+        if (headerInfiniteZoomDensitySlider && headerInfiniteZoomDensityValue) {
+            headerInfiniteZoomDensitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomDensityValue.textContent = value;
+                if (this.infiniteZoom) {
+                    // Calculate density based on screen area
+                    const screenArea = this.infiniteZoom.canvas ? 
+                        this.infiniteZoom.canvas.width * this.infiniteZoom.canvas.height : 800 * 600;
+                    const maxDensity = Math.floor(screenArea / 100); // 1 object per 100 pixels for max density
+                    this.infiniteZoom.density = Math.floor((value / 100) * maxDensity);
+                    // Regenerate objects if active
+                    if (this.infiniteZoom.isActive) {
+                        this.infiniteZoom.generateInitialObjects();
+                    }
+                }
+            });
+        }
+
+        const headerInfiniteZoomSpeedSlider = document.getElementById('headerInfiniteZoomSpeedSlider');
+        const headerInfiniteZoomSpeedValue = document.getElementById('headerInfiniteZoomSpeedValue');
+        if (headerInfiniteZoomSpeedSlider && headerInfiniteZoomSpeedValue) {
+            headerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomSpeedValue.textContent = value;
+                if (this.infiniteZoom) {
+                    // Convert from -100 to 100 range to -1 to 1 range
+                    this.infiniteZoom.speed = value / 100;
+                }
+            });
+        }
+
+        const headerInfiniteZoomRotationSlider = document.getElementById('headerInfiniteZoomRotationSlider');
+        const headerInfiniteZoomRotationValue = document.getElementById('headerInfiniteZoomRotationValue');
+        if (headerInfiniteZoomRotationSlider && headerInfiniteZoomRotationValue) {
+            headerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+                if (this.infiniteZoom) {
+                    // Convert from -10 to 10 range to -0.1 to 0.1 range
+                    this.infiniteZoom.rotation = value / 10;
+                }
+            });
+        }
+
+        const headerInfiniteZoomOpacitySlider = document.getElementById('headerInfiniteZoomOpacitySlider');
+        const headerInfiniteZoomOpacityValue = document.getElementById('headerInfiniteZoomOpacityValue');
+        if (headerInfiniteZoomOpacitySlider && headerInfiniteZoomOpacityValue) {
+            headerInfiniteZoomOpacitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomOpacityValue.textContent = value + '%';
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.opacity = value / 100;
+                    // Update existing objects with new opacity
+                    this.infiniteZoom.objects.forEach(obj => {
+                        obj.alpha = this.infiniteZoom.opacity;
+                    });
+                }
+            });
+        }
+
+        const headerInfiniteZoomBeatReactBtn = document.getElementById('headerInfiniteZoomBeatReactBtn');
+        if (headerInfiniteZoomBeatReactBtn) {
+            headerInfiniteZoomBeatReactBtn.addEventListener('click', () => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.beatReact = !this.infiniteZoom.beatReact;
+                    headerInfiniteZoomBeatReactBtn.textContent = `Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`;
+                    headerInfiniteZoomBeatReactBtn.classList.toggle('active', this.infiniteZoom.beatReact);
+                    
+                    // Show/hide beat reaction controls
+                    const controls = document.getElementById('headerInfiniteZoomBeatReactControls');
+                    if (controls) {
+                        controls.style.display = this.infiniteZoom.beatReact ? 'block' : 'none';
+                    }
+                }
+            });
+        }
+
+        const headerInfiniteZoomSensitivitySlider = document.getElementById('headerInfiniteZoomSensitivitySlider');
+        const headerInfiniteZoomSensitivityValue = document.getElementById('headerInfiniteZoomSensitivityValue');
+        if (headerInfiniteZoomSensitivitySlider && headerInfiniteZoomSensitivityValue) {
+            headerInfiniteZoomSensitivitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                headerInfiniteZoomSensitivityValue.textContent = value + '%';
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.sensitivity = value / 100;
+                    // Update beat detection threshold
+                    this.infiniteZoom.beatThreshold = 0.1 + (this.infiniteZoom.sensitivity * 0.4);
+                }
+            });
+        }
+
+        const headerInfiniteZoomBeatZoomBtn = document.getElementById('headerInfiniteZoomBeatZoomBtn');
+        if (headerInfiniteZoomBeatZoomBtn) {
+            headerInfiniteZoomBeatZoomBtn.addEventListener('click', () => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.beatZoom = !this.infiniteZoom.beatZoom;
+                    headerInfiniteZoomBeatZoomBtn.textContent = `Beat Zoom: ${this.infiniteZoom.beatZoom ? 'On' : 'Off'}`;
+                    headerInfiniteZoomBeatZoomBtn.classList.toggle('active', this.infiniteZoom.beatZoom);
+                }
+            });
+        }
+
+        const headerInfiniteZoomBeatRotationBtn = document.getElementById('headerInfiniteZoomBeatRotationBtn');
+        if (headerInfiniteZoomBeatRotationBtn) {
+            headerInfiniteZoomBeatRotationBtn.addEventListener('click', () => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.beatRotation = !this.infiniteZoom.beatRotation;
+                    headerInfiniteZoomBeatRotationBtn.textContent = `Beat Rotation: ${this.infiniteZoom.beatRotation ? 'On' : 'Off'}`;
+                    headerInfiniteZoomBeatRotationBtn.classList.toggle('active', this.infiniteZoom.beatRotation);
+                }
+            });
+        }
+
+        const headerInfiniteZoomBeatDensityBtn = document.getElementById('headerInfiniteZoomBeatDensityBtn');
+        if (headerInfiniteZoomBeatDensityBtn) {
+            headerInfiniteZoomBeatDensityBtn.addEventListener('click', () => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.beatDensity = !this.infiniteZoom.beatDensity;
+                    headerInfiniteZoomBeatDensityBtn.textContent = `Beat Density: ${this.infiniteZoom.beatDensity ? 'On' : 'Off'}`;
+                    headerInfiniteZoomBeatDensityBtn.classList.toggle('active', this.infiniteZoom.beatDensity);
+                }
+            });
+        }
+
+        const headerInfiniteZoomBeatShapeBtn = document.getElementById('headerInfiniteZoomBeatShapeBtn');
+        if (headerInfiniteZoomBeatShapeBtn) {
+            headerInfiniteZoomBeatShapeBtn.addEventListener('click', () => {
+                if (this.infiniteZoom) {
+                    this.infiniteZoom.beatShape = !this.infiniteZoom.beatShape;
+                    headerInfiniteZoomBeatShapeBtn.textContent = `Beat Shape: ${this.infiniteZoom.beatShape ? 'On' : 'Off'}`;
+                    headerInfiniteZoomBeatShapeBtn.classList.toggle('active', this.infiniteZoom.beatShape);
+                }
+            });
+        }
+
         const kaleidoscopeSettingsBtn = document.getElementById('kaleidoscopeSettingsBtn');
         if (kaleidoscopeSettingsBtn) {
             kaleidoscopeSettingsBtn.addEventListener('click', () => {
@@ -11849,6 +12115,13 @@ https://rogueamoeba.com/loopback/
         if (headerKaleidoscopeCloseBtn) {
             headerKaleidoscopeCloseBtn.addEventListener('click', () => {
                 document.getElementById('headerKaleidoscopePanel').style.display = 'none';
+            });
+        }
+
+        const headerInfiniteZoomCloseBtn = document.getElementById('headerInfiniteZoomCloseBtn');
+        if (headerInfiniteZoomCloseBtn) {
+            headerInfiniteZoomCloseBtn.addEventListener('click', () => {
+                document.getElementById('headerInfiniteZoomPanel').style.display = 'none';
             });
         }
 
