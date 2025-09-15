@@ -915,6 +915,7 @@ class PlaylistManager {
             const track = {
                 id: this.generateTrackId(file),
                 filename: file.name,
+                relativePath: file.webkitRelativePath || file.name, // Use webkitRelativePath if available, fallback to filename
                 size: file.size,
                 type: file.type,
                 lastModified: file.lastModified
@@ -1085,8 +1086,8 @@ class PlaylistManager {
             
             // Re-initialize UI handlers after populating
             this.visualizer.initializePlaylistUI();
-        } else if (hasPanelHeader) {
-            console.log('New dropdown content with panel header already exists');
+        } else if (hasPlaylistActions) {
+            console.log('New dropdown content with playlist actions already exists');
         } else {
             console.error('Dropdown element not found!');
         }
@@ -1561,6 +1562,36 @@ class PlaylistManager {
         if (!this.currentPlaylist) return null;
         return this.currentPlaylist.tracks.find(track => track.id === trackId);
     }
+
+    showToast(message, type = 'info') {
+        // Create toast notification
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#4CAF50' : type === 'warning' ? '#FF9800' : '#2196F3'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.4;
+        `;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
     
     async exportPlaylist() {
         try {
@@ -1572,6 +1603,7 @@ class PlaylistManager {
             // Create export data
             const exportData = {
                 name: this.currentPlaylist.name,
+                folderPath: this.currentPlaylist.folderPath,
                 exportDate: new Date().toISOString(),
                 trackCount: this.currentPlaylist.tracks.length,
                 tracks: this.currentPlaylist.tracks.map(track => ({
@@ -1581,9 +1613,11 @@ class PlaylistManager {
                     album: track.album,
                     duration: track.duration,
                     filename: track.filename,
+                    folderPath: this.currentPlaylist.folderPath,
+                    relativePath: track.relativePath || track.filename,
                     // Note: Don't export artwork or URL (too large/temporary)
                 })),
-                version: "1.0"
+                version: "2.0"
             };
             
             // Check if File System Access API is available
@@ -1676,28 +1710,69 @@ class PlaylistManager {
                 throw new Error('Invalid playlist file format');
             }
             
-            // Create imported playlist
-            this.currentPlaylist = {
+            // Create imported playlist with smart path handling
+            const importedPlaylist = {
                 name: importData.name,
-                folderPath: 'Imported',
+                folderPath: importData.folderPath || 'Imported',
                 lastScanned: Date.now(),
-                tracks: importData.tracks.map(track => ({
+                tracks: []
+            };
+
+            // Process each track to check if files still exist
+            const trackResults = await Promise.all(importData.tracks.map(async (track) => {
+                const processedTrack = {
                     ...track,
                     artwork: this.defaultArtwork,
-                    url: null, // No URL until files are rescanned
+                    url: null,
                     _needsRescan: true
-                }))
-            };
+                };
+
+                // If we have folder path and relative path, try to find the file
+                if (importData.folderPath && track.relativePath) {
+                    try {
+                        // Check if we can access the file using File System Access API
+                        const fullPath = `${importData.folderPath}/${track.relativePath}`;
+                        console.log(`Checking for file: ${fullPath}`);
+                        
+                        // For now, mark as needing rescan but store the path info
+                        processedTrack.originalFolderPath = importData.folderPath;
+                        processedTrack.relativePath = track.relativePath;
+                        processedTrack._needsRescan = true;
+                    } catch (error) {
+                        console.log(`File not found: ${track.relativePath}`);
+                        processedTrack._needsRescan = true;
+                    }
+                } else {
+                    // No path info available, definitely needs rescan
+                    processedTrack._needsRescan = true;
+                }
+
+                return processedTrack;
+            }));
+
+            importedPlaylist.tracks = trackResults;
+            this.currentPlaylist = importedPlaylist;
             
             // Save and display
             this.saveToCacheOnly();
             this.displayPlaylist();
             this.visualizer.updatePlaylistFromManager(this.currentPlaylist);
             
-            console.log(`✅ Playlist imported: ${importData.tracks.length} tracks`);
+            // Show import results
+            const tracksNeedingRescan = trackResults.filter(track => track._needsRescan).length;
+            const tracksWithPaths = trackResults.filter(track => track.originalFolderPath).length;
             
-            // Start background rescan to try to match files
-            this.startBackgroundRescan();
+            if (tracksNeedingRescan > 0) {
+                if (tracksWithPaths > 0) {
+                    this.showToast(`Playlist imported! ${tracksNeedingRescan} tracks need rescanning. Click "Add Folder" to rescan.`, 'warning');
+                } else {
+                    this.showToast(`Playlist imported! ${tracksNeedingRescan} tracks need rescanning. Use "Add Folder" to scan your music library.`, 'warning');
+                }
+            } else {
+                this.showToast(`Playlist imported successfully! ${importData.tracks.length} tracks ready to play.`, 'success');
+            }
+            
+            console.log(`✅ Playlist imported: ${importData.tracks.length} tracks (${tracksNeedingRescan} need rescanning)`);
             
         } catch (error) {
             console.error('Error importing playlist:', error);

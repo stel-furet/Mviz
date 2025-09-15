@@ -5695,18 +5695,48 @@ class GitItUpVisualizer {
         panel.style.minWidth = '300px';
         panel.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
         
-        // Panel content - duplicate sidebar playlist functionality
+        // Panel content - separate from sidebar with panel-specific IDs
         panel.innerHTML = `
             <div class="panel-header">
                 <h4 style="margin: 0 0 15px 0; color: var(--text-primary);">Playlist</h4>
                 <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">×</button>
             </div>
             
-            <!-- Playlist Controls -->
-            <div class="control-group">
-                <div class="group-label">Playlist</div>
-                <div class="embedded-playlist-manager" id="panelPlaylistDropdown">
-                    <!-- Playlist content will be populated here -->
+            <!-- Playlist Actions -->
+            <div class="playlist-actions-dropdown">
+                <button class="playlist-scan-btn" id="panelPlaylistScanBtn" title="Add Music Folder">📁 Add Folder</button>
+                <button class="playlist-import-btn" id="panelPlaylistImportBtn" title="Import Playlist">📥</button>
+                <button class="playlist-export-btn" id="panelPlaylistExportBtn" title="Export Playlist">📤</button>
+            </div>
+            
+            <!-- Scanning Progress (hidden by default) -->
+            <div class="playlist-progress" id="panelPlaylistProgress" style="display: none;">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="panelProgressBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span class="progress-text" id="panelProgressText">Scanning music folder...</span>
+                    <span class="progress-count" id="panelProgressCount">0/0 files</span>
+                    <span class="progress-eta" id="panelProgressEta">Est: calculating...</span>
+                </div>
+                <button class="progress-cancel-btn" id="panelProgressCancelBtn">Cancel</button>
+            </div>
+            
+            <!-- Playlist Stats -->
+            <div class="playlist-stats" id="panelPlaylistStats">
+                <span class="playlist-track-count" id="panelPlaylistTrackCount">No tracks loaded</span>
+                <span class="playlist-duration" id="panelPlaylistDuration">0:00:00</span>
+            </div>
+            
+            <!-- Tracks Container -->
+            <div class="playlist-tracks-container" id="panelPlaylistTracksContainer">
+                <div class="playlist-tracks" id="panelPlaylistTracks">
+                    <!-- Artist groups will be populated here -->
+                    <div class="empty-playlist">
+                        <div class="empty-playlist-icon">🎵</div>
+                        <div class="empty-playlist-text">No music loaded</div>
+                        <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                    </div>
                 </div>
             </div>
         `;
@@ -5716,9 +5746,6 @@ class GitItUpVisualizer {
         
         // Add to document
         document.body.appendChild(panel);
-        
-        // Initialize playlist content
-        this.initializePlaylistPanelContent(panel);
     }
 
     setupPlaylistPanelEvents(panel) {
@@ -5727,23 +5754,306 @@ class GitItUpVisualizer {
         closeBtn.addEventListener('click', () => {
             panel.remove();
         });
+
+        // Scan button - Add Music Folder
+        const scanBtn = panel.querySelector('#panelPlaylistScanBtn');
+        if (scanBtn && this.playlistManager) {
+            scanBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.playlistManager.scanFolder();
+            });
+        }
+
+        // Import button
+        const importBtn = panel.querySelector('#panelPlaylistImportBtn');
+        if (importBtn) {
+            importBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const importInput = document.getElementById('playlistImportInput');
+                if (importInput) {
+                    importInput.click();
+                }
+            });
+        }
+
+        // Set up import handler for panel
+        const importInput = document.getElementById('playlistImportInput');
+        if (importInput) {
+            // Remove any existing panel import handler
+            importInput.removeEventListener('change', this._panelImportHandler);
+            this._panelImportHandler = async (e) => {
+                const file = e.target.files?.[0];
+                if (file && this.playlistManager) {
+                    await this.playlistManager.importPlaylist(file);
+                    // Update panel display after import
+                    this.updatePlaylistPanelDisplay(panel);
+                }
+                e.target.value = ''; // Reset input
+            };
+            importInput.addEventListener('change', this._panelImportHandler);
+        }
+
+        // Export button
+        const exportBtn = panel.querySelector('#panelPlaylistExportBtn');
+        if (exportBtn && this.playlistManager) {
+            exportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.playlistManager.exportPlaylist();
+            });
+        }
+
+        // Progress cancel button
+        const cancelBtn = panel.querySelector('#panelProgressCancelBtn');
+        if (cancelBtn && this.playlistManager) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.playlistManager.cancelScan();
+            });
+        }
+
+        // Initialize panel content by copying from sidebar
+        this.initializePlaylistPanelContent(panel);
+
+        // Store panel reference for updates
+        this.currentPlaylistPanel = panel;
     }
 
     initializePlaylistPanelContent(panel) {
-        // Get the existing playlist dropdown content from sidebar
-        const sidebarPlaylist = document.getElementById('playlistDropdown');
-        const panelPlaylist = panel.querySelector('#panelPlaylistDropdown');
+        // Copy content from sidebar to panel
+        if (this.playlistManager && this.playlistManager.currentPlaylist) {
+            this.updatePlaylistPanelDisplay(panel);
+        }
+    }
+
+    updatePlaylistPanelDisplay(panel) {
+        // Update panel stats
+        const trackCount = panel.querySelector('#panelPlaylistTrackCount');
+        const duration = panel.querySelector('#panelPlaylistDuration');
+        const tracks = panel.querySelector('#panelPlaylistTracks');
         
-        if (sidebarPlaylist && panelPlaylist) {
-            // Clone the existing playlist content
-            panelPlaylist.innerHTML = sidebarPlaylist.innerHTML;
+        if (this.playlistManager && this.playlistManager.currentPlaylist) {
+            const playlist = this.playlistManager.currentPlaylist;
+            const trackList = playlist.tracks || [];
+            const totalDuration = trackList.reduce((sum, track) => sum + (track.duration || 0), 0);
             
-            // Re-initialize playlist functionality for the panel
-            if (this.playlistManager) {
-                this.playlistManager.initializePlaylistDropdown(panelPlaylist);
+            if (trackCount) {
+                trackCount.textContent = `${trackList.length} track${trackList.length !== 1 ? 's' : ''}`;
+            }
+            
+            if (duration) {
+                const hours = Math.floor(totalDuration / 3600);
+                const mins = Math.floor((totalDuration % 3600) / 60);
+                const secs = Math.floor(totalDuration % 60);
+                
+                if (hours > 0) {
+                    duration.textContent = `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    duration.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            if (tracks) {
+                if (trackList.length === 0) {
+                    tracks.innerHTML = `
+                        <div class="empty-playlist">
+                            <div class="empty-playlist-icon">🎵</div>
+                            <div class="empty-playlist-text">No music loaded</div>
+                            <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                        </div>
+                    `;
+                } else {
+                    // Display tracks with drag and drop support
+                    let html = '';
+                    trackList.forEach((track, index) => {
+                        html += `
+                            <div class="track-item" data-track-id="${track.id}" data-track-index="${index}" draggable="true">
+                                <div class="track-info">
+                                    <div class="track-title">${track.title || 'Unknown Title'}</div>
+                                    <div class="track-duration">${this.formatDuration(track.duration || 0)}</div>
+                                </div>
+                                <div class="track-actions">
+                                    <button class="track-play-btn" data-track-id="${track.id}" title="Play">▶</button>
+                                    <button class="track-remove-btn" data-track-id="${track.id}" title="Remove">×</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    tracks.innerHTML = html;
+                    
+                    // Add event listeners for track buttons
+                    this.setupPanelTrackEvents(panel);
+                }
             }
         }
     }
+
+    formatDuration(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    setupPanelTrackEvents(panel) {
+        // Play button events
+        panel.querySelectorAll('.track-play-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const trackId = e.target.getAttribute('data-track-id');
+                if (this.playlistManager) {
+                    this.playlistManager.playTrack(trackId);
+                }
+            });
+        });
+
+        // Remove button events
+        panel.querySelectorAll('.track-remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const trackId = e.target.getAttribute('data-track-id');
+                if (this.playlistManager) {
+                    this.playlistManager.removeTrack(trackId);
+                    this.updatePlaylistPanelDisplay(panel); // Refresh display
+                }
+            });
+        });
+
+        // Drag and drop functionality - duplicate from sidebar
+        this.initializePanelDragAndDrop(panel);
+    }
+
+    initializePanelDragAndDrop(panel) {
+        let draggedTrackId = null;
+        let draggedElement = null;
+        
+        panel.querySelectorAll('.track-item').forEach(item => {
+            // Drag start
+            item.addEventListener('dragstart', (e) => {
+                draggedTrackId = item.dataset.trackId;
+                draggedElement = item;
+                e.dataTransfer.setData('text/plain', draggedTrackId);
+                e.dataTransfer.effectAllowed = 'move';
+                item.classList.add('dragging');
+                console.log('Panel drag started for track:', draggedTrackId);
+            });
+            
+            // Drag end
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+                panel.querySelectorAll('.track-item').forEach(i => {
+                    i.classList.remove('drag-over', 'drop-not-allowed');
+                });
+                panel.querySelectorAll('.artist-tracks').forEach(a => {
+                    a.classList.remove('drag-over');
+                });
+                draggedTrackId = null;
+                draggedElement = null;
+            });
+            
+            // Drag over
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                
+                if (draggedElement && item !== draggedElement) {
+                    // Check if this is the currently playing track
+                    const targetTrackId = item.dataset.trackId;
+                    const targetTrack = this.playlistManager.findTrackById(targetTrackId);
+                    const isTargetPlaying = this.audio && 
+                                           this.audio.src && 
+                                           targetTrack && 
+                                           this.audio.src === targetTrack.url;
+                    
+                    if (isTargetPlaying) {
+                        e.dataTransfer.dropEffect = 'none';
+                        item.classList.add('drop-not-allowed');
+                    } else {
+                        e.dataTransfer.dropEffect = 'move';
+                        item.classList.add('drag-over');
+                    }
+                }
+            });
+            
+            // Drag leave
+            item.addEventListener('dragleave', (e) => {
+                item.classList.remove('drag-over', 'drop-not-allowed');
+            });
+            
+            // Drop
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const droppedTrackId = e.dataTransfer.getData('text/plain');
+                const targetTrackId = item.dataset.trackId;
+                
+                console.log(`Panel drop: ${droppedTrackId} onto ${targetTrackId}`);
+                
+                if (droppedTrackId && targetTrackId && droppedTrackId !== targetTrackId) {
+                    // Check if target is currently playing
+                    const targetTrack = this.playlistManager.findTrackById(targetTrackId);
+                    const isTargetPlaying = this.audio && 
+                                           this.audio.src && 
+                                           targetTrack && 
+                                           this.audio.src === targetTrack.url;
+                    
+                    if (isTargetPlaying) {
+                        console.log('Preventing drop on currently playing track to avoid playback errors');
+                        return;
+                    }
+                    
+                    this.playlistManager.reorderTracks(droppedTrackId, targetTrackId);
+                    // Refresh both sidebar and panel displays
+                    this.playlistManager.displayPlaylist();
+                    this.updatePlaylistPanelDisplay(panel);
+                }
+                
+                // Clean up visual feedback
+                panel.querySelectorAll('.track-item').forEach(i => {
+                    i.classList.remove('drag-over', 'dragging', 'drop-not-allowed');
+                });
+            });
+        });
+        
+        // Track list container for general drops
+        const tracksContainer = panel.querySelector('#panelPlaylistTracks');
+        if (tracksContainer) {
+            tracksContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                // Find the closest track item to show insertion point
+                const afterElement = this.getPanelDragAfterElement(tracksContainer, e.clientY);
+                const dragging = panel.querySelector('.dragging');
+                
+                if (afterElement == null) {
+                    tracksContainer.appendChild(dragging);
+                } else {
+                    tracksContainer.insertBefore(dragging, afterElement);
+                }
+            });
+            
+            tracksContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Panel drop on tracks container');
+            });
+        }
+    }
+
+    getPanelDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.track-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
 
 
     async toggleInputMode() {
@@ -7106,6 +7416,11 @@ class GitItUpVisualizer {
         this.updatePlaylistDropdown();
         this.updateTrackInfo();
         
+        // Update panel display if it exists
+        if (this.currentPlaylistPanel) {
+            this.updatePlaylistPanelDisplay(this.currentPlaylistPanel);
+        }
+        
         console.log(`✅ Visualizer playlist updated with ${this.playlist.length} tracks`);
         
         // Debug: Check if any tracks have valid URLs and clear track display if needed
@@ -7135,6 +7450,12 @@ class GitItUpVisualizer {
         
         if (!track) {
             console.error('Track not found for ID:', trackId);
+            return;
+        }
+        
+        // Check if track needs rescanning
+        if (track._needsRescan || !track.url) {
+            this.showError('Track needs to be rescanned. Please use "Add Folder" to rescan your music library.');
             return;
         }
         
