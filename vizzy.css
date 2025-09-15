@@ -834,7 +834,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-right: 30px;
+            margin-right: 50px;
         }
 
         .theme-select {
@@ -2575,12 +2575,14 @@
             background: var(--hover-color);
             border: 1px solid var(--border-color, #898989);
             color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 8px 12px; /* Match visualizer button padding */
+            border-radius: 6px; /* Match visualizer button border radius */
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 12px;
-            min-width: 100px;
+            width: auto !important; /* Match visualizer button width */
+            min-width: 60px !important; /* Match visualizer button min-width */
+            height: 36px !important; /* Match visualizer button height */
         }
 
         .morph-btn:hover {
@@ -2590,6 +2592,14 @@
         }
 
         .morph-btn.active {
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080);
+            background-size: 200% 100%;
+            animation: morph-gradient 3s linear infinite;
+            color: white;
+        }
+
+        /* Footer morph button active state */
+        #footerMorphBtn.active {
             background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080);
             background-size: 200% 100%;
             animation: morph-gradient 3s linear infinite;
@@ -2609,15 +2619,18 @@
             background: var(--hover-color);
             border: 1px solid var(--border-color, #898989);
             color: var(--text-primary);
-            padding: 6px 12px;
-            border-radius: 20px;
+            border-radius: 6px; /* Match visualizer button border radius */
             font-size: 12px;
+            width: auto; /* Allow it to size to content */
+            min-width: 60px; /* Minimum width for readability */
+            align-self: center; /* Center vertically with Start Morph button */
         }
 
         .energy-container {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-left: 4px; /* Add 4px margin to left */
         }
 
         .energy-label {
@@ -2634,6 +2647,13 @@
         }
 
         .energy-indicator {
+            height: 100%;
+            width: 0;
+            background: #00ff00;
+            transition: width 0.1s ease, background 0.3s ease;
+        }
+
+        .energy-fill {
             height: 100%;
             width: 0;
             background: #00ff00;
@@ -2661,7 +2681,7 @@
 
         .controls {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Top-align all footer sections */
             gap: 4px;
             flex-wrap: wrap;
             justify-content: center;
@@ -2670,7 +2690,7 @@
         .playback-controls {
             display: flex;
             gap: 6px;
-            align-items: center;
+            align-items: flex-start; /* Top-align all first row items */
         }
 
         .control-btn,
@@ -2756,7 +2776,85 @@
 
 /* Live Video Button Styles */
 .live-video-btn {
-    margin-right: 15px; /* 15px gap from Playlist button */
+    margin-right: 0px; /* No gap - buttons are adjacent */
+}
+
+/* Visualizer Button Styles */
+.visualizer-btn {
+    margin-right: 1px; /* 1px gap to ON/OFF button */
+}
+.visualizer-btn .visualizer-icon {
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.visualizer-btn:hover .visualizer-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+.visualizer-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.visualizer-btn.active .visualizer-icon {
+    color: var(--primary-bg);
+}
+.visualizer-btn.active:hover .visualizer-icon {
+    color: var(--primary-bg);
+}
+
+/* Visualizer Controls Container */
+.visualizer-controls {
+    display: flex;
+    flex-direction: row; /* Single row */
+    gap: 0px; /* No gap - handled by individual button margins */
+    margin-left: 10px;
+    margin-right: 10px;
+    align-items: flex-start; /* Top-align the container */
+}
+
+/* Visualizer Toggle Button - Match B A V styling */
+.visualizer-toggle-btn {
+    height: 36px !important; /* Match B A V height */
+    margin-right: 1px !important; /* 1px gap to RNDM button */
+}
+.visualizer-toggle-btn .toggle-text {
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.visualizer-toggle-btn:hover .toggle-text {
+    color: rgba(255, 255, 255, 0.9);
+}
+.visualizer-toggle-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.visualizer-toggle-btn.active .toggle-text {
+    color: var(--primary-bg);
+}
+.visualizer-toggle-btn.active:hover .toggle-text {
+    color: var(--primary-bg);
+}
+
+/* Visualizer Random Button - Match B A V styling */
+.visualizer-random-btn {
+    height: 36px !important; /* Match B A V height */
+    margin-right: 0px !important; /* No margin - last button in first row */
+}
+
+/* Morph Button styles removed - now using sidebar morph controls in footer */
+.visualizer-random-btn .random-text {
+    font-size: 8px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.visualizer-random-btn:hover .random-text {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* Playlist Button Styles */
@@ -2859,7 +2957,7 @@
         .output-controls {
             display: flex;
             gap: 8px;
-            align-items: center;
+            align-items: flex-start; /* Top-align with first row items */
         }
 
         .output-controls .control-btn {
@@ -2886,6 +2984,8 @@
         .footer .playback-controls .live-background-btn,
         .footer .playback-controls .live-audio-btn,
         .footer .playback-controls .live-video-btn,
+        .footer .playback-controls .visualizer-toggle-btn,
+        .footer .playback-controls .visualizer-random-btn,
         .footer .playback-controls #prevBtn,
         .footer .playback-controls #playBtn,
         .footer .playback-controls #nextBtn,
@@ -2898,7 +2998,7 @@
 
         .presets-container {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Top-align with other footer sections */
             gap: 10px;
             flex-wrap: wrap;
         }
@@ -3104,6 +3204,7 @@
         .volume-control {
             display: flex;
             align-items: center;
+            align-self: center; /* Override footer's flex-start alignment */
             gap: 10px;
             margin-right: 10px;
         }
@@ -3514,7 +3615,6 @@
             cursor: pointer;
             font-size: 12px;
             transition: all 0.2s ease;
-            margin-top: 8px;
             width: 100%;
         }
 

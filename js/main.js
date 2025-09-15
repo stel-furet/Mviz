@@ -5315,6 +5315,66 @@ class GitItUpVisualizer {
         }
     }
 
+    updateFooterVisualizerButton() {
+        const footerBtn = document.getElementById('footerVisualizerBtn');
+        if (!footerBtn) return;
+
+        // Check if visualization is enabled
+        const isActive = this.visualizationEnabled;
+        
+        console.log('Visualizer button state check:', {
+            visualizationEnabled: this.visualizationEnabled,
+            isActive: isActive
+        });
+        
+        if (isActive) {
+            footerBtn.classList.add('active');
+        } else {
+            footerBtn.classList.remove('active');
+        }
+    }
+
+    updateFooterVisualizerToggleButton() {
+        const toggleBtn = document.getElementById('footerVisualizerToggleBtn');
+        if (!toggleBtn) return;
+
+        const toggleText = toggleBtn.querySelector('.toggle-text');
+        if (!toggleText) return;
+
+        // Update button text and state
+        if (this.visualizationEnabled) {
+            toggleText.textContent = 'ON';
+            toggleBtn.classList.add('active');
+        } else {
+            toggleText.textContent = 'OFF';
+            toggleBtn.classList.remove('active');
+        }
+    }
+
+    initializeFooterMorphControls() {
+        // Footer Morph Button
+        const footerMorphBtn = document.getElementById('footerMorphBtn');
+        if (footerMorphBtn) {
+            console.log('Initializing footer morph button');
+            footerMorphBtn.addEventListener('click', () => {
+                this.toggleMorph();
+            });
+        } else {
+            console.error('Footer morph button not found');
+        }
+
+        // Footer Morph Speed Select
+        const footerMorphSpeedSelect = document.getElementById('footerMorphSpeedSelect');
+        if (footerMorphSpeedSelect) {
+            console.log('Initializing footer morph speed select');
+            footerMorphSpeedSelect.addEventListener('change', (e) => {
+                this.setMorphSpeed(e.target.value);
+            });
+        } else {
+            console.error('Footer morph speed select not found');
+        }
+    }
+
     async toggleLiveAudio() {
         const toggleBtn = document.getElementById('liveAudioToggleBtn');
         const deviceSelect = document.getElementById('audioDeviceSelect');
@@ -5666,6 +5726,11 @@ class GitItUpVisualizer {
         this.createPlaylistPanel();
     }
 
+    showVisualizerPanel() {
+        // Create visualizer panel
+        this.createVisualizerPanel();
+    }
+
     createPlaylistPanel() {
         // Remove existing panel if any
         const existingPanel = document.getElementById('playlistPanel');
@@ -5817,6 +5882,155 @@ class GitItUpVisualizer {
         // Store panel reference for updates
         this.currentPlaylistPanel = panel;
     }
+
+    createVisualizerPanel() {
+        // Remove existing panel if any
+        const existingPanel = document.getElementById('visualizerPanel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+
+        // Get button position
+        const button = document.getElementById('footerVisualizerBtn');
+        if (!button) {
+            console.error('Footer Visualizer button not found');
+            return;
+        }
+
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Create panel container
+        const panel = document.createElement('div');
+        panel.id = 'visualizerPanel';
+        panel.className = 'visualizer-panel';
+        panel.style.cssText = `
+            position: fixed;
+            top: ${buttonRect.top - 4}px;
+            left: ${buttonRect.left}px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 10000;
+            min-width: 250px;
+            transform: translateY(-100%);
+        `;
+
+        // Create header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+        
+        const title = document.createElement('h3');
+        title.textContent = 'Visualizer';
+        title.style.cssText = `
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        `;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        `;
+        closeBtn.onclick = () => panel.remove();
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        panel.appendChild(header);
+
+        // Create visualization mode list
+        const modeList = document.createElement('div');
+        modeList.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        `;
+
+        // Add visualization modes
+        const modes = [
+            { id: 0, name: 'Spectrum' },
+            { id: 1, name: 'Mirror Wave' },
+            { id: 2, name: 'Classic LED' },
+            { id: 3, name: 'Stereo' },
+            { id: 4, name: 'Radial Spectrum' },
+            { id: 5, name: 'Energy' },
+            { id: 6, name: 'Mirror' }
+        ];
+
+        modes.forEach(mode => {
+            const modeBtn = document.createElement('button');
+            modeBtn.style.cssText = `
+                background: var(--hover-color);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 8px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: left;
+                transition: all 0.2s ease;
+                font-size: 12px;
+            `;
+            
+            modeBtn.textContent = mode.name;
+            modeBtn.onclick = () => {
+                // Set the visualization mode
+                this.setVisualizationMode(mode.id);
+                
+                // Turn ON visualization if it's not already on
+                if (!this.visualizationEnabled) {
+                    this.visualizationEnabled = true;
+                    
+                    // Update sidebar toggle button
+                    const sidebarBtn = document.getElementById('vizToggleBtn');
+                    if (sidebarBtn) {
+                        sidebarBtn.textContent = 'ON';
+                        sidebarBtn.classList.add('active');
+                    }
+                    
+                    // Update footer visualizer button state
+                    this.updateFooterVisualizerButton();
+                    
+                    // Resume visualization if audioMotion exists
+                    if (this.audioMotion) {
+                        this.audioMotion.animate();
+                    }
+                }
+                
+                // Close the panel
+                panel.remove();
+            };
+            
+            modeBtn.onmouseover = () => {
+                modeBtn.style.background = '#404040';
+            };
+            modeBtn.onmouseout = () => {
+                modeBtn.style.background = 'var(--hover-color)';
+            };
+            
+            modeList.appendChild(modeBtn);
+        });
+
+        panel.appendChild(modeList);
+        
+        // Add to document
+        document.body.appendChild(panel);
+    }
+
 
     initializePlaylistPanelContent(panel) {
         // Copy content from sidebar to panel
@@ -10449,6 +10663,12 @@ https://rogueamoeba.com/loopback/
             btn.classList.toggle('active', this.visualizationEnabled);
         }
 
+        // Update footer visualizer button state
+        this.updateFooterVisualizerButton();
+        
+        // Update footer toggle button state
+        this.updateFooterVisualizerToggleButton();
+
         if (this.audioMotion) {
             if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                 this.audioMotion.animate();
@@ -12041,6 +12261,54 @@ https://rogueamoeba.com/loopback/
             console.error('Footer Playlist button not found');
         }
 
+        // Footer Visualizer button
+        const footerVisualizerBtn = document.getElementById('footerVisualizerBtn');
+        if (footerVisualizerBtn) {
+            console.log('Footer Visualizer button found, adding event listener');
+            footerVisualizerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Visualizer button clicked');
+                
+                // Always show the visualizer panel (like A and V buttons)
+                this.showVisualizerPanel();
+            });
+        } else {
+            console.error('Footer Visualizer button not found');
+        }
+
+        // Footer Visualizer Toggle button
+        const footerVisualizerToggleBtn = document.getElementById('footerVisualizerToggleBtn');
+        if (footerVisualizerToggleBtn) {
+            console.log('Footer Visualizer Toggle button found, adding event listener');
+            footerVisualizerToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Visualizer Toggle button clicked');
+                
+                // Toggle visualization ON/OFF
+                this.toggleVisualization();
+            });
+        } else {
+            console.error('Footer Visualizer Toggle button not found');
+        }
+
+        // Footer Visualizer Random button
+        const footerVisualizerRandomBtn = document.getElementById('footerVisualizerRandomBtn');
+        if (footerVisualizerRandomBtn) {
+            console.log('Footer Visualizer Random button found, adding event listener');
+            footerVisualizerRandomBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Footer Visualizer Random button clicked');
+                
+                // Set random visualization mode
+                this.setRandomVisualization();
+            });
+        } else {
+            console.error('Footer Visualizer Random button not found');
+        }
+
 
         // Morph controls
         const morphBtn = document.getElementById('morphBtn');
@@ -12048,6 +12316,8 @@ https://rogueamoeba.com/loopback/
             morphBtn.addEventListener('click', () => {
                 this.toggleMorph();
             });
+        } else {
+            console.error('Morph button not found during initialization');
         }
 
         const morphSpeedSelect = document.getElementById('morphSpeedSelect');
@@ -12689,12 +12959,23 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 this.isMorphing = true;
 
+                // Update sidebar morph button
                 const morphBtn = document.getElementById('morphBtn');
                 if (morphBtn) {
                     morphBtn.classList.add('active');
                     const btnText = morphBtn.querySelector('.morph-btn-text');
                     if (btnText) {
                         btnText.textContent = 'Stop Morph';
+                    }
+                }
+
+                // Update footer morph button
+                const footerMorphBtn = document.getElementById('footerMorphBtn');
+                if (footerMorphBtn) {
+                    footerMorphBtn.classList.add('active');
+                    const footerBtnText = footerMorphBtn.querySelector('.morph-btn-text');
+                    if (footerBtnText) {
+                        footerBtnText.textContent = 'Stop Morph';
                     }
                 }
 
@@ -12705,9 +12986,15 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 if (this.morphMode === 'energy') {
                     this.startEnergyDetection();
+                    // Show sidebar energy container
                     const energyContainer = document.getElementById('energyContainer');
                     if (energyContainer) {
                         energyContainer.style.display = 'block';
+                    }
+                    // Show footer energy container
+                    const footerEnergyContainer = document.getElementById('footerEnergyContainer');
+                    if (footerEnergyContainer) {
+                        footerEnergyContainer.style.display = 'block';
                     }
                 }
 
@@ -12748,6 +13035,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.energyCheckInterval = null;
                 }
 
+                // Update sidebar morph button
                 const morphBtn = document.getElementById('morphBtn');
                 if (morphBtn) {
                     morphBtn.classList.remove('active');
@@ -12757,10 +13045,24 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
                 }
 
-                // Hide energy indicator
+                // Update footer morph button
+                const footerMorphBtn = document.getElementById('footerMorphBtn');
+                if (footerMorphBtn) {
+                    footerMorphBtn.classList.remove('active');
+                    const footerBtnText = footerMorphBtn.querySelector('.morph-btn-text');
+                    if (footerBtnText) {
+                        footerBtnText.textContent = 'Start Morph';
+                    }
+                }
+
+                // Hide energy indicators
                 const energyContainer = document.getElementById('energyContainer');
                 if (energyContainer) {
                     energyContainer.style.display = 'none';
+                }
+                const footerEnergyContainer = document.getElementById('footerEnergyContainer');
+                if (footerEnergyContainer) {
+                    footerEnergyContainer.style.display = 'none';
                 }
             }
 
@@ -12775,8 +13077,10 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             }
 
             detectEnergy() {
-                if (!this.audioMotion || !this.audioMotion.dataArray) 
+                if (!this.audioMotion || !this.audioMotion.dataArray) {
+                    console.log('Energy detection: No audioMotion or dataArray');
                     return;
+                }
                 
 
 
@@ -12801,6 +13105,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.updateMorphSpeedFromEnergy();
                 }
 
+                // Update sidebar energy indicator
                 const energyIndicator = document.getElementById('energyIndicator');
                 if (energyIndicator) {
                     energyIndicator.style.width = `${
@@ -12808,6 +13113,19 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }%`;
                     const hue = 120 - (this.currentEnergy * 120);
                     energyIndicator.style.background = `hsl(${hue}, 100%, 50%)`;
+                }
+
+                // Update footer energy indicator
+                const footerEnergyFill = document.getElementById('footerEnergyFill');
+                if (footerEnergyFill) {
+                    footerEnergyFill.style.width = `${
+                        this.currentEnergy * 100
+                    }%`;
+                    const hue = 120 - (this.currentEnergy * 120);
+                    footerEnergyFill.style.background = `hsl(${hue}, 100%, 50%)`;
+                    console.log(`Energy: ${this.currentEnergy.toFixed(3)}, Width: ${(this.currentEnergy * 100).toFixed(1)}%`);
+                } else {
+                    console.log('Footer energy fill not found');
                 }
             }
 
@@ -12923,9 +13241,15 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     if (this.isMorphing) {
                         this.startEnergyDetection();
                     }
+                    // Show sidebar energy container
                     const energyContainer = document.getElementById('energyContainer');
                     if (energyContainer) {
                         energyContainer.style.display = 'block';
+                    }
+                    // Show footer energy container
+                    const footerEnergyContainer = document.getElementById('footerEnergyContainer');
+                    if (footerEnergyContainer) {
+                        footerEnergyContainer.style.display = 'block';
                     }
                 } else {
                     if (this.energyCheckInterval) {
@@ -12933,9 +13257,15 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         this.energyCheckInterval = null;
                     }
 
+                    // Hide sidebar energy container
                     const energyContainer = document.getElementById('energyContainer');
                     if (energyContainer) {
                         energyContainer.style.display = 'none';
+                    }
+                    // Hide footer energy container
+                    const footerEnergyContainer = document.getElementById('footerEnergyContainer');
+                    if (footerEnergyContainer) {
+                        footerEnergyContainer.style.display = 'none';
                     }
 
                     const speeds = {
@@ -13447,6 +13777,21 @@ if (window.visualizer && window.visualizer.updateFooterLiveVideoButton) {
     window.visualizer.updateFooterLiveVideoButton();
 }
 
+// Initialize Visualizer Button State
+if (window.visualizer && window.visualizer.updateFooterVisualizerButton) {
+    window.visualizer.updateFooterVisualizerButton();
+}
+
+        // Initialize Visualizer Toggle Button State
+        if (window.visualizer && window.visualizer.updateFooterVisualizerToggleButton) {
+            window.visualizer.updateFooterVisualizerToggleButton();
+        }
+
+        // Initialize Footer Morph Controls
+        if (window.visualizer && window.visualizer.initializeFooterMorphControls) {
+            window.visualizer.initializeFooterMorphControls();
+        }
+
         // Initialize Background Button State
         if (window.visualizer && window.visualizer.updateFooterBackgroundButton) {
             window.visualizer.updateFooterBackgroundButton();
@@ -13575,4 +13920,5 @@ window.testLearningAnalytics = () => {
     }
 };
 });
+
 

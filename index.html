@@ -1,4 +1,4 @@
-CS<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1641,6 +1641,33 @@ CS<!DOCTYPE html>
                         <button class="control-btn live-video-btn" id="footerLiveVideoBtn" title="Live Video Input">
                             <span class="video-icon">V</span>
                         </button>
+                <div class="visualizer-controls">
+                    <button class="control-btn visualizer-btn" id="footerVisualizerBtn" title="Visualizer">
+                        <span class="visualizer-icon">Visualizer</span>
+                    </button>
+                    <button class="control-btn visualizer-toggle-btn" id="footerVisualizerToggleBtn" title="Toggle Visualization">
+                        <span class="toggle-text">ON</span>
+                    </button>
+                    <button class="control-btn visualizer-random-btn" id="footerVisualizerRandomBtn" title="Random Mode">
+                        <span class="random-text">RNDM</span>
+                    </button>
+                    <button class="control-btn morph-btn" id="footerMorphBtn" title="Morph between visualizations">
+                        <span class="morph-btn-text">Start Morph</span>
+                    </button>
+                    <select class="morph-speed-select" id="footerMorphSpeedSelect">
+                        <option value="slow">Slow</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="fast">Fast</option>
+                        <option value="ultra">Ultra</option>
+                        <option value="energy">Energy</option>
+                    </select>
+                    <div class="energy-container" id="footerEnergyContainer" style="display: none;">
+                        <div class="energy-label">Energy</div>
+                        <div class="energy-bar">
+                            <div class="energy-fill" id="footerEnergyFill"></div>
+                        </div>
+                    </div>
+                </div>
                         <button class="control-btn playlist-btn" id="footerPlaylistBtn" title="Playlist">
                             <span class="playlist-icon">Playlist</span>
                         </button>
