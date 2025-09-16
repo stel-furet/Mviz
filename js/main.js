@@ -5129,6 +5129,27 @@ class GitItUpVisualizer {
         this.createVideoInputDropdown();
     }
 
+    // Helper function to get element by either header or sidebar ID
+    getVideoElement(baseId) {
+        // Try header first (preferred), then sidebar (fallback)
+        const headerId = 'header' + baseId.charAt(0).toUpperCase() + baseId.slice(1);
+        const headerElement = document.getElementById(headerId);
+        if (headerElement) return headerElement;
+        
+        const sidebarElement = document.getElementById(baseId);
+        return sidebarElement;
+    }
+
+    // Helper function to update both header and sidebar elements
+    updateVideoElements(baseId, updateFn) {
+        const headerId = 'header' + baseId.charAt(0).toUpperCase() + baseId.slice(1);
+        const headerElement = document.getElementById(headerId);
+        const sidebarElement = document.getElementById(baseId);
+        
+        if (headerElement) updateFn(headerElement);
+        if (sidebarElement) updateFn(sidebarElement);
+    }
+
     createVideoInputDropdown() {
         // Remove existing dropdown if it exists
         const existingDropdown = document.getElementById('footerVideoInputDropdown');
@@ -5364,7 +5385,7 @@ class GitItUpVisualizer {
         
         const videoToggle = document.createElement('button');
         videoToggle.className = 'dropdown-toggle viz-toggle-btn';
-        videoToggle.id = 'headerVideoToggleBtn';
+        videoToggle.id = 'videoToggleBtn';
         videoToggle.textContent = this.videoMode === 'camera' || this.videoMode === 'file' ? 'ON' : 'OFF';
         videoToggle.style.cssText = `
             background: ${this.videoMode === 'camera' || this.videoMode === 'file' ? 'var(--accent-color)' : 'var(--hover-color)'};
@@ -5381,9 +5402,13 @@ class GitItUpVisualizer {
         videoToggle.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const videoToggleBtn = document.getElementById('videoToggleBtn');
-            if (videoToggleBtn) {
-                videoToggleBtn.click();
+            if (window.visualizer) {
+                window.visualizer.toggleVideoPlayback();
+                // Update button text
+                const isOn = window.visualizer.videoMode === 'camera' || window.visualizer.videoMode === 'file';
+                videoToggle.textContent = isOn ? 'ON' : 'OFF';
+                videoToggle.style.background = isOn ? 'var(--accent-color)' : 'var(--hover-color)';
+                videoToggle.style.color = isOn ? 'white' : 'var(--text-primary)';
             }
         };
         
@@ -5392,18 +5417,18 @@ class GitItUpVisualizer {
         
         // Basic Controls
         this.addControlGroup(settingsSection, 'Basic', [
-            { label: 'Opacity', id: 'videoOpacitySlider', min: 0, max: 100, value: 100, suffix: '%' },
-            { label: 'Brightness', id: 'videoBrightnessSlider', min: 0, max: 200, value: 100, suffix: '%' },
-            { label: 'Contrast', id: 'videoContrastSlider', min: 0, max: 200, value: 100, suffix: '%' },
-            { label: 'Fade Time', id: 'videoFadeSlider', min: 0, max: 10, step: 0.5, value: 3, suffix: 's' }
+            { label: 'Opacity', id: 'headerVideoOpacitySlider', min: 0, max: 100, value: 100, suffix: '%' },
+            { label: 'Brightness', id: 'headerVideoBrightnessSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Contrast', id: 'headerVideoContrastSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Fade Time', id: 'headerVideoFadeSlider', min: 0, max: 10, step: 0.5, value: 3, suffix: 's' }
         ]);
         
         // Color Controls
         this.addControlGroup(settingsSection, 'Color', [
-            { label: 'Saturation', id: 'videoSaturationSlider', min: 0, max: 200, value: 100, suffix: '%' },
-            { label: 'Hue Rotate', id: 'videoHueRotateSlider', min: 0, max: 360, value: 0, suffix: '°' },
-            { label: 'Grayscale', id: 'videoGrayscaleSlider', min: 0, max: 100, value: 0, suffix: '%' },
-            { label: 'Sepia', id: 'videoSepiaSlider', min: 0, max: 100, value: 0, suffix: '%' }
+            { label: 'Saturation', id: 'headerVideoSaturationSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Hue Rotate', id: 'headerVideoHueRotateSlider', min: 0, max: 360, value: 0, suffix: '°' },
+            { label: 'Grayscale', id: 'headerVideoGrayscaleSlider', min: 0, max: 100, value: 0, suffix: '%' },
+            { label: 'Sepia', id: 'headerVideoSepiaSlider', min: 0, max: 100, value: 0, suffix: '%' }
         ]);
         
         // Effects Controls
@@ -5417,6 +5442,12 @@ class GitItUpVisualizer {
         
         // Presets
         this.addPresetsControlGroup(settingsSection);
+        
+        // File Controls (for video file playback)
+        this.addFileControlsGroup(settingsSection);
+        
+        // Stream Statistics
+        this.addStreamStatsGroup(settingsSection);
         
         dropdown.appendChild(deviceList);
         dropdown.appendChild(settingsSection);
@@ -5478,7 +5509,7 @@ class GitItUpVisualizer {
             
             const input = document.createElement('input');
             input.type = 'range';
-            input.id = 'header' + slider.id.charAt(0).toUpperCase() + slider.id.slice(1);
+            input.id = slider.id;
             input.min = slider.min;
             input.max = slider.max;
             if (slider.step) input.step = slider.step;
@@ -5489,7 +5520,7 @@ class GitItUpVisualizer {
             `;
             
             const valueSpan = document.createElement('span');
-            valueSpan.id = input.id.replace('Slider', 'Value');
+            valueSpan.id = slider.id.replace('Slider', 'Value');
             valueSpan.textContent = slider.value + (slider.suffix || '');
             valueSpan.style.cssText = `
                 color: var(--text-secondary);
@@ -5499,13 +5530,22 @@ class GitItUpVisualizer {
                 flex-shrink: 0;
             `;
             
-            // Link to original slider
+            // Link to sidebar slider (convert header ID to sidebar ID)
             input.addEventListener('input', (e) => {
-                const originalSlider = document.getElementById(slider.id);
-                if (originalSlider) {
-                    originalSlider.value = e.target.value;
-                    originalSlider.dispatchEvent(new Event('input'));
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Convert header ID to sidebar ID for syncing
+                const sidebarId = slider.id.startsWith('header') ? 
+                    slider.id.charAt(6).toLowerCase() + slider.id.slice(7) : 
+                    slider.id;
+                
+                const sidebarSlider = document.getElementById(sidebarId);
+                if (sidebarSlider) {
+                    sidebarSlider.value = e.target.value;
+                    sidebarSlider.dispatchEvent(new Event('input'));
                 }
+                
                 valueSpan.textContent = e.target.value + (slider.suffix || '');
             });
             
@@ -5536,9 +5576,9 @@ class GitItUpVisualizer {
         
         // Effects sliders
         const effectSliders = [
-            { label: 'Blur', id: 'videoBlurSlider', min: 0, max: 20, value: 0, suffix: 'px' },
-            { label: 'Vignette', id: 'videoVignetteSlider', min: 0, max: 100, value: 0, suffix: '%' },
-            { label: 'Posterize', id: 'videoPosterizeSlider', min: 2, max: 16, value: 16, suffix: '' }
+            { label: 'Blur', id: 'headerVideoBlurSlider', min: 0, max: 20, value: 0, suffix: 'px' },
+            { label: 'Vignette', id: 'headerVideoVignetteSlider', min: 0, max: 100, value: 0, suffix: '%' },
+            { label: 'Posterize', id: 'headerVideoPosterizeSlider', min: 2, max: 16, value: 16, suffix: '' }
         ];
         
         effectSliders.forEach(slider => {
@@ -5561,14 +5601,14 @@ class GitItUpVisualizer {
             
             const input = document.createElement('input');
             input.type = 'range';
-            input.id = 'header' + slider.id.charAt(0).toUpperCase() + slider.id.slice(1);
+            input.id = slider.id;
             input.min = slider.min;
             input.max = slider.max;
             input.value = slider.value;
             input.style.cssText = `flex: 1; height: 20px;`;
             
             const valueSpan = document.createElement('span');
-            valueSpan.id = input.id.replace('Slider', 'Value');
+            valueSpan.id = slider.id.replace('Slider', 'Value');
             valueSpan.textContent = slider.value === 16 && slider.id === 'videoPosterizeSlider' ? 'Off' : slider.value + slider.suffix;
             valueSpan.style.cssText = `
                 color: var(--text-secondary);
@@ -5579,12 +5619,21 @@ class GitItUpVisualizer {
             `;
             
             input.addEventListener('input', (e) => {
-                const originalSlider = document.getElementById(slider.id);
-                if (originalSlider) {
-                    originalSlider.value = e.target.value;
-                    originalSlider.dispatchEvent(new Event('input'));
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Convert header ID to sidebar ID for syncing
+                const sidebarId = slider.id.startsWith('header') ? 
+                    slider.id.charAt(6).toLowerCase() + slider.id.slice(7) : 
+                    slider.id;
+                
+                const sidebarSlider = document.getElementById(sidebarId);
+                if (sidebarSlider) {
+                    sidebarSlider.value = e.target.value;
+                    sidebarSlider.dispatchEvent(new Event('input'));
                 }
-                if (slider.id === 'videoPosterizeSlider') {
+                
+                if (slider.id.includes('Posterize')) {
                     valueSpan.textContent = e.target.value === '16' ? 'Off' : e.target.value;
                 } else {
                     valueSpan.textContent = e.target.value + slider.suffix;
@@ -5693,10 +5742,68 @@ class GitItUpVisualizer {
                 window.visualizer.toggleVideoPulse();
                 pulseBtn.textContent = `Pulse: ${window.visualizer.videoPulse ? 'On' : 'Off'}`;
                 pulseBtn.classList.toggle('active', window.visualizer.videoPulse);
+                // Show/hide pulse rate container
+                const pulseRateContainer = document.getElementById('headerVideoPulseRateContainer');
+                if (pulseRateContainer) {
+                    pulseRateContainer.style.display = window.visualizer.videoPulse ? 'flex' : 'none';
+                }
             }
         };
         
         controlGroup.appendChild(pulseBtn);
+        
+        // Pulse Rate Slider
+        const pulseRateContainer = document.createElement('div');
+        pulseRateContainer.id = 'headerVideoPulseRateContainer';
+        pulseRateContainer.style.cssText = `
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        `;
+        
+        const pulseRateLabel = document.createElement('label');
+        pulseRateLabel.textContent = 'Rate:';
+        pulseRateLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            min-width: 35px;
+        `;
+        
+        const pulseRateSlider = document.createElement('input');
+        pulseRateSlider.type = 'range';
+        pulseRateSlider.id = 'headerVideoPulseRateSlider';
+        pulseRateSlider.min = '0.5';
+        pulseRateSlider.max = '4';
+        pulseRateSlider.step = '0.1';
+        pulseRateSlider.value = '2';
+        pulseRateSlider.style.cssText = `flex: 1; height: 20px;`;
+        
+        const pulseRateValue = document.createElement('span');
+        pulseRateValue.id = 'headerVideoPulseRateValue';
+        pulseRateValue.textContent = '2.0s';
+        pulseRateValue.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            min-width: 40px;
+            text-align: right;
+        `;
+        
+        pulseRateSlider.addEventListener('input', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const value = parseFloat(e.target.value);
+            if (window.visualizer) {
+                window.visualizer.setVideoPulseRate(value);
+            }
+            pulseRateValue.textContent = `${value.toFixed(1)}s`;
+        });
+        
+        pulseRateContainer.appendChild(pulseRateLabel);
+        pulseRateContainer.appendChild(pulseRateSlider);
+        pulseRateContainer.appendChild(pulseRateValue);
+        controlGroup.appendChild(pulseRateContainer);
+        
         container.appendChild(controlGroup);
     }
 
@@ -5719,7 +5826,7 @@ class GitItUpVisualizer {
         const aspectBtn = document.createElement('button');
         aspectBtn.textContent = 'Match Video Aspect: On';
         aspectBtn.className = 'effect-toggle-btn active';
-        aspectBtn.id = 'headerMatchVisualizationAspectBtn';
+        aspectBtn.id = 'matchVisualizationAspectBtn';
         aspectBtn.style.cssText = `
             background: var(--accent-color);
             border: 1px solid var(--accent-color);
@@ -5806,6 +5913,155 @@ class GitItUpVisualizer {
         });
         
         controlGroup.appendChild(presetButtons);
+        container.appendChild(controlGroup);
+    }
+
+    addFileControlsGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'File Controls';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        // File info display
+        const fileInfo = document.createElement('div');
+        fileInfo.id = 'headerVideoFileInfo';
+        fileInfo.style.cssText = `
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+        `;
+        
+        const fileName = document.createElement('span');
+        fileName.id = 'headerVideoFileName';
+        fileName.textContent = 'No file selected';
+        fileName.style.cssText = `
+            color: var(--text-primary);
+            font-size: 11px;
+            display: block;
+            margin-bottom: 6px;
+        `;
+        
+        const fileControlsInline = document.createElement('div');
+        fileControlsInline.className = 'video-file-controls-inline';
+        fileControlsInline.style.cssText = `
+            display: flex;
+            gap: 8px;
+        `;
+        
+        const loopBtn = document.createElement('button');
+        loopBtn.id = 'headerVideoFileLoopBtn';
+        loopBtn.className = 'video-file-control-btn active';
+        loopBtn.textContent = 'Loop';
+        loopBtn.style.cssText = `
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            flex: 1;
+        `;
+        
+        const muteBtn = document.createElement('button');
+        muteBtn.id = 'headerVideoFileMuteBtn';
+        muteBtn.className = 'video-file-control-btn active';
+        muteBtn.textContent = 'Muted';
+        muteBtn.style.cssText = loopBtn.style.cssText;
+        
+        // Add event prevention to file control buttons
+        loopBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Let the original JavaScript handle the functionality
+            if (window.visualizer) {
+                window.visualizer.videoFileLoop = !window.visualizer.videoFileLoop;
+                loopBtn.classList.toggle('active', window.visualizer.videoFileLoop);
+                loopBtn.textContent = window.visualizer.videoFileLoop ? 'Loop' : 'No Loop';
+            }
+        };
+        
+        muteBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Let the original JavaScript handle the functionality
+            if (window.visualizer) {
+                window.visualizer.videoFileMuted = !window.visualizer.videoFileMuted;
+                muteBtn.textContent = window.visualizer.videoFileMuted ? 'Muted' : 'Sound';
+                muteBtn.classList.toggle('active', window.visualizer.videoFileMuted);
+            }
+        };
+        
+        fileControlsInline.appendChild(loopBtn);
+        fileControlsInline.appendChild(muteBtn);
+        
+        fileInfo.appendChild(fileName);
+        fileInfo.appendChild(fileControlsInline);
+        controlGroup.appendChild(fileInfo);
+        
+        // Hidden file input (already exists in HTML, but we need it available)
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'videoFileInput';
+        fileInput.accept = 'video/*';
+        fileInput.style.display = 'none';
+        controlGroup.appendChild(fileInput);
+        
+        container.appendChild(controlGroup);
+    }
+
+    addStreamStatsGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Stream Statistics';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        const statsContainer = document.createElement('div');
+        statsContainer.id = 'headerCameraStatsContainer';
+        statsContainer.className = 'stats-container';
+        statsContainer.style.cssText = `
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            min-height: 60px;
+        `;
+        
+        const statsPlaceholder = document.createElement('div');
+        statsPlaceholder.className = 'stats-placeholder';
+        statsPlaceholder.textContent = 'Camera stream info will appear here when video input is active';
+        statsPlaceholder.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.4;
+        `;
+        
+        statsContainer.appendChild(statsPlaceholder);
+        controlGroup.appendChild(statsContainer);
         container.appendChild(controlGroup);
     }
 
@@ -8751,8 +9007,13 @@ class GitItUpVisualizer {
     }
 
     updateCameraStats() {
-        const statsContainer = document.getElementById('cameraStatsContainer');
-        if (statsContainer && this.cameraInfo) {
+        const statsContainers = [
+            document.getElementById('cameraStatsContainer'),
+            document.getElementById('headerCameraStatsContainer')
+        ].filter(Boolean);
+        
+        statsContainers.forEach(statsContainer => {
+            if (statsContainer && this.cameraInfo) {
             const streamManager = this.streamManager;
             const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
             const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
@@ -8790,7 +9051,8 @@ class GitItUpVisualizer {
                     <span class="stats-value">${bitrate} Mbps</span>
                 </div>
             `;
-        }
+            }
+        });
     }
 
     async startVideoFile(file) {
@@ -9077,8 +9339,13 @@ class GitItUpVisualizer {
     }
 
     updateVideoFileStats(videoInfo) {
-        const statsContainer = document.getElementById('cameraStatsContainer');
-        if (statsContainer && videoInfo) {
+        const statsContainers = [
+            document.getElementById('cameraStatsContainer'),
+            document.getElementById('headerCameraStatsContainer')
+        ].filter(Boolean);
+        
+        statsContainers.forEach(statsContainer => {
+            if (statsContainer && videoInfo) {
             const streamManager = this.streamManager;
             const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
             const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
@@ -9110,7 +9377,8 @@ class GitItUpVisualizer {
                     <span class="stats-value">${bitrate} Mbps</span>
                 </div>
             `;
-        }
+            }
+        });
     }
 
     stopVideoInput(updateUI = true, isSourceSwitch = false) { // Clear any existing fade timeout immediately
@@ -9906,34 +10174,31 @@ class GitItUpVisualizer {
             }
         }
 
-        // Update toggle buttons
-        const invertBtn = document.getElementById('videoInvertBtn');
-        if (invertBtn) {
-            invertBtn.textContent = `Invert: ${
+        // Update toggle buttons (both header and sidebar)
+        this.updateVideoElements('videoInvertBtn', (btn) => {
+            btn.textContent = `Invert: ${
                 this.videoInvert ? 'On' : 'Off'
             }`;
-            invertBtn.classList.toggle('active', this.videoInvert);
-        }
+            btn.classList.toggle('active', this.videoInvert);
+        });
 
-        const mirrorBtn = document.getElementById('videoMirrorBtn');
-        if (mirrorBtn) {
+        this.updateVideoElements('videoMirrorBtn', (btn) => {
             const mirrorText = this.videoMirror === 'off' ? 'Off' : this.videoMirror.charAt(0).toUpperCase() + this.videoMirror.slice(1);
-            mirrorBtn.textContent = `Mirror: ${mirrorText}`;
-            mirrorBtn.classList.toggle('active', this.videoMirror !== 'off');
-        }
+            btn.textContent = `Mirror: ${mirrorText}`;
+            btn.classList.toggle('active', this.videoMirror !== 'off');
+        });
 
-        const pulseBtn = document.getElementById('videoPulseBtn');
-        if (pulseBtn) {
-            pulseBtn.textContent = `Pulse: ${
+        this.updateVideoElements('videoPulseBtn', (btn) => {
+            btn.textContent = `Pulse: ${
                 this.videoPulse ? 'On' : 'Off'
             }`;
-            pulseBtn.classList.toggle('active', this.videoPulse);
-        }
+            btn.classList.toggle('active', this.videoPulse);
+        });
 
-        const pulseRateContainer = document.getElementById('videoPulseRateContainer');
-        if (pulseRateContainer) {
-            pulseRateContainer.style.display = this.videoPulse ? 'flex' : 'none';
-        }
+        // Update pulse rate container visibility (both header and sidebar)
+        this.updateVideoElements('videoPulseRateContainer', (container) => {
+            container.style.display = this.videoPulse ? 'flex' : 'none';
+        });
     }
 
     setVideoOpacity(value) {
