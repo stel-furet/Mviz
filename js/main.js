@@ -10111,15 +10111,48 @@ https://rogueamoeba.com/loopback/
             });
         }
 
-        // Beat React button
-        const beatReactBtn = document.getElementById('blobsBeatReactBtn');
-        if (beatReactBtn) {
-            beatReactBtn.addEventListener('click', () => {
-                this.blobsVisualization.beatReact = !this.blobsVisualization.beatReact;
-                beatReactBtn.textContent = `Beat React: ${this.blobsVisualization.beatReact ? 'On' : 'Off'}`;
-                beatReactBtn.classList.toggle('active', this.blobsVisualization.beatReact);
-            });
-        }
+            // Min Size slider
+            const minSizeSlider = document.getElementById('blobsMinSizeSlider');
+            const minSizeValue = document.getElementById('blobsMinSizeValue');
+            if (minSizeSlider && minSizeValue) {
+                minSizeSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    minSizeValue.textContent = value.toFixed(1);
+                    this.blobsVisualization.setMinSize(value);
+                });
+            }
+            
+            // Max Size slider
+            const maxSizeSlider = document.getElementById('blobsMaxSizeSlider');
+            const maxSizeValue = document.getElementById('blobsMaxSizeValue');
+            if (maxSizeSlider && maxSizeValue) {
+                maxSizeSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    maxSizeValue.textContent = value.toFixed(1);
+                    this.blobsVisualization.setMaxSize(value);
+                });
+            }
+            
+            // Decay/Lifespan slider
+            const decaySlider = document.getElementById('blobsDecaySlider');
+            const decayValue = document.getElementById('blobsDecayValue');
+            if (decaySlider && decayValue) {
+                decaySlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    decayValue.textContent = value.toFixed(1) + 'x';
+                    this.blobsVisualization.setDecayMultiplier(value);
+                });
+            }
+            
+            // Beat React button
+            const beatReactBtn = document.getElementById('blobsBeatReactBtn');
+            if (beatReactBtn) {
+                beatReactBtn.addEventListener('click', () => {
+                    this.blobsVisualization.beatReact = !this.blobsVisualization.beatReact;
+                    beatReactBtn.textContent = `Beat React: ${this.blobsVisualization.beatReact ? 'On' : 'Off'}`;
+                    beatReactBtn.classList.toggle('active', this.blobsVisualization.beatReact);
+                });
+            }
     }
     
     toggleInfiniteZoom() {

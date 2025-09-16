@@ -4,6 +4,8 @@ class BlobsVisualization {
         this.visualizer = visualizer;
         this.canvas = null;
         this.ctx = null;
+        this.trailCanvas = null;
+        this.trailCtx = null;
         this.isActive = false;
         this.isInitialized = false;
         
@@ -17,8 +19,6 @@ class BlobsVisualization {
         this.turbulence = 0.8;
         this.energyMultiplier = 1.0;
         this.boilingIntensity = 1.2;
-        this.vortexStrength = 0.3;
-        this.swirlSpeed = 0.02;
         
         // Cosmic plasma color palette - deep reds to bright yellows
         this.plasmaColors = [
@@ -44,6 +44,9 @@ class BlobsVisualization {
         this.brightness = 1.0;
         this.beatReact = true;
         this.intensity = 1.0;
+        this.minSize = 2;
+        this.maxSize = 8;
+        this.decayMultiplier = 1.0; // 1.0 = normal lifespan, 10.0 = 10x longer
         
         // Heat distortion effect
         this.heatDistortion = [];
@@ -53,6 +56,10 @@ class BlobsVisualization {
         this.lastFrameTime = 0;
         this.targetFPS = 30;
         this.frameInterval = 1000 / this.targetFPS;
+        
+        // Continuous generation
+        this.lastParticleTime = 0;
+        this.particleGenerationRate = 100; // Base rate in ms
         
         // Audio energy tracking
         this.energyHistory = [];
@@ -65,7 +72,7 @@ class BlobsVisualization {
     initialize() {
         if (this.isInitialized) return;
         
-        // Create canvas
+        // Create main canvas
         this.canvas = document.createElement('canvas');
         this.canvas.className = 'blobs-canvas';
         this.canvas.style.position = 'absolute';
@@ -74,6 +81,10 @@ class BlobsVisualization {
         this.canvas.style.pointerEvents = 'none';
         this.canvas.style.zIndex = '9999'; // Very high z-index to ensure visibility
         this.canvas.style.display = 'none';
+        
+        // Create trail canvas (off-screen) for motion blur effect
+        this.trailCanvas = document.createElement('canvas');
+        this.trailCtx = this.trailCanvas.getContext('2d');
         
         // Add to visualization container
         const container = document.getElementById('visualizationContainer');
@@ -114,6 +125,10 @@ class BlobsVisualization {
         this.canvas.width = newWidth;
         this.canvas.height = newHeight;
         this.ctx = this.canvas.getContext('2d');
+        
+        // Update trail canvas dimensions
+        this.trailCanvas.width = newWidth;
+        this.trailCanvas.height = newHeight;
         
         // Scale existing particle positions to maintain their relative positions
         if (this.particles && this.particles.length > 0) {
@@ -202,87 +217,82 @@ class BlobsVisualization {
     }
     
     addParticle() {
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
+        // Spawn randomly anywhere on canvas
+        const x = Math.random() * this.canvas.width;
+        const y = Math.random() * this.canvas.height;
+        
+        // Random direction and speed
         const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * Math.min(this.canvas.width, this.canvas.height) * 0.3;
+        const speed = 1 + Math.random() * 3; // Speed between 1-4
         
         const particle = {
-            x: centerX + Math.cos(angle) * radius,
-            y: centerY + Math.sin(angle) * radius,
-            vx: (Math.random() - 0.5) * 2,
-            vy: -Math.random() * 3 - 1,
-            life: 1.0,
-            decay: 0.003 + Math.random() * 0.005,
-            size: 2 + Math.random() * 6,
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0, // Start at full life
+            decay: (0.002 + Math.random() * 0.004) / this.decayMultiplier, // Decay rate affected by multiplier
+            size: this.minSize + Math.random() * (this.maxSize - this.minSize),
             colorIndex: Math.floor(Math.random() * this.plasmaColors.length),
             turbulence: 0.3 + Math.random() * 0.4,
             heat: 0.6 + Math.random() * 0.4,
             flicker: Math.random() * Math.PI * 2,
             flickerSpeed: 0.05 + Math.random() * 0.1,
-            swirlPhase: Math.random() * Math.PI * 2,
-            swirlRadius: radius,
-            originalAngle: angle,
-            vortexInfluence: 0.5 + Math.random() * 0.5
+            direction: angle, // Store original direction for reference
+            baseSpeed: speed, // Store base speed
+            curvePhase: Math.random() * Math.PI * 2, // For curved paths
+            curveStrength: 1.0 + Math.random() * 2.0, // How much the path curves
+            curveFrequency: 0.02 + Math.random() * 0.04 // How fast the curve oscillates
         };
         
         this.particles.push(particle);
     }
     
     updateParticle(particle, energy) {
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
+        // Apply random movement with energy influence
+        const energyInfluence = energy * this.intensity;
         
-        // Calculate distance from center for vortex effect
-        const dx = particle.x - centerX;
-        const dy = particle.y - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Apply cosmic plasma vortex effect
-        particle.swirlPhase += this.swirlSpeed * (1 + energy * 2);
-        
-        // Vortex force - particles spiral inward and upward
-        const vortexForce = this.vortexStrength * (1 + energy * 1.5);
-        const vortexAngle = Math.atan2(dy, dx) + this.swirlSpeed;
-        const inwardForce = -vortexForce * 0.1; // Pull toward center
-        const upwardForce = -vortexForce * 0.3; // Pull upward
-        
-        particle.vx += inwardForce * Math.cos(vortexAngle) + (Math.random() - 0.5) * 0.5;
-        particle.vy += upwardForce + inwardForce * Math.sin(vortexAngle) + (Math.random() - 0.5) * 0.5;
-        
-        // Apply turbulence based on energy
-        const turbulenceFactor = this.turbulence * (1 + energy * 3);
+        // Apply turbulence based on energy for random movement
+        const turbulenceFactor = this.turbulence * (1 + energy * 2);
         particle.vx += (Math.random() - 0.5) * particle.turbulence * turbulenceFactor;
         particle.vy += (Math.random() - 0.5) * particle.turbulence * turbulenceFactor;
         
-        // Apply energy-based upward force (boiling effect)
-        const boilingForce = energy * this.boilingIntensity * this.intensity;
-        particle.vy -= boilingForce;
+        // Apply energy-based speed boost
+        const energyBoost = energyInfluence * 0.5;
+        particle.vx *= (1 + energyBoost);
+        particle.vy *= (1 + energyBoost);
         
         // Update position
         particle.x += particle.vx;
         particle.y += particle.vy;
         
-        // Apply gravity (much weaker for plasma effect)
-        particle.vy += this.gravity;
+        // Light gravity effect
+        particle.vy += this.gravity * 0.3;
         
-        // Update flicker for plasma movement
+        // Update flicker for natural movement variation
         particle.flicker += particle.flickerSpeed;
-        particle.vx += Math.sin(particle.flicker) * 0.2;
+        particle.vx += Math.sin(particle.flicker) * 0.1;
         particle.vy += Math.cos(particle.flicker) * 0.1;
         
-        // Update life with energy-based decay
-        particle.decay = 0.003 + Math.random() * 0.005 + energy * 0.002;
+        // Add curved path motion
+        particle.curvePhase += particle.curveFrequency;
+        const curveForce = Math.sin(particle.curvePhase) * particle.curveStrength;
+        
+        // Apply curve perpendicular to current direction
+        const perpAngle = Math.atan2(particle.vy, particle.vx) + Math.PI / 2;
+        particle.vx += Math.cos(perpAngle) * curveForce * 0.3;
+        particle.vy += Math.sin(perpAngle) * curveForce * 0.3;
+        
+        // Apply decay to life
         particle.life -= particle.decay;
         
-        // Update heat based on energy and distance from center
-        const heatFromCenter = Math.max(0, 1 - distance / (Math.min(this.canvas.width, this.canvas.height) * 0.5));
-        particle.heat = Math.min(1.0, 0.6 + energy * 0.4 + heatFromCenter * 0.3);
+        // Update heat based on energy
+        particle.heat = Math.min(1.0, 0.6 + energy * 0.4);
         
-        // Remove dead particles
-        if (particle.life <= 0 || particle.y < -100 || distance > Math.min(this.canvas.width, this.canvas.height)) {
-            const index = this.particles.indexOf(particle);
-            this.particles.splice(index, 1);
+        // Remove particles when they die or go off screen
+        if (particle.life <= 0 || 
+            particle.x < -50 || particle.x > this.canvas.width + 50 ||
+            particle.y < -50 || particle.y > this.canvas.height + 50) {
             return false;
         }
         
@@ -448,7 +458,7 @@ class BlobsVisualization {
     
     render(audioData) {
         if (!this.isActive || !this.ctx) {
-            console.log('🔥 Liquid Fire render skipped:', { isActive: this.isActive, hasCtx: !!this.ctx });
+            console.log('🔵 Blobs render skipped:', { isActive: this.isActive, hasCtx: !!this.ctx });
             return;
         }
         
@@ -460,7 +470,7 @@ class BlobsVisualization {
         
         // Debug: Check canvas dimensions
         if (this.canvas.width === 0 || this.canvas.height === 0) {
-            console.warn('🔥 Liquid Fire: Canvas has zero dimensions!', {
+            console.warn('🔵 Blobs: Canvas has zero dimensions!', {
                 width: this.canvas.width,
                 height: this.canvas.height
             });
@@ -482,17 +492,43 @@ class BlobsVisualization {
         const targetParticles = Math.floor(50 + energy * 150);
         this.particleCount = Math.min(Math.max(targetParticles, 30), this.maxParticles); // Ensure minimum 30 particles
         
-        // Add/remove particles to match target
-        while (this.particles.length < this.particleCount) {
-            this.addParticle();
-        }
-        while (this.particles.length > this.particleCount) {
-            this.particles.pop();
+        // Smooth particle generation - add/remove gradually instead of in batches
+        const particleDiff = this.particleCount - this.particles.length;
+        
+        if (particleDiff > 0) {
+            // Add particles gradually (1-3 per frame based on difference)
+            const particlesToAdd = Math.min(Math.ceil(particleDiff * 0.1), 3);
+            for (let i = 0; i < particlesToAdd; i++) {
+                this.addParticle();
+            }
+        } else if (particleDiff < 0) {
+            // Remove particles gradually (1-2 per frame)
+            const particlesToRemove = Math.min(Math.abs(particleDiff), 2);
+            for (let i = 0; i < particlesToRemove; i++) {
+                if (this.particles.length > 0) {
+                    this.particles.pop();
+                }
+            }
         }
         
-        // Clear canvas with fade effect for motion blur
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Continuous particle generation for smoother flow
+        if (currentTime - this.lastParticleTime > this.particleGenerationRate * (1 / (1 + energy))) {
+            if (this.particles.length < this.particleCount) {
+                this.addParticle();
+                this.lastParticleTime = currentTime;
+            }
+        }
+        
+        // Clear canvas to transparent for proper compositing
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Create trails effect by drawing previous frame with reduced opacity
+        if (this.trailCanvas) {
+            this.ctx.globalAlpha = 0.85; // Trail fade amount
+            this.ctx.globalCompositeOperation = 'source-over';
+            this.ctx.drawImage(this.trailCanvas, 0, 0);
+            this.ctx.globalAlpha = 1.0;
+        }
         
         // Debug: Only show test rectangles if no particles
         if (this.particles.length === 0) {
@@ -528,6 +564,10 @@ class BlobsVisualization {
         
         // Render heat distortion
         this.renderHeatDistortion();
+        
+        // Update trail canvas with current frame for next frame's trails
+        this.trailCtx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
+        this.trailCtx.drawImage(this.canvas, 0, 0);
     }
     
     animate() {
@@ -603,6 +643,27 @@ class BlobsVisualization {
     
     setBeatReact(enabled) {
         this.beatReact = enabled;
+    }
+    
+    setMinSize(size) {
+        this.minSize = Math.max(0.5, Math.min(20, size));
+        // Ensure min is not greater than max
+        if (this.minSize > this.maxSize) {
+            this.maxSize = this.minSize + 1;
+        }
+    }
+    
+    setMaxSize(size) {
+        this.maxSize = Math.max(1, Math.min(20, size));
+        // Ensure max is not less than min
+        if (this.maxSize < this.minSize) {
+            this.minSize = this.maxSize - 1;
+        }
+    }
+    
+    setDecayMultiplier(multiplier) {
+        this.decayMultiplier = Math.max(0.1, Math.min(10, multiplier));
+        console.log('🔵 Blobs decay multiplier set to:', this.decayMultiplier);
     }
     
     // Legacy settings for compatibility
