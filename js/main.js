@@ -4913,8 +4913,8 @@ class GitItUpVisualizer {
     }
 
     updateDeviceList() {
-        const select = document.getElementById('audioDeviceSelect');
-        if (! select) 
+        const select = this.getAudioElement('audioDeviceSelect');
+        if (!select) 
             return;
         
 
@@ -4960,6 +4960,30 @@ class GitItUpVisualizer {
         
         // Create a custom dropdown menu for audio input selection
         this.createAudioInputDropdown();
+        
+        // Ensure header playlist shows cached data after dropdown is created
+        setTimeout(() => {
+            const headerPlaylist = document.getElementById('headerPlaylistDropdown');
+            if (headerPlaylist && this.playlistManager && this.playlistManager.currentPlaylist && this.playlistManager.currentPlaylist.tracks) {
+                console.log('Audio dropdown opened: updating header playlist with cached data...');
+                this.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
+            }
+        }, 100);
+    }
+
+    // Helper function to get audio element from header only
+    getAudioElement(baseId) {
+        // Header-only lookup (sidebar will be removed)
+        const headerId = 'header' + baseId.charAt(0).toUpperCase() + baseId.slice(1);
+        return document.getElementById(headerId);
+    }
+
+    // Helper function to update header audio elements only
+    updateAudioElements(baseId, updateFn) {
+        const headerId = 'header' + baseId.charAt(0).toUpperCase() + baseId.slice(1);
+        const headerElement = document.getElementById(headerId);
+        
+        if (headerElement) updateFn(headerElement);
     }
 
     createAudioInputDropdown() {
@@ -4991,7 +5015,10 @@ class GitItUpVisualizer {
             border-radius: 8px;
             padding: 15px;
             z-index: 10000;
-            min-width: 250px;
+            min-width: 320px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
         `;
 
         // Create header
@@ -5098,6 +5125,65 @@ class GitItUpVisualizer {
         deviceList.appendChild(helpBtn);
         dropdown.appendChild(deviceList);
 
+        // Add audio settings section after device list
+        const settingsSection = document.createElement('div');
+        settingsSection.style.cssText = `
+            margin-top: 15px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 15px;
+        `;
+        
+        // Live Audio ON/OFF Toggle
+        const toggleSection = document.createElement('div');
+        toggleSection.style.cssText = `
+            margin-bottom: 15px;
+            text-align: center;
+        `;
+        
+        const audioToggle = document.createElement('button');
+        audioToggle.className = 'control-btn';
+        audioToggle.id = 'headerLiveAudioToggleBtn';
+        
+        audioToggle.textContent = this.liveAudioEnabled ? 'ON' : 'OFF';
+        audioToggle.style.cssText = `
+            background: ${this.liveAudioEnabled ? 'var(--accent-color)' : 'var(--hover-color)'};
+            color: ${this.liveAudioEnabled ? 'white' : 'var(--text-primary)'};
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 60px;
+        `;
+        
+        audioToggle.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Call toggleLiveAudio on this instance
+            this.toggleLiveAudio();
+            
+            // Update button text and style
+            const isOn = this.liveAudioEnabled;
+            audioToggle.textContent = isOn ? 'ON' : 'OFF';
+            audioToggle.style.background = isOn ? 'var(--accent-color)' : 'var(--hover-color)';
+            audioToggle.style.color = isOn ? 'white' : 'var(--text-primary)';
+        };
+        
+        toggleSection.appendChild(audioToggle);
+        settingsSection.appendChild(toggleSection);
+        
+        // Playlist Controls
+        this.addPlaylistControlsGroup(settingsSection);
+        
+        dropdown.appendChild(settingsSection);
+        
+        // Prevent settings section from closing dropdown when clicked
+        settingsSection.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
         // Add to page
         document.body.appendChild(dropdown);
 
@@ -5115,6 +5201,166 @@ class GitItUpVisualizer {
         }, 100);
 
         console.log('Custom audio input dropdown created');
+    }
+
+    addPlaylistControlsGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Playlist';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        // Create header playlist container that mirrors sidebar functionality
+        const playlistContainer = document.createElement('div');
+        playlistContainer.id = 'headerPlaylistDropdown';
+        playlistContainer.className = 'embedded-playlist-manager';
+        playlistContainer.style.cssText = `
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+        
+        controlGroup.appendChild(playlistContainer);
+        container.appendChild(controlGroup);
+        
+        // Force immediate playlist initialization for header
+        console.log('Setting up header playlist...');
+        setTimeout(() => {
+            const headerPlaylist = document.getElementById('headerPlaylistDropdown');
+            console.log('Header playlist container found:', !!headerPlaylist);
+            
+            if (headerPlaylist && window.playlistManager) {
+                console.log('Forcing header playlist population...');
+                // Check if playlist manager has a cached playlist
+                if (window.playlistManager.currentPlaylist && window.playlistManager.currentPlaylist.tracks) {
+                    console.log('Found cached playlist, rendering to header...');
+                    window.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
+                } else {
+                    window.playlistManager.populateHeaderPlaylistDirect(headerPlaylist);
+                }
+            } else if (headerPlaylist) {
+                // Fallback: create basic playlist structure immediately
+                console.log('Creating fallback playlist structure...');
+                headerPlaylist.innerHTML = `
+                    <div class="playlist-actions-dropdown" style="margin-bottom: 10px;">
+                        <button class="playlist-scan-btn" style="
+                            background: var(--accent-color);
+                            color: white;
+                            border: 1px solid var(--accent-color);
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            margin-right: 8px;
+                            font-size: 12px;
+                        ">📁 Add Folder</button>
+                        <button class="playlist-import-btn" style="
+                            background: var(--hover-color);
+                            color: var(--text-primary);
+                            border: 1px solid var(--border-color);
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            margin-right: 8px;
+                            font-size: 12px;
+                        ">📥</button>
+                        <button class="playlist-export-btn" style="
+                            background: var(--hover-color);
+                            color: var(--text-primary);
+                            border: 1px solid var(--border-color);
+                            padding: 8px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 12px;
+                        ">📤</button>
+                    </div>
+                    <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
+                        <div style="font-size: 12px;">No music loaded</div>
+                        <div style="font-size: 11px; margin-top: 4px;">Click "Add Folder" to scan your music library</div>
+                    </div>
+                `;
+                
+                // Bind the Add Folder button immediately
+                const scanBtn = headerPlaylist.querySelector('.playlist-scan-btn');
+                if (scanBtn) {
+                    scanBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Header Add Folder clicked!');
+                        
+                        // Access the playlist manager through the visualizer
+                        if (window.visualizer && window.visualizer.playlistManager) {
+                            window.visualizer.playlistManager.scanFolder();
+                        } else if (window.playlistManager) {
+                            window.playlistManager.scanFolder();
+                        } else {
+                            console.error('Playlist manager not found!');
+                            // Try to initialize it
+                            if (window.visualizer) {
+                                console.log('Attempting to access playlist manager through visualizer...');
+                                const pm = window.visualizer.playlistManager;
+                                if (pm && pm.scanFolder) {
+                                    pm.scanFolder();
+                                } else {
+                                    alert('Playlist system not ready. Please refresh the page.');
+                                }
+                            }
+                        }
+                    };
+                }
+                
+                // Bind Import button
+                const importBtn = headerPlaylist.querySelector('.playlist-import-btn');
+                if (importBtn) {
+                    importBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const importInput = document.getElementById('playlistImportInput');
+                        if (importInput) {
+                            importInput.click();
+                        }
+                    };
+                }
+                
+                // Bind Export button
+                const exportBtn = headerPlaylist.querySelector('.playlist-export-btn');
+                if (exportBtn) {
+                    exportBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Access the playlist manager through the visualizer
+                        if (window.visualizer && window.visualizer.playlistManager) {
+                            window.visualizer.playlistManager.exportPlaylist();
+                        } else if (window.playlistManager) {
+                            window.playlistManager.exportPlaylist();
+                        }
+                    };
+                }
+            }
+        }, 50);
+        
+        // Also check again after playlist manager has had time to load cached data
+        setTimeout(() => {
+            const headerPlaylist = document.getElementById('headerPlaylistDropdown');
+            if (headerPlaylist && window.playlistManager && window.playlistManager.currentPlaylist && window.playlistManager.currentPlaylist.tracks) {
+                console.log('Late check: Found cached playlist, updating header...');
+                window.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
+            }
+        }, 1500);
     }
 
     showVideoInputMenu() {
@@ -6164,8 +6410,7 @@ class GitItUpVisualizer {
     }
 
     async toggleLiveAudio() {
-        const toggleBtn = document.getElementById('liveAudioToggleBtn');
-        const deviceSelect = document.getElementById('audioDeviceSelect');
+        const deviceSelect = this.getAudioElement('audioDeviceSelect');
 
         if (this.liveAudioEnabled) {
             // Turn OFF live audio
@@ -6174,9 +6419,14 @@ class GitItUpVisualizer {
             this.inputMode = 'playlist';
             this.currentDeviceId = null;
             
-            // Update UI
-            toggleBtn.textContent = 'OFF';
-            toggleBtn.classList.remove('active');
+            // Update UI for header toggle button
+            this.updateAudioElements('liveAudioToggleBtn', (btn) => {
+                btn.textContent = 'OFF';
+                btn.classList.remove('active');
+                btn.style.background = 'var(--hover-color)';
+                btn.style.color = 'var(--text-primary)';
+            });
+            
             if (deviceSelect) {
                 deviceSelect.value = '';
             }
@@ -6199,9 +6449,13 @@ class GitItUpVisualizer {
             
             this.liveAudioEnabled = true;
             
-            // Update UI
-            toggleBtn.textContent = 'ON';
-            toggleBtn.classList.add('active');
+            // Update UI for header toggle button
+            this.updateAudioElements('liveAudioToggleBtn', (btn) => {
+                btn.textContent = 'ON';
+                btn.classList.add('active');
+                btn.style.background = 'var(--accent-color)';
+                btn.style.color = 'white';
+            });
         }
         
         // Update footer button state
@@ -7194,7 +7448,7 @@ class GitItUpVisualizer {
 
 
     async toggleInputMode() {
-        const deviceSelect = document.getElementById('audioDeviceSelect');
+        const deviceSelect = this.getAudioElement('audioDeviceSelect');
 
         if (this.inputMode === 'playlist') {
             try {
@@ -7596,14 +7850,8 @@ class GitItUpVisualizer {
     }
 
     initializePlaylistUI() {
-        // Prevent clicks inside embedded playlist from bubbling up
-        const playlistDropdown = document.getElementById('playlistDropdown');
-        if (playlistDropdown) {
-            playlistDropdown.addEventListener('click', (e) => {
-                e.stopPropagation();
-                console.log('Click inside embedded playlist - preventing bubble');
-            });
-        }
+        // Sidebar playlist click handler - will be removed with sidebar
+        // Playlist functionality now handled by header dropdown
         
         // Close button handler - try to find it, if not found, retry later
         this.initializeCloseButtonHandler();
@@ -10283,18 +10531,18 @@ class GitItUpVisualizer {
             // Update footer Live Audio button state
             this.updateFooterLiveAudioButton();
             
-            // Update sidebar audio device selector to show selected device
-            const deviceSelect = document.getElementById('audioDeviceSelect');
-            if (deviceSelect) {
-                deviceSelect.value = deviceId;
-            }
+            // Update audio device selector to show selected device (header only)
+            this.updateAudioElements('audioDeviceSelect', (select) => {
+                select.value = deviceId;
+            });
             
-            // Update live audio toggle button
-            const toggleBtn = document.getElementById('liveAudioToggleBtn');
-            if (toggleBtn) {
-                toggleBtn.textContent = 'ON';
-                toggleBtn.classList.add('active');
-            }
+            // Update live audio toggle button (header only)
+            this.updateAudioElements('liveAudioToggleBtn', (btn) => {
+                btn.textContent = 'ON';
+                btn.classList.add('active');
+                btn.style.background = 'var(--accent-color)';
+                btn.style.color = 'white';
+            });
 
         } catch (e) {
             console.error('Failed to start live input:', e);
@@ -10319,18 +10567,18 @@ class GitItUpVisualizer {
         // Update footer Live Audio button state
         this.updateFooterLiveAudioButton();
         
-        // Clear sidebar audio device selector
-        const deviceSelect = document.getElementById('audioDeviceSelect');
-        if (deviceSelect) {
-            deviceSelect.value = '';
-        }
+        // Clear audio device selector (header only)
+        this.updateAudioElements('audioDeviceSelect', (select) => {
+            select.value = '';
+        });
         
-        // Update live audio toggle button
-        const toggleBtn = document.getElementById('liveAudioToggleBtn');
-        if (toggleBtn) {
-            toggleBtn.textContent = 'OFF';
-            toggleBtn.classList.remove('active');
-        }
+        // Update live audio toggle button (header only)
+        this.updateAudioElements('liveAudioToggleBtn', (btn) => {
+            btn.textContent = 'OFF';
+            btn.classList.remove('active');
+            btn.style.background = 'var(--hover-color)';
+            btn.style.color = 'var(--text-primary)';
+        });
         
         // Update live audio state
         this.liveAudioEnabled = false;
@@ -13968,30 +14216,11 @@ https://rogueamoeba.com/loopback/
 
         // Audio input mode button (removed - now using select dropdown)
 
-        // Audio device selector
-        const deviceSelect = document.getElementById('audioDeviceSelect');
-        if (deviceSelect) {
-            deviceSelect.addEventListener('change', async (e) => {
-                const deviceId = e.target.value;
+        // Audio device selector - handled by header dropdown now
+        // Sidebar device selector event listener removed as part of migration
 
-                if (deviceId === 'help') {
-                    this.showSystemAudioHelp();
-                    e.target.value = '';
-                } else if (deviceId) {
-                    await this.startLiveInput(deviceId);
-                }
-            });
-        }
-
-        // Live Audio Toggle button
-        const liveAudioToggleBtn = document.getElementById('liveAudioToggleBtn');
-        if (liveAudioToggleBtn) {
-            liveAudioToggleBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.toggleLiveAudio();
-            });
-        }
+        // Live Audio Toggle button - handled by header dropdown now
+        // Sidebar toggle button event listener removed as part of migration
 
         // Footer Live Audio button
         const footerLiveAudioBtn = document.getElementById('footerLiveAudioBtn');
@@ -14697,15 +14926,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
             // *end evenlisteners
             updatePlaylistDropdown() {
-                const dropdown = document.getElementById('playlistDropdown');
-                if (!dropdown) return;
-                
-                // Check if we have new playlist content - if so, don't overwrite it
-                const hasNewContent = dropdown.querySelector('.playlist-actions-dropdown');
-                if (hasNewContent) {
-                    console.log('Preserving new playlist content, skipping old dropdown update');
-                    return;
-                }
+                // Method disabled - playlist now handled by header dropdown and PlaylistManager
+                // Sidebar playlist dropdown will be removed
+                return;
                 
                 // Only clear and populate if using old hardcoded system
                 dropdown.innerHTML = '';

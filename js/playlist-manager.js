@@ -1064,6 +1064,9 @@ class PlaylistManager {
         // Update dropdown for backward compatibility
         this.updateTrackDropdown();
         
+        // Update header playlist directly
+        this.updateHeaderPlaylist();
+        
         console.log('✅ displayPlaylist completed');
     }
     
@@ -1091,6 +1094,313 @@ class PlaylistManager {
         } else {
             console.error('Dropdown element not found!');
         }
+        
+        // Update header playlist if it exists
+        this.updateHeaderPlaylist();
+    }
+    
+    updateHeaderPlaylist() {
+        const headerPlaylist = document.getElementById('headerPlaylistDropdown');
+        if (!headerPlaylist) return;
+        
+        console.log('Updating header playlist...');
+        console.log('Current playlist exists:', !!this.currentPlaylist);
+        console.log('Current playlist tracks:', this.currentPlaylist?.tracks?.length || 0);
+        
+        // Create the header playlist content directly
+        this.renderHeaderPlaylistContent(headerPlaylist);
+    }
+    
+    renderHeaderPlaylistContent(headerContainer) {
+        const hasPlaylist = this.currentPlaylist && this.currentPlaylist.tracks && this.currentPlaylist.tracks.length > 0;
+        
+        let statsHtml = 'No tracks loaded';
+        let durationHtml = '0:00:00';
+        
+        if (hasPlaylist) {
+            const trackCount = this.currentPlaylist.tracks.length;
+            statsHtml = `${trackCount} track${trackCount !== 1 ? 's' : ''}`;
+            durationHtml = '0:00:00'; // Simplified for now
+        }
+        
+        // Create basic structure
+        headerContainer.innerHTML = `
+            <!-- Playlist Actions -->
+            <div class="playlist-actions-dropdown" style="margin-bottom: 10px; display: flex; gap: 8px;">
+                <button class="playlist-scan-btn" style="
+                    background: var(--accent-color);
+                    color: white;
+                    border: 1px solid var(--accent-color);
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                " title="Add Music Folder">📁 Add Folder</button>
+                <button class="playlist-import-btn" style="
+                    background: var(--hover-color);
+                    color: var(--text-primary);
+                    border: 1px solid var(--border-color);
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                " title="Import Playlist">📥</button>
+                <button class="playlist-export-btn" style="
+                    background: var(--hover-color);
+                    color: var(--text-primary);
+                    border: 1px solid var(--border-color);
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                " title="Export Playlist">📤</button>
+            </div>
+            
+            <!-- Playlist Stats -->
+            <div class="playlist-stats" style="margin-bottom: 10px; font-size: 11px; color: var(--text-secondary);">
+                <span class="playlist-track-count">${statsHtml}</span>
+                <span class="playlist-duration" style="margin-left: 10px;">${durationHtml}</span>
+            </div>
+            
+            <!-- Tracks Container -->
+            <div class="playlist-tracks-container">
+                <div class="playlist-tracks" id="headerPlaylistTracks">
+                    ${hasPlaylist ? '' : `
+                        <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
+                            <div style="font-size: 12px;">No music loaded</div>
+                            <div style="font-size: 11px; margin-top: 4px;">Click "Add Folder" to scan your music library</div>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+        
+        // If we have tracks, render them into the header tracks container
+        if (hasPlaylist) {
+            const headerTracksContainer = headerContainer.querySelector('#headerPlaylistTracks');
+            if (headerTracksContainer) {
+                // Temporarily set the ID so renderTrackList can find it
+                const originalId = headerTracksContainer.id;
+                headerTracksContainer.id = 'tempHeaderPlaylistTracks';
+                
+                // Use existing renderTrackList method but target the header container
+                this.renderTrackListToContainer(this.currentPlaylist.tracks, headerTracksContainer);
+                
+                headerTracksContainer.id = originalId;
+            }
+        }
+        
+        // Bind events to the header playlist
+        this.bindHeaderPlaylistEvents(headerContainer);
+    }
+    
+    renderTrackListToContainer(tracks, container) {
+        // Simple track rendering for header
+        let html = '';
+        
+        // Group tracks by artist for better organization
+        const artistGroups = {};
+        tracks.forEach(track => {
+            const artist = track.artist || 'Unknown Artist';
+            if (!artistGroups[artist]) {
+                artistGroups[artist] = [];
+            }
+            artistGroups[artist].push(track);
+        });
+        
+        // Render each artist group
+        Object.keys(artistGroups).sort().forEach(artist => {
+            html += `<div class="artist-group" style="margin-bottom: 15px;">`;
+            html += `<div class="artist-header" style="font-weight: bold; color: var(--text-primary); margin-bottom: 5px; font-size: 12px;">${artist}</div>`;
+            
+            artistGroups[artist].forEach(track => {
+                html += `
+                    <div class="track-item" data-track-id="${track.id}" style="
+                        padding: 6px 8px;
+                        margin-bottom: 2px;
+                        background: rgba(255,255,255,0.02);
+                        border-radius: 3px;
+                        cursor: pointer;
+                        font-size: 11px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    " draggable="true">
+                        <div class="track-info">
+                            <div class="track-title" style="color: var(--text-primary);">${track.title || 'Unknown Title'}</div>
+                            ${track.album ? `<div class="track-album" style="color: var(--text-secondary); font-size: 10px;">${track.album}</div>` : ''}
+                        </div>
+                        <div class="track-controls" style="display: flex; gap: 5px;">
+                            <button class="track-play-btn" data-track-id="${track.id}" style="
+                                background: none;
+                                border: none;
+                                color: var(--accent-color);
+                                cursor: pointer;
+                                font-size: 12px;
+                                padding: 2px;
+                            " title="Play">▶</button>
+                            <button class="track-remove-btn" data-track-id="${track.id}" style="
+                                background: none;
+                                border: none;
+                                color: var(--text-secondary);
+                                cursor: pointer;
+                                font-size: 10px;
+                                padding: 2px;
+                            " title="Remove">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    populateHeaderPlaylistDirect(headerContainer) {
+        headerContainer.innerHTML = `
+            <!-- Playlist Actions -->
+            <div class="playlist-actions-dropdown">
+                <button class="playlist-scan-btn" title="Add Music Folder">📁 Add Folder</button>
+                <button class="playlist-import-btn" title="Import Playlist">📥</button>
+                <button class="playlist-export-btn" title="Export Playlist">📤</button>
+            </div>
+            
+            <!-- Scanning Progress (hidden by default) -->
+            <div class="playlist-progress" style="display: none;">
+                <div class="progress-bar-container">
+                    <div class="progress-bar"></div>
+                </div>
+                <div class="progress-info">
+                    <span class="progress-text">Scanning music folder...</span>
+                    <span class="progress-count">0/0 files</span>
+                    <span class="progress-eta">Est: calculating...</span>
+                </div>
+                <button class="progress-cancel-btn">Cancel</button>
+            </div>
+            
+            <!-- Playlist Stats -->
+            <div class="playlist-stats">
+                <span class="playlist-track-count">No tracks loaded</span>
+                <span class="playlist-duration">0:00:00</span>
+            </div>
+            
+            <!-- Tracks Container -->
+            <div class="playlist-tracks-container">
+                <div class="playlist-tracks">
+                    <!-- Artist groups will be populated here -->
+                    <div class="empty-playlist">
+                        <div class="empty-playlist-icon">🎵</div>
+                        <div class="empty-playlist-text">No music loaded</div>
+                        <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Bind events to the header playlist
+        this.bindHeaderPlaylistEvents(headerContainer);
+    }
+    
+    bindHeaderPlaylistEvents(headerContainer) {
+        // Bind Add Folder button
+        const scanBtn = headerContainer.querySelector('.playlist-scan-btn');
+        if (scanBtn) {
+            scanBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.scanFolder();
+            };
+        }
+        
+        // Bind Import button
+        const importBtn = headerContainer.querySelector('.playlist-import-btn');
+        if (importBtn) {
+            importBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const importInput = document.getElementById('playlistImportInput');
+                if (importInput) {
+                    importInput.click();
+                }
+            };
+        }
+        
+        // Bind Export button
+        const exportBtn = headerContainer.querySelector('.playlist-export-btn');
+        if (exportBtn) {
+            exportBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.exportPlaylist();
+            };
+        }
+        
+        // Bind Cancel button
+        const cancelBtn = headerContainer.querySelector('.progress-cancel-btn');
+        if (cancelBtn) {
+            cancelBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.cancelScan();
+            };
+        }
+        
+        // Bind track play buttons and other interactive elements
+        const playButtons = headerContainer.querySelectorAll('.track-play-btn');
+        playButtons.forEach(btn => {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const trackId = btn.dataset.trackId;
+                if (trackId) {
+                    this.playTrack(trackId);
+                }
+            };
+        });
+        
+        // Bind track remove buttons
+        const removeButtons = headerContainer.querySelectorAll('.track-remove-btn');
+        removeButtons.forEach(btn => {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const trackId = btn.dataset.trackId;
+                if (trackId) {
+                    this.removeTrack(trackId);
+                }
+            };
+        });
+        
+        // Make tracks draggable and set up drop zones (simplified version)
+        const tracks = headerContainer.querySelectorAll('.track-item');
+        tracks.forEach(track => {
+            track.draggable = true;
+            
+            track.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', track.dataset.trackId);
+                track.classList.add('dragging');
+            };
+            
+            track.ondragend = (e) => {
+                track.classList.remove('dragging');
+            };
+            
+            track.ondragover = (e) => {
+                e.preventDefault();
+            };
+            
+            track.ondrop = (e) => {
+                e.preventDefault();
+                const draggedId = e.dataTransfer.getData('text/plain');
+                const targetId = track.dataset.trackId;
+                if (draggedId && targetId && draggedId !== targetId) {
+                    this.reorderTracks(draggedId, targetId);
+                }
+            };
+        });
     }
     
     displayEmptyPlaylist() {
