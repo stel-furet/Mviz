@@ -4338,6 +4338,10 @@ class GitItUpVisualizer {
         this.kaleidoscopeApplyToViz = true; // Default to ON
         this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
         
+        // Blobs properties
+        this.blobsEnabled = false;
+        this.blobsVisualization = null;
+        
         // Center animation variables
         this.kaleidoscopeCenterAnimate = false;
         this.kaleidoscopeCenterAnimMode = 'float'; // 'float' or 'circle'
@@ -4853,6 +4857,7 @@ class GitItUpVisualizer {
             this.playlistManager = new PlaylistManager(this);
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
+            this.blobsVisualization = new BlobsVisualization(this);
             
             // Initialize playlist UI handlers
             this.initializePlaylistUI();
@@ -9940,6 +9945,182 @@ https://rogueamoeba.com/loopback/
             }
         }
     }
+
+    // Blobs toggle methods
+    toggleBlobs() {
+        this.blobsEnabled = !this.blobsEnabled;
+        
+        console.log('🔵 Blobs toggle:', {
+            enabled: this.blobsEnabled,
+            visualization: !!this.blobsVisualization,
+            canvas: this.blobsVisualization ? this.blobsVisualization.canvas : null
+        });
+        
+        if (this.blobsEnabled) {
+            this.blobsVisualization.start();
+            console.log('🔵 Blobs enabled');
+        } else {
+            this.blobsVisualization.stop();
+            console.log('🔵 Blobs disabled');
+        }
+        
+        this.updateBlobsButton();
+    }
+    
+    updateBlobsButton() {
+        // Update header button
+        const headerBtn = document.getElementById('headerBlobsBtn');
+        const headerBtnText = headerBtn ? headerBtn.querySelector('.blobs-btn-text') : null;
+        
+        if (headerBtn && headerBtnText) {
+            if (this.blobsEnabled) {
+                headerBtnText.textContent = 'Blobs On';
+                headerBtn.classList.add('active');
+            } else {
+                headerBtnText.textContent = 'Blobs Off';
+                headerBtn.classList.remove('active');
+            }
+        }
+    }
+
+    positionBlobsPanel() {
+        const blobsBtn = document.getElementById('headerBlobsBtn');
+        const panel = document.getElementById('headerBlobsPanel');
+        
+        if (blobsBtn && panel) {
+            const btnRect = blobsBtn.getBoundingClientRect();
+            const advancedVizSection = document.querySelector('.header-left');
+            const advancedVizRect = advancedVizSection ? advancedVizSection.getBoundingClientRect() : null;
+            
+            // Position panel outside the Advanced-viz area, aligned with button bottom + 4px gap
+            let left = btnRect.left;
+            let top = btnRect.bottom + 4;
+            
+            // If Advanced-viz section is available, position outside it
+            if (advancedVizRect) {
+                left = Math.max(left, advancedVizRect.right + 10); // 10px gap from Advanced-viz area
+            }
+            
+            panel.style.left = left + 'px';
+            panel.style.top = top + 'px';
+            
+            console.log(`🔵 Blobs panel positioned at: ${left}px, ${top}px`);
+        }
+    }
+
+    resizeKaleidoscopeCanvases() {
+        if (!this.kaleidoscopeVideoCanvas || !this.kaleidoscopeVizCanvas) return;
+        
+        const container = document.getElementById('visualizationContainer');
+        if (!container) {
+            console.error('🔮 Kaleidoscope: Container not found during resize!');
+            return;
+        }
+        
+        const rect = container.getBoundingClientRect();
+        
+        // Store old dimensions for any future scaling needs
+        const oldWidth = this.kaleidoscopeVideoCanvas.width || rect.width;
+        const oldHeight = this.kaleidoscopeVideoCanvas.height || rect.height;
+        
+        // Ensure minimum dimensions
+        const newWidth = Math.max(rect.width, 800);
+        const newHeight = Math.max(rect.height, 600);
+        
+        // Calculate scale factors (for potential future use)
+        const scaleX = newWidth / oldWidth;
+        const scaleY = newHeight / oldHeight;
+        
+        // Update canvas dimensions
+        this.kaleidoscopeVideoCanvas.width = newWidth;
+        this.kaleidoscopeVideoCanvas.height = newHeight;
+        this.kaleidoscopeVizCanvas.width = newWidth;
+        this.kaleidoscopeVizCanvas.height = newHeight;
+        
+        // Note: Kaleidoscope doesn't have persistent particles like Blobs, 
+        // so no particle scaling is needed. The effect is recalculated each frame
+        // based on current canvas dimensions and center positions.
+        
+        console.log('🔮 Kaleidoscope canvases resized to:', newWidth, 'x', newHeight);
+    }
+
+    setupBlobsControls() {
+        // Opacity slider
+        const opacitySlider = document.getElementById('blobsOpacitySlider');
+        const opacityValue = document.getElementById('blobsOpacityValue');
+        if (opacitySlider && opacityValue) {
+            opacitySlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                opacityValue.textContent = value + '%';
+                this.blobsVisualization.setOpacity(value);
+            });
+        }
+
+        // Saturation slider
+        const saturationSlider = document.getElementById('blobsSaturationSlider');
+        const saturationValue = document.getElementById('blobsSaturationValue');
+        if (saturationSlider && saturationValue) {
+            saturationSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                saturationValue.textContent = value + '%';
+                this.blobsVisualization.setSaturation(value);
+            });
+        }
+
+        // Posterize slider
+        const posterizeSlider = document.getElementById('blobsPosterizeSlider');
+        const posterizeValue = document.getElementById('blobsPosterizeValue');
+        if (posterizeSlider && posterizeValue) {
+            posterizeSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                posterizeValue.textContent = value;
+                this.blobsVisualization.setPosterize(value);
+            });
+        }
+
+        // Contrast slider
+        const contrastSlider = document.getElementById('blobsContrastSlider');
+        const contrastValue = document.getElementById('blobsContrastValue');
+        if (contrastSlider && contrastValue) {
+            contrastSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                contrastValue.textContent = value + '%';
+                this.blobsVisualization.setContrast(value);
+            });
+        }
+
+        // Brightness slider
+        const brightnessSlider = document.getElementById('blobsBrightnessSlider');
+        const brightnessValue = document.getElementById('blobsBrightnessValue');
+        if (brightnessSlider && brightnessValue) {
+            brightnessSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                brightnessValue.textContent = value + '%';
+                this.blobsVisualization.setBrightness(value);
+            });
+        }
+
+        // Intensity slider
+        const intensitySlider = document.getElementById('blobsIntensitySlider');
+        const intensityValue = document.getElementById('blobsIntensityValue');
+        if (intensitySlider && intensityValue) {
+            intensitySlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                intensityValue.textContent = value + '%';
+                this.blobsVisualization.setIntensity(value);
+            });
+        }
+
+        // Beat React button
+        const beatReactBtn = document.getElementById('blobsBeatReactBtn');
+        if (beatReactBtn) {
+            beatReactBtn.addEventListener('click', () => {
+                this.blobsVisualization.beatReact = !this.blobsVisualization.beatReact;
+                beatReactBtn.textContent = `Beat React: ${this.blobsVisualization.beatReact ? 'On' : 'Off'}`;
+                beatReactBtn.classList.toggle('active', this.blobsVisualization.beatReact);
+            });
+        }
+    }
     
     toggleInfiniteZoom() {
         const panel = document.getElementById('infiniteZoomPanel');
@@ -10267,15 +10448,9 @@ https://rogueamoeba.com/loopback/
 
         // Make sure canvases are properly sized
         if (width === 0 || height === 0) {
-            const container = document.getElementById('visualizationContainer');
-            const rect = container.getBoundingClientRect();
-            this.kaleidoscopeVideoCanvas.width = rect.width;
-            this.kaleidoscopeVideoCanvas.height = rect.height;
-            this.kaleidoscopeVizCanvas.width = rect.width;
-            this.kaleidoscopeVizCanvas.height = rect.height;
-            width = rect.width;
-            height = rect.height;
-            console.log('Resized kaleidoscope canvases to:', width, 'x', height);
+            this.resizeKaleidoscopeCanvases();
+            width = this.kaleidoscopeVideoCanvas.width;
+            height = this.kaleidoscopeVideoCanvas.height;
         }
 
         // Skip viz kaleidoscope if visualization is disabled
@@ -10290,8 +10465,10 @@ https://rogueamoeba.com/loopback/
         const centerY = height * this.kaleidoscopeCenterY;
         const angleStep = (Math.PI * 2) / this.kaleidoscopeSegments;
 
-        // Calculate base radius for 90% viewport fill
-        const baseRadius = width * 0.45;
+        // Calculate base radius using smaller dimension to maintain aspect ratio
+        const minDimension = Math.min(width, height);
+        const baseRadius = minDimension * 0.45;
+        
         let shapeRadius;
 
         switch (this.kaleidoscopeShape) {
@@ -10417,9 +10594,10 @@ https://rogueamoeba.com/loopback/
             }
         }
 
-        // Check if we need to draw kaleidoscope (either AM viz or IZ)
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, or Liquid Fire)
         const shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
-                                     (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas);
+                                     (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
+                                     (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas);
 
         if (shouldDrawKaleidoscope) {
             this.kaleidoscopeVizCanvas.style.display = 'block';
@@ -10483,7 +10661,7 @@ https://rogueamoeba.com/loopback/
                     // Set opacity based on ring number for better visibility
                     this.kaleidoscopeVizCtx.globalAlpha = 1 - (ring * 0.15);
 
-                    // Draw segment - include main visualization and/or infinite zoom
+                    // Draw segment - include main visualization, infinite zoom, and/or liquid fire
                     if (i % 2 === 0) {
                         // Draw main visualization if enabled and available
                         if (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) {
@@ -10494,6 +10672,11 @@ https://rogueamoeba.com/loopback/
                         if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
                             this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
+                        
+        // Draw blobs if active and enabled for kaleidoscope
+        if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
+            this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+        }
                     } else {
                         this.kaleidoscopeVizCtx.scale(1, -1);
                         // Draw main visualization if enabled and available
@@ -10505,6 +10688,11 @@ https://rogueamoeba.com/loopback/
                         if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
                             this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
+                        
+        // Draw blobs if active and enabled for kaleidoscope
+        if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
+            this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+        }
                     }
                     this.kaleidoscopeVizCtx.restore();
                 }
@@ -11627,6 +11815,14 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header Blobs button
+        const headerBlobsBtn = document.getElementById('headerBlobsBtn');
+        if (headerBlobsBtn) {
+            headerBlobsBtn.addEventListener('click', () => {
+                this.toggleBlobs();
+            });
+        }
+
         // Click outside to close panels
         document.addEventListener('click', (e) => {
             const kaleidoscopePanel = document.getElementById('headerKaleidoscopePanel');
@@ -11670,6 +11866,40 @@ https://rogueamoeba.com/loopback/
                 }
             });
         }
+
+
+        // Blobs gear button
+        const blobsGearBtn = document.getElementById('blobsGearBtn');
+        if (blobsGearBtn) {
+            blobsGearBtn.addEventListener('click', () => {
+                // Only toggle settings panel, don't affect Blobs state
+                const panel = document.getElementById('headerBlobsPanel');
+                if (panel) {
+                    const isVisible = panel.style.display !== 'none';
+                    if (isVisible) {
+                        panel.style.display = 'none';
+                    } else {
+                        // Position panel relative to Blobs button
+                        this.positionBlobsPanel();
+                        panel.style.display = 'block';
+                    }
+                }
+            });
+        }
+        
+        // Blobs close button
+        const blobsCloseBtn = document.getElementById('headerBlobsCloseBtn');
+        if (blobsCloseBtn) {
+            blobsCloseBtn.addEventListener('click', () => {
+                const panel = document.getElementById('headerBlobsPanel');
+                if (panel) {
+                    panel.style.display = 'none';
+                }
+            });
+        }
+
+        // Blobs control sliders
+        this.setupBlobsControls();
 
         // Infinite Zoom gear button
         const infiniteZoomGearBtn = document.getElementById('infiniteZoomGearBtn');
@@ -12393,6 +12623,40 @@ https://rogueamoeba.com/loopback/
                 kaleidoscopeShapeBtn.textContent = `Shape: ${
                     this.kaleidoscopeShape.charAt(0).toUpperCase() + this.kaleidoscopeShape.slice(1)
                 }`;
+                
+                // Update header button too
+                const headerBtn = document.getElementById('headerKaleidoscopeShapeBtn');
+                if (headerBtn) {
+                    headerBtn.textContent = `Shape: ${
+                        this.kaleidoscopeShape.charAt(0).toUpperCase() + this.kaleidoscopeShape.slice(1)
+                    }`;
+                }
+                
+                if (this.kaleidoscopeEnabled) {
+                    this.applyKaleidoscopeEffect();
+                }
+            });
+        }
+
+        // Header Shape toggle
+        const headerKaleidoscopeShapeBtn = document.getElementById('headerKaleidoscopeShapeBtn');
+        if (headerKaleidoscopeShapeBtn) {
+            headerKaleidoscopeShapeBtn.addEventListener('click', () => {
+                const shapes = ['triangle', 'petal', 'rectangle'];
+                const currentIndex = shapes.indexOf(this.kaleidoscopeShape);
+                this.kaleidoscopeShape = shapes[(currentIndex + 1) % shapes.length];
+                headerKaleidoscopeShapeBtn.textContent = `Shape: ${
+                    this.kaleidoscopeShape.charAt(0).toUpperCase() + this.kaleidoscopeShape.slice(1)
+                }`;
+                
+                // Update sidebar button too
+                const sidebarBtn = document.getElementById('kaleidoscopeShapeBtn');
+                if (sidebarBtn) {
+                    sidebarBtn.textContent = `Shape: ${
+                        this.kaleidoscopeShape.charAt(0).toUpperCase() + this.kaleidoscopeShape.slice(1)
+                    }`;
+                }
+                
                 if (this.kaleidoscopeEnabled) {
                     this.applyKaleidoscopeEffect();
                 }
@@ -14574,10 +14838,16 @@ if (window.visualizer && window.visualizer.loadVideoSource) {
     }
 }
 
-// Add resize listener for Infinite Zoom
+// Add resize listener for Infinite Zoom, Blobs, and Kaleidoscope
 window.addEventListener('resize', () => {
     if (window.visualizer && window.visualizer.infiniteZoom) {
         window.visualizer.infiniteZoom.resize();
+    }
+    if (window.visualizer && window.visualizer.blobsVisualization) {
+        window.visualizer.blobsVisualization.resize();
+    }
+    if (window.visualizer && window.visualizer.resizeKaleidoscopeCanvases) {
+        window.visualizer.resizeKaleidoscopeCanvases();
     }
 });
 
