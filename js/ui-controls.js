@@ -751,10 +751,12 @@ function updateDrawerBackgroundToggle() {
 
 // Global function for toggling sections
 window.toggleSection = function(sectionName) {
-    // Handle special cases for Audio and Video sections
+    // Handle special cases for remaining sections
     let elementId;
     if (sectionName === 'audio') {
-        elementId = 'sidebarAudioInput';
+        // Audio section removed - now handled by header dropdown
+        console.log('Audio section removed - use header Audio Input button');
+        return;
     } else if (sectionName === 'video') {
         elementId = 'sidebarVideoInput';
     } else {
