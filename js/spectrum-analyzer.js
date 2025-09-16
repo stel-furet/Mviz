@@ -808,7 +808,7 @@ class SpectrumAnalyzer {
                 this.ctx.clearRect(0, 0, width, height);
             }
         } else { // Clear canvas for transparency when video is active
-            console.log('🧹 Clearing canvas for video transparency');
+            // console.log('🧹 Clearing canvas for video transparency');
             this.ctx.clearRect(0, 0, width, height);
         }
 
@@ -828,7 +828,7 @@ class SpectrumAnalyzer {
         } else if (hasBackgroundImage) {
             // console.log('✅ Skipping overlay - background image is active');
         } else {
-            console.log('✅ No overlay - background image should be visible');
+            // console.log('✅ No overlay - background image should be visible');
         }
 
         // Draw based on mode - radial takes precedence over channel layout
