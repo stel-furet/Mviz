@@ -5157,7 +5157,10 @@ class GitItUpVisualizer {
             border-radius: 8px;
             padding: 15px;
             z-index: 10000;
-            min-width: 250px;
+            min-width: 320px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
         `;
 
         // Create header
@@ -5172,7 +5175,7 @@ class GitItUpVisualizer {
         `;
         
         const title = document.createElement('h3');
-        title.textContent = 'Video Input';
+        title.textContent = 'Video Settings';
         title.style.cssText = `
             margin: 0;
             color: var(--text-primary);
@@ -5233,10 +5236,12 @@ class GitItUpVisualizer {
             }
             
             deviceBtn.textContent = displayName;
-            deviceBtn.onclick = async () => {
+            deviceBtn.onclick = async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 // Use existing video input system
                 await this.startVideoInput(device.deviceId);
-                dropdown.remove();
+                // Don't close panel - let user adjust settings
             };
             
             deviceBtn.onmouseover = () => {
@@ -5252,6 +5257,67 @@ class GitItUpVisualizer {
             
             deviceList.appendChild(deviceBtn);
         });
+
+        // Add separator
+        if (this.availableVideoDevices.length > 0) {
+            const separator = document.createElement('div');
+            separator.style.cssText = `
+                border-top: 1px solid var(--border-color);
+                margin: 8px 0 4px 0;
+            `;
+            deviceList.appendChild(separator);
+        }
+
+        // Add video from file option
+        const fileBtn = document.createElement('button');
+        const isFileActive = this.videoMode === 'file';
+        
+        fileBtn.style.cssText = `
+            background: ${isFileActive ? 'var(--accent-color)' : 'var(--hover-color)'};
+            border: 1px solid ${isFileActive ? 'var(--accent-color)' : 'var(--border-color)'};
+            color: ${isFileActive ? 'white' : 'var(--text-primary)'};
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        `;
+        
+        let fileDisplayName = '📁 Video from file';
+        if (this.videoFile) {
+            fileDisplayName += ` (${this.videoFile.name})`;
+        }
+        
+        // Add active indicator
+        if (isFileActive) {
+            fileDisplayName = '● ' + fileDisplayName;
+        }
+        
+        fileBtn.textContent = fileDisplayName;
+        fileBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Trigger file input - same as sidebar functionality
+            const fileInput = document.getElementById('videoFileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+            // Don't close panel - let user adjust settings
+        };
+        
+        fileBtn.onmouseover = () => {
+            if (!isFileActive) {
+                fileBtn.style.background = '#404040';
+            }
+        };
+        fileBtn.onmouseout = () => {
+            if (!isFileActive) {
+                fileBtn.style.background = 'var(--hover-color)';
+            }
+        };
+        
+        deviceList.appendChild(fileBtn);
 
         // Add help option
         const helpBtn = document.createElement('button');
@@ -5273,13 +5339,87 @@ class GitItUpVisualizer {
                   '• Select a camera or video device from the list\n' +
                   '• Built-in cameras will show as "📹 Built-in Camera"\n' +
                   '• External USB cameras will show as "📹 USB Camera"\n' +
+                  '• Select "📁 Video from file" to use a video file\n' +
                   '• The video feed will appear in the visualization\n' +
                   '• Click the V button again to stop video input');
             dropdown.remove();
         };
         
         deviceList.appendChild(helpBtn);
+        
+        // Add video settings section after device list
+        const settingsSection = document.createElement('div');
+        settingsSection.style.cssText = `
+            margin-top: 15px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 15px;
+        `;
+        
+        // Video ON/OFF Toggle
+        const toggleSection = document.createElement('div');
+        toggleSection.style.cssText = `
+            margin-bottom: 15px;
+            text-align: center;
+        `;
+        
+        const videoToggle = document.createElement('button');
+        videoToggle.className = 'dropdown-toggle viz-toggle-btn';
+        videoToggle.id = 'headerVideoToggleBtn';
+        videoToggle.textContent = this.videoMode === 'camera' || this.videoMode === 'file' ? 'ON' : 'OFF';
+        videoToggle.style.cssText = `
+            background: ${this.videoMode === 'camera' || this.videoMode === 'file' ? 'var(--accent-color)' : 'var(--hover-color)'};
+            color: ${this.videoMode === 'camera' || this.videoMode === 'file' ? 'white' : 'var(--text-primary)'};
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 60px;
+        `;
+        
+        videoToggle.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const videoToggleBtn = document.getElementById('videoToggleBtn');
+            if (videoToggleBtn) {
+                videoToggleBtn.click();
+            }
+        };
+        
+        toggleSection.appendChild(videoToggle);
+        settingsSection.appendChild(toggleSection);
+        
+        // Basic Controls
+        this.addControlGroup(settingsSection, 'Basic', [
+            { label: 'Opacity', id: 'videoOpacitySlider', min: 0, max: 100, value: 100, suffix: '%' },
+            { label: 'Brightness', id: 'videoBrightnessSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Contrast', id: 'videoContrastSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Fade Time', id: 'videoFadeSlider', min: 0, max: 10, step: 0.5, value: 3, suffix: 's' }
+        ]);
+        
+        // Color Controls
+        this.addControlGroup(settingsSection, 'Color', [
+            { label: 'Saturation', id: 'videoSaturationSlider', min: 0, max: 200, value: 100, suffix: '%' },
+            { label: 'Hue Rotate', id: 'videoHueRotateSlider', min: 0, max: 360, value: 0, suffix: '°' },
+            { label: 'Grayscale', id: 'videoGrayscaleSlider', min: 0, max: 100, value: 0, suffix: '%' },
+            { label: 'Sepia', id: 'videoSepiaSlider', min: 0, max: 100, value: 0, suffix: '%' }
+        ]);
+        
+        // Effects Controls
+        this.addEffectsControlGroup(settingsSection);
+        
+        // Animation Controls
+        this.addAnimationControlGroup(settingsSection);
+        
+        // Visualization Controls
+        this.addVisualizationControlGroup(settingsSection);
+        
+        // Presets
+        this.addPresetsControlGroup(settingsSection);
+        
         dropdown.appendChild(deviceList);
+        dropdown.appendChild(settingsSection);
 
         // Add to page
         document.body.appendChild(dropdown);
@@ -5300,6 +5440,374 @@ class GitItUpVisualizer {
         console.log('Custom video input dropdown created');
     }
 
+    addControlGroup(container, groupLabel, sliders) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `
+            margin-bottom: 15px;
+        `;
+        
+        const groupLabelEl = document.createElement('div');
+        groupLabelEl.textContent = groupLabel;
+        groupLabelEl.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabelEl);
+        
+        sliders.forEach(slider => {
+            const sliderContainer = document.createElement('div');
+            sliderContainer.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+            `;
+            
+            const label = document.createElement('label');
+            label.textContent = slider.label;
+            label.style.cssText = `
+                color: var(--text-primary);
+                font-size: 11px;
+                min-width: 70px;
+                flex-shrink: 0;
+            `;
+            
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.id = 'header' + slider.id.charAt(0).toUpperCase() + slider.id.slice(1);
+            input.min = slider.min;
+            input.max = slider.max;
+            if (slider.step) input.step = slider.step;
+            input.value = slider.value;
+            input.style.cssText = `
+                flex: 1;
+                height: 20px;
+            `;
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.id = input.id.replace('Slider', 'Value');
+            valueSpan.textContent = slider.value + (slider.suffix || '');
+            valueSpan.style.cssText = `
+                color: var(--text-secondary);
+                font-size: 11px;
+                min-width: 40px;
+                text-align: right;
+                flex-shrink: 0;
+            `;
+            
+            // Link to original slider
+            input.addEventListener('input', (e) => {
+                const originalSlider = document.getElementById(slider.id);
+                if (originalSlider) {
+                    originalSlider.value = e.target.value;
+                    originalSlider.dispatchEvent(new Event('input'));
+                }
+                valueSpan.textContent = e.target.value + (slider.suffix || '');
+            });
+            
+            sliderContainer.appendChild(label);
+            sliderContainer.appendChild(input);
+            sliderContainer.appendChild(valueSpan);
+            controlGroup.appendChild(sliderContainer);
+        });
+        
+        container.appendChild(controlGroup);
+    }
+
+    addEffectsControlGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Effects';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        // Effects sliders
+        const effectSliders = [
+            { label: 'Blur', id: 'videoBlurSlider', min: 0, max: 20, value: 0, suffix: 'px' },
+            { label: 'Vignette', id: 'videoVignetteSlider', min: 0, max: 100, value: 0, suffix: '%' },
+            { label: 'Posterize', id: 'videoPosterizeSlider', min: 2, max: 16, value: 16, suffix: '' }
+        ];
+        
+        effectSliders.forEach(slider => {
+            const sliderContainer = document.createElement('div');
+            sliderContainer.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+            `;
+            
+            const label = document.createElement('label');
+            label.textContent = slider.label;
+            label.style.cssText = `
+                color: var(--text-primary);
+                font-size: 11px;
+                min-width: 70px;
+                flex-shrink: 0;
+            `;
+            
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.id = 'header' + slider.id.charAt(0).toUpperCase() + slider.id.slice(1);
+            input.min = slider.min;
+            input.max = slider.max;
+            input.value = slider.value;
+            input.style.cssText = `flex: 1; height: 20px;`;
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.id = input.id.replace('Slider', 'Value');
+            valueSpan.textContent = slider.value === 16 && slider.id === 'videoPosterizeSlider' ? 'Off' : slider.value + slider.suffix;
+            valueSpan.style.cssText = `
+                color: var(--text-secondary);
+                font-size: 11px;
+                min-width: 40px;
+                text-align: right;
+                flex-shrink: 0;
+            `;
+            
+            input.addEventListener('input', (e) => {
+                const originalSlider = document.getElementById(slider.id);
+                if (originalSlider) {
+                    originalSlider.value = e.target.value;
+                    originalSlider.dispatchEvent(new Event('input'));
+                }
+                if (slider.id === 'videoPosterizeSlider') {
+                    valueSpan.textContent = e.target.value === '16' ? 'Off' : e.target.value;
+                } else {
+                    valueSpan.textContent = e.target.value + slider.suffix;
+                }
+            });
+            
+            sliderContainer.appendChild(label);
+            sliderContainer.appendChild(input);
+            sliderContainer.appendChild(valueSpan);
+            controlGroup.appendChild(sliderContainer);
+        });
+        
+        // Effect toggle buttons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = `
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        `;
+        
+        const invertBtn = document.createElement('button');
+        invertBtn.textContent = 'Invert: Off';
+        invertBtn.className = 'effect-toggle-btn';
+        invertBtn.id = 'headerVideoInvertBtn';
+        invertBtn.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            flex: 1;
+        `;
+        
+        const mirrorBtn = document.createElement('button');
+        mirrorBtn.textContent = 'Mirror: Off';
+        mirrorBtn.className = 'effect-toggle-btn';
+        mirrorBtn.id = 'headerVideoMirrorBtn';
+        mirrorBtn.style.cssText = invertBtn.style.cssText;
+        
+        invertBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.visualizer) {
+                window.visualizer.toggleVideoInvert();
+                invertBtn.textContent = `Invert: ${window.visualizer.videoInvert ? 'On' : 'Off'}`;
+                invertBtn.classList.toggle('active', window.visualizer.videoInvert);
+            }
+        };
+        
+        mirrorBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.visualizer) {
+                window.visualizer.cycleVideoMirror();
+                const mirrorText = window.visualizer.videoMirror === 'off' ? 'Off' : window.visualizer.videoMirror.charAt(0).toUpperCase() + window.visualizer.videoMirror.slice(1);
+                mirrorBtn.textContent = `Mirror: ${mirrorText}`;
+                mirrorBtn.classList.toggle('active', window.visualizer.videoMirror !== 'off');
+            }
+        };
+        
+        buttonContainer.appendChild(invertBtn);
+        buttonContainer.appendChild(mirrorBtn);
+        controlGroup.appendChild(buttonContainer);
+        
+        container.appendChild(controlGroup);
+    }
+
+    addAnimationControlGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Animation';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        const pulseBtn = document.createElement('button');
+        pulseBtn.textContent = 'Pulse: Off';
+        pulseBtn.className = 'effect-toggle-btn';
+        pulseBtn.id = 'headerVideoPulseBtn';
+        pulseBtn.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            width: 100%;
+            margin-bottom: 8px;
+        `;
+        
+        pulseBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.visualizer) {
+                window.visualizer.toggleVideoPulse();
+                pulseBtn.textContent = `Pulse: ${window.visualizer.videoPulse ? 'On' : 'Off'}`;
+                pulseBtn.classList.toggle('active', window.visualizer.videoPulse);
+            }
+        };
+        
+        controlGroup.appendChild(pulseBtn);
+        container.appendChild(controlGroup);
+    }
+
+    addVisualizationControlGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Visualization';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        const aspectBtn = document.createElement('button');
+        aspectBtn.textContent = 'Match Video Aspect: On';
+        aspectBtn.className = 'effect-toggle-btn active';
+        aspectBtn.id = 'headerMatchVisualizationAspectBtn';
+        aspectBtn.style.cssText = `
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            width: 100%;
+        `;
+        
+        aspectBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.visualizer) {
+                window.visualizer.matchVisualizationAspect = !window.visualizer.matchVisualizationAspect;
+                aspectBtn.textContent = `Match Video Aspect: ${window.visualizer.matchVisualizationAspect ? 'On' : 'Off'}`;
+                aspectBtn.classList.toggle('active', window.visualizer.matchVisualizationAspect);
+                
+                // Apply aspect ratio matching if video is active
+                if (window.visualizer.videoMode === 'camera' || window.visualizer.videoMode === 'file') {
+                    window.visualizer.updateVisualizationAspectRatio();
+                }
+            }
+        };
+        
+        controlGroup.appendChild(aspectBtn);
+        container.appendChild(controlGroup);
+    }
+
+    addPresetsControlGroup(container) {
+        const controlGroup = document.createElement('div');
+        controlGroup.style.cssText = `margin-bottom: 15px;`;
+        
+        const groupLabel = document.createElement('div');
+        groupLabel.textContent = 'Presets';
+        groupLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        `;
+        controlGroup.appendChild(groupLabel);
+        
+        const presetButtons = document.createElement('div');
+        presetButtons.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        `;
+        
+        const presets = [
+            'normal', 'dreamy', 'noir', 'cyberpunk', 'vintage', 'retro-tv',
+            'underwater', 'infrared', 'acid', 'thermal', 'matrix', 'glitch'
+        ];
+        
+        presets.forEach(preset => {
+            const presetBtn = document.createElement('button');
+            presetBtn.textContent = preset.charAt(0).toUpperCase() + preset.slice(1).replace('-', ' ');
+            presetBtn.className = 'video-preset-btn';
+            presetBtn.dataset.preset = preset;
+            presetBtn.style.cssText = `
+                background: var(--hover-color);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 4px 8px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 10px;
+                text-align: center;
+            `;
+            
+            presetBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.visualizer) {
+                    window.visualizer.applyVideoPreset(preset);
+                }
+            };
+            
+            presetButtons.appendChild(presetBtn);
+        });
+        
+        controlGroup.appendChild(presetButtons);
+        container.appendChild(controlGroup);
+    }
 
     updateFooterLiveAudioButton() {
         const footerBtn = document.getElementById('footerLiveAudioBtn');
@@ -13250,13 +13758,8 @@ https://rogueamoeba.com/loopback/
                 e.stopPropagation();
                 console.log('Footer Live Video button clicked');
                 
-                // If video is already active, toggle it off
-                if (this.videoMode === 'camera' || this.videoMode === 'file') {
-                    this.stopVideoInput();
-                } else {
-                    // Otherwise show device selection menu
-                    this.showVideoInputMenu();
-                }
+                // Always show video settings panel
+                this.showVideoInputMenu();
             });
         } else {
             console.error('Footer Live Video button not found');

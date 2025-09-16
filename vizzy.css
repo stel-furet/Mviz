@@ -2914,16 +2914,16 @@
 }
 
 .header .blobs-btn:hover {
-    background: #ff4500;
+    background: var(--accent-color);
     color: var(--primary-bg);
-    border-color: #ff4500;
+    border-color: var(--accent-color);
 }
 
 .header .blobs-btn.active {
-    background: #ff4500;
+    background: var(--accent-color);
     color: var(--primary-bg);
-    border-color: #ff4500;
-    box-shadow: 0 2px 8px rgba(255, 69, 0, 0.4);
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Kaleidoscope Panel in Header */
