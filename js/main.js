@@ -10252,11 +10252,20 @@ https://rogueamoeba.com/loopback/
             return;
         }
 
+        console.log('Applying kaleidoscope effect:', {
+            videoMode: this.videoMode,
+            applyToVideo: this.kaleidoscopeApplyToVideo,
+            applyToViz: this.kaleidoscopeApplyToViz,
+            videoElement: !!this.videoElement,
+            captureVideoElement: !!this.captureVideoElement,
+            videoReady: this.videoElement ?. readyState,
+            captureReady: this.captureVideoElement ?. readyState
+        });
 
         let width = this.kaleidoscopeVideoCanvas.width;
         let height = this.kaleidoscopeVideoCanvas.height;
 
-        // Make sure canvases are properly sized (only resize if actually 0x0)
+        // Make sure canvases are properly sized
         if (width === 0 || height === 0) {
             const container = document.getElementById('visualizationContainer');
             const rect = container.getBoundingClientRect();
@@ -10283,17 +10292,6 @@ https://rogueamoeba.com/loopback/
 
         // Calculate base radius for 90% viewport fill
         const baseRadius = width * 0.45;
-        
-        // Debug: Log center position and canvas size
-        // console.log('Kaleidoscope Debug:', {
-        //     centerX: centerX,
-        //     centerY: centerY,
-        //     width: width,
-        //     height: height,
-        //     baseRadius: baseRadius,
-        //     centerXPercent: this.kaleidoscopeCenterX,
-        //     centerYPercent: this.kaleidoscopeCenterY
-        // });
         let shapeRadius;
 
         switch (this.kaleidoscopeShape) {
@@ -10312,6 +10310,7 @@ https://rogueamoeba.com/loopback/
 
             if (this.captureVideoElement && this.captureVideoElement.readyState >= 2) {
                 videoSource = this.captureVideoElement;
+                console.log('Using captureVideoElement for kaleidoscope');
             } else if (this.videoElement && this.videoElement.readyState >= 2) {
                 videoSource = this.videoElement;
                 console.log('Using videoElement for kaleidoscope');
@@ -10323,6 +10322,7 @@ https://rogueamoeba.com/loopback/
                 this.kaleidoscopeVideoCanvas.style.display = 'block';
                 this.kaleidoscopeVideoCtx.clearRect(0, 0, width, height);
 
+                console.log('Drawing video kaleidoscope with', this.kaleidoscopeSegments, 'segments');
                 
                 // Apply video filters to kaleidoscope canvas
                 this.applyFiltersToKaleidoscopeContext();
@@ -10406,6 +10406,7 @@ https://rogueamoeba.com/loopback/
                     this.videoElement.style.opacity = '0';
                 }
 
+                console.log('Video kaleidoscope drawn successfully');
             } else {
                 console.warn('Video source not ready for kaleidoscope');
             }
@@ -12702,94 +12703,6 @@ https://rogueamoeba.com/loopback/
                 const value = parseInt(e.target.value);
                 this.kaleidoscopeCenterAnimSpeed = value;
                 document.getElementById('headerKaleidoscopeAnimSpeedValue').textContent = value;
-            });
-        }
-
-        // Header Shape Selection
-        const headerKaleidoscopeShapeBtn = document.getElementById('headerKaleidoscopeShapeBtn');
-        if (headerKaleidoscopeShapeBtn) {
-            headerKaleidoscopeShapeBtn.addEventListener('click', () => {
-                const shapes = ['triangle', 'petal', 'rectangle'];
-                const currentIndex = shapes.indexOf(this.kaleidoscopeShape);
-                this.kaleidoscopeShape = shapes[(currentIndex + 1) % shapes.length];
-                headerKaleidoscopeShapeBtn.textContent = `Shape: ${
-                    this.kaleidoscopeShape.charAt(0).toUpperCase() + this.kaleidoscopeShape.slice(1)
-                }`;
-                if (this.kaleidoscopeEnabled) {
-                    this.applyKaleidoscopeEffect();
-                }
-            });
-        }
-
-        // Header Beat React Controls
-        const headerKaleidoscopeBeatBtn = document.getElementById('headerKaleidoscopeBeatBtn');
-        if (headerKaleidoscopeBeatBtn) {
-            headerKaleidoscopeBeatBtn.addEventListener('click', () => {
-                this.kaleidoscopeBeatReactive = !this.kaleidoscopeBeatReactive;
-                headerKaleidoscopeBeatBtn.textContent = `Beat React: ${
-                    this.kaleidoscopeBeatReactive ? 'On' : 'Off'
-                }`;
-                headerKaleidoscopeBeatBtn.classList.toggle('active', this.kaleidoscopeBeatReactive);
-
-                const sensitivityContainer = document.getElementById('headerBeatSensitivityContainer');
-                if (sensitivityContainer) {
-                    sensitivityContainer.style.display = this.kaleidoscopeBeatReactive ? 'block' : 'none';
-                }
-
-                // Store base values when enabling
-                if (this.kaleidoscopeBeatReactive) { // Reset scale to max 150% if it's higher
-                    if (this.kaleidoscopeScale > 1.5) {
-                        this.kaleidoscopeScale = 1.5;
-                        // Update slider and display
-                        const scaleSlider = document.getElementById('headerKaleidoscopeScale');
-                        const scaleValue = document.getElementById('headerKaleidoscopeScaleValue');
-                        if (scaleSlider && scaleValue) {
-                            scaleSlider.value = 150;
-                            scaleValue.textContent = '150%';
-                        }
-                    }
-                    this.kaleidoscopeBaseScale = this.kaleidoscopeScale;
-                    this.kaleidoscopeBaseSegments = this.kaleidoscopeSegments;
-                }
-            });
-        }
-
-        // Header Beat Rotation Toggle
-        const headerKaleidoscopeBeatRotationBtn = document.getElementById('headerKaleidoscopeBeatRotationBtn');
-        if (headerKaleidoscopeBeatRotationBtn) {
-            headerKaleidoscopeBeatRotationBtn.addEventListener('click', () => {
-                this.kaleidoscopeBeatRotation = !this.kaleidoscopeBeatRotation;
-                headerKaleidoscopeBeatRotationBtn.textContent = `Rotation: ${
-                    this.kaleidoscopeBeatRotation ? 'On' : 'Off'
-                }`;
-                headerKaleidoscopeBeatRotationBtn.classList.toggle('active', this.kaleidoscopeBeatRotation);
-            });
-        }
-
-        // Header Beat Shape Toggle
-        const headerKaleidoscopeBeatShapeBtn = document.getElementById('headerKaleidoscopeBeatShapeBtn');
-        if (headerKaleidoscopeBeatShapeBtn) {
-            headerKaleidoscopeBeatShapeBtn.addEventListener('click', () => {
-                this.kaleidoscopeBeatShape = !this.kaleidoscopeBeatShape;
-                headerKaleidoscopeBeatShapeBtn.textContent = `Shape: ${
-                    this.kaleidoscopeBeatShape ? 'On' : 'Off'
-                }`;
-                headerKaleidoscopeBeatShapeBtn.classList.toggle('active', this.kaleidoscopeBeatShape);
-
-                // Store current shape as original
-                if (this.kaleidoscopeBeatShape) {
-                    this.kaleidoscopeOriginalShape = this.kaleidoscopeShape;
-                }
-            });
-        }
-
-        // Header Beat Sensitivity Slider
-        const headerKaleidoscopeBeatSensitivity = document.getElementById('headerKaleidoscopeBeatSensitivity');
-        if (headerKaleidoscopeBeatSensitivity) {
-            headerKaleidoscopeBeatSensitivity.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.kaleidoscopeBeatSensitivity = value / 100;
-                document.getElementById('headerKaleidoscopeBeatSensitivityValue').textContent = `${value}%`;
             });
         }
 
