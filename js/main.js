@@ -5017,12 +5017,7 @@ class GitItUpVisualizer {
         helpOption.textContent = '❓ How to capture system audio...';
         select.appendChild(helpOption);
         
-        // Update drawer select as well
-        const drawerSelect = document.getElementById('drawerAudioDeviceSelect');
-        if (drawerSelect) {
-            drawerSelect.innerHTML = select.innerHTML;
-            drawerSelect.value = select.value;
-        }
+        // Drawer removed - functionality moved to header controls
     }
 
     showAudioInputMenu() {
@@ -16827,49 +16822,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             }
         }
 
-        // Sidebar System Functions
-        function initializeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            
-            if (!sidebar || !sidebarToggle) return;
-
-            // Load saved sidebar state or default to expanded
-            const savedState = localStorage.getItem('vizzy-sidebar-collapsed');
-            const isCollapsed = savedState === 'true';
-            
-            if (isCollapsed) {
-                sidebar.classList.add('collapsed');
-            }
-
-            // Add toggle functionality
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                const isNowCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('vizzy-sidebar-collapsed', isNowCollapsed.toString());
-                
-                // Update toggle icon
-                const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
-                if (toggleIcon) {
-                    toggleIcon.textContent = isNowCollapsed ? '☰' : '✕';
-                }
-                
-                // Close any open drawers when toggling sidebar
-                if (typeof closeAllDrawers === 'function') {
-                    closeAllDrawers();
-                }
-            });
-
-
-            // Initialize with correct icon
-            const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
-            if (toggleIcon) {
-                toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '☰' : '✕';
-            }
-
-            // Initialize sidebar controls
-            initializeSidebarControls();
-        }
+        // Sidebar completely removed - all functionality moved to header/footer controls
 
 
 // Initialize application when DOM is ready
@@ -16884,14 +16837,9 @@ if (window.visualizer && window.visualizer.updateFooterLiveAudioButton) {
 // Initialize Theme System
 initializeThemeSystem();
 
-// Initialize Sidebar
-initializeSidebar();
+// Sidebar completely removed - all functionality moved to header/footer controls
 
-// Initialize Drawers
-initializeDrawers();
-
-// Initialize Drawer Controls
-initializeDrawerControls();
+// Drawer system completely removed - all functionality moved to header/footer controls
 
 // Initialize Video Devices
 if (window.visualizer && window.visualizer.initializeVideoInput) {
