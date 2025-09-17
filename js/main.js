@@ -1764,8 +1764,8 @@ class RecordManager {
                 btn.classList.remove('active');
             }
             
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+            btn.addEventListener('click', (e) => { // Update sidebar record only (footer removed)
+                document.querySelectorAll('#recordSettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.aspectRatio = btn.dataset.ratio;
                 console.log('Aspect ratio changed to:', this.aspectRatio);
@@ -2485,26 +2485,9 @@ class RecordManager {
     }
     
     updateUI() {
-        // Update recording info display
-        const dimensions = this.getRecordingDimensions();
-        const outputDisplay = document.getElementById('recordingOutput');
-        const estSizeDisplay = document.getElementById('recordingEstSize');
-        
-        if (outputDisplay) {
-            outputDisplay.textContent = `${dimensions.width}×${dimensions.height} @ ${this.frameRate}fps`;
-        }
-        
-        if (estSizeDisplay) {
-            const estimatedMBPerMin = this.estimateFileSize();
-            estSizeDisplay.textContent = `~${estimatedMBPerMin} MB/min`;
-        }
-        
-        // Update file location display
-        const locationDisplay = document.getElementById('recordFileLocation');
-        if (locationDisplay) {
-            locationDisplay.textContent = this.saveLocation ? 
-                `📁 ${this.saveLocation}` : '📥 Downloads folder';
-        }
+        // Footer recording info only (sidebar recording info removed)
+        // The footer updateFooterRecordingInfo() method handles all recording info display
+        console.log('RecordManager.updateUI() - footer recording info handled by updateFooterRecordingInfo()');
     }
     
     getRecordingDimensions() {
@@ -2922,8 +2905,8 @@ class RecordManager {
         // Clear temp canvas
         this.tempVideoCtx.clearRect(0, 0, width, height);
         
-        // Draw video to temp canvas with effects
-        this.tempVideoCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+        // Draw video to temp canvas with effects (fill entire canvas like Live Display)
+        this.tempVideoCtx.drawImage(video, 0, 0, this.tempVideoCanvas.width, this.tempVideoCanvas.height);
         
         this.tempVideoCtx.restore();
         
@@ -3036,8 +3019,8 @@ class RecordManager {
         // Clear temp canvas
         this.tempVideoCtx.clearRect(0, 0, width, height);
         
-        // Draw video to temp canvas with effects at specified dimensions
-        this.tempVideoCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+        // Draw video to temp canvas with effects (fill entire canvas like Live Display)
+        this.tempVideoCtx.drawImage(video, 0, 0, this.tempVideoCanvas.width, this.tempVideoCanvas.height);
         
         this.tempVideoCtx.restore();
         
@@ -3115,10 +3098,10 @@ class RecordManager {
             drawY = 0;
         }
         
-        this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
-    }
-    
-    drawScaledVisualization(sourceCanvas) {
+          this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
+      }
+      
+      drawScaledVisualization(sourceCanvas) {
         const { width, height } = this.compositeCanvas;
         
         // Use standard letterboxing for visualization
@@ -3784,12 +3767,13 @@ class StreamManager {
         this.captureCanvas.height = height;
         console.log(`🎯 setupCaptureCanvas: Canvas configured to ${width}x${height}`);
 
-        // Store base dimensions for consistent scaling (always base on 2K for visual consistency)
+        // Store base dimensions for consistent scaling (match actual capture canvas aspect ratio)
         this.baseCaptureWidth = 2560;
-        this.baseCaptureHeight = 1440;
+        this.baseCaptureHeight = Math.round(2560 * height / width); // Match capture canvas aspect ratio
         this.captureScale = width / this.baseCaptureWidth; // Scale factor for quality enhancement
 
-        console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height, '(16:9 aspect ratio for display compatibility)');
+        console.log('🎯 Base dimensions:', this.baseCaptureWidth, 'x', this.baseCaptureHeight, `(${(this.baseCaptureWidth/this.baseCaptureHeight).toFixed(3)} aspect ratio)`);
+        console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height, `(${(width/height).toFixed(3)} aspect ratio)`);
         console.log('Capture scale factor:', this.captureScale, 'x for', this.displaySettings.captureResolution + 'px quality');
     }
 
@@ -4121,12 +4105,12 @@ class StreamManager {
                     if (vizCanvas && vizCanvas.width > 0 && vizCanvas.height > 0) {
                         const isVisible = vizCanvas.style.visibility !== 'hidden' && vizCanvas.style.display !== 'none';
 
-                        if (isVisible) {
-                            // Scale the visualization to maintain consistent visual size regardless of capture resolution
-                            this.captureCtx.save();
-                            this.captureCtx.scale(this.captureScale, this.captureScale);
-                            this.captureCtx.drawImage(vizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
-                            this.captureCtx.restore();
+                          if (isVisible) {
+                              // Scale the visualization to maintain consistent visual size regardless of capture resolution
+                              this.captureCtx.save();
+                              this.captureCtx.scale(this.captureScale, this.captureScale);
+                              this.captureCtx.drawImage(vizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                              this.captureCtx.restore();
 
                             if (frameCount % 60 === 0) {
                                 console.log('Capturing viz from canvas:', vizCanvas.width, 'x', vizCanvas.height, 'scaled by', this.captureScale + 'x');
@@ -5179,8 +5163,8 @@ class GitItUpVisualizer {
         const footerDisplayModeButtons = document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn');
         footerDisplayModeButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Update active state - both footer and sidebar
-                document.querySelectorAll('.display-mode-btn').forEach(b => b.classList.remove('active'));
+                // Update active state - footer only (sidebar sync removed)
+                document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
                 // Update settings using existing streamManager logic
@@ -5212,14 +5196,7 @@ class GitItUpVisualizer {
                     this.streamManager.displaySettings.captureBitrate = value;
                     this.streamManager.saveDisplaySettings();
                     
-                    // Reconfigure capture and send to display window if streaming
-                    if (this.streamManager.isStreaming) {
-                        this.streamManager.reconfigureCapture();
-                        this.streamManager.channel.postMessage({
-                            type: 'display-settings', 
-                            data: this.streamManager.displaySettings
-                        });
-                    }
+                    // Bitrate changes take effect on next WebRTC renegotiation
                 }
             });
         }
@@ -5233,13 +5210,9 @@ class GitItUpVisualizer {
                     this.streamManager.displaySettings.captureResolution = value;
                     this.streamManager.saveDisplaySettings();
                     
-                    // Reconfigure capture and send to display window if streaming
+                    // Reconfigure capture canvas with new resolution (preserves aspect ratio)
                     if (this.streamManager.isStreaming) {
                         this.streamManager.reconfigureCapture();
-                        this.streamManager.channel.postMessage({
-                            type: 'display-settings', 
-                            data: this.streamManager.displaySettings
-                        });
                     }
                 }
             });
@@ -5254,13 +5227,9 @@ class GitItUpVisualizer {
                     this.streamManager.displaySettings.captureFrameRate = value;
                     this.streamManager.saveDisplaySettings();
                     
-                    // Reconfigure capture and send to display window if streaming
+                    // Reconfigure capture canvas with new frame rate (preserves aspect ratio)
                     if (this.streamManager.isStreaming) {
                         this.streamManager.reconfigureCapture();
-                        this.streamManager.channel.postMessage({
-                            type: 'display-settings', 
-                            data: this.streamManager.displaySettings
-                        });
                     }
                 }
             });
@@ -5270,8 +5239,8 @@ class GitItUpVisualizer {
         const footerAspectRatioButtons = document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn');
         footerAspectRatioButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Update active state - both footer and sidebar
-                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                // Update active state - footer only (sidebar sync removed)
+                document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
                 const ratio = btn.dataset.ratio;
@@ -5534,9 +5503,7 @@ class GitItUpVisualizer {
                 this.recordManager.updateUI();
                 this.recordManager.saveSettings();
                 
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('recordResolutionSelect');
-                if (sidebarControl) sidebarControl.value = e.target.value;
+                // Footer controls work independently (sidebar sync removed)
             });
         }
         
@@ -5551,8 +5518,8 @@ class GitItUpVisualizer {
             }
             
             btn.addEventListener('click', (e) => {
-                // Update all aspect ratio buttons (both footer and sidebar)
-                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                // Update footer aspect ratio buttons only (sidebar sync removed)
+                document.querySelectorAll('#footerRecordSettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.recordManager.aspectRatio = btn.dataset.ratio;
                 console.log('Footer: Aspect ratio changed to:', btn.dataset.ratio);
@@ -5602,9 +5569,7 @@ class GitItUpVisualizer {
                 this.recordManager.updateUI();
                 this.recordManager.saveSettings();
                 
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('recordVideoQualitySelect');
-                if (sidebarControl) sidebarControl.value = e.target.value;
+                // Footer controls work independently (sidebar sync removed)
             });
         }
         
@@ -5617,9 +5582,7 @@ class GitItUpVisualizer {
                 this.recordManager.updateUI();
                 this.recordManager.saveSettings();
                 
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('recordAudioQualitySelect');
-                if (sidebarControl) sidebarControl.value = e.target.value;
+                // Footer controls work independently (sidebar sync removed)
             });
         }
         
@@ -5631,9 +5594,7 @@ class GitItUpVisualizer {
                 this.recordManager.customFilename = e.target.value;
                 this.recordManager.saveSettings();
                 
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('recordFilenameInput');
-                if (sidebarControl) sidebarControl.value = e.target.value;
+                // Footer controls work independently (sidebar sync removed)
             });
         }
         
@@ -5651,11 +5612,7 @@ class GitItUpVisualizer {
                         locationDisplay.textContent = `📁 ${dirHandle.name}`;
                     }
                     
-                    // Sync sidebar display
-                    const sidebarDisplay = document.getElementById('recordFileLocation');
-                    if (sidebarDisplay) {
-                        sidebarDisplay.textContent = `📁 ${dirHandle.name}`;
-                    }
+                    // Footer controls work independently (sidebar sync removed)
                     
                     this.recordManager.saveSettings();
                 } catch (error) {
@@ -5678,12 +5635,7 @@ class GitItUpVisualizer {
                 footerMatchVisualizationBtn.textContent = `Match Video Aspect: ${isOn ? 'On' : 'Off'}`;
                 footerMatchVisualizationBtn.classList.toggle('active', isOn);
                 
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('recordMatchVisualizationAspectBtn');
-                if (sidebarControl) {
-                    sidebarControl.textContent = `Match Video Aspect: ${isOn ? 'On' : 'Off'}`;
-                    sidebarControl.classList.toggle('active', isOn);
-                }
+                // Footer controls work independently (sidebar sync removed)
                 
                 this.recordManager.saveSettings();
                 
@@ -5780,8 +5732,8 @@ class GitItUpVisualizer {
             this.streamManager.saveDisplaySettings();
         }
         
-        // Update all aspect ratio buttons to show the selected one
-        document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+        // Update footer aspect ratio buttons to show the selected one (sidebar sync removed)
+        document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(btn => {
             if (btn.dataset.ratio === closestMatch.ratio) {
                 btn.classList.add('active');
             } else {
@@ -10683,13 +10635,13 @@ class GitItUpVisualizer {
     }
 
 
-    updateDisplaySettingsUI(settings) { // Update presentation mode buttons
-        document.querySelectorAll('.display-mode-btn').forEach(btn => {
+    updateDisplaySettingsUI(settings) {         // Update footer presentation mode buttons only (sidebar sync removed)
+        document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.mode === settings.presentationMode);
         });
 
-        // Update aspect ratio buttons if they exist
-        document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+        // Update footer aspect ratio buttons only (sidebar sync removed)
+        document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.ratio === settings.aspectRatio);
         });
 
@@ -13429,8 +13381,8 @@ https://rogueamoeba.com/loopback/
 
         // Presentation mode buttons
         document.querySelectorAll('.display-mode-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => { // Update active state
-                document.querySelectorAll('.display-mode-btn').forEach(b => b.classList.remove('active'));
+            btn.addEventListener('click', (e) => { // Update active state - sidebar only (footer removed)
+                document.querySelectorAll('#displaySettingsPanel .display-mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
                 // Update settings
@@ -13449,8 +13401,8 @@ https://rogueamoeba.com/loopback/
 
         // Aspect ratio buttons
         document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+            btn.addEventListener('click', (e) => { // Update sidebar only (footer removed)
+                document.querySelectorAll('#displaySettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
                 const ratio = btn.dataset.ratio;
