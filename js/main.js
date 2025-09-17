@@ -2078,17 +2078,16 @@ class RecordManager {
         // Initialize UI state
         this.updateBackgroundImageUI();
         
-        // Initialize Sidebar Background Controls
-        this.initializeSidebarBackgroundControls();
+        // Sidebar background controls removed - functionality moved to header
     }
     
-    initializeSidebarBackgroundControls() {
+    // Sidebar background controls removed - functionality moved to header
+    initializeSidebarBackgroundControls_removed() {
         // Sidebar background image button - toggle ON/OFF only
-        const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
-        const sidebarBackgroundSelectImageBtn = document.getElementById('sidebarBackgroundSelectImageBtn');
-        const sidebarBackgroundImageFile = document.getElementById('sidebarBackgroundImageFile');
+        // Sidebar background elements removed - functionality moved to header
         
-        if (sidebarBackgroundImgBtn) {
+        // Sidebar background button removed - functionality moved to header
+        if (false) { // Disabled - sidebar removed
             // Initialize button state
             this.updateSidebarBackgroundToggleButton();
             
@@ -2102,8 +2101,7 @@ class RecordManager {
                     // Toggle background image enabled state
                     this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
                     this.visualizer.saveBackgroundImage();
-                    this.updateSidebarBackgroundToggleButton();
-                    this.updateBackgroundToggleButton(); // Also update original button
+                    this.updateBackgroundToggleButton(); // Header controls only
                     
                     console.log('🔘 Sidebar Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
                     
@@ -2115,7 +2113,8 @@ class RecordManager {
             });
         }
 
-        if (sidebarBackgroundSelectImageBtn) {
+        // Sidebar background select image button removed - functionality moved to header
+        if (false) { // Disabled - sidebar removed
             sidebarBackgroundSelectImageBtn.addEventListener('click', () => {
                 if (sidebarBackgroundImageFile) {
                     sidebarBackgroundImageFile.click();
@@ -2123,8 +2122,8 @@ class RecordManager {
             });
         }
 
-        // File input handler
-        if (sidebarBackgroundImageFile) {
+        // Sidebar background file input removed - functionality moved to header
+        if (false) { // Disabled - sidebar removed
             sidebarBackgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 console.log('📁 Sidebar Background image file selected:', {
@@ -2145,8 +2144,7 @@ class RecordManager {
                             this.visualizer.backgroundImageFileSize = file.size;
                             this.visualizer.cachedBackgroundImage = null; // Clear cached image
                             this.visualizer.saveBackgroundImage();
-                            this.updateSidebarBackgroundImageUI();
-                            this.updateBackgroundImageUI(); // Also update original UI
+                            this.updateBackgroundImageUI(); // Header controls only
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             console.log('💾 Sidebar Background image saved and enabled');
                         }
@@ -2162,21 +2160,14 @@ class RecordManager {
 
         // Note: Settings panel removed - all controls are now embedded directly in sidebar
 
-        // Initialize all sidebar sliders and controls
-        this.initializeSidebarBackgroundSliders();
-        this.initializeSidebarBackgroundSizeButtons();
-        this.initializeSidebarBackgroundClearButton();
-        
-        // Initialize UI state
-        this.updateSidebarBackgroundImageUI();
+        // Sidebar background controls removed - functionality moved to header
     }
     
-    initializeSidebarBackgroundSliders() {
-        // Opacity slider
-        const sidebarOpacitySlider = document.getElementById('sidebarBackgroundOpacitySlider');
-        const sidebarOpacityValue = document.getElementById('sidebarBackgroundOpacityValue');
+    // Sidebar background sliders removed - functionality moved to header
+    initializeSidebarBackgroundSliders_removed() {
+        // Sidebar background opacity elements removed - functionality moved to header
         
-        if (sidebarOpacitySlider && sidebarOpacityValue) {
+        if (false) { // Disabled - sidebar removed
             sidebarOpacitySlider.value = this.visualizer ? this.visualizer.backgroundImageOpacity : 100;
             sidebarOpacityValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageOpacity : 100}%`;
             
@@ -2193,11 +2184,9 @@ class RecordManager {
             });
         }
 
-        // Saturation slider
-        const sidebarSaturationSlider = document.getElementById('sidebarBackgroundSaturationSlider');
-        const sidebarSaturationValue = document.getElementById('sidebarBackgroundSaturationValue');
+        // Sidebar background saturation elements removed - functionality moved to header
         
-        if (sidebarSaturationSlider && sidebarSaturationValue) {
+        if (false) { // Disabled - sidebar removed
             sidebarSaturationSlider.value = this.visualizer ? this.visualizer.backgroundImageSaturation : 100;
             sidebarSaturationValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageSaturation : 100}%`;
             
@@ -2214,11 +2203,9 @@ class RecordManager {
             });
         }
 
-        // Posterization slider
-        const sidebarPosterizeSlider = document.getElementById('sidebarBackgroundPosterizeSlider');
-        const sidebarPosterizeValue = document.getElementById('sidebarBackgroundPosterizeValue');
+        // Sidebar background posterization elements removed - functionality moved to header
         
-        if (sidebarPosterizeSlider && sidebarPosterizeValue) {
+        if (false) { // Disabled - sidebar removed
             sidebarPosterizeSlider.value = this.visualizer ? this.visualizer.backgroundImagePosterize : 16;
             sidebarPosterizeValue.textContent = `${this.visualizer ? this.visualizer.backgroundImagePosterize : 16}`;
             
@@ -2235,11 +2222,9 @@ class RecordManager {
             });
         }
 
-        // Contrast slider
-        const sidebarContrastSlider = document.getElementById('sidebarBackgroundContrastSlider');
-        const sidebarContrastValue = document.getElementById('sidebarBackgroundContrastValue');
+        // Sidebar background contrast elements removed - functionality moved to header
         
-        if (sidebarContrastSlider && sidebarContrastValue) {
+        if (false) { // Disabled - sidebar removed
             sidebarContrastSlider.value = this.visualizer ? this.visualizer.backgroundImageContrast : 100;
             sidebarContrastValue.textContent = `${this.visualizer ? this.visualizer.backgroundImageContrast : 100}%`;
             
@@ -2291,22 +2276,25 @@ class RecordManager {
         });
     }
     
-    initializeSidebarBackgroundClearButton() {
-        const sidebarClearBtn = document.getElementById('sidebarBackgroundClearBtn');
-        if (sidebarClearBtn) {
+    // Sidebar background clear button removed - functionality moved to header
+    initializeSidebarBackgroundClearButton_removed() {
+        // Sidebar background clear button removed - functionality moved to header
+        const sidebarClearBtn = null; // Disabled - sidebar removed
+        if (false) { // Disabled - sidebar removed
             sidebarClearBtn.addEventListener('click', () => {
                 if (this.visualizer) {
                     this.visualizer.clearBackgroundImage();
-                    this.updateSidebarBackgroundImageUI();
-                    this.updateBackgroundImageUI(); // Also update original UI
+                    this.updateBackgroundImageUI(); // Header controls only
                 }
             });
         }
     }
     
-    updateSidebarBackgroundToggleButton() {
-        const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
-        if (sidebarBackgroundImgBtn && this.visualizer) {
+    // Sidebar background toggle button removed - functionality moved to header
+    updateSidebarBackgroundToggleButton_removed() {
+        // Sidebar background toggle button removed - functionality moved to header
+        const sidebarBackgroundImgBtn = null; // Disabled - sidebar removed
+        if (false) { // Disabled - sidebar removed
             const textSpan = sidebarBackgroundImgBtn.querySelector('.background-text');
             if (textSpan) {
                 textSpan.textContent = this.visualizer.backgroundImageEnabled ? 'Background IMG: ON' : 'Background IMG: OFF';
@@ -2315,14 +2303,16 @@ class RecordManager {
         }
     }
     
-    updateSidebarBackgroundImageUI() {
-        const sidebarBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
-        const sidebarBackgroundFileInfo = document.getElementById('sidebarBackgroundFileInfo');
-        const sidebarBackgroundFileName = document.getElementById('sidebarBackgroundFileName');
-        const sidebarBackgroundFileSize = document.getElementById('sidebarBackgroundFileSize');
-        const sidebarBackgroundImagePreview = document.getElementById('sidebarBackgroundImagePreview');
+    // Sidebar background image UI removed - functionality moved to header
+    updateSidebarBackgroundImageUI_removed() {
+        // Sidebar background UI elements removed - functionality moved to header
+        const sidebarBackgroundImgBtn = null; // Disabled - sidebar removed
+        const sidebarBackgroundFileInfo = null; // Disabled - sidebar removed
+        const sidebarBackgroundFileName = null; // Disabled - sidebar removed
+        const sidebarBackgroundFileSize = null; // Disabled - sidebar removed
+        const sidebarBackgroundImagePreview = null; // Disabled - sidebar removed
 
-        if (sidebarBackgroundImgBtn) {
+        if (false) { // Disabled - sidebar removed
             if (this.visualizer && this.visualizer.backgroundImageEnabled && this.visualizer.backgroundImage) {
                 sidebarBackgroundImgBtn.classList.add('active');
                 sidebarBackgroundImgBtn.querySelector('.background-text').textContent = 'Background IMG: ON';
@@ -2332,7 +2322,7 @@ class RecordManager {
             }
         }
 
-        if (this.visualizer && this.visualizer.backgroundImage && this.visualizer.backgroundImageFileName) {
+        if (false) { // Disabled - sidebar removed
             if (sidebarBackgroundFileInfo) sidebarBackgroundFileInfo.style.display = 'block';
             if (sidebarBackgroundFileName) sidebarBackgroundFileName.textContent = this.visualizer.backgroundImageFileName;
             if (sidebarBackgroundFileSize) sidebarBackgroundFileSize.textContent = this.formatFileSize(this.visualizer.backgroundImageFileSize);
@@ -2539,7 +2529,7 @@ class RecordManager {
             console.log(`✓ Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
         } else {
             // Use manual aspect ratio setting
-            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+        const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
             console.log(`✓ Using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
@@ -3098,10 +3088,10 @@ class RecordManager {
             drawY = 0;
         }
         
-          this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
-      }
-      
-      drawScaledVisualization(sourceCanvas) {
+        this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
+    }
+    
+    drawScaledVisualization(sourceCanvas) {
         const { width, height } = this.compositeCanvas;
         
         // Use standard letterboxing for visualization
@@ -3326,7 +3316,7 @@ class RecordManager {
         
         // Try to trigger download with timeout fallback
         try {
-            a.click();
+        a.click();
             console.log('Download click triggered successfully');
         } catch (e) {
             console.error('Error triggering download click:', e);
@@ -4105,12 +4095,12 @@ class StreamManager {
                     if (vizCanvas && vizCanvas.width > 0 && vizCanvas.height > 0) {
                         const isVisible = vizCanvas.style.visibility !== 'hidden' && vizCanvas.style.display !== 'none';
 
-                          if (isVisible) {
-                              // Scale the visualization to maintain consistent visual size regardless of capture resolution
-                              this.captureCtx.save();
-                              this.captureCtx.scale(this.captureScale, this.captureScale);
-                              this.captureCtx.drawImage(vizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
-                              this.captureCtx.restore();
+                        if (isVisible) {
+                            // Scale the visualization to maintain consistent visual size regardless of capture resolution
+                            this.captureCtx.save();
+                            this.captureCtx.scale(this.captureScale, this.captureScale);
+                            this.captureCtx.drawImage(vizCanvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                            this.captureCtx.restore();
 
                             if (frameCount % 60 === 0) {
                                 console.log('Capturing viz from canvas:', vizCanvas.width, 'x', vizCanvas.height, 'scaled by', this.captureScale + 'x');
@@ -8346,7 +8336,7 @@ class GitItUpVisualizer {
     updateVideoDeviceList() {
         // Header-only video controls (sidebar removed)
         console.log('Video device list update - header controls only');
-        return;
+            return;
     }
 
     async toggleVideoInput() {
@@ -10007,7 +9997,7 @@ class GitItUpVisualizer {
         console.log(`Updating camera stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
-            if (statsContainer && this.cameraInfo) {
+        if (statsContainer && this.cameraInfo) {
             const streamManager = this.streamManager;
             const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
             const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
@@ -10045,7 +10035,7 @@ class GitItUpVisualizer {
                     <span class="stats-value">${bitrate} Mbps</span>
                 </div>
             `;
-            }
+        }
         });
     }
 
@@ -10383,7 +10373,7 @@ class GitItUpVisualizer {
         console.log(`Updating video file stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
-            if (statsContainer && videoInfo) {
+        if (statsContainer && videoInfo) {
             const streamManager = this.streamManager;
             const captureRes = streamManager ? streamManager.displaySettings.captureResolution : 'Unknown';
             const bitrate = streamManager ? streamManager.displaySettings.captureBitrate : 'Unknown';
@@ -10415,7 +10405,7 @@ class GitItUpVisualizer {
                     <span class="stats-value">${bitrate} Mbps</span>
                 </div>
             `;
-            }
+        }
         });
     }
 
@@ -14964,7 +14954,7 @@ https://rogueamoeba.com/loopback/
                 console.log('Footer Live Video button clicked');
                 
                 // Always show video settings panel
-                this.showVideoInputMenu();
+                    this.showVideoInputMenu();
             });
         } else {
             console.error('Footer Live Video button not found');
@@ -15639,7 +15629,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             updatePlaylistDropdown() {
                 // Method disabled - playlist now handled by header dropdown and PlaylistManager
                 // Sidebar playlist dropdown will be removed
-                return;
+                    return;
                 
                 // Only clear and populate if using old hardcoded system
                 dropdown.innerHTML = '';

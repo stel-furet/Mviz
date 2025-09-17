@@ -547,9 +547,9 @@ function initializeDrawerControls() {
 
     // Background Image Toggle - connect to existing functionality
     const drawerBackgroundImgBtn = document.getElementById('drawerBackgroundImgBtn');
-    const originalBackgroundImgBtn = document.getElementById('sidebarBackgroundImgBtn');
+    const originalBackgroundImgBtn = null; // Sidebar removed - functionality moved to header
 
-    if (drawerBackgroundImgBtn && originalBackgroundImgBtn) {
+    if (false) { // Disabled - sidebar removed
         // Sync initial state
         updateDrawerBackgroundToggle();
         
@@ -735,8 +735,8 @@ function updateDrawerAudioInput() {
 
 function updateDrawerBackgroundToggle() {
     const drawerBtn = document.getElementById('drawerBackgroundImgBtn');
-    const originalBtn = document.getElementById('sidebarBackgroundImgBtn');
-    if (drawerBtn && originalBtn) {
+    const originalBtn = null; // Sidebar removed - functionality moved to header
+    if (false) { // Disabled - sidebar removed
         // Get the text from the original button's span
         const originalTextSpan = originalBtn.querySelector('.background-text');
         const text = originalTextSpan ? originalTextSpan.textContent : 'OFF';
