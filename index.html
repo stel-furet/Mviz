@@ -65,6 +65,8 @@
                 <button class="control-btn live-video-btn" id="footerLiveVideoBtn" title="Live Video Input">
                     <span class="video-icon">V</span>
                 </button>
+                <!-- Hidden file input for video from file -->
+                <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
                 <button class="control-btn live-audio-btn" id="footerLiveAudioBtn" title="Live Audio Input">
                     <span class="audio-icon">A</span>
                 </button>
@@ -1824,13 +1826,225 @@
             <button class="control-btn" id="liveDisplayBtn" title="Open Live Display Window">
                 Live Display
             </button>
+            <button class="footer-settings-btn" id="footerDisplaySettingsBtn" title="Display Settings">⚙</button>
             <button class="control-btn" id="recordBtn" title="Record Visualization">
                 <span class="record-text">Record</span>
                 <span class="record-timer" style="display: none;">00:00</span>
             </button>
+            <button class="footer-settings-btn" id="footerRecordSettingsBtn" title="Recording Settings">⚙</button>
             <button class="control-btn" id="footerAutopilotBtn" title="Toggle AI Autopilot">
                 <span class="autopilot-text">Autopilot</span>
             </button>
+        </div>
+        
+        <!-- Footer Settings Panels -->
+        <!-- Display Settings Panel (moved from sidebar) -->
+        <div class="footer-settings-panel" id="footerDisplaySettingsPanel" style="display: none;">
+            <div class="panel-header">
+                <span>Display Settings</span>
+                <button class="panel-close-btn" id="footerDisplaySettingsClose">×</button>
+            </div>
+
+            <!-- Presentation Mode -->
+            <div class="control-group">
+                <div class="group-label">Presentation Mode</div>
+                <div class="preset-buttons">
+                    <button class="display-mode-btn active" data-mode="original">Original</button>
+                    <button class="display-mode-btn" data-mode="fit">Fit</button>
+                    <button class="display-mode-btn" data-mode="fill">Fill</button>
+                    <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                    <button class="display-mode-btn" data-mode="performance">Performance</button>
+                </div>
+            </div>
+
+            <!-- Quality Settings -->
+            <div class="control-group">
+                <div class="group-label">Capture Quality</div>
+                <div class="slider-container">
+                    <label>Resolution</label>
+                    <select id="footerCaptureResolution" class="quality-select">
+                        <option value="3840">4K (3840px)</option>
+                        <option value="2560" selected>2K (2560px)</option>
+                        <option value="1920">1080p (1920px)</option>
+                        <option value="1280">720p (1280px)</option>
+                        <option value="960">SD (960px)</option>
+                    </select>
+                </div>
+                <div class="slider-container">
+                    <label>Frame Rate</label>
+                    <select id="footerCaptureFrameRate" class="quality-select">
+                        <option value="60" selected>60 FPS</option>
+                        <option value="30">30 FPS</option>
+                        <option value="24">24 FPS</option>
+                        <option value="15">15 FPS</option>
+                    </select>
+                </div>
+                <div class="slider-container">
+                    <label>Bitrate</label>
+                    <input type="range" id="footerCaptureBitrate" min="1" max="50" value="30" step="0.5">
+                    <span id="footerCaptureBitrateValue">30 Mbps</span>
+                </div>
+            </div>
+
+            <!-- Aspect Ratio -->
+            <div class="control-group">
+                <div class="group-label">Aspect Ratio</div>
+                <div class="preset-buttons">
+                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                    <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
+                </div>
+            </div>
+
+            <!-- Display Enhancement -->
+            <div class="control-group">
+                <div class="group-label">Display Enhancement</div>
+                <div class="slider-container">
+                    <label>Sharpness</label>
+                    <input type="range" id="footerDisplaySharpness" min="0" max="100" value="0">
+                    <span id="footerDisplaySharpnessValue">0%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Letterbox Color</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="color" id="footerLetterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                        <span id="footerLetterboxColorValue">#000000</span>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerMirrorBackgroundBtn">Mirror Background: Off</button>
+                </div>
+                <div class="slider-container" id="footerMirrorBlurContainer" style="display: none;">
+                    <label>Background Blur</label>
+                    <input type="range" id="footerMirrorBackgroundBlur" min="0" max="50" value="20">
+                    <span id="footerMirrorBackgroundBlurValue">20px</span>
+                </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="control-group">
+                <div class="group-label">Quick Presets</div>
+                <div class="preset-buttons">
+                    <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                    <button class="display-preset-btn" data-preset="presentation">Presentation</button>
+                    <button class="display-preset-btn" data-preset="social">Social Media</button>
+                    <button class="display-preset-btn" data-preset="performance">Performance</button>
+                    <button class="display-preset-btn" data-preset="projector">Projector</button>
+                </div>
+            </div>
+
+            <!-- Capture Settings -->
+            <div class="control-group">
+                <div class="group-label">Capture Settings</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerCaptureVisualizationBtn">Capture Visualization: On</button>
+                    <button class="effect-toggle-btn" id="footerCaptureVideoBtn">Capture Video: On</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Record Settings Panel (exact copy from sidebar) -->
+        <div class="footer-settings-panel" id="footerRecordSettingsPanel" style="display: none;">
+            <div class="panel-header">
+                <span>Recording Settings</span>
+                <button class="panel-close-btn" id="footerRecordSettingsClose">×</button>
+            </div>
+
+            <!-- Resolution -->
+            <div class="control-group">
+                <div class="group-label">Resolution</div>
+                <select id="footerRecordResolutionSelect" class="control-select">
+                    <option value="canvas">Canvas Size</option>
+                    <option value="720p">720p (1280×720)</option>
+                    <option value="1080p" selected>1080p (1920×1080)</option>
+                    <option value="4k">4K (3840×2160)</option>
+                </select>
+            </div>
+
+            <!-- Aspect Ratio -->
+            <div class="control-group">
+                <div class="group-label">Aspect Ratio</div>
+                <div class="preset-buttons">
+                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
+                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
+                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
+                </div>
+            </div>
+
+            <!-- Visualization Aspect Ratio -->
+            <div class="control-group">
+                <div class="group-label">Visualization</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn active" id="footerRecordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
+                </div>
+            </div>
+
+            <!-- Frame Rate -->
+            <div class="control-group">
+                <div class="group-label">Frame Rate</div>
+                <div class="preset-buttons">
+                    <button class="framerate-btn active" data-fps="30">30 FPS</button>
+                    <button class="framerate-btn" data-fps="60">60 FPS</button>
+                </div>
+            </div>
+
+            <!-- Video Quality -->
+            <div class="control-group">
+                <div class="group-label">Video Quality</div>
+                <select id="footerRecordVideoQualitySelect" class="control-select">
+                    <option value="auto" selected>Auto</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <!-- Audio Quality -->
+            <div class="control-group">
+                <div class="group-label">Audio Quality</div>
+                <select id="footerRecordAudioQualitySelect" class="control-select">
+                    <option value="auto" selected>Auto</option>
+                    <option value="high">High (320 kbps)</option>
+                    <option value="medium">Medium (192 kbps)</option>
+                    <option value="low">Low (128 kbps)</option>
+                </select>
+            </div>
+
+            <!-- File Settings -->
+            <div class="control-group">
+                <div class="group-label">File Settings</div>
+                <div class="file-location-display" id="footerRecordFileLocation">
+                    📥 Downloads folder
+                </div>
+                <button class="control-btn" id="footerRecordChooseLocationBtn">Choose Location</button>
+                <div class="input-container">
+                    <label>Filename</label>
+                    <input type="text" id="footerRecordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
+                    <span class="file-extension">.webm</span>
+                </div>
+            </div>
+
+            <!-- Recording Info -->
+            <div class="control-group">
+                <div class="group-label">Recording Info</div>
+                <div class="recording-info">
+                    <div class="info-item">
+                        <span class="info-label">Output:</span>
+                        <span id="footerRecordingOutput">1920×1080 @ 30fps</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Format:</span>
+                        <span id="footerRecordingFormat">WebM (VP9/Opus)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Est. Size:</span>
+                        <span id="footerRecordingEstSize">~50 MB/min</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </footer>

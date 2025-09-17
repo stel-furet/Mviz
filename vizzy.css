@@ -3385,6 +3385,94 @@
             white-space: nowrap;
         }
 
+        /* Footer Settings Buttons */
+        .footer-settings-btn {
+            width: 32px !important;
+            height: 32px !important;
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .footer-settings-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--highlight-color);
+        }
+
+        .footer-settings-btn.active {
+            background: var(--accent-color);
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Footer Settings Panels */
+        .footer-settings-panel {
+            position: fixed;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            min-width: 320px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .footer-settings-panel .panel-header {
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .footer-settings-panel .panel-header span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .footer-settings-panel .panel-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .footer-settings-panel .panel-close-btn:hover {
+            background: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .footer-settings-panel .control-group {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .footer-settings-panel .control-group:last-child {
+            border-bottom: none;
+        }
+
         /* Footer Transport Buttons - Override general control-btn rules */
         .footer .playback-controls .control-btn {
             width: auto !important;

@@ -1667,6 +1667,13 @@ class RecordManager {
                 this.customFilename = settings.customFilename || 'Vizzy_Recording';
                 this.saveLocation = settings.saveLocation || null;
                 this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
+                
+                console.log('Loaded recording settings:', {
+                    resolution: this.resolution,
+                    aspectRatio: this.aspectRatio,
+                    frameRate: this.frameRate,
+                    matchVisualizationAspect: this.matchVisualizationAspect
+                });
             }
         } catch (e) {
             console.error('Error loading recording settings:', e);
@@ -2521,13 +2528,44 @@ class RecordManager {
         
         console.log(`Recording dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
         console.log(`Current aspect ratio setting: ${this.aspectRatio}`);
+        console.log(`Match visualization aspect: ${this.matchVisualizationAspect}`);
         
-        // Apply aspect ratio
-        const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
-        const targetAspect = ratioW / ratioH;
+        // Determine target aspect ratio
+        let targetAspect;
+        
+        // Debug aspect ratio calculation
+        console.log('=== ASPECT RATIO DEBUG ===');
+        console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
+        console.log('videoMode:', this.visualizer?.videoMode);
+        console.log('videoElement exists:', !!this.visualizer?.videoElement);
+        if (this.visualizer?.videoElement) {
+            console.log('videoWidth:', this.visualizer.videoElement.videoWidth);
+            console.log('videoHeight:', this.visualizer.videoElement.videoHeight);
+            console.log('videoReadyState:', this.visualizer.videoElement.readyState);
+        }
+        
+        // If matching video aspect and video is active, use video aspect ratio
+        if (this.matchVisualizationAspect && this.visualizer && 
+            (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && 
+            this.visualizer.videoElement && 
+            this.visualizer.videoElement.videoWidth > 0 && 
+            this.visualizer.videoElement.videoHeight > 0) {
+            
+            const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            targetAspect = videoAspect;
+            console.log(`✓ Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
+        } else {
+            // Use manual aspect ratio setting
+            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+            targetAspect = ratioW / ratioH;
+            console.log(`✓ Using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
+        }
+        console.log('Final targetAspect:', targetAspect);
+        console.log('=========================')
+        
         const currentAspect = targetWidth / targetHeight;
         
-        console.log(`Target aspect: ${targetAspect} (${ratioW}:${ratioH}), Current aspect: ${currentAspect}`);
+        console.log(`Target aspect: ${targetAspect.toFixed(3)}, Current aspect: ${currentAspect.toFixed(3)}`);
         
         if (currentAspect > targetAspect) {
             // Too wide, adjust width
@@ -2580,6 +2618,7 @@ class RecordManager {
         
         try {
             console.log('Starting recording...');
+            console.log('Current video mirror setting:', this.visualizer.videoMirror);
             this.isRecording = true;
             this.recordingStartTime = Date.now();
             this.recordedChunks = [];
@@ -2899,11 +2938,6 @@ class RecordManager {
         // Apply mirror transformations if enabled
         this.compositeCtx.save();
         
-        if (this.visualizer.videoMirror) {
-            this.compositeCtx.scale(-1, 1);
-            this.compositeCtx.translate(-width, 0);
-        }
-        
         // Apply pulse scaling
         if (scale !== 1) {
             this.compositeCtx.translate(width / 2, height / 2);
@@ -3017,11 +3051,6 @@ class RecordManager {
         
         // Apply mirror transformations if enabled
         this.compositeCtx.save();
-        
-        if (this.visualizer.videoMirror) {
-            this.compositeCtx.scale(-1, 1);
-            this.compositeCtx.translate(-width, 0);
-        }
         
         // Apply pulse scaling
         if (scale !== 1) {
@@ -3255,6 +3284,7 @@ class RecordManager {
     }
     
     async saveRecording() {
+        console.log('saveRecording called, recordedChunks:', this.recordedChunks.length);
         if (this.recordedChunks.length === 0) {
             console.warn('No recorded data to save');
             return;
@@ -3262,8 +3292,10 @@ class RecordManager {
         
         try {
             const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+            console.log('Blob created, size:', blob.size, 'bytes');
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const filename = `${this.customFilename}_${timestamp}.webm`;
+            console.log('Attempting to save as:', filename);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
                 // Save to chosen directory
@@ -3294,12 +3326,30 @@ class RecordManager {
     }
     
     fallbackDownload(blob, filename) {
+        console.log('fallbackDownload called with blob size:', blob.size, 'filename:', filename);
         const url = URL.createObjectURL(blob);
+        console.log('Created blob URL:', url);
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
+        console.log('Download link created, triggering click...');
         document.body.appendChild(a);
-        a.click();
+        
+        // Add error handling for download
+        a.addEventListener('error', (e) => {
+            console.error('Download failed:', e);
+            alert('Download failed. Please check your browser settings and try again.');
+        });
+        
+        // Try to trigger download with timeout fallback
+        try {
+            a.click();
+            console.log('Download click triggered successfully');
+        } catch (e) {
+            console.error('Error triggering download click:', e);
+            alert('Unable to trigger download. Please check your browser settings.');
+        }
+        
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
@@ -4986,6 +5036,438 @@ class GitItUpVisualizer {
         if (headerElement) updateFn(headerElement);
     }
 
+    // Footer Settings Panel Management
+    toggleFooterSettingsPanel(panelId, buttonElement) {
+        const panel = document.getElementById(panelId);
+        const button = buttonElement;
+        
+        if (!panel || !button) return;
+        
+        // Close other footer settings panels first
+        this.closeAllFooterSettingsPanels();
+        
+        // Toggle current panel
+        if (panel.style.display === 'none' || panel.style.display === '') {
+            this.showFooterSettingsPanel(panelId, buttonElement);
+        } else {
+            this.closeFooterSettingsPanel(panelId);
+        }
+    }
+    
+    showFooterSettingsPanel(panelId, buttonElement) {
+        const panel = document.getElementById(panelId);
+        const button = buttonElement;
+        
+        if (!panel || !button) return;
+        
+        // Show panel
+        panel.style.display = 'block';
+        button.classList.add('active');
+        
+        // Position panel relative to gear button
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Position: bottom edge 6px above gear icon's top edge, right edge aligned with gear icon's right edge
+        panel.style.left = 'auto';
+        panel.style.right = `${window.innerWidth - buttonRect.right}px`;
+        panel.style.bottom = `${window.innerHeight - buttonRect.top + 6}px`;
+        panel.style.top = 'auto';
+        
+        // Ensure panel doesn't go off-screen
+        setTimeout(() => {
+            const panelRect = panel.getBoundingClientRect();
+            
+            // Adjust if panel goes off left edge
+            if (panelRect.left < 10) {
+                panel.style.right = 'auto';
+                panel.style.left = '10px';
+            }
+            
+            // Adjust if panel goes off top edge
+            if (panelRect.top < 10) {
+                panel.style.bottom = 'auto';
+                panel.style.top = '10px';
+            }
+        }, 10);
+    }
+    
+    closeFooterSettingsPanel(panelId) {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            panel.style.display = 'none';
+        }
+        
+        // Remove active state from corresponding button
+        const buttonId = panelId.replace('Panel', 'Btn');
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.classList.remove('active');
+        }
+    }
+    
+    closeAllFooterSettingsPanels() {
+        const panels = document.querySelectorAll('.footer-settings-panel');
+        panels.forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        const buttons = document.querySelectorAll('.footer-settings-btn');
+        buttons.forEach(button => {
+            button.classList.remove('active');
+        });
+    }
+
+    initializeFooterSettingsControls() {
+        // Initialize display settings controls with footer prefixed IDs
+        this.initializeFooterDisplayControls();
+        this.initializeFooterRecordControls();
+    }
+
+    initializeFooterDisplayControls() {
+        // Display mode buttons - use same logic as sidebar
+        const footerDisplayModeButtons = document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn');
+        footerDisplayModeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update active state - both footer and sidebar
+                document.querySelectorAll('.display-mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update settings using existing streamManager logic
+                const mode = btn.dataset.mode;
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.presentationMode = mode;
+                    this.streamManager.saveDisplaySettings();
+                    
+                    // Send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
+                }
+            });
+        });
+
+        // Capture bitrate slider
+        const footerCaptureBitrate = document.getElementById('footerCaptureBitrate');
+        if (footerCaptureBitrate) {
+            footerCaptureBitrate.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                document.getElementById('footerCaptureBitrateValue').textContent = value + ' Mbps';
+                
+                // Update settings using streamManager
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.captureBitrate = value;
+                    this.streamManager.saveDisplaySettings();
+                }
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('captureBitrate');
+                if (sidebarControl) {
+                    sidebarControl.value = value;
+                    const sidebarValue = document.getElementById('captureBitrateValue');
+                    if (sidebarValue) {
+                        sidebarValue.textContent = value + ' Mbps';
+                    }
+                }
+            });
+        }
+
+        // Capture resolution select
+        const footerCaptureResolution = document.getElementById('footerCaptureResolution');
+        if (footerCaptureResolution) {
+            footerCaptureResolution.addEventListener('change', (e) => {
+                const value = parseInt(e.target.value);
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.captureResolution = value;
+                    this.streamManager.saveDisplaySettings();
+                }
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('captureResolution');
+                if (sidebarControl) {
+                    sidebarControl.value = value;
+                }
+            });
+        }
+
+        // Capture frame rate select
+        const footerCaptureFrameRate = document.getElementById('footerCaptureFrameRate');
+        if (footerCaptureFrameRate) {
+            footerCaptureFrameRate.addEventListener('change', (e) => {
+                const value = parseInt(e.target.value);
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.captureFrameRate = value;
+                    this.streamManager.saveDisplaySettings();
+                }
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('captureFrameRate');
+                if (sidebarControl) {
+                    sidebarControl.value = value;
+                }
+            });
+        }
+
+        // Aspect ratio buttons - use same logic as sidebar
+        const footerAspectRatioButtons = document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn');
+        footerAspectRatioButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update active state - both footer and sidebar
+                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const ratio = btn.dataset.ratio;
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.aspectRatio = ratio;
+                    this.streamManager.saveDisplaySettings();
+                    
+                    // Send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
+                }
+            });
+        });
+
+        // Display preset buttons - use existing method
+        const footerDisplayPresetButtons = document.querySelectorAll('#footerDisplaySettingsPanel .display-preset-btn');
+        footerDisplayPresetButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                this.applyDisplayPreset(preset);
+            });
+        });
+    }
+
+    initializeFooterRecordControls() {
+        // Connect footer record controls to existing RecordManager functionality
+        console.log('Initializing footer record controls, recordManager:', !!this.recordManager);
+        if (!this.recordManager) {
+            console.error('RecordManager not available for footer controls');
+            return;
+        }
+        
+        // Resolution select (exact same as sidebar)
+        const footerResolutionSelect = document.getElementById('footerRecordResolutionSelect');
+        if (footerResolutionSelect) {
+            footerResolutionSelect.value = this.recordManager.resolution;
+            footerResolutionSelect.addEventListener('change', (e) => {
+                this.recordManager.resolution = e.target.value;
+                this.recordManager.updateUI();
+                this.recordManager.saveSettings();
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('recordResolutionSelect');
+                if (sidebarControl) sidebarControl.value = e.target.value;
+            });
+        }
+        
+        // Aspect ratio buttons (exact same as sidebar)
+        const footerAspectRatioBtns = document.querySelectorAll('#footerRecordSettingsPanel .aspect-ratio-btn');
+        footerAspectRatioBtns.forEach(btn => {
+            // Set initial active state
+            if (btn.dataset.ratio === this.recordManager.aspectRatio) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            
+            btn.addEventListener('click', (e) => {
+                // Update all aspect ratio buttons (both footer and sidebar)
+                document.querySelectorAll('.aspect-ratio-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.recordManager.aspectRatio = btn.dataset.ratio;
+                console.log('Footer: Aspect ratio changed to:', btn.dataset.ratio);
+                this.recordManager.updateUI();
+                this.recordManager.saveSettings();
+                
+                // Update footer recording info to reflect new aspect ratio
+                this.updateFooterRecordingInfo();
+                
+                // Also update sidebar recording info if it exists
+                this.recordManager.updateUI();
+                
+                // Recreate composite canvas if recording is active to apply new aspect ratio immediately
+                if (this.recordManager.isRecording && this.recordManager.compositeCanvas) {
+                    console.log('Recreating composite canvas for new aspect ratio...');
+                    this.recordManager.setupCompositeCanvas();
+                }
+            });
+        });
+        
+        // Frame rate buttons (exact same as sidebar)
+        const footerFramerateBtns = document.querySelectorAll('#footerRecordSettingsPanel .framerate-btn');
+        footerFramerateBtns.forEach(btn => {
+            // Set initial active state
+            if (parseInt(btn.dataset.fps) === this.recordManager.frameRate) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            
+            btn.addEventListener('click', (e) => {
+                // Update all framerate buttons (both footer and sidebar)
+                document.querySelectorAll('.framerate-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.recordManager.frameRate = parseInt(btn.dataset.fps);
+                this.recordManager.updateUI();
+                this.recordManager.saveSettings();
+            });
+        });
+        
+        // Video quality select (exact same as sidebar)
+        const footerVideoQualitySelect = document.getElementById('footerRecordVideoQualitySelect');
+        if (footerVideoQualitySelect) {
+            footerVideoQualitySelect.value = this.recordManager.videoQuality;
+            footerVideoQualitySelect.addEventListener('change', (e) => {
+                this.recordManager.videoQuality = e.target.value;
+                this.recordManager.updateUI();
+                this.recordManager.saveSettings();
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('recordVideoQualitySelect');
+                if (sidebarControl) sidebarControl.value = e.target.value;
+            });
+        }
+        
+        // Audio quality select (exact same as sidebar)
+        const footerAudioQualitySelect = document.getElementById('footerRecordAudioQualitySelect');
+        if (footerAudioQualitySelect) {
+            footerAudioQualitySelect.value = this.recordManager.audioQuality;
+            footerAudioQualitySelect.addEventListener('change', (e) => {
+                this.recordManager.audioQuality = e.target.value;
+                this.recordManager.updateUI();
+                this.recordManager.saveSettings();
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('recordAudioQualitySelect');
+                if (sidebarControl) sidebarControl.value = e.target.value;
+            });
+        }
+        
+        // Filename input (exact same as sidebar)
+        const footerFilenameInput = document.getElementById('footerRecordFilenameInput');
+        if (footerFilenameInput) {
+            footerFilenameInput.value = this.recordManager.customFilename;
+            footerFilenameInput.addEventListener('input', (e) => {
+                this.recordManager.customFilename = e.target.value;
+                this.recordManager.saveSettings();
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('recordFilenameInput');
+                if (sidebarControl) sidebarControl.value = e.target.value;
+            });
+        }
+        
+        // Choose location button (exact same as sidebar)
+        const footerChooseLocationBtn = document.getElementById('footerRecordChooseLocationBtn');
+        if (footerChooseLocationBtn) {
+            footerChooseLocationBtn.addEventListener('click', async () => {
+                try {
+                    const dirHandle = await window.showDirectoryPicker();
+                    this.recordManager.saveLocation = dirHandle;
+                    
+                    // Update location display
+                    const locationDisplay = document.getElementById('footerRecordFileLocation');
+                    if (locationDisplay) {
+                        locationDisplay.textContent = `📁 ${dirHandle.name}`;
+                    }
+                    
+                    // Sync sidebar display
+                    const sidebarDisplay = document.getElementById('recordFileLocation');
+                    if (sidebarDisplay) {
+                        sidebarDisplay.textContent = `📁 ${dirHandle.name}`;
+                    }
+                    
+                    this.recordManager.saveSettings();
+                } catch (error) {
+                    console.log('Directory selection cancelled or failed:', error);
+                }
+            });
+        }
+        
+        // Match visualization aspect button
+        const footerMatchVisualizationBtn = document.getElementById('footerRecordMatchVisualizationAspectBtn');
+        if (footerMatchVisualizationBtn) {
+            // Initialize state
+            const isMatching = this.recordManager.matchVisualizationAspect !== false; // Default true
+            footerMatchVisualizationBtn.textContent = `Match Video Aspect: ${isMatching ? 'On' : 'Off'}`;
+            footerMatchVisualizationBtn.classList.toggle('active', isMatching);
+            
+            footerMatchVisualizationBtn.addEventListener('click', () => {
+                this.recordManager.matchVisualizationAspect = !this.recordManager.matchVisualizationAspect;
+                const isOn = this.recordManager.matchVisualizationAspect;
+                footerMatchVisualizationBtn.textContent = `Match Video Aspect: ${isOn ? 'On' : 'Off'}`;
+                footerMatchVisualizationBtn.classList.toggle('active', isOn);
+                
+                // Sync sidebar control
+                const sidebarControl = document.getElementById('recordMatchVisualizationAspectBtn');
+                if (sidebarControl) {
+                    sidebarControl.textContent = `Match Video Aspect: ${isOn ? 'On' : 'Off'}`;
+                    sidebarControl.classList.toggle('active', isOn);
+                }
+                
+                this.recordManager.saveSettings();
+                
+                // Update recording info to show aspect ratio source change
+                this.updateFooterRecordingInfo();
+                
+                // Recreate composite canvas if recording is active to apply new aspect ratio immediately
+                if (this.recordManager.isRecording && this.recordManager.compositeCanvas) {
+                    console.log('Recreating composite canvas for video aspect matching change...');
+                    this.recordManager.setupCompositeCanvas();
+                }
+            });
+        }
+        
+        // Initialize the recording info display
+        this.updateFooterRecordingInfo();
+    }
+    
+    updateFooterRecordingInfo() {
+        if (!this.recordManager) return;
+        
+        // Update output info using actual recording dimensions
+        const outputSpan = document.getElementById('footerRecordingOutput');
+        if (outputSpan) {
+            const dimensions = this.recordManager.getRecordingDimensions();
+            const resolution = `${dimensions.width}×${dimensions.height}`;
+            
+            // Show aspect ratio source
+            let aspectInfo = '';
+            if (this.recordManager.matchVisualizationAspect && 
+                (this.videoMode === 'camera' || this.videoMode === 'file') && 
+                this.videoElement && this.videoElement.videoWidth > 0) {
+                aspectInfo = ' (Video Aspect)';
+            } else {
+                aspectInfo = ` (${this.recordManager.aspectRatio})`;
+            }
+            
+            outputSpan.textContent = `${resolution} @ ${this.recordManager.frameRate}fps${aspectInfo}`;
+        }
+        
+        // Update format info
+        const formatSpan = document.getElementById('footerRecordingFormat');
+        if (formatSpan) {
+            formatSpan.textContent = 'WebM (VP9/Opus)';
+        }
+        
+        // Update estimated size
+        const sizeSpan = document.getElementById('footerRecordingEstSize');
+        if (sizeSpan) {
+            // Rough estimate based on quality settings
+            let sizeMB = 50; // Base estimate
+            if (this.recordManager.videoQuality === 'high') sizeMB *= 1.5;
+            else if (this.recordManager.videoQuality === 'low') sizeMB *= 0.5;
+            sizeSpan.textContent = `~${Math.round(sizeMB)} MB/min`;
+        }
+    }
+
     createAudioInputDropdown() {
         // Remove existing dropdown if it exists
         const existingDropdown = document.getElementById('footerAudioInputDropdown');
@@ -5630,7 +6112,7 @@ class GitItUpVisualizer {
         `;
         
         const videoToggle = document.createElement('button');
-        videoToggle.className = 'dropdown-toggle viz-toggle-btn';
+        videoToggle.className = 'dropdown-toggle viz-toggle-btn video-toggle';
         videoToggle.id = 'videoToggleBtn';
         videoToggle.textContent = this.videoMode === 'camera' || this.videoMode === 'file' ? 'ON' : 'OFF';
         videoToggle.style.cssText = `
@@ -5648,14 +6130,9 @@ class GitItUpVisualizer {
         videoToggle.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (window.visualizer) {
-                window.visualizer.toggleVideoPlayback();
-                // Update button text
-                const isOn = window.visualizer.videoMode === 'camera' || window.visualizer.videoMode === 'file';
-                videoToggle.textContent = isOn ? 'ON' : 'OFF';
-                videoToggle.style.background = isOn ? 'var(--accent-color)' : 'var(--hover-color)';
-                videoToggle.style.color = isOn ? 'white' : 'var(--text-primary)';
-            }
+            this.toggleVideoPlayback();
+            // Let updateVideoToggleState handle the UI updates
+            this.updateVideoToggleState();
         };
         
         toggleSection.appendChild(videoToggle);
@@ -5697,6 +6174,27 @@ class GitItUpVisualizer {
         
         dropdown.appendChild(deviceList);
         dropdown.appendChild(settingsSection);
+        
+        // Refresh stats if camera is already active
+        console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
+        if (this.videoMode === 'camera' && this.cameraInfo) {
+            console.log('Refreshing camera stats for reopened panel...');
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.updateCameraStats();
+            }, 100);
+        } else if (this.videoMode === 'file' && this.videoElement) {
+            console.log('Refreshing video file stats for reopened panel...');
+            setTimeout(() => {
+                const videoInfo = {
+                    name: this.videoFile?.name || 'Unknown',
+                    resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
+                    duration: this.videoElement.duration,
+                    loop: this.videoFileLoop
+                };
+                this.updateVideoFileStats(videoInfo);
+            }, 100);
+        }
 
         // Add to page
         document.body.appendChild(dropdown);
@@ -5776,22 +6274,15 @@ class GitItUpVisualizer {
                 flex-shrink: 0;
             `;
             
-            // Link to sidebar slider (convert header ID to sidebar ID)
+            // Header video sliders work independently (no sidebar sync needed)
             input.addEventListener('input', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Convert header ID to sidebar ID for syncing
-                const sidebarId = slider.id.startsWith('header') ? 
-                    slider.id.charAt(6).toLowerCase() + slider.id.slice(7) : 
-                    slider.id;
+                // Call video control method directly
+                this.handleHeaderVideoSlider(slider.id, e.target.value);
                 
-                const sidebarSlider = document.getElementById(sidebarId);
-                if (sidebarSlider) {
-                    sidebarSlider.value = e.target.value;
-                    sidebarSlider.dispatchEvent(new Event('input'));
-                }
-                
+                // Update value display
                 valueSpan.textContent = e.target.value + (slider.suffix || '');
             });
             
@@ -5802,6 +6293,49 @@ class GitItUpVisualizer {
         });
         
         container.appendChild(controlGroup);
+    }
+
+    handleHeaderVideoSlider(sliderId, value) {
+        // Direct method calls for header video sliders when sidebar sync fails
+        const numValue = parseFloat(value);
+        
+        switch(sliderId) {
+            case 'headerVideoOpacitySlider':
+                this.setVideoOpacity(numValue / 100);
+                break;
+            case 'headerVideoBrightnessSlider':
+                this.setVideoBrightness(numValue);
+                break;
+            case 'headerVideoContrastSlider':
+                this.setVideoContrast(numValue);
+                break;
+            case 'headerVideoFadeSlider':
+                this.videoFadeTime = numValue;
+                break;
+            case 'headerVideoSaturationSlider':
+                this.setVideoSaturation(numValue);
+                break;
+            case 'headerVideoHueRotateSlider':
+                this.setVideoHueRotate(numValue);
+                break;
+            case 'headerVideoGrayscaleSlider':
+                this.setVideoGrayscale(numValue);
+                break;
+            case 'headerVideoSepiaSlider':
+                this.setVideoSepia(numValue);
+                break;
+            case 'headerVideoBlurSlider':
+                this.setVideoBlur(numValue);
+                break;
+            case 'headerVideoVignetteSlider':
+                this.setVideoVignette(numValue);
+                break;
+            case 'headerVideoPosterizeSlider':
+                this.setVideoPosterize(numValue);
+                break;
+            default:
+                console.log(`Unhandled header video slider: ${sliderId}`);
+        }
     }
 
     addEffectsControlGroup(container) {
@@ -5868,17 +6402,10 @@ class GitItUpVisualizer {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Convert header ID to sidebar ID for syncing
-                const sidebarId = slider.id.startsWith('header') ? 
-                    slider.id.charAt(6).toLowerCase() + slider.id.slice(7) : 
-                    slider.id;
+                // Call video control method directly (no sidebar sync)
+                this.handleHeaderVideoSlider(slider.id, e.target.value);
                 
-                const sidebarSlider = document.getElementById(sidebarId);
-                if (sidebarSlider) {
-                    sidebarSlider.value = e.target.value;
-                    sidebarSlider.dispatchEvent(new Event('input'));
-                }
-                
+                // Update display value
                 if (slider.id.includes('Posterize')) {
                     valueSpan.textContent = e.target.value === '16' ? 'Off' : e.target.value;
                 } else {
@@ -7541,67 +8068,17 @@ class GitItUpVisualizer {
     }
 
     updateVideoDeviceList() {
-        const select = document.getElementById('videoDeviceSelect');
-        if (! select) 
-            return;
-        
-
-
-        select.innerHTML = '<option value="">Select Video Input...</option>';
-
-        this.availableVideoDevices.forEach(device => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            let displayName = device.label || `Camera ${
-                device.deviceId.substr(0, 5)
-            }`;
-
-            // Add icons for common camera types including Continuity Camera
-            if (displayName.toLowerCase().includes('iphone') || 
-                displayName.toLowerCase().includes('ipad') ||
-                displayName.toLowerCase().includes('continuity')) {
-                displayName = '📱 ' + displayName + ' (Continuity Camera)';
-            } else if (displayName.toLowerCase().includes('obs')) {
-                displayName = '🎬 ' + displayName;
-            } else if (displayName.toLowerCase().includes('virtual')) {
-                displayName = '💻 ' + displayName;
-            } else if (displayName.toLowerCase().includes('back') || displayName.toLowerCase().includes('rear')) {
-                displayName = '📷 ' + displayName;
-            } else {
-                displayName = '📹 ' + displayName;
-            } option.textContent = displayName;
-            select.appendChild(option);
-        });
-
-        // Add separator
-        const separator = document.createElement('option');
-        separator.disabled = true;
-        separator.textContent = '──────────────';
-        select.appendChild(separator);
-
-        // Add video from file option
-        const fileOption = document.createElement('option');
-        fileOption.value = 'file';
-        fileOption.textContent = '📁 Video from file' + (this.videoFile ? ` (${this.videoFile.name})` : '');
-        select.appendChild(fileOption);
-        
-        // Update drawer select as well
-        const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
-        if (drawerSelect) {
-            drawerSelect.innerHTML = select.innerHTML;
-            drawerSelect.value = select.value;
-        }
-        
-        console.log('Video device list updated. Total options:', select.options.length);
+        // Header-only video controls (sidebar removed)
+        console.log('Video device list update - header controls only');
+        return;
     }
 
     async toggleVideoInput() {
-        const deviceSelect = document.getElementById('videoDeviceSelect');
-
-        if (this.videoMode === 'off') { // Show device selector
+        // Header-only video controls (sidebar removed)
+        if (this.videoMode === 'off') { 
+            // For header controls, we don't need to show device selector
+            // The video settings panel handles device selection
             await this.initializeVideoInput();
-
-            deviceSelect.style.display = 'block';
             this.videoMode = 'selecting';
 
         } else { // Turn off video
@@ -7656,22 +8133,9 @@ class GitItUpVisualizer {
     }
 
     updateVideoDropdownDisplay() {
-        const deviceSelect = document.getElementById('videoDeviceSelect');
-        if (deviceSelect) {
-            // Force the dropdown to show the selected option text
-            const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
-            if (selectedOption) {
-                console.log('Selected video source:', selectedOption.textContent);
-            }
-        }
-        
-        // Also update the drawer select
-        const drawerSelect = document.getElementById('drawerVideoDeviceSelect');
-        if (drawerSelect) {
-            // Copy the updated options and value from the original
-            drawerSelect.innerHTML = deviceSelect.innerHTML;
-            drawerSelect.value = deviceSelect.value;
-        }
+        // Header-only video controls (sidebar removed)
+        // No dropdown display to update - handled by header panel
+        console.log('Video dropdown display update - header controls only');
     }
 
     updateVisualizationAspectRatio() {
@@ -9167,15 +9631,8 @@ class GitItUpVisualizer {
             // Save video source to localStorage
             this.saveVideoSource('camera', deviceId);
 
-            // Keep device selector visible and update selection
-            const deviceSelect = document.getElementById('videoDeviceSelect');
-            if (deviceSelect) {
-                // Update the list first, then set the selection
-                this.updateVideoDeviceList();
-                deviceSelect.value = deviceId;
-                deviceSelect.style.display = 'block';
-                this.updateVideoDropdownDisplay();
-            }
+            // Header controls only (sidebar removed)
+            console.log('Camera started - header controls only');
 
             // Add cleanup listener for unexpected stream end
             const videoTrack = this.videoStream.getVideoTracks()[0];
@@ -9255,10 +9712,23 @@ class GitItUpVisualizer {
     }
 
     updateCameraStats() {
-        const statsContainers = [
-            document.getElementById('cameraStatsContainer'),
-            document.getElementById('headerCameraStatsContainer')
-        ].filter(Boolean);
+        // Defensive DOM queries - refresh each time to handle panel closure
+        const sidebarContainer = document.getElementById('cameraStatsContainer');
+        const headerContainer = document.getElementById('headerCameraStatsContainer');
+        
+        console.log('Stats container check:', {
+            sidebar: !!sidebarContainer,
+            header: !!headerContainer
+        });
+        
+        const statsContainers = [sidebarContainer, headerContainer].filter(Boolean);
+        
+        if (statsContainers.length === 0) {
+            console.log('No camera stats containers found - video panel may be closed');
+            return;
+        }
+        
+        console.log(`Updating camera stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
             if (statsContainer && this.cameraInfo) {
@@ -9485,6 +9955,9 @@ class GitItUpVisualizer {
 
             // Update UI
             this.videoMode = 'file';
+            console.log('Video file loaded successfully, setting mode to:', this.videoMode);
+            console.log('Video element opacity:', this.videoElement.style.opacity);
+            console.log('Video element display:', this.videoElement.style.display);
             this.updateVideoToggleState();
             
             // Save video source to localStorage
@@ -9516,8 +9989,9 @@ class GitItUpVisualizer {
                 this.debugVideoVisibility();
             }, 500);
 
+            console.log('✅ Video file started successfully');
         } catch (error) {
-            console.error('Error starting video file:', error);
+            console.error('❌ Error starting video file:', error);
             console.error('Error stack:', error.stack);
             this.showError(`Failed to load video: ${error.message}`);
             this.stopVideoInput();
@@ -9587,10 +10061,18 @@ class GitItUpVisualizer {
     }
 
     updateVideoFileStats(videoInfo) {
+        // Defensive DOM queries - refresh each time to handle panel closure
         const statsContainers = [
             document.getElementById('cameraStatsContainer'),
             document.getElementById('headerCameraStatsContainer')
         ].filter(Boolean);
+        
+        if (statsContainers.length === 0) {
+            console.log('No video file stats containers found - video panel may be closed');
+            return;
+        }
+        
+        console.log(`Updating video file stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
             if (statsContainer && videoInfo) {
@@ -9764,23 +10246,7 @@ class GitItUpVisualizer {
         }
 
         if (updateUI) {
-            const deviceSelect = document.getElementById('videoDeviceSelect');
-            const controlsPanel = document.getElementById('videoControlsPanel');
-
-            if (deviceSelect) {
-                deviceSelect.value = '';
-            }
-            
-            // Hide file info
-            const fileInfo = document.getElementById('videoFileInfo');
-            if (fileInfo) {
-                fileInfo.style.display = 'none';
-            }
-            
-            if (controlsPanel) {
-                controlsPanel.style.display = 'none';
-            }
-
+            // Header controls only (sidebar removed)
             this.videoMode = 'off';
             this.updateVideoToggleState();
             
@@ -9859,6 +10325,7 @@ class GitItUpVisualizer {
             this.updateDisplaySettingsUI(settings);
         }
     }
+
 
     updateDisplaySettingsUI(settings) { // Update presentation mode buttons
         document.querySelectorAll('.display-mode-btn').forEach(btn => {
@@ -12518,102 +12985,13 @@ https://rogueamoeba.com/loopback/
         }
 
         
-        // Pulse controls
-        const videoPulseRateSlider = document.getElementById('videoPulseRateSlider');
-        if (videoPulseRateSlider) {
-            videoPulseRateSlider.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                this.setVideoPulseRate(value);
-                document.getElementById('videoPulseRateValue').textContent = `${
-                    value.toFixed(1)
-                }s`;
-            });
-        }
+        // Sidebar video pulse controls removed - now handled by header sliders only
 
-        // Basic controls
-        const videoBrightnessSlider = document.getElementById('videoBrightnessSlider');
-        if (videoBrightnessSlider) {
-            videoBrightnessSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoBrightness(value);
-                document.getElementById('videoBrightnessValue').textContent = `${value}%`;
-            });
-        }
+        // Sidebar video basic controls removed - now handled by header sliders only
 
-        const videoContrastSlider = document.getElementById('videoContrastSlider');
-        if (videoContrastSlider) {
-            videoContrastSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoContrast(value);
-                document.getElementById('videoContrastValue').textContent = `${value}%`;
-            });
-        }
+        // Sidebar video color controls removed - now handled by header sliders only
 
-        // Color controls
-        const videoSaturationSlider = document.getElementById('videoSaturationSlider');
-        if (videoSaturationSlider) {
-            videoSaturationSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoSaturation(value);
-                document.getElementById('videoSaturationValue').textContent = `${value}%`;
-            });
-        }
-
-        const videoHueRotateSlider = document.getElementById('videoHueRotateSlider');
-        if (videoHueRotateSlider) {
-            videoHueRotateSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoHueRotate(value);
-                document.getElementById('videoHueRotateValue').textContent = `${value}°`;
-            });
-        }
-
-        const videoGrayscaleSlider = document.getElementById('videoGrayscaleSlider');
-        if (videoGrayscaleSlider) {
-            videoGrayscaleSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoGrayscale(value);
-                document.getElementById('videoGrayscaleValue').textContent = `${value}%`;
-            });
-        }
-
-        const videoSepiaSlider = document.getElementById('videoSepiaSlider');
-        if (videoSepiaSlider) {
-            videoSepiaSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoSepia(value);
-                document.getElementById('videoSepiaValue').textContent = `${value}%`;
-            });
-        }
-
-        // Effects controls
-        const videoBlurSlider = document.getElementById('videoBlurSlider');
-        if (videoBlurSlider) {
-            videoBlurSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoBlur(value);
-                document.getElementById('videoBlurValue').textContent = `${value}px`;
-            });
-        }
-
-        const videoVignetteSlider = document.getElementById('videoVignetteSlider');
-        if (videoVignetteSlider) {
-            videoVignetteSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoVignette(value);
-                document.getElementById('videoVignetteValue').textContent = `${value}%`;
-            });
-        }
-
-        const videoPosterizeSlider = document.getElementById('videoPosterizeSlider');
-        if (videoPosterizeSlider) {
-            videoPosterizeSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                this.setVideoPosterize(value);
-                const displayText = value >= 16 ? 'Off' : `${value} levels`;
-                document.getElementById('videoPosterizeValue').textContent = displayText;
-            });
-        }
+        // Sidebar video effects controls removed - now handled by header sliders only
 
 
         // Live Display button - both sidebar and footer
@@ -12625,6 +13003,53 @@ https://rogueamoeba.com/loopback/
                 }
             });
         });
+
+        // Footer Display Settings button
+        const footerDisplaySettingsBtn = document.getElementById('footerDisplaySettingsBtn');
+        if (footerDisplaySettingsBtn) {
+            footerDisplaySettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleFooterSettingsPanel('footerDisplaySettingsPanel', footerDisplaySettingsBtn);
+            });
+        }
+
+        // Footer Record Settings button
+        const footerRecordSettingsBtn = document.getElementById('footerRecordSettingsBtn');
+        if (footerRecordSettingsBtn) {
+            footerRecordSettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleFooterSettingsPanel('footerRecordSettingsPanel', footerRecordSettingsBtn);
+            });
+        }
+
+        // Footer Settings Panel close buttons
+        const footerDisplaySettingsClose = document.getElementById('footerDisplaySettingsClose');
+        if (footerDisplaySettingsClose) {
+            footerDisplaySettingsClose.addEventListener('click', () => {
+                this.closeFooterSettingsPanel('footerDisplaySettingsPanel');
+            });
+        }
+
+        const footerRecordSettingsClose = document.getElementById('footerRecordSettingsClose');
+        if (footerRecordSettingsClose) {
+            footerRecordSettingsClose.addEventListener('click', () => {
+                this.closeFooterSettingsPanel('footerRecordSettingsPanel');
+            });
+        }
+
+        // Click outside to close footer settings panels
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.footer-settings-panel') && !e.target.closest('.footer-settings-btn')) {
+                this.closeAllFooterSettingsPanels();
+            }
+        });
+
+        // Initialize footer settings controls - delay to ensure recordManager is ready
+        setTimeout(() => {
+            this.initializeFooterSettingsControls();
+        }, 100);
 
         // Display Settings Panel Controls
         // Close button
@@ -14130,16 +14555,19 @@ https://rogueamoeba.com/loopback/
         
         // Helper function to update video toggle button state
         this.updateVideoToggleState = () => {
-            const videoToggleBtn = document.getElementById('videoToggleBtn');
-            if (videoToggleBtn) {
+            // Update header video toggle (sidebar removed)
+            const headerVideoToggles = document.querySelectorAll('#headerVideoSettingsPanel .video-toggle');
+            headerVideoToggles.forEach(toggle => {
                 if (this.videoMode === 'camera' || this.videoMode === 'file') {
-                    videoToggleBtn.textContent = 'ON';
-                    videoToggleBtn.classList.add('active');
+                    toggle.textContent = 'ON';
+                    toggle.style.background = 'var(--accent-color)';
+                    toggle.style.color = 'white';
                 } else {
-                    videoToggleBtn.textContent = 'OFF';
-                    videoToggleBtn.classList.remove('active');
+                    toggle.textContent = 'OFF';
+                    toggle.style.background = 'var(--hover-color)';
+                    toggle.style.color = 'var(--text-primary)';
                 }
-            }
+            });
             
             // Also update the drawer video toggle button
             if (typeof updateDrawerVideoToggle === 'function') {
@@ -14175,13 +14603,8 @@ https://rogueamoeba.com/loopback/
                 if (file && file.type.startsWith('video/')) {
                     console.log('Selected video file:', file.name, file.type);
                     await this.startVideoFile(file);
-                    // Update the dropdown to show the file name
-                    this.updateVideoDeviceList();
-                    const deviceSelect = document.getElementById('videoDeviceSelect');
-                    if (deviceSelect) {
-                        deviceSelect.value = 'file';
-                        this.updateVideoDropdownDisplay();
-                    }
+                    // Header controls only (sidebar removed)
+                    console.log('Video file loaded - header controls only');
                     // Reset file input for reselection
                     e.target.value = '';
                 } else if (file) {
@@ -14192,27 +14615,7 @@ https://rogueamoeba.com/loopback/
             });
         }
 
-        const videoOpacitySlider = document.getElementById('videoOpacitySlider');
-        if (videoOpacitySlider) {
-            videoOpacitySlider.addEventListener('input', (e) => {
-                const value = e.target.value / 100;
-                this.setVideoOpacity(value);
-                document.getElementById('videoOpacityValue').textContent = `${
-                    e.target.value
-                }%`;
-            });
-        }
-
-        const videoFadeSlider = document.getElementById('videoFadeSlider');
-        if (videoFadeSlider) {
-            videoFadeSlider.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                this.setVideoFadeTime(value);
-                document.getElementById('videoFadeValue').textContent = `${
-                    value.toFixed(1)
-                }s`;
-            });
-        }
+        // Sidebar video controls removed - now handled by header sliders only
 
         // Audio input mode button (removed - now using select dropdown)
 
