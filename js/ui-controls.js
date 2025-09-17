@@ -237,73 +237,13 @@ function closeAllDrawers() {
 // Drawer Control Functionality
 function initializeDrawerControls() {
     // VIZ ON/OFF Toggle - connect to existing functionality
-    const drawerVizToggleBtn = document.getElementById('drawerVizToggleBtn');
-    const originalVizToggleBtn = document.getElementById('vizToggleBtn');
-    
-    if (drawerVizToggleBtn && originalVizToggleBtn) {
-        // Sync initial state
-        updateDrawerVizToggle();
-        
-        // Connect click handler
-        drawerVizToggleBtn.addEventListener('click', () => {
-            // Call the visualization toggle function directly instead of triggering click
-            if (window.visualizer && window.visualizer.toggleVisualization) {
-                window.visualizer.toggleVisualization();
-            }
-            // Update drawer button state
-            updateDrawerVizToggle();
-        });
-    }
+    // Sidebar vizToggleBtn removed - functionality moved to header
 
-    // Spectrum Dropdown - connect to existing functionality
-    const drawerVizModeToggle = document.getElementById('drawerVizModeToggle');
-    const drawerVizModeDropdown = document.getElementById('drawerVizModeDropdown');
-    const originalVizModeToggle = document.getElementById('vizModeToggle');
-    const originalVizModeDropdown = document.getElementById('vizModeDropdown');
+    // Sidebar vizModeToggle removed - functionality moved to header
     
-    if (drawerVizModeToggle && originalVizModeToggle) {
-        // Sync initial state
-        updateDrawerVizMode();
-        
-        // Connect dropdown toggle
-        drawerVizModeToggle.addEventListener('click', () => {
-            drawerVizModeDropdown.classList.toggle('show');
-        });
-        
-        // Connect dropdown items
-        const drawerItems = drawerVizModeDropdown.querySelectorAll('.drawer-dropdown-item');
-        const originalItems = originalVizModeDropdown.querySelectorAll('.dropdown-item');
-        
-        drawerItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                // Call the visualization mode change function directly
-                const mode = item.getAttribute('data-mode');
-                if (window.visualizer && window.visualizer.setVisualizationMode) {
-                    window.visualizer.setVisualizationMode(parseInt(mode));
-                }
-                // Update drawer state
-                updateDrawerVizMode();
-                // Close drawer dropdown
-                drawerVizModeDropdown.classList.remove('show');
-            });
-        });
-    }
+    // Sidebar vizModeToggle functionality removed - moved to header
 
-    // Presets Dropdown - connect to existing functionality
-    const drawerPresetSelector = document.getElementById('drawerPresetSelector');
-    const originalPresetSelector = document.getElementById('presetSelector');
-    
-    if (drawerPresetSelector && originalPresetSelector) {
-        // Sync options
-        syncPresetOptions();
-        
-        // Connect change handler
-        drawerPresetSelector.addEventListener('change', (e) => {
-            // Set the original selector's value and trigger its change event
-            originalPresetSelector.value = e.target.value;
-            originalPresetSelector.dispatchEvent(new Event('change'));
-        });
-    }
+    // Sidebar presetSelector removed - functionality moved to header
 
     // Kaleidoscope Video Toggle - connect to existing functionality
     const drawerKaleidoscopeVideoBtn = document.getElementById('drawerKaleidoscopeVideoBtn');
@@ -633,35 +573,11 @@ function initializeDrawerControls() {
 }
 
 // Helper functions to sync drawer states with original controls
-function updateDrawerVizToggle() {
-    const drawerBtn = document.getElementById('drawerVizToggleBtn');
-    const originalBtn = document.getElementById('vizToggleBtn');
-    if (drawerBtn && originalBtn) {
-        drawerBtn.textContent = originalBtn.textContent;
-        // Remove active class first, then add it if original is active
-        drawerBtn.classList.remove('active');
-        if (originalBtn.classList.contains('active')) {
-            drawerBtn.classList.add('active');
-        }
-    }
-}
+// Sidebar vizToggleBtn removed - functionality moved to header
 
-function updateDrawerVizMode() {
-    const drawerToggle = document.getElementById('drawerVizModeToggle');
-    const originalToggle = document.getElementById('vizModeToggle');
-    if (drawerToggle && originalToggle) {
-        drawerToggle.textContent = originalToggle.textContent;
-    }
-}
+// Sidebar vizModeToggle removed - functionality moved to header
 
-function syncPresetOptions() {
-    const drawerSelector = document.getElementById('drawerPresetSelector');
-    const originalSelector = document.getElementById('presetSelector');
-    if (drawerSelector && originalSelector) {
-        // Copy options from original to drawer
-        drawerSelector.innerHTML = originalSelector.innerHTML;
-    }
-}
+// Sidebar presetSelector removed - functionality moved to header
 
 function updateDrawerKaleidoscopeVideo() {
     const drawerBtn = document.getElementById('drawerKaleidoscopeVideoBtn');

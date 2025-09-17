@@ -8280,6 +8280,391 @@ class GitItUpVisualizer {
         header.appendChild(closeBtn);
         panel.appendChild(header);
 
+        // Create presets section
+        const presetsSection = document.createElement('div');
+        presetsSection.style.cssText = `
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+
+        // Presets label
+        const presetsLabel = document.createElement('div');
+        presetsLabel.textContent = 'Presets';
+        presetsLabel.style.cssText = `
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        `;
+        presetsSection.appendChild(presetsLabel);
+
+        // Presets controls container
+        const presetsControls = document.createElement('div');
+        presetsControls.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        `;
+
+        // Load preset dropdown
+        const loadPresetSelect = document.createElement('select');
+        loadPresetSelect.id = 'headerPresetSelector';
+        loadPresetSelect.title = 'Load Saved Preset';
+        loadPresetSelect.style.cssText = `
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Load Preset...';
+        loadPresetSelect.appendChild(defaultOption);
+
+        // Load existing presets
+        this.loadPresetOptions(loadPresetSelect);
+
+        // Preset action buttons container
+        const presetButtons = document.createElement('div');
+        presetButtons.style.cssText = `
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        `;
+
+        // Save preset button
+        const savePresetBtn = document.createElement('button');
+        savePresetBtn.id = 'headerSavePresetBtn';
+        savePresetBtn.textContent = 'Save';
+        savePresetBtn.title = 'Save Current as Preset';
+        savePresetBtn.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            flex: 1;
+        `;
+
+        // Export presets button
+        const exportPresetsBtn = document.createElement('button');
+        exportPresetsBtn.id = 'headerExportPresetsBtn';
+        exportPresetsBtn.textContent = 'Export';
+        exportPresetsBtn.title = 'Export All Presets';
+        exportPresetsBtn.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            flex: 1;
+        `;
+
+        // Import presets button
+        const importPresetsBtn = document.createElement('button');
+        importPresetsBtn.id = 'headerImportPresetsBtn';
+        importPresetsBtn.textContent = 'Import';
+        importPresetsBtn.title = 'Import Presets';
+        importPresetsBtn.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            flex: 1;
+        `;
+
+        // Hidden file input for import
+        const importPresetsFile = document.createElement('input');
+        importPresetsFile.type = 'file';
+        importPresetsFile.id = 'headerImportPresetsFile';
+        importPresetsFile.accept = '.json';
+        importPresetsFile.style.display = 'none';
+
+        // Add elements to containers
+        presetButtons.appendChild(savePresetBtn);
+        presetButtons.appendChild(exportPresetsBtn);
+        presetButtons.appendChild(importPresetsBtn);
+
+        presetsControls.appendChild(loadPresetSelect);
+        presetsControls.appendChild(presetButtons);
+        presetsControls.appendChild(importPresetsFile);
+
+        presetsSection.appendChild(presetsControls);
+        panel.appendChild(presetsSection);
+
+        // Create spectrum controls section
+        const spectrumSection = document.createElement('div');
+        spectrumSection.style.cssText = `
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+
+        // Spectrum label
+        const spectrumLabel = document.createElement('div');
+        spectrumLabel.textContent = 'Spectrum';
+        spectrumLabel.style.cssText = `
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        `;
+        spectrumSection.appendChild(spectrumLabel);
+
+        // Spectrum controls container
+        const spectrumControls = document.createElement('div');
+        spectrumControls.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        `;
+
+        // Spectrum dropdown and ON button container
+        const spectrumTopRow = document.createElement('div');
+        spectrumTopRow.style.cssText = `
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        `;
+
+        // Spectrum dropdown
+        const spectrumDropdown = document.createElement('div');
+        spectrumDropdown.style.cssText = `
+            flex: 1;
+            position: relative;
+        `;
+
+        const spectrumButton = document.createElement('button');
+        spectrumButton.id = 'headerVizModeToggle';
+        spectrumButton.textContent = 'Radial Spectrum';
+        spectrumButton.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            text-align: left;
+        `;
+
+        const spectrumDropdownContent = document.createElement('div');
+        spectrumDropdownContent.id = 'headerVizModeDropdown';
+        spectrumDropdownContent.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+
+        // Add spectrum options
+        const spectrumOptions = [
+            { id: 0, name: 'Spectrum' },
+            { id: 1, name: 'Mirror Wave' },
+            { id: 2, name: 'Classic LED' },
+            { id: 3, name: 'Stereo' },
+            { id: 4, name: 'Radial Spectrum' },
+            { id: 5, name: 'Energy' },
+            { id: 6, name: 'Mirror' }
+        ];
+
+        spectrumOptions.forEach(option => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'dropdown-item';
+            optionDiv.setAttribute('data-mode', option.id);
+            optionDiv.textContent = option.name;
+            optionDiv.style.cssText = `
+                padding: 6px 8px;
+                cursor: pointer;
+                font-size: 12px;
+                color: var(--text-primary);
+            `;
+            
+            if (option.id === 4) { // Radial Spectrum is default
+                optionDiv.classList.add('active');
+            }
+            
+            optionDiv.addEventListener('click', () => {
+                this.setVisualizationMode(option.id);
+                spectrumButton.textContent = option.name;
+                spectrumDropdownContent.style.display = 'none';
+                
+                // Update active state
+                spectrumDropdownContent.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                optionDiv.classList.add('active');
+            });
+            
+            spectrumDropdownContent.appendChild(optionDiv);
+        });
+
+        spectrumDropdown.appendChild(spectrumButton);
+        spectrumDropdown.appendChild(spectrumDropdownContent);
+
+        // ON button
+        const onButton = document.createElement('button');
+        onButton.id = 'headerVizToggleBtn';
+        onButton.textContent = 'ON';
+        onButton.title = 'Toggle Visualization';
+        onButton.style.cssText = `
+            background: var(--accent-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        `;
+
+        spectrumTopRow.appendChild(spectrumDropdown);
+        spectrumTopRow.appendChild(onButton);
+
+        // Random button
+        const randomButton = document.createElement('button');
+        randomButton.id = 'headerRandomVizBtn';
+        randomButton.textContent = 'Random';
+        randomButton.title = 'Random Visualization';
+        randomButton.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+        `;
+
+        spectrumControls.appendChild(spectrumTopRow);
+        spectrumControls.appendChild(randomButton);
+        spectrumSection.appendChild(spectrumControls);
+        panel.appendChild(spectrumSection);
+
+        // Create color scheme controls section
+        const colorSchemeSection = document.createElement('div');
+        colorSchemeSection.style.cssText = `
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        `;
+
+        // Color scheme label
+        const colorSchemeLabel = document.createElement('div');
+        colorSchemeLabel.textContent = 'Color Scheme';
+        colorSchemeLabel.style.cssText = `
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        `;
+        colorSchemeSection.appendChild(colorSchemeLabel);
+
+        // Color scheme dropdown
+        const colorSchemeDropdown = document.createElement('div');
+        colorSchemeDropdown.style.cssText = `
+            position: relative;
+        `;
+
+        const colorSchemeButton = document.createElement('button');
+        colorSchemeButton.id = 'headerColorSchemeToggle';
+        colorSchemeButton.textContent = 'Default';
+        colorSchemeButton.style.cssText = `
+            background: var(--hover-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+            text-align: left;
+        `;
+
+        const colorSchemeDropdownContent = document.createElement('div');
+        colorSchemeDropdownContent.id = 'headerColorSchemeDropdown';
+        colorSchemeDropdownContent.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        `;
+
+        // Add color scheme options
+        const colorSchemeOptions = [
+            { id: 'default', name: 'Default' },
+            { id: 'earthtones', name: 'Earthtones' },
+            { id: 'luigi', name: 'Luigi' },
+            { id: 'metal', name: 'Heavy Metal' },
+            { id: 'psychedelic', name: 'Psychedelic' }
+        ];
+
+        colorSchemeOptions.forEach(option => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'dropdown-item';
+            optionDiv.setAttribute('data-scheme', option.id);
+            optionDiv.textContent = option.name;
+            optionDiv.style.cssText = `
+                padding: 6px 8px;
+                cursor: pointer;
+                font-size: 12px;
+                color: var(--text-primary);
+            `;
+            
+            if (option.id === 'default') {
+                optionDiv.classList.add('active');
+            }
+            
+            optionDiv.addEventListener('click', () => {
+                this.setColorScheme(option.id);
+                colorSchemeButton.textContent = option.name;
+                colorSchemeDropdownContent.style.display = 'none';
+                
+                // Update active state
+                colorSchemeDropdownContent.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                optionDiv.classList.add('active');
+            });
+            
+            colorSchemeDropdownContent.appendChild(optionDiv);
+        });
+
+        colorSchemeDropdown.appendChild(colorSchemeButton);
+        colorSchemeDropdown.appendChild(colorSchemeDropdownContent);
+        colorSchemeSection.appendChild(colorSchemeDropdown);
+        panel.appendChild(colorSchemeSection);
+
         // Create visualization mode list
         const modeList = document.createElement('div');
         modeList.style.cssText = `
@@ -8322,12 +8707,7 @@ class GitItUpVisualizer {
                 if (!this.visualizationEnabled) {
                     this.visualizationEnabled = true;
                     
-                    // Update sidebar toggle button
-                    const sidebarBtn = document.getElementById('vizToggleBtn');
-                    if (sidebarBtn) {
-                        sidebarBtn.textContent = 'ON';
-                        sidebarBtn.classList.add('active');
-                    }
+                    // Sidebar toggle button removed - functionality moved to header
                     
                     // Update footer visualizer button state
                     this.updateFooterVisualizerButton();
@@ -8356,8 +8736,137 @@ class GitItUpVisualizer {
         
         // Add to document
         document.body.appendChild(panel);
+
+        // Connect presets functionality
+        this.connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile);
+        
+        // Connect spectrum functionality
+        this.connectHeaderSpectrumFunctionality(spectrumButton, spectrumDropdownContent, onButton, randomButton);
+        
+        // Connect color scheme functionality
+        this.connectHeaderColorSchemeFunctionality(colorSchemeButton, colorSchemeDropdownContent);
     }
 
+    connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile) {
+        // Connect load preset functionality
+        loadPresetSelect.addEventListener('change', (e) => {
+            const presetIndex = e.target.value;
+            if (presetIndex !== '') {
+                // Use existing preset loading functionality
+                this.loadPreset(parseInt(presetIndex));
+                // Reset dropdown
+                e.target.value = '';
+            }
+        });
+
+        // Connect save preset functionality
+        savePresetBtn.addEventListener('click', () => {
+            const presetName = prompt('Enter preset name:');
+            if (presetName) {
+                console.log('Saving preset:', presetName);
+                this.saveCurrentAsPreset(presetName);
+                console.log('Presets after save:', this.savedPresets);
+                // Refresh the dropdown options
+                this.loadPresetOptions(loadPresetSelect);
+                console.log('Dropdown options refreshed');
+            }
+        });
+
+        // Connect export presets functionality
+        exportPresetsBtn.addEventListener('click', () => {
+            this.exportPresets();
+        });
+
+        // Connect import presets functionality
+        importPresetsBtn.addEventListener('click', () => {
+            importPresetsFile.click();
+        });
+
+        importPresetsFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.importPresets(file);
+                // Refresh the dropdown options
+                this.loadPresetOptions(loadPresetSelect);
+                // Reset file input
+                e.target.value = '';
+            }
+        });
+    }
+
+    connectHeaderSpectrumFunctionality(spectrumButton, spectrumDropdownContent, onButton, randomButton) {
+        // Connect spectrum dropdown toggle
+        spectrumButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            spectrumDropdownContent.style.display = spectrumDropdownContent.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!spectrumButton.contains(e.target) && !spectrumDropdownContent.contains(e.target)) {
+                spectrumDropdownContent.style.display = 'none';
+            }
+        });
+
+        // Connect ON button functionality
+        onButton.addEventListener('click', () => {
+            this.toggleVisualization();
+            // Update button text
+            onButton.textContent = this.visualizationEnabled ? 'ON' : 'OFF';
+            onButton.style.background = this.visualizationEnabled ? 'var(--accent-color)' : 'var(--hover-color)';
+        });
+
+        // Connect Random button functionality
+        randomButton.addEventListener('click', () => {
+            this.setRandomVisualization();
+            // Update spectrum button text to show random
+            spectrumButton.textContent = 'Random';
+        });
+
+        // Sync initial state
+        onButton.textContent = this.visualizationEnabled ? 'ON' : 'OFF';
+        onButton.style.background = this.visualizationEnabled ? 'var(--accent-color)' : 'var(--hover-color)';
+    }
+
+    connectHeaderColorSchemeFunctionality(colorSchemeButton, colorSchemeDropdownContent) {
+        // Connect color scheme dropdown toggle
+        colorSchemeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            colorSchemeDropdownContent.style.display = colorSchemeDropdownContent.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!colorSchemeButton.contains(e.target) && !colorSchemeDropdownContent.contains(e.target)) {
+                colorSchemeDropdownContent.style.display = 'none';
+            }
+        });
+
+        // Sync initial state
+        colorSchemeButton.textContent = this.currentColorScheme || 'Default';
+    }
+
+    loadPresetOptions(selectElement) {
+        console.log('Loading preset options, current presets:', this.savedPresets);
+        
+        // Clear existing options except the first one
+        while (selectElement.children.length > 1) {
+            selectElement.removeChild(selectElement.lastChild);
+        }
+
+        // Add saved presets
+        if (this.savedPresets && this.savedPresets.length > 0) {
+            this.savedPresets.forEach((preset, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = preset.name || `Preset ${index + 1}`;
+                selectElement.appendChild(option);
+                console.log('Added option:', option.textContent, 'value:', option.value);
+            });
+        } else {
+            console.log('No presets found');
+        }
+    }
 
     initializePlaylistPanelContent(panel) {
         // Copy content from sidebar to panel
@@ -11725,7 +12234,7 @@ https://rogueamoeba.com/loopback/
         document.querySelectorAll('#vizModeDropdown .dropdown-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.getElementById('vizModeToggle').textContent = 'Random';
+        // Sidebar vizModeToggle removed - functionality moved to header
 
         if (this.audioMotion) {
             console.log('Setting random visualization with config:', randomConfig);
@@ -11782,9 +12291,7 @@ https://rogueamoeba.com/loopback/
     }
 
     toggleKaleidoscope() {
-        const panel = document.getElementById('kaleidoscopePanel');
-        const btn = document.getElementById('kaleidoscopeBtn');
-        const btnText = btn.querySelector('.kaleidoscope-btn-text');
+        // Sidebar kaleidoscope panel removed - functionality moved to header
 
         // Toggle panel visibility
         if (panel) {
@@ -12042,9 +12549,7 @@ https://rogueamoeba.com/loopback/
     }
     
     toggleInfiniteZoom() {
-        const panel = document.getElementById('infiniteZoomPanel');
-        const btn = document.getElementById('infiniteZoomBtn');
-        const btnText = btn.querySelector('.kaleidoscope-btn-text');
+        // Sidebar infinite zoom panel removed - functionality moved to header
         
         // Toggle panel visibility
         if (panel) {
@@ -13029,12 +13534,7 @@ https://rogueamoeba.com/loopback/
             hasBackgroundImage: !!this.backgroundImage
         });
 
-        // Update button text
-        const btn = document.getElementById('vizToggleBtn');
-        if (btn) {
-            btn.textContent = this.visualizationEnabled ? 'ON' : 'OFF';
-            btn.classList.toggle('active', this.visualizationEnabled);
-        }
+        // Sidebar vizToggleBtn removed - functionality moved to header
 
         // Update footer visualizer button state
         this.updateFooterVisualizerButton();
@@ -13153,7 +13653,7 @@ https://rogueamoeba.com/loopback/
     }
 
     updatePresetSelector() {
-        const selector = document.getElementById('presetSelector');
+        // Sidebar presetSelector removed - functionality moved to header
         const fsSelector = document.getElementById('fsPresetSelect');
 
         const updateSelector = (sel) => {
@@ -13170,7 +13670,6 @@ https://rogueamoeba.com/loopback/
             });
         };
 
-        updateSelector(selector);
         if (this.isFullscreen) {
             updateSelector(fsSelector);
         }
@@ -13324,8 +13823,7 @@ https://rogueamoeba.com/loopback/
             });
         };
 
-        setupDropdown('colorSchemeToggle', 'colorSchemeDropdown');
-        setupDropdown('vizModeToggle', 'vizModeDropdown');
+        // Sidebar dropdowns removed - functionality moved to header
         // Playlist is now embedded - no dropdown setup needed
 
         // Close dropdowns when clicking outside
@@ -13335,43 +13833,9 @@ https://rogueamoeba.com/loopback/
             });
         });
 
-        // Color scheme dropdown items
-        document.querySelectorAll('#colorSchemeDropdown .dropdown-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.querySelectorAll('#colorSchemeDropdown .dropdown-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                const scheme = item.dataset.scheme;
-                this.setColorScheme(scheme);
-                document.getElementById('colorSchemeToggle').textContent = item.textContent;
-                document.getElementById('colorSchemeDropdown').classList.remove('show');
-            });
-        });
+        // Sidebar color scheme and visualization mode dropdowns removed - functionality moved to header
 
-        // Visualization mode dropdown items
-        document.querySelectorAll('#vizModeDropdown .dropdown-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const mode = item.dataset.mode;
-                if (mode === 'random') {
-                    this.setRandomVisualization();
-                } else {
-                    document.querySelectorAll('#vizModeDropdown .dropdown-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    this.setVisualizationMode(parseInt(mode));
-                    document.getElementById('vizModeToggle').textContent = item.textContent;
-                }
-                document.getElementById('vizModeDropdown').classList.remove('show');
-            });
-        });
-
-        // Visualization toggle button
-        const vizToggleBtn = document.getElementById('vizToggleBtn');
-        if (vizToggleBtn) {
-            vizToggleBtn.addEventListener('click', () => {
-                this.toggleVisualization();
-            });
-        }
+        // Sidebar visualization toggle button removed - functionality moved to header
 
         // Volume icon mute toggle
         const volumeIcon = document.querySelector('.volume-control span');
@@ -13668,13 +14132,7 @@ https://rogueamoeba.com/loopback/
         });
 
         // Kaleidoscope
-        // Kaleidoscope controls
-        const kaleidoscopeBtn = document.getElementById('kaleidoscopeBtn');
-        if (kaleidoscopeBtn) {
-            kaleidoscopeBtn.addEventListener('click', () => {
-                this.toggleKaleidoscope();
-            });
-        }
+        // Sidebar kaleidoscope controls removed - functionality moved to header
         
         // Header Kaleidoscope button
         const headerKaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
@@ -13722,27 +14180,7 @@ https://rogueamoeba.com/loopback/
             }
         });
         
-        // Infinite Zoom toggle button
-        const infiniteZoomBtn = document.getElementById('infiniteZoomBtn');
-        if (infiniteZoomBtn) {
-            infiniteZoomBtn.addEventListener('click', () => {
-                // Toggle IZ on/off
-                if (this.infiniteZoom) {
-                    if (this.infiniteZoom.isActive) {
-                        this.infiniteZoom.stop();
-                        const btnText = infiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
-                        btnText.textContent = 'Infinite Zoom Off';
-                        infiniteZoomBtn.classList.remove('active');
-                    } else {
-                        this.infiniteZoom.initialize();
-                        this.infiniteZoom.start();
-                        const btnText = infiniteZoomBtn.querySelector('.kaleidoscope-btn-text');
-                        btnText.textContent = 'Infinite Zoom On';
-                        infiniteZoomBtn.classList.add('active');
-                    }
-                }
-            });
-        }
+        // Sidebar infinite zoom controls removed - functionality moved to header
 
 
         // Blobs gear button
@@ -13780,27 +14218,7 @@ https://rogueamoeba.com/loopback/
 
         // Infinite Zoom gear button
         const infiniteZoomGearBtn = document.getElementById('infiniteZoomGearBtn');
-        if (infiniteZoomGearBtn) {
-            infiniteZoomGearBtn.addEventListener('click', () => {
-                // Only toggle settings panel, don't affect IZ state
-                const panel = document.getElementById('infiniteZoomPanel');
-                if (panel) {
-                    const isVisible = panel.style.display !== 'none';
-                    panel.style.display = isVisible ? 'none' : 'block';
-                }
-            });
-        }
-        
-        // Infinite Zoom close button
-        const infiniteZoomCloseBtn = document.getElementById('infiniteZoomCloseBtn');
-        if (infiniteZoomCloseBtn) {
-            infiniteZoomCloseBtn.addEventListener('click', () => {
-                const panel = document.getElementById('infiniteZoomPanel');
-                if (panel) {
-                    panel.style.display = 'none';
-                }
-            });
-        }
+        // Sidebar infinite zoom panel controls removed - functionality moved to header
         
         // Infinite Zoom shape selection
         const infiniteZoomShapeSelect = document.getElementById('infiniteZoomShapeSelect');
@@ -14256,19 +14674,7 @@ https://rogueamoeba.com/loopback/
         }
 
         const kaleidoscopeSettingsBtn = document.getElementById('kaleidoscopeSettingsBtn');
-        if (kaleidoscopeSettingsBtn) {
-            kaleidoscopeSettingsBtn.addEventListener('click', () => {
-                const panel = document.getElementById('kaleidoscopePanel');
-                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-            });
-        }
-
-        const kaleidoscopeCloseBtn = document.getElementById('kaleidoscopeCloseBtn');
-        if (kaleidoscopeCloseBtn) {
-            kaleidoscopeCloseBtn.addEventListener('click', () => {
-                document.getElementById('kaleidoscopePanel').style.display = 'none';
-            });
-        }
+        // Sidebar kaleidoscope panel controls removed - functionality moved to header
 
         const headerKaleidoscopeCloseBtn = document.getElementById('headerKaleidoscopeCloseBtn');
         if (headerKaleidoscopeCloseBtn) {
@@ -14589,16 +14995,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
             });
         }
 
@@ -14629,16 +15026,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
 
                 if (this.kaleidoscopeEnabled) {
                     this.applyKaleidoscopeEffect();
@@ -14674,16 +15062,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
 
                 // Apply kaleidoscope effect if enabled
                 if (this.kaleidoscopeEnabled) {
@@ -14719,16 +15098,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
             });
         }
 
@@ -14758,16 +15128,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
             });
         }
 
@@ -14797,16 +15158,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeEnabled = false;
                 }
 
-                // Update main button state
-                const btn = document.getElementById('kaleidoscopeBtn');
-                const btnText = btn.querySelector('.kaleidoscope-btn-text');
-                if (this.kaleidoscopeEnabled) {
-                    btnText.textContent = 'Kaleidoscope On';
-                    btn.classList.add('active');
-                } else {
-                    btnText.textContent = 'Kaleidoscope Off';
-                    btn.classList.remove('active');
-                }
+                // Sidebar kaleidoscope button removed - functionality moved to header
             });
         }
 
@@ -15162,30 +15514,9 @@ https://rogueamoeba.com/loopback/
         }
 
 
-        // Morph controls
-        const morphBtn = document.getElementById('morphBtn');
-        if (morphBtn) {
-            morphBtn.addEventListener('click', () => {
-                this.toggleMorph();
-            });
-        } else {
-            console.error('Morph button not found during initialization');
-        }
+        // Sidebar morph controls removed - functionality moved to footer
 
-        const morphSpeedSelect = document.getElementById('morphSpeedSelect');
-        if (morphSpeedSelect) {
-            morphSpeedSelect.addEventListener('change', (e) => {
-                this.setMorphSpeed(e.target.value);
-            });
-        }
-
-        // Random visualization button
-        const randomBtn = document.getElementById('randomVizBtn');
-        if (randomBtn) {
-            randomBtn.addEventListener('click', () => {
-                this.setRandomVisualization();
-            });
-        }
+        // Sidebar random visualization button removed - functionality moved to header
 
         // Fullscreen exit button
         const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
@@ -15228,42 +15559,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     });
                 }
 
-                // Preset controls
-                const savePresetBtn = document.getElementById('savePresetBtn');
-                if (savePresetBtn) {
-                    savePresetBtn.addEventListener('click', () => {
-                        const name = prompt('Enter preset name:', `Preset ${
-                            this.savedPresets.length + 1
-                        }`);
-                        if (name) {
-                            this.saveCurrentAsPreset(name);
-                        }
-                    });
-                }
-
-                const presetSelector = document.getElementById('presetSelector');
-                if (presetSelector) {
-                    presetSelector.addEventListener('change', (e) => {
-                        if (e.target.value !== '') {
-                            this.loadPreset(parseInt(e.target.value));
-                            e.target.value = '';
-                        }
-                    });
-                }
-
-                const exportPresetsBtn = document.getElementById('exportPresetsBtn');
-                if (exportPresetsBtn) {
-                    exportPresetsBtn.addEventListener('click', () => {
-                        this.exportPresets();
-                    });
-                }
-
-                const importPresetsBtn = document.getElementById('importPresetsBtn');
-                if (importPresetsBtn) {
-                    importPresetsBtn.addEventListener('click', () => {
-                        document.getElementById('importPresetsFile').click();
-                    });
-                }
+                // Sidebar preset controls removed - functionality moved to header
 
                 const importPresetsFile = document.getElementById('importPresetsFile');
                 if (importPresetsFile) {
@@ -15805,15 +16101,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 this.isMorphing = true;
 
-                // Update sidebar morph button
-                const morphBtn = document.getElementById('morphBtn');
-                if (morphBtn) {
-                    morphBtn.classList.add('active');
-                    const btnText = morphBtn.querySelector('.morph-btn-text');
-                    if (btnText) {
-                        btnText.textContent = 'Stop Morph';
-                    }
-                }
+                // Sidebar morph button removed - functionality moved to footer
 
                 // Update footer morph button
                 const footerMorphBtn = document.getElementById('footerMorphBtn');
@@ -15881,15 +16169,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.energyCheckInterval = null;
                 }
 
-                // Update sidebar morph button
-                const morphBtn = document.getElementById('morphBtn');
-                if (morphBtn) {
-                    morphBtn.classList.remove('active');
-                    const btnText = morphBtn.querySelector('.morph-btn-text');
-                    if (btnText) {
-                        btnText.textContent = 'Start Morph';
-                    }
-                }
+                // Sidebar morph button removed - functionality moved to footer
 
                 // Update footer morph button
                 const footerMorphBtn = document.getElementById('footerMorphBtn');
