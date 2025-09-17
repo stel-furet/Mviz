@@ -5142,10 +5142,60 @@ class GitItUpVisualizer {
         });
     }
 
+    toggleFooterAutopilotSettingsPanel() {
+        const panel = document.getElementById('footerAutopilotSettingsPanel');
+        const button = document.getElementById('footerAutopilotSettingsBtn');
+        
+        if (!panel || !button) return;
+        
+        const isVisible = panel.style.display !== 'none';
+        
+        if (isVisible) {
+            this.closeFooterAutopilotSettingsPanel();
+        } else {
+            this.showFooterAutopilotSettingsPanel();
+        }
+    }
+
+    showFooterAutopilotSettingsPanel() {
+        const panel = document.getElementById('footerAutopilotSettingsPanel');
+        const button = document.getElementById('footerAutopilotSettingsBtn');
+        
+        if (!panel || !button) return;
+        
+        // Close other panels first
+        this.closeAllFooterSettingsPanels();
+        
+        // Position panel above the gear button with 6px gap, right-aligned
+        const buttonRect = button.getBoundingClientRect();
+        panel.style.left = 'auto';
+        panel.style.right = `${window.innerWidth - buttonRect.right}px`;
+        panel.style.bottom = `${window.innerHeight - buttonRect.top + 6}px`;
+        panel.style.top = 'auto';
+        panel.style.display = 'block';
+        
+        // Update button state
+        button.classList.add('active');
+        
+        console.log('Footer Autopilot settings panel opened');
+    }
+
+    closeFooterAutopilotSettingsPanel() {
+        const panel = document.getElementById('footerAutopilotSettingsPanel');
+        const button = document.getElementById('footerAutopilotSettingsBtn');
+        
+        if (panel) panel.style.display = 'none';
+        if (button) button.classList.remove('active');
+        
+        console.log('Footer Autopilot settings panel closed');
+    }
+
     initializeFooterSettingsControls() {
         // Initialize display settings controls with footer prefixed IDs
         this.initializeFooterDisplayControls();
         this.initializeFooterRecordControls();
+        this.initializeFooterAutopilotControls();
+        this.initializeLearningAnalyticsModal();
     }
 
     initializeFooterDisplayControls() {
@@ -5471,6 +5521,313 @@ class GitItUpVisualizer {
                             data: this.streamManager.displaySettings
                         });
                     }
+                }
+            });
+        }
+    }
+
+    initializeFooterAutopilotControls() {
+        // Footer Learning Analytics button
+        const footerLearningAnalyticsBtn = document.getElementById('footerLearningAnalyticsBtn');
+        if (footerLearningAnalyticsBtn) {
+            footerLearningAnalyticsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.openLearningAnalyticsDashboard();
+            });
+        }
+
+        // Footer Auto Color Schemes button
+        const footerAutoColorSchemesBtn = document.getElementById('footerAutoColorSchemesBtn');
+        if (footerAutoColorSchemesBtn) {
+            footerAutoColorSchemesBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.autoColorSchemes = !this.aiAutopilot.autoColorSchemes;
+                    const isOn = this.aiAutopilot.autoColorSchemes;
+                    e.target.textContent = `Auto Color Schemes: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Parameter Control button
+        const footerEnableParameterControlBtn = document.getElementById('footerEnableParameterControlBtn');
+        if (footerEnableParameterControlBtn) {
+            footerEnableParameterControlBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.parameterControlEnabled = !this.aiAutopilot.parameterControlEnabled;
+                    const isOn = this.aiAutopilot.parameterControlEnabled;
+                    e.target.textContent = `Parameter Control: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Learning button
+        const footerEnableLearningBtn = document.getElementById('footerEnableLearningBtn');
+        if (footerEnableLearningBtn) {
+            footerEnableLearningBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.learningEnabled = !this.aiAutopilot.learningEnabled;
+                    const isOn = this.aiAutopilot.learningEnabled;
+                    e.target.textContent = `Learning: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Reset Learning button
+        const footerResetLearningBtn = document.getElementById('footerResetLearningBtn');
+        if (footerResetLearningBtn) {
+            footerResetLearningBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot && confirm('Are you sure you want to reset all learning data? This cannot be undone.')) {
+                    this.aiAutopilot.patternLearning.patterns = {};
+                    this.aiAutopilot.patternLearning.userBehavior = {};
+                    this.aiAutopilot.patternLearning.performanceMetrics = {};
+                    this.aiAutopilot.patternLearning.saveLearningData();
+                    this.updateLearningAnalytics();
+                    console.log('🧠 Learning data reset');
+                }
+            });
+        }
+
+        // Footer User Feedback buttons
+        const footerThumbsUpBtn = document.getElementById('footerThumbsUpBtn');
+        if (footerThumbsUpBtn) {
+            footerThumbsUpBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    const context = {
+                        genre: this.aiAutopilot.currentGenre,
+                        energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
+                        tempo: this.aiAutopilot.audioAnalyzer.getTempo()
+                    };
+                    this.aiAutopilot.parameterController.recordUserFeedback('positive', context);
+                    this.updateFeedbackStats();
+                    console.log('👍 User liked current settings');
+                }
+            });
+        }
+
+        const footerThumbsDownBtn = document.getElementById('footerThumbsDownBtn');
+        if (footerThumbsDownBtn) {
+            footerThumbsDownBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    const context = {
+                        genre: this.aiAutopilot.currentGenre,
+                        energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
+                        tempo: this.aiAutopilot.audioAnalyzer.getTempo()
+                    };
+                    this.aiAutopilot.parameterController.recordUserFeedback('negative', context);
+                    this.updateFeedbackStats();
+                    console.log('👎 User disliked current settings');
+                }
+            });
+        }
+
+        // Footer Adaptive Tuning button
+        const footerEnableAdaptiveTuningBtn = document.getElementById('footerEnableAdaptiveTuningBtn');
+        if (footerEnableAdaptiveTuningBtn) {
+            footerEnableAdaptiveTuningBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.adaptiveTuningEnabled = !this.aiAutopilot.adaptiveTuningEnabled;
+                    const isOn = this.aiAutopilot.adaptiveTuningEnabled;
+                    e.target.textContent = `Adaptive Tuning: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🎯 Adaptive tuning: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Force Optimization button
+        const footerForceOptimizationBtn = document.getElementById('footerForceOptimizationBtn');
+        if (footerForceOptimizationBtn) {
+            footerForceOptimizationBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🎯 Force Optimization button clicked');
+                if (this.aiAutopilot) {
+                    console.log('🎯 AI Autopilot exists:', !!this.aiAutopilot);
+                    if (this.aiAutopilot.adaptiveTuning) {
+                        console.log('🎯 Adaptive Tuning exists:', !!this.aiAutopilot.adaptiveTuning);
+                        console.log('🎯 Performance window length:', this.aiAutopilot.adaptiveTuning.performanceWindow.length);
+                        
+                        // Force optimization regardless of normal conditions
+                        this.aiAutopilot.adaptiveTuning.optimizeParameters(true);
+                        console.log('🎯 Forced parameter optimization completed');
+                    } else {
+                        console.error('🎯 Adaptive Tuning not available');
+                    }
+                } else {
+                    console.error('🎯 AI Autopilot not available');
+                }
+            });
+        }
+
+        // Footer Predictive Behavior button
+        const footerEnablePredictiveBehaviorBtn = document.getElementById('footerEnablePredictiveBehaviorBtn');
+        if (footerEnablePredictiveBehaviorBtn) {
+            footerEnablePredictiveBehaviorBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.predictiveBehaviorEnabled = !this.aiAutopilot.predictiveBehaviorEnabled;
+                    const isOn = this.aiAutopilot.predictiveBehaviorEnabled;
+                    e.target.textContent = `Predictive Behavior: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🎯 Predictive behavior: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Test Prediction button
+        const footerTestPredictionBtn = document.getElementById('footerTestPredictionBtn');
+        if (footerTestPredictionBtn) {
+            footerTestPredictionBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot && this.aiAutopilot.predictiveBehavior) {
+                    const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                    const currentParams = this.aiAutopilot.getCurrentParameters();
+                    const predictions = this.aiAutopilot.predictiveBehavior.predictOptimalActions(
+                        audioFeatures, 
+                        this.aiAutopilot.visualizer.currentMode, 
+                        currentParams
+                    );
+                    
+                    if (predictions) {
+                        console.log('🎯 Test prediction result:', predictions);
+                        alert(`Prediction: ${predictions.modeChange?.reason || 'No mode change'}\nConfidence: ${Math.round(predictions.confidence * 100)}%`);
+                    } else {
+                        console.log('🎯 No prediction available (low confidence)');
+                        alert('No prediction available - confidence too low');
+                    }
+                }
+            });
+        }
+
+        // Footer Multi-layered Intelligence button
+        const footerEnableMultiLayeredIntelligenceBtn = document.getElementById('footerEnableMultiLayeredIntelligenceBtn');
+        if (footerEnableMultiLayeredIntelligenceBtn) {
+            footerEnableMultiLayeredIntelligenceBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.multiLayeredIntelligenceEnabled = !this.aiAutopilot.multiLayeredIntelligenceEnabled;
+                    const isOn = this.aiAutopilot.multiLayeredIntelligenceEnabled;
+                    e.target.textContent = `Multi-layered Intelligence: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🧠 Multi-layered intelligence: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Test Intelligence button
+        const footerTestIntelligenceBtn = document.getElementById('footerTestIntelligenceBtn');
+        if (footerTestIntelligenceBtn) {
+            footerTestIntelligenceBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
+                    const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                    const currentParams = this.aiAutopilot.getCurrentParameters();
+                    const decision = this.aiAutopilot.multiLayeredIntelligence.makeIntelligentDecision(
+                        audioFeatures, 
+                        this.aiAutopilot.visualizer.currentMode, 
+                        currentParams
+                    );
+                    
+                    if (decision) {
+                        console.log('🧠 Test intelligence result:', decision);
+                        alert(`Intelligence Decision: ${decision.reason}\nAction: ${decision.action}\nConfidence: ${Math.round(decision.confidence * 100)}%\nSource: ${decision.sourceLayer}`);
+                    } else {
+                        console.log('🧠 No intelligence decision available');
+                        alert('No intelligence decision available');
+                    }
+                }
+            });
+        }
+
+        // Footer Video Effects button
+        const footerEnableVideoEffectsBtn = document.getElementById('footerEnableVideoEffectsBtn');
+        if (footerEnableVideoEffectsBtn) {
+            footerEnableVideoEffectsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.videoEffectsEnabled = !this.aiAutopilot.videoEffectsEnabled;
+                    const isOn = this.aiAutopilot.videoEffectsEnabled;
+                    e.target.textContent = `Video Effects: ${isOn ? 'On' : 'Off'}`;
+                    e.target.classList.toggle('active', isOn);
+                    console.log(`🎬 Video effects: ${isOn ? 'enabled' : 'disabled'}`);
+                }
+            });
+        }
+
+        // Footer Test Parameter Control button
+        const footerTestParameterControlBtn = document.getElementById('footerTestParameterControlBtn');
+        if (footerTestParameterControlBtn) {
+            footerTestParameterControlBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot) {
+                    this.aiAutopilot.testParameterControl();
+                    console.log('🧪 Test parameter control triggered');
+                }
+            });
+        }
+
+        // Footer Test Parameters button
+        const footerTestParametersBtn = document.getElementById('footerTestParametersBtn');
+        if (footerTestParametersBtn) {
+            footerTestParametersBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
+                    console.log('🧪 Testing parameter changes...');
+                    
+                    // Test dramatic parameter changes
+                    const testParams = {
+                        linearBoost: 5.0,
+                        gradient: 0.9,
+                        fillAlpha: 0.8,
+                        volume: 3.0,
+                        smoothing: 0.2,
+                        peakHoldTime: 200
+                    };
+                    
+                    this.aiAutopilot.multiLayeredIntelligence.applyParameterAdjustments(testParams);
+                    
+                    // Test video effects
+                    if (this.aiAutopilot.videoEffectsEnabled) {
+                        const testVideoParams = {
+                            colorEffects: {
+                                brightness: 1.5,
+                                contrast: 1.3,
+                                saturation: 1.4,
+                                hue: 45
+                            }
+                        };
+                        this.aiAutopilot.multiLayeredIntelligence.applyVideoAdjustments(testVideoParams);
+                    }
+                    
+                    alert('Test parameters applied! Check console for details.');
                 }
             });
         }
@@ -8675,25 +9032,7 @@ class GitItUpVisualizer {
             });
         }
         
-        // AI Autopilot button
-        const aiAutopilotBtn = document.getElementById('aiAutopilotBtn');
-        if (aiAutopilotBtn) {
-            // Remove any existing listeners to prevent duplicates
-            const newAIBtn = aiAutopilotBtn.cloneNode(true);
-            aiAutopilotBtn.parentNode.replaceChild(newAIBtn, aiAutopilotBtn);
-            
-            newAIBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                console.log('AI Autopilot button clicked');
-                if (this.aiAutopilot) {
-                    if (this.aiAutopilot.isActive) {
-                        this.aiAutopilot.deactivate();
-                    } else {
-                        this.aiAutopilot.activate();
-                    }
-                }
-            });
-        }
+        // Sidebar AI Autopilot button removed - functionality moved to footer
 
         // Footer Autopilot button
         const footerAutopilotBtn = document.getElementById('footerAutopilotBtn');
@@ -8716,32 +9055,29 @@ class GitItUpVisualizer {
                 }
             });
         }
-        
-        // AI Autopilot settings button
-        const aiAutopilotSettingsBtn = document.getElementById('aiAutopilotSettingsBtn');
-        if (aiAutopilotSettingsBtn) {
-            aiAutopilotSettingsBtn.addEventListener('click', (e) => {
+
+        // Footer Autopilot Settings button
+        const footerAutopilotSettingsBtn = document.getElementById('footerAutopilotSettingsBtn');
+        if (footerAutopilotSettingsBtn) {
+            footerAutopilotSettingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('AI Autopilot settings button clicked');
-                const panel = document.getElementById('aiAutopilotSettingsPanel');
-                if (panel) {
-                    const isVisible = panel.style.display !== 'none';
-                    panel.style.display = isVisible ? 'none' : 'block';
-                    console.log('Settings panel', isVisible ? 'closed' : 'opened');
-                } else {
-                    console.error('AI Autopilot settings panel not found');
-                }
+                console.log('Footer Autopilot settings button clicked');
+                this.toggleFooterAutopilotSettingsPanel();
+            });
+        }
+
+        // Footer Autopilot Settings panel close button
+        const footerAutopilotSettingsClose = document.getElementById('footerAutopilotSettingsClose');
+        if (footerAutopilotSettingsClose) {
+            footerAutopilotSettingsClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.closeFooterAutopilotSettingsPanel();
             });
         }
         
-        // AI Autopilot settings panel close button
-        const aiSettingsClose = document.getElementById('aiAutopilotSettingsClose');
-        if (aiSettingsClose) {
-            aiSettingsClose.addEventListener('click', () => {
-                const panel = document.getElementById('aiAutopilotSettingsPanel');
-                if (panel) panel.style.display = 'none';
-            });
-        }
+        // Sidebar AI Autopilot settings button removed - functionality moved to footer
+        
+        // Sidebar AI Autopilot settings panel close button removed - functionality moved to footer
         
         // Scope buttons
         document.querySelectorAll('.scope-btn').forEach(btn => {
@@ -8773,19 +9109,7 @@ class GitItUpVisualizer {
             });
         });
         
-        // Auto color schemes toggle
-        const autoColorBtn = document.getElementById('autoColorSchemesBtn');
-        if (autoColorBtn) {
-            autoColorBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.autoColorSchemes = !this.aiAutopilot.autoColorSchemes;
-                    const isOn = this.aiAutopilot.autoColorSchemes;
-                    e.target.textContent = `Auto Color Schemes: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar auto color schemes toggle removed - functionality moved to footer settings panel
         
         // Timing buttons
         document.querySelectorAll('.timing-btn').forEach(btn => {
@@ -8842,235 +9166,35 @@ class GitItUpVisualizer {
             });
         });
         
-        // Parameter control toggle
-        const paramControlBtn = document.getElementById('enableParameterControlBtn');
-        if (paramControlBtn) {
-            paramControlBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.parameterControlEnabled = !this.aiAutopilot.parameterControlEnabled;
-                    const isOn = this.aiAutopilot.parameterControlEnabled;
-                    e.target.textContent = `Parameter Control: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar parameter control toggle removed - functionality moved to footer settings panel
         
-        // Learning controls
-        const enableLearningBtn = document.getElementById('enableLearningBtn');
-        if (enableLearningBtn) {
-            enableLearningBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.learningEnabled = !this.aiAutopilot.learningEnabled;
-                    const isOn = this.aiAutopilot.learningEnabled;
-                    e.target.textContent = `Learning: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar learning controls removed - functionality moved to footer settings panel
         
-        // Reset learning data
-        const resetLearningBtn = document.getElementById('resetLearningBtn');
-        if (resetLearningBtn) {
-            resetLearningBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot && confirm('Are you sure you want to reset all learning data? This cannot be undone.')) {
-                    this.aiAutopilot.patternLearning.patterns = {};
-                    this.aiAutopilot.patternLearning.userBehavior = {};
-                    this.aiAutopilot.patternLearning.performanceMetrics = {};
-                    this.aiAutopilot.patternLearning.saveLearningData();
-                    this.updateLearningAnalytics();
-                    console.log('🧠 Learning data reset');
-                }
-            });
-        }
+        // Sidebar reset learning data button removed - functionality moved to footer settings panel
         
-        // User feedback buttons
-        const thumbsUpBtn = document.getElementById('thumbsUpBtn');
-        if (thumbsUpBtn) {
-            thumbsUpBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    const context = {
-                        genre: this.aiAutopilot.currentGenre,
-                        energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
-                        tempo: this.aiAutopilot.audioAnalyzer.getTempo()
-                    };
-                    this.aiAutopilot.parameterController.recordUserFeedback('positive', context);
-                    this.updateFeedbackStats();
-                    console.log('👍 User liked current settings');
-                }
-            });
-        }
+        // Sidebar user feedback buttons removed - functionality moved to footer settings panel
         
-        const thumbsDownBtn = document.getElementById('thumbsDownBtn');
-        if (thumbsDownBtn) {
-            thumbsDownBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    const context = {
-                        genre: this.aiAutopilot.currentGenre,
-                        energy: this.aiAutopilot.audioAnalyzer.getEnergy(),
-                        tempo: this.aiAutopilot.audioAnalyzer.getTempo()
-                    };
-                    this.aiAutopilot.parameterController.recordUserFeedback('negative', context);
-                    this.updateFeedbackStats();
-                    console.log('👎 User disliked current settings');
-                }
-            });
-        }
+        // Sidebar adaptive tuning controls removed - functionality moved to footer settings panel
         
-        // Adaptive tuning controls
-        const enableAdaptiveTuningBtn = document.getElementById('enableAdaptiveTuningBtn');
-        if (enableAdaptiveTuningBtn) {
-            enableAdaptiveTuningBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.adaptiveTuningEnabled = !this.aiAutopilot.adaptiveTuningEnabled;
-                    const isOn = this.aiAutopilot.adaptiveTuningEnabled;
-                    e.target.textContent = `Adaptive Tuning: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🎯 Adaptive tuning: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar force optimization button removed - functionality moved to footer settings panel
         
-        const forceOptimizationBtn = document.getElementById('forceOptimizationBtn');
-        if (forceOptimizationBtn) {
-            forceOptimizationBtn.addEventListener('click', (e) => {
-                console.log('🎯 Force Optimization button clicked');
-                if (this.aiAutopilot) {
-                    console.log('🎯 AI Autopilot exists:', !!this.aiAutopilot);
-                    if (this.aiAutopilot.adaptiveTuning) {
-                        console.log('🎯 Adaptive Tuning exists:', !!this.aiAutopilot.adaptiveTuning);
-                        console.log('🎯 Performance window length:', this.aiAutopilot.adaptiveTuning.performanceWindow.length);
-                        
-                        // Force optimization regardless of normal conditions
-                        this.aiAutopilot.adaptiveTuning.optimizeParameters(true);
-                        console.log('🎯 Forced parameter optimization completed');
-                    } else {
-                        console.error('🎯 Adaptive Tuning not available');
-                    }
-                } else {
-                    console.error('🎯 AI Autopilot not available');
-                }
-            });
-        } else {
-            console.error('🎯 Force Optimization button not found');
-        }
+        // Sidebar predictive behavior controls removed - functionality moved to footer settings panel
         
-        // Predictive behavior controls
-        const enablePredictiveBehaviorBtn = document.getElementById('enablePredictiveBehaviorBtn');
-        if (enablePredictiveBehaviorBtn) {
-            enablePredictiveBehaviorBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.predictiveBehaviorEnabled = !this.aiAutopilot.predictiveBehaviorEnabled;
-                    const isOn = this.aiAutopilot.predictiveBehaviorEnabled;
-                    e.target.textContent = `Predictive Behavior: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🎯 Predictive behavior: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar test prediction button removed - functionality moved to footer settings panel
         
-        const testPredictionBtn = document.getElementById('testPredictionBtn');
-        if (testPredictionBtn) {
-            testPredictionBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot && this.aiAutopilot.predictiveBehavior) {
-                    const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
-                    const currentParams = this.aiAutopilot.getCurrentParameters();
-                    const predictions = this.aiAutopilot.predictiveBehavior.predictOptimalActions(
-                        audioFeatures, 
-                        this.aiAutopilot.visualizer.currentMode, 
-                        currentParams
-                    );
-                    
-                    if (predictions) {
-                        console.log('🎯 Test prediction result:', predictions);
-                        alert(`Prediction: ${predictions.modeChange?.reason || 'No mode change'}\nConfidence: ${Math.round(predictions.confidence * 100)}%`);
-                    } else {
-                        console.log('🎯 No prediction available (low confidence)');
-                        alert('No prediction available - confidence too low');
-                    }
-                }
-            });
-        }
+        // Sidebar multi-layered intelligence controls removed - functionality moved to footer settings panel
         
-        // Multi-layered intelligence controls
-        const enableMultiLayeredIntelligenceBtn = document.getElementById('enableMultiLayeredIntelligenceBtn');
-        if (enableMultiLayeredIntelligenceBtn) {
-            enableMultiLayeredIntelligenceBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.multiLayeredIntelligenceEnabled = !this.aiAutopilot.multiLayeredIntelligenceEnabled;
-                    const isOn = this.aiAutopilot.multiLayeredIntelligenceEnabled;
-                    e.target.textContent = `Multi-layered Intelligence: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🧠 Multi-layered intelligence: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar test intelligence button removed - functionality moved to footer settings panel
         
-        const testIntelligenceBtn = document.getElementById('testIntelligenceBtn');
-        if (testIntelligenceBtn) {
-            testIntelligenceBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
-                    const audioFeatures = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
-                    const currentParams = this.aiAutopilot.getCurrentParameters();
-                    const decision = this.aiAutopilot.multiLayeredIntelligence.makeIntelligentDecision(
-                        audioFeatures, 
-                        this.aiAutopilot.visualizer.currentMode, 
-                        currentParams
-                    );
-                    
-                    if (decision) {
-                        console.log('🧠 Test intelligence result:', decision);
-                        alert(`Intelligence Decision: ${decision.reason}\nAction: ${decision.action}\nConfidence: ${Math.round(decision.confidence * 100)}%\nSource: ${decision.sourceLayer}`);
-                    } else {
-                        console.log('🧠 No intelligence decision available');
-                        alert('No intelligence decision available');
-                    }
-                }
-            });
-        }
-        
-        // Learning Analytics Dashboard controls
-        const learningAnalyticsBtn = document.getElementById('learningAnalyticsBtn');
-        if (learningAnalyticsBtn) {
-            console.log('Learning Analytics button found, adding event listener');
-            learningAnalyticsBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Learning Analytics button clicked');
-                this.openLearningAnalyticsDashboard();
-            });
-        } else {
-            console.error('Learning Analytics button not found!');
-        }
+        // Sidebar Learning Analytics button removed - functionality moved to footer settings panel
 
-        const analyticsCloseBtn = document.getElementById('analyticsCloseBtn');
-        if (analyticsCloseBtn) {
-            analyticsCloseBtn.addEventListener('click', () => {
-                this.closeLearningAnalyticsDashboard();
-            });
-        }
+        // Sidebar analytics close button removed - functionality moved to footer settings panel
 
-        const updateFrequencySelect = document.getElementById('updateFrequency');
-        if (updateFrequencySelect) {
-            updateFrequencySelect.addEventListener('change', (e) => {
-                this.setAnalyticsUpdateFrequency(parseInt(e.target.value));
-            });
-        }
+        // Sidebar update frequency select removed - functionality moved to footer settings panel
 
-        const exportLearningDataBtn = document.getElementById('exportLearningDataBtn');
-        if (exportLearningDataBtn) {
-            exportLearningDataBtn.addEventListener('click', () => {
-                this.exportLearningData();
-            });
-        }
+        // Sidebar export learning data button removed - functionality moved to footer settings panel
 
-        const resetLearningDataBtn = document.getElementById('resetLearningDataBtn');
-        if (resetLearningDataBtn) {
-            resetLearningDataBtn.addEventListener('click', () => {
-                this.resetAllLearningData();
-            });
-        }
+        // Sidebar reset learning data button removed - functionality moved to footer settings panel
 
         // Initialize analytics update frequency
         this.analyticsUpdateInterval = 5000; // Default 5 seconds
@@ -9079,68 +9203,12 @@ class GitItUpVisualizer {
         // Update learning analytics periodically
         this.startAnalyticsUpdates();
         
-        // Video effects toggle
-        const videoEffectsBtn = document.getElementById('enableVideoEffectsBtn');
-        if (videoEffectsBtn) {
-            videoEffectsBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.videoEffectsEnabled = !this.aiAutopilot.videoEffectsEnabled;
-                    const isOn = this.aiAutopilot.videoEffectsEnabled;
-                    e.target.textContent = `Video Effects: ${isOn ? 'On' : 'Off'}`;
-                    e.target.classList.toggle('active', isOn);
-                    console.log(`🎬 Video effects: ${isOn ? 'enabled' : 'disabled'}`);
-                }
-            });
-        }
+        // Sidebar video effects toggle removed - functionality moved to footer settings panel
         
         
-        // Test parameter control button
-        const testParamBtn = document.getElementById('testParameterControlBtn');
-        if (testParamBtn) {
-            testParamBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot) {
-                    this.aiAutopilot.testParameterControl();
-                    console.log('🧪 Test parameter control triggered');
-                }
-            });
-        }
+        // Sidebar test parameter control button removed - functionality moved to footer settings panel
         
-        // Test parameters button
-        const testParametersBtn = document.getElementById('testParametersBtn');
-        if (testParametersBtn) {
-            testParametersBtn.addEventListener('click', (e) => {
-                if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
-                    console.log('🧪 Testing parameter changes...');
-                    
-                    // Test dramatic parameter changes
-                    const testParams = {
-                        linearBoost: 5.0,
-                        gradient: 0.9,
-                        fillAlpha: 0.8,
-                        volume: 3.0,
-                        smoothing: 0.2,
-                        peakHoldTime: 200
-                    };
-                    
-                    this.aiAutopilot.multiLayeredIntelligence.applyParameterAdjustments(testParams);
-                    
-                    // Test video effects
-                    if (this.aiAutopilot.videoEffectsEnabled) {
-                        const testVideoParams = {
-                            colorEffects: {
-                                brightness: 1.5,
-                                contrast: 1.3,
-                                saturation: 1.4,
-                                hue: 45
-                            }
-                        };
-                        this.aiAutopilot.multiLayeredIntelligence.applyVideoAdjustments(testVideoParams);
-                    }
-                    
-                    alert('Test parameters applied! Check console for details.');
-                }
-            });
-        }
+        // Sidebar test parameters button removed - functionality moved to footer settings panel
     }
     
     updateGenreDisplay() {
@@ -9292,6 +9360,38 @@ class GitItUpVisualizer {
         if (modal) {
             modal.style.display = 'none';
             this.logActivity('Learning Analytics Dashboard closed');
+        }
+    }
+
+    initializeLearningAnalyticsModal() {
+        // Learning Analytics modal close button
+        const analyticsCloseBtn = document.getElementById('analyticsCloseBtn');
+        if (analyticsCloseBtn) {
+            analyticsCloseBtn.addEventListener('click', () => {
+                this.closeLearningAnalyticsDashboard();
+            });
+        }
+
+        // Learning Analytics modal controls
+        const updateFrequencySelect = document.getElementById('updateFrequency');
+        if (updateFrequencySelect) {
+            updateFrequencySelect.addEventListener('change', (e) => {
+                this.setAnalyticsUpdateFrequency(parseInt(e.target.value));
+            });
+        }
+
+        const exportLearningDataBtn = document.getElementById('exportLearningDataBtn');
+        if (exportLearningDataBtn) {
+            exportLearningDataBtn.addEventListener('click', () => {
+                this.exportLearningData();
+            });
+        }
+
+        const resetLearningDataBtn = document.getElementById('resetLearningDataBtn');
+        if (resetLearningDataBtn) {
+            resetLearningDataBtn.addEventListener('click', () => {
+                this.resetAllLearningData();
+            });
         }
     }
 

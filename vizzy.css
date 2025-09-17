@@ -3473,6 +3473,199 @@
             border-bottom: none;
         }
 
+        /* Autopilot Settings Panel - Match Kaleidoscope Panel Styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel {
+            min-width: 300px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Match Kaleidoscope panel control group styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .control-group {
+            margin: 12px 0;
+        }
+
+        /* Match Kaleidoscope panel group label styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .group-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        /* Match Kaleidoscope panel slider container styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .slider-container span {
+            min-width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Match Kaleidoscope panel slider styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-bg, #f5f3e9);
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-bg, #f5f3e9);
+        }
+
+        /* Match Kaleidoscope panel button container styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .button-container {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+
+        /* Match Kaleidoscope panel preset buttons styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .preset-buttons {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .preset-buttons button {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .preset-buttons button:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .preset-buttons button.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Match Kaleidoscope panel toggle buttons styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Action buttons - wider for readability */
+        .footer-settings-panel#footerAutopilotSettingsPanel .control-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .control-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .clear-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .clear-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Match Kaleidoscope panel feedback buttons styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .feedback-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .feedback-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Match Kaleidoscope panel info display styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .info-display {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* Footer Transport Buttons - Override general control-btn rules */
         .footer .playback-controls .control-btn {
             width: auto !important;
@@ -5114,18 +5307,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
-        /* Sidebar-specific autopilot settings panel positioning */
-        .sidebar .autopilot-settings-panel {
-            position: relative;
-            top: auto;
-            left: auto;
-            transform: none;
-            margin-top: 10px;
-            width: 100%;
-            min-width: auto;
-            max-width: 100%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
+        /* Sidebar-specific autopilot settings panel positioning - removed */
 
         .display-mode-btn,
         .aspect-ratio-btn,

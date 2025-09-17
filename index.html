@@ -855,254 +855,9 @@
                 </div>
             </div>
 
-            <!-- Autopilot Section -->
-            <div class="sidebar-section">
-                <div class="section-icon" title="Autopilot">◯</div>
-                <h4 class="section-title collapsed" onclick="toggleSection('autopilot')">Autopilot</h4>
-                <div class="section-content collapsed" id="sidebarAutopilot">
-                    <!-- AI AUTOPILOT Section -->
-                    <div class="autopilot-section">
-                        <div class="dropdown-label">AI Autopilot</div>
-                        <div class="control-with-settings">
-                            <button class="dropdown-toggle" id="aiAutopilotBtn" title="Activate AI Autopilot">
-                                Activate
-                            </button>
-                            <button id="aiAutopilotSettingsBtn" class="video-settings-toggle" title="AI Autopilot Settings">⚙</button>
-                </div>
-                        <div class="control-with-settings" style="margin-top: 8px;">
-                            <button class="dropdown-toggle" id="learningAnalyticsBtn" title="Open Learning Analytics Dashboard">
-                                Learning Analytics
-                            </button>
-            </div>
-
-                        <!-- AI Autopilot Settings Panel -->
-                        <div class="autopilot-settings-panel" id="aiAutopilotSettingsPanel" style="display: none;">
-                            <div class="panel-header">
-                                <span>AI Autopilot Settings</span>
-                                <button class="panel-close-btn" id="aiAutopilotSettingsClose">×</button>
-                            </div>
-
-                            <div class="autopilot-settings-content">
-                                <!-- Left Column -->
-                                <div class="autopilot-column">
-                                    <!-- Autopilot Scope -->
-                                    <div class="control-group">
-                                        <div class="group-label">Autopilot Scope</div>
-                                        <div class="preset-buttons">
-                                            <button class="scope-btn" data-scope="bars">Bars</button>
-                                            <button class="scope-btn" data-scope="radial">Radial</button>
-                                            <button class="scope-btn" data-scope="energy">Energy</button>
-                                            <button class="scope-btn active" data-scope="all">All</button>
-                </div>
-            </div>
-
-                                    <!-- Color Schemes Toggle -->
-                                    <div class="control-group">
-                                        <div class="group-label">Color Automation</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="autoColorSchemesBtn">Auto Color Schemes: Off</button>
-                </div>
-            </div>
-
-                                    <!-- Change Timing -->
-                                    <div class="control-group">
-                                        <div class="group-label">Change Timing</div>
-                                        <div class="preset-buttons">
-                                            <button class="timing-btn active" data-timing="instant">Instant</button>
-                                            <button class="timing-btn" data-timing="smooth">Smooth</button>
-                                            <button class="timing-btn" data-timing="slow">Slow</button>
-                                            <button class="timing-btn" data-timing="beat-synced">Beat-Synced</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Sensitivity -->
-                                    <div class="control-group">
-                                        <div class="group-label">Sensitivity</div>
-                                        <div class="preset-buttons">
-                                            <button class="sensitivity-btn" data-sensitivity="low">Low</button>
-                                            <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
-                                            <button class="sensitivity-btn" data-sensitivity="high">High</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Genre Selection -->
-                                    <div class="control-group">
-                                        <div class="group-label">Genre Detection</div>
-                                        <div class="preset-buttons">
-                                            <button class="genre-btn active" data-genre="auto">Auto Detect</button>
-                                            <button class="genre-btn" data-genre="heavy-metal">Heavy Metal</button>
-                                            <button class="genre-btn" data-genre="rock">Rock</button>
-                                            <button class="genre-btn" data-genre="electronic">Electronic</button>
-                                            <button class="genre-btn" data-genre="reggae">Reggae</button>
-                                            <button class="genre-btn" data-genre="country">Country</button>
-                                            <button class="genre-btn" data-genre="funk">Funk</button>
-                                            <button class="genre-btn" data-genre="ambient">Ambient</button>
-                                            <button class="genre-btn" data-genre="punk">Punk</button>
-                                            <button class="genre-btn" data-genre="jazz">Jazz</button>
-                                            <button class="genre-btn" data-genre="classical">Classical</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Parameter Control -->
-                                    <div class="control-group">
-                                        <div class="group-label">Parameter Control</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enableParameterControlBtn">Parameter Control: On</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Video Effects -->
-                                    <div class="control-group">
-                                        <div class="group-label">Video Effects</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enableVideoEffectsBtn">Video Effects: On</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Learning Controls -->
-                                    <div class="control-group">
-                                        <div class="group-label">Learning Controls</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enableLearningBtn">Learning: On</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="resetLearningBtn">Reset Learning Data</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Adaptive Tuning Controls -->
-                                    <div class="control-group">
-                                        <div class="group-label">Adaptive Tuning</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enableAdaptiveTuningBtn">Adaptive Tuning: On</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="forceOptimizationBtn">Force Optimization</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Predictive Behavior Controls -->
-                                    <div class="control-group">
-                                        <div class="group-label">Predictive Behavior</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enablePredictiveBehaviorBtn">Predictive Behavior: On</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="testPredictionBtn">Test Prediction</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Multi-layered Intelligence Controls -->
-                                    <div class="control-group">
-                                        <div class="group-label">Multi-layered Intelligence</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn active" id="enableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: On</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="testIntelligenceBtn">Test Intelligence</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Test Button -->
-                                    <div class="control-group">
-                                        <div class="group-label">Test</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="testParameterControlBtn">Test Parameter Control</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="testParametersBtn">Test Parameters</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Right Column -->
-                                <div class="autopilot-column">
-                                    <!-- Current Genre Display -->
-                                    <div class="control-group">
-                                        <div class="group-label">Current Genre</div>
-                                        <div class="info-display" id="currentGenreDisplay">Unknown</div>
-                                    </div>
-
-                                    <!-- Genre Confidence -->
-                                    <div class="control-group">
-                                        <div class="group-label">Confidence</div>
-                                        <div class="info-display" id="genreConfidenceDisplay">0%</div>
-                                    </div>
-
-                                    <!-- Learning Analytics -->
-                                    <div class="control-group">
-                                        <div class="group-label">Learning Analytics</div>
-                                        <div class="info-display" id="learningProgressDisplay">Learning: 0%</div>
-                                        <div class="info-display" id="patternCountDisplay">Patterns: 0</div>
-                                        <div class="info-display" id="successRateDisplay">Success Rate: 0%</div>
-                                    </div>
-
-                                    <!-- Adaptive Tuning Analytics -->
-                                    <div class="control-group">
-                                        <div class="group-label">Adaptive Tuning</div>
-                                        <div class="info-display" id="performanceDisplay">Performance: 0%</div>
-                                        <div class="info-display" id="optimizationCountDisplay">Optimizations: 0</div>
-                                        <div class="info-display" id="performanceTrendDisplay">Trend: Stable</div>
-                                    </div>
-
-                                    <!-- User Feedback -->
-                                    <div class="control-group">
-                                        <div class="group-label">User Feedback</div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="thumbsUpBtn">👍 Like Current Settings</button>
-                                        </div>
-                                        <div class="button-container">
-                                            <button class="effect-toggle-btn" id="thumbsDownBtn">👎 Dislike Current Settings</button>
-                                        </div>
-                                        <div class="info-display" id="feedbackStatsDisplay" style="margin-top: 5px;">Satisfaction: 0%</div>
-                                    </div>
-
-                                    <!-- Predictive Behavior Analytics -->
-                                    <div class="control-group">
-                                        <div class="group-label">Predictive Analytics</div>
-                                        <div class="info-display" id="predictionCountDisplay">Predictions: 0</div>
-                                        <div class="info-display" id="predictionAccuracyDisplay">Accuracy: 0%</div>
-                                        <div class="info-display" id="predictionConfidenceDisplay">Confidence: 80%</div>
-                                    </div>
-
-                                    <!-- Multi-layered Intelligence Analytics -->
-                                    <div class="control-group">
-                                        <div class="group-label">Intelligence Analytics</div>
-                                        <div class="info-display" id="intelligenceDecisionsDisplay">Decisions: 0</div>
-                                        <div class="info-display" id="metaLearningDisplay">Meta-Learning: 0%</div>
-                                        <div class="info-display" id="layerPerformanceDisplay">Performance: Balanced</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- DMX COPILOT Section -->
-                    <div class="autopilot-section">
-                        <div class="dropdown-label">DMX Copilot</div>
-                        <div class="control-with-settings">
-                            <button class="dropdown-toggle" id="dmxCopilotBtn" title="Activate DMX CoPilot">
-                                Activate
-                            </button>
-                            <button id="dmxCopilotSettingsBtn" class="video-settings-toggle" title="DMX CoPilot Settings">⚙</button>
-                        </div>
-                    </div>
-
-                    <!-- MIDI COPILOT Section -->
-                    <div class="autopilot-section">
-                        <div class="dropdown-label">MIDI Copilot</div>
-                        <div class="control-with-settings">
-                            <button class="dropdown-toggle" id="midiCopilotBtn" title="Activate MIDI CoPilot">
-                                Activate
-                            </button>
-                            <button id="midiCopilotSettingsBtn" class="video-settings-toggle" title="MIDI CoPilot Settings">⚙</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Autopilot Section removed - functionality moved to footer controls -->
 
             <!-- Empty Drawers for Collapsed Sidebar -->
-            <div class="drawer drawer-hidden" id="drawerScenes"></div>
             <div class="drawer drawer-hidden" id="drawerAudio">
                 <!-- Audio Input Dropdown -->
                 <div class="drawer-control-group drawer-control-group-first">
@@ -1521,9 +1276,168 @@
             <button class="control-btn" id="footerAutopilotBtn" title="Toggle AI Autopilot">
                 <span class="autopilot-text">Autopilot</span>
             </button>
+            <button class="footer-settings-btn" id="footerAutopilotSettingsBtn" title="Autopilot Settings">⚙</button>
         </div>
         
         <!-- Footer Settings Panels -->
+        <!-- Autopilot Settings Panel (moved from sidebar) -->
+        <div class="footer-settings-panel" id="footerAutopilotSettingsPanel" style="display: none;">
+            <div class="panel-header">
+                <span>AI Autopilot Settings</span>
+                <button class="panel-close-btn" id="footerAutopilotSettingsClose">×</button>
+            </div>
+            
+            <!-- Learning Analytics Button at Top -->
+            <div class="control-group">
+                <button class="control-btn" id="footerLearningAnalyticsBtn" title="Open Learning Analytics Dashboard">
+                    Learning Analytics
+                </button>
+            </div>
+
+            <!-- Autopilot Scope -->
+            <div class="control-group">
+                <div class="group-label">Autopilot Scope</div>
+                <div class="preset-buttons">
+                    <button class="scope-btn" data-scope="bars">Bars</button>
+                    <button class="scope-btn" data-scope="radial">Radial</button>
+                    <button class="scope-btn" data-scope="energy">Energy</button>
+                    <button class="scope-btn active" data-scope="all">All</button>
+                </div>
+            </div>
+
+            <!-- Color Schemes Toggle -->
+            <div class="control-group">
+                <div class="group-label">Color Automation</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerAutoColorSchemesBtn">Auto Color Schemes: Off</button>
+                </div>
+            </div>
+
+            <!-- Change Timing -->
+            <div class="control-group">
+                <div class="group-label">Change Timing</div>
+                <div class="preset-buttons">
+                    <button class="timing-btn" data-timing="instant">Instant</button>
+                    <button class="timing-btn active" data-timing="smooth">Smooth</button>
+                    <button class="timing-btn" data-timing="gradual">Gradual</button>
+                </div>
+            </div>
+
+            <!-- Sensitivity -->
+            <div class="control-group">
+                <div class="group-label">Sensitivity</div>
+                <div class="preset-buttons">
+                    <button class="sensitivity-btn" data-sensitivity="low">Low</button>
+                    <button class="sensitivity-btn active" data-sensitivity="medium">Medium</button>
+                    <button class="sensitivity-btn" data-sensitivity="high">High</button>
+                </div>
+            </div>
+
+            <!-- Genre Selection -->
+            <div class="control-group">
+                <div class="group-label">Genre Detection</div>
+                <div class="preset-buttons">
+                    <button class="genre-btn active" data-genre="auto">Auto</button>
+                    <button class="genre-btn" data-genre="electronic">Electronic</button>
+                    <button class="genre-btn" data-genre="rock">Rock</button>
+                    <button class="genre-btn" data-genre="pop">Pop</button>
+                    <button class="genre-btn" data-genre="classical">Classical</button>
+                </div>
+            </div>
+
+            <!-- Current Genre Display -->
+            <div class="control-group">
+                <div class="group-label">Current Genre</div>
+                <div class="info-display" id="footerCurrentGenreDisplay">Detecting...</div>
+                <div class="info-display" id="footerGenreConfidenceDisplay">Confidence: 0%</div>
+            </div>
+
+            <!-- Parameter Control -->
+            <div class="control-group">
+                <div class="group-label">Advanced Controls</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnableParameterControlBtn">Parameter Control: Off</button>
+                </div>
+            </div>
+
+            <!-- Learning Controls -->
+            <div class="control-group">
+                <div class="group-label">Learning System</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnableLearningBtn">Learning: Off</button>
+                </div>
+                <div class="button-container">
+                    <button class="control-btn clear-btn" id="footerResetLearningBtn">Reset Learning</button>
+                </div>
+            </div>
+
+            <!-- User Feedback -->
+            <div class="control-group">
+                <div class="group-label">User Feedback</div>
+                <div class="button-container">
+                    <button class="feedback-btn" id="footerThumbsUpBtn">👍 Like</button>
+                    <button class="feedback-btn" id="footerThumbsDownBtn">👎 Dislike</button>
+                </div>
+                <div class="info-display" id="footerFeedbackStatsDisplay">Satisfaction: 0% (0/0)</div>
+            </div>
+
+            <!-- Adaptive Tuning -->
+            <div class="control-group">
+                <div class="group-label">Adaptive Tuning</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnableAdaptiveTuningBtn">Adaptive Tuning: Off</button>
+                </div>
+                <div class="button-container">
+                    <button class="control-btn" id="footerForceOptimizationBtn">Force Optimization</button>
+                </div>
+                <div class="info-display" id="footerPerformanceDisplay">Performance: 0%</div>
+            </div>
+
+            <!-- Predictive Behavior -->
+            <div class="control-group">
+                <div class="group-label">Predictive Behavior</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnablePredictiveBehaviorBtn">Predictive Behavior: Off</button>
+                </div>
+                <div class="button-container">
+                    <button class="control-btn" id="footerTestPredictionBtn">Test Prediction</button>
+                </div>
+                <div class="info-display" id="footerPredictionAccuracyDisplay">Accuracy: 0%</div>
+            </div>
+
+            <!-- Multi-layered Intelligence -->
+            <div class="control-group">
+                <div class="group-label">Multi-layered Intelligence</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: Off</button>
+                </div>
+                <div class="button-container">
+                    <button class="control-btn" id="footerTestIntelligenceBtn">Test Intelligence</button>
+                </div>
+                <div class="info-display" id="footerIntelligenceDecisionsDisplay">Decisions: 0</div>
+                <div class="info-display" id="footerMetaLearningDisplay">Meta-Learning: 0%</div>
+                <div class="info-display" id="footerLayerPerformanceDisplay">Performance: Balanced</div>
+            </div>
+
+            <!-- Video Effects -->
+            <div class="control-group">
+                <div class="group-label">Video Effects</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerEnableVideoEffectsBtn">Video Effects: Off</button>
+                </div>
+            </div>
+
+            <!-- Test Controls -->
+            <div class="control-group">
+                <div class="group-label">Test Controls</div>
+                <div class="button-container">
+                    <button class="control-btn" id="footerTestParameterControlBtn">Test Parameter Control</button>
+                </div>
+                <div class="button-container">
+                    <button class="control-btn" id="footerTestParametersBtn">Test Parameters</button>
+                </div>
+            </div>
+        </div>
         <!-- Display Settings Panel (moved from sidebar) -->
         <div class="footer-settings-panel" id="footerDisplaySettingsPanel" style="display: none;">
             <div class="panel-header">
