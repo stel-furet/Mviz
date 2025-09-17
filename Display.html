@@ -224,54 +224,68 @@
 
         applyDisplaySettings(settings) {
             this.displaySettings = settings;
+            console.log('🎯 applyDisplaySettings called with:', settings);
+            console.log('🎯 Video element current state:', {
+                width: this.video.style.width,
+                height: this.video.style.height,
+                objectFit: this.video.style.objectFit,
+                videoWidth: this.video.videoWidth,
+                videoHeight: this.video.videoHeight,
+                readyState: this.video.readyState
+            });
 
-            // Apply presentation mode
-            switch (settings.presentationMode) {
-                case 'original':
-                    this.video.style.objectFit = 'contain';
-                    this.video.style.transform = 'translateX(-50%)';
-                    this.video.style.width = 'auto';
-                    this.video.style.height = '100vh';
-                    this.video.style.position = 'absolute';
-                    this.video.style.top = '0';
-                    this.video.style.left = '50%';
-                    break;
-                case 'fit':
-                    this.video.style.objectFit = 'contain';
-                    this.video.style.transform = 'translateX(-50%)';
-                    this.video.style.width = 'auto';
-                    this.video.style.height = '100vh';
-                    this.video.style.position = 'absolute';
-                    this.video.style.top = '0';
-                    this.video.style.left = '50%';
-                    break;
-                case 'fill':
-                    this.video.style.objectFit = 'cover';
-                    this.video.style.transform = 'translateX(-50%)';
-                    this.video.style.width = '100vw';
-                    this.video.style.height = '100vh';
-                    this.video.style.position = 'absolute';
-                    this.video.style.top = '0';
-                    this.video.style.left = '50%';
-                    break;
-                case 'stretch':
-                    this.video.style.objectFit = 'fill';
-                    this.video.style.transform = 'translateX(-50%)';
-                    this.video.style.width = '100vw';
-                    this.video.style.height = '100vh';
-                    this.video.style.position = 'absolute';
-                    this.video.style.top = '0';
-                    this.video.style.left = '50%';
-                    break;
-                case 'performance':
-                    this.video.style.objectFit = 'cover';
-                    this.video.style.transform = 'translateX(-50%) scale(1.05)';
-                    this.video.style.width = '100vw';
-                    this.video.style.height = '100vh';
-                    this.video.style.position = 'absolute';
-                    this.video.style.top = '0';
-                    this.video.style.left = '50%';
-                    break;
+            // Apply display mode with Match Video Input logic
+            if (settings.matchVideoInput) {
+                // When matching video input, always use fit behavior regardless of selected mode
+                // This ensures video maintains its aspect ratio within the window
+                this.video.style.objectFit = 'contain';
+                this.video.style.transform = 'translateX(-50%)';
+                this.video.style.width = 'auto';
+                this.video.style.height = '100vh';
+                this.video.style.position = 'absolute';
+                this.video.style.top = '0';
+                this.video.style.left = '50%';
+            } else {
+                // When not matching video input, apply the selected display mode
+                switch (settings.presentationMode) {
+                    case 'fit':
+                        this.video.style.objectFit = 'contain';
+                        this.video.style.transform = 'translateX(-50%)';
+                        this.video.style.width = 'auto';
+                        this.video.style.height = '100vh';
+                        this.video.style.position = 'absolute';
+                        this.video.style.top = '0';
+                        this.video.style.left = '50%';
+                        break;
+                    case 'fill':
+                        this.video.style.objectFit = 'cover';
+                        this.video.style.transform = 'translateX(-50%)';
+                        this.video.style.width = '100vw';
+                        this.video.style.height = '100vh';
+                        this.video.style.position = 'absolute';
+                        this.video.style.top = '0';
+                        this.video.style.left = '50%';
+                        break;
+                    case 'stretch':
+                        this.video.style.objectFit = 'fill';
+                        this.video.style.transform = 'translateX(-50%)';
+                        this.video.style.width = '100vw';
+                        this.video.style.height = '100vh';
+                        this.video.style.position = 'absolute';
+                        this.video.style.top = '0';
+                        this.video.style.left = '50%';
+                        break;
+                    default:
+                        // Default to fit if unknown mode
+                        this.video.style.objectFit = 'contain';
+                        this.video.style.transform = 'translateX(-50%)';
+                        this.video.style.width = 'auto';
+                        this.video.style.height = '100vh';
+                        this.video.style.position = 'absolute';
+                        this.video.style.top = '0';
+                        this.video.style.left = '50%';
+                        break;
+                }
             }
 
             // Apply letterbox color
@@ -374,6 +388,13 @@
                             // Ensure video plays
                             this.video.onloadedmetadata = () => {
                                 console.log('Video metadata loaded, dimensions:', this.video.videoWidth, 'x', this.video.videoHeight);
+                                console.log('🎯 Re-applying display settings after video metadata loaded...');
+                                
+                                // Re-apply display settings now that video dimensions are available
+                                if (this.displaySettings) {
+                                    this.applyDisplaySettings(this.displaySettings);
+                                }
+                                
                                 this.video.play().then(() => {
                                     console.log('✅ Video started playing successfully');
                                 }).catch(error => {

@@ -3418,15 +3418,19 @@ class StreamManager {
     loadDisplaySettings() {
         const saved = localStorage.getItem('gitup_display_settings');
         return saved ? JSON.parse(saved) : {
-            presentationMode: 'fit', // Changed to 'fit' for proper sizing
-            aspectRatio: 'auto',
+            presentationMode: 'fit', // Default to Fit mode
+            aspectRatio: '4:3',  // Default to 4:3 aspect ratio
             captureResolution: 2560,  // Changed to 2K default
             captureFrameRate: 60,
             captureBitrate: 30,  // Changed to 30 Mbps default
             displaySharpness: 0,
             letterboxColor: '#000000',
             mirrorBackground: false,
-            mirrorBackgroundBlur: 20
+            mirrorBackgroundBlur: 20,
+            captureVideo: true,  // Control video capture to Live Display
+            captureVisualization: true,  // Control visualization capture to Live Display
+            captureInfiniteZoom: true,  // Control Infinite Zoom capture to Live Display
+            matchVideoInput: true  // Control whether to match video input aspect ratio
         };
     }
 
@@ -3447,13 +3451,36 @@ class StreamManager {
         }
     }
 
-    reconfigureCapture() { // Update capture canvas size based on resolution
+    reconfigureCapture() { // Update capture canvas size based on resolution and aspect ratio
         const width = this.displaySettings.captureResolution;
-        const height = Math.round(width * 9 / 16); // Always use 16:9 for display window compatibility
+        let height;
+        
+        // Calculate height based on aspect ratio setting
+        if (this.displaySettings.matchVideoInput && 
+            this.visualizer && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && 
+            this.visualizer.videoElement && this.visualizer.videoElement.videoWidth > 0) {
+            // Use video input aspect ratio
+            const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            height = Math.round(width / videoAspect);
+            console.log(`Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
+        } else {
+            // Use manual aspect ratio setting
+            const [ratioW, ratioH] = this.displaySettings.aspectRatio.split(':').map(Number);
+            if (ratioW && ratioH) {
+                const aspectRatio = ratioW / ratioH;
+                height = Math.round(width / aspectRatio);
+                console.log(`Using manual aspect ratio: ${ratioW}:${ratioH} (${aspectRatio.toFixed(3)})`);
+            } else {
+                // Fallback to 16:9 if invalid aspect ratio
+                height = Math.round(width * 9 / 16);
+                console.log('Using fallback 16:9 aspect ratio');
+            }
+        }
 
         if (this.captureCanvas) {
             this.captureCanvas.width = width;
             this.captureCanvas.height = height;
+            console.log(`Reconfigured capture canvas to ${width}x${height}`);
         }
 
         // Update WebRTC parameters if connection exists
@@ -3625,6 +3652,7 @@ class StreamManager {
         this.sendVideoFilters();
 
         // Send initial display settings
+        console.log('🎯 Sending initial display settings:', this.displaySettings);
         this.channel.postMessage({type: 'display-settings', data: this.displaySettings});
 
         try { // Create capture canvas - this will now always create fresh
@@ -3726,12 +3754,35 @@ class StreamManager {
             willReadFrequently: false
         });
 
-        // Use configured resolution but always maintain 16:9 aspect ratio for display compatibility
+        // Use configured resolution with proper aspect ratio
         const width = this.displaySettings.captureResolution;
-        const height = Math.round(width * 9 / 16); // Always use 16:9 for display window compatibility
+        let height;
+        
+        // Calculate height based on aspect ratio setting (same logic as reconfigureCapture)
+        if (this.displaySettings.matchVideoInput && 
+            this.visualizer && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && 
+            this.visualizer.videoElement && this.visualizer.videoElement.videoWidth > 0) {
+            // Use video input aspect ratio
+            const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            height = Math.round(width / videoAspect);
+            console.log(`🎯 setupCaptureCanvas: Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
+        } else {
+            // Use manual aspect ratio setting
+            const [ratioW, ratioH] = this.displaySettings.aspectRatio.split(':').map(Number);
+            if (ratioW && ratioH) {
+                const aspectRatio = ratioW / ratioH;
+                height = Math.round(width / aspectRatio);
+                console.log(`🎯 setupCaptureCanvas: Using manual aspect ratio: ${ratioW}:${ratioH} (${aspectRatio.toFixed(3)})`);
+            } else {
+                // Fallback to 16:9 if invalid aspect ratio
+                height = Math.round(width * 9 / 16);
+                console.log('🎯 setupCaptureCanvas: Using fallback 16:9 aspect ratio');
+            }
+        }
 
         this.captureCanvas.width = width;
         this.captureCanvas.height = height;
+        console.log(`🎯 setupCaptureCanvas: Canvas configured to ${width}x${height}`);
 
         // Store base dimensions for consistent scaling (always base on 2K for visual consistency)
         this.baseCaptureWidth = 2560;
@@ -3778,8 +3829,8 @@ class StreamManager {
                     // });
                 }
 
-                // Layer 1: Video background - ONLY IF KALEIDOSCOPE VIDEO IS NOT ACTIVE
-                if ((this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && !(this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo)) { // Create temporary canvas for video if needed
+                // Layer 1: Video background - ONLY IF KALEIDOSCOPE VIDEO IS NOT ACTIVE AND CAPTURE VIDEO IS ENABLED
+                if (this.displaySettings.captureVideo && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && !(this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo)) { // Create temporary canvas for video if needed
                     if (!this.tempVideoCanvas) {
                         this.tempVideoCanvas = document.createElement('canvas');
                         this.tempVideoCanvas.width = this.captureCanvas.width;
@@ -3937,8 +3988,8 @@ class StreamManager {
                     }
                 }
 
-                // Layer 2: Kaleidoscope video (if active) - WITH FILTERS APPLIED
-                if (this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas && this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
+                // Layer 2: Kaleidoscope video (if active) - WITH FILTERS APPLIED AND CAPTURE VIDEO IS ENABLED
+                if (this.displaySettings.captureVideo && this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas && this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
 
                     this.captureCtx.save();
 
@@ -4049,8 +4100,8 @@ class StreamManager {
                 this.captureCtx.globalAlpha = 1;
                 this.captureCtx.globalCompositeOperation = 'source-over';
 
-                // Layer 3: Main visualization - Only if kaleidoscope viz is NOT active
-                if (!this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeEnabled) {
+                // Layer 3: Main visualization - Only if kaleidoscope viz is NOT active AND CAPTURE VISUALIZATION IS ENABLED
+                if (this.displaySettings.captureVisualization && (!this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeEnabled)) {
                     let vizCanvas = null;
 
                     if (this.visualizer.audioMotion && this.visualizer.audioMotion.canvas) {
@@ -4086,8 +4137,8 @@ class StreamManager {
 
                 this.captureCtx.restore();
 
-                // Layer 4: Kaleidoscope viz (if active)
-                if (this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas && this.visualizer.kaleidoscopeVizCanvas.style.display !== 'none') {
+                // Layer 4: Kaleidoscope viz (if active) AND CAPTURE VISUALIZATION IS ENABLED
+                if (this.displaySettings.captureVisualization && this.visualizer.kaleidoscopeEnabled && this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas && this.visualizer.kaleidoscopeVizCanvas.style.display !== 'none') {
 
                     this.captureCtx.save();
                     this.captureCtx.globalAlpha = 1;
@@ -4106,8 +4157,8 @@ class StreamManager {
                     this.captureCtx.restore();
                 }
 
-                // Layer 5: Infinite Zoom (only when NOT captured via kaleidoscope)
-                if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
+                // Layer 5: Infinite Zoom (only when NOT captured via kaleidoscope) AND CAPTURE INFINITE ZOOM IS ENABLED
+                if (this.displaySettings.captureInfiniteZoom && this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
                     // Only capture Infinite Zoom separately if kaleidoscope is OFF or not applying to viz or not applying to infinite zoom
                     const shouldCaptureSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                     
@@ -5160,15 +5211,14 @@ class GitItUpVisualizer {
                 if (this.streamManager) {
                     this.streamManager.displaySettings.captureBitrate = value;
                     this.streamManager.saveDisplaySettings();
-                }
-                
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('captureBitrate');
-                if (sidebarControl) {
-                    sidebarControl.value = value;
-                    const sidebarValue = document.getElementById('captureBitrateValue');
-                    if (sidebarValue) {
-                        sidebarValue.textContent = value + ' Mbps';
+                    
+                    // Reconfigure capture and send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.reconfigureCapture();
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
                     }
                 }
             });
@@ -5182,12 +5232,15 @@ class GitItUpVisualizer {
                 if (this.streamManager) {
                     this.streamManager.displaySettings.captureResolution = value;
                     this.streamManager.saveDisplaySettings();
-                }
-                
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('captureResolution');
-                if (sidebarControl) {
-                    sidebarControl.value = value;
+                    
+                    // Reconfigure capture and send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.reconfigureCapture();
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
                 }
             });
         }
@@ -5200,12 +5253,15 @@ class GitItUpVisualizer {
                 if (this.streamManager) {
                     this.streamManager.displaySettings.captureFrameRate = value;
                     this.streamManager.saveDisplaySettings();
-                }
-                
-                // Sync sidebar control
-                const sidebarControl = document.getElementById('captureFrameRate');
-                if (sidebarControl) {
-                    sidebarControl.value = value;
+                    
+                    // Reconfigure capture and send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.reconfigureCapture();
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
                 }
             });
         }
@@ -5223,8 +5279,9 @@ class GitItUpVisualizer {
                     this.streamManager.displaySettings.aspectRatio = ratio;
                     this.streamManager.saveDisplaySettings();
                     
-                    // Send to display window if streaming
+                    // Reconfigure capture canvas with new aspect ratio
                     if (this.streamManager.isStreaming) {
+                        this.streamManager.reconfigureCapture();
                         this.streamManager.channel.postMessage({
                             type: 'display-settings', 
                             data: this.streamManager.displaySettings
@@ -5242,6 +5299,222 @@ class GitItUpVisualizer {
                 this.applyDisplayPreset(preset);
             });
         });
+
+        // Capture toggle buttons
+        const footerCaptureVideoBtn = document.getElementById('footerCaptureVideoBtn');
+        if (footerCaptureVideoBtn) {
+            // Set initial state
+            footerCaptureVideoBtn.textContent = `Capture Video: ${this.streamManager.displaySettings.captureVideo ? 'On' : 'Off'}`;
+            footerCaptureVideoBtn.classList.toggle('active', this.streamManager.displaySettings.captureVideo);
+            
+            footerCaptureVideoBtn.addEventListener('click', () => {
+                this.streamManager.displaySettings.captureVideo = !this.streamManager.displaySettings.captureVideo;
+                footerCaptureVideoBtn.textContent = `Capture Video: ${this.streamManager.displaySettings.captureVideo ? 'On' : 'Off'}`;
+                footerCaptureVideoBtn.classList.toggle('active', this.streamManager.displaySettings.captureVideo);
+                this.streamManager.saveDisplaySettings();
+                
+                // Send update to Live Display window if streaming
+                if (this.streamManager.isStreaming) {
+                    this.streamManager.channel.postMessage({
+                        type: 'display-settings', 
+                        data: this.streamManager.displaySettings
+                    });
+                }
+            });
+        }
+
+        const footerCaptureVisualizationBtn = document.getElementById('footerCaptureVisualizationBtn');
+        if (footerCaptureVisualizationBtn) {
+            // Set initial state
+            footerCaptureVisualizationBtn.textContent = `Capture Visualization: ${this.streamManager.displaySettings.captureVisualization ? 'On' : 'Off'}`;
+            footerCaptureVisualizationBtn.classList.toggle('active', this.streamManager.displaySettings.captureVisualization);
+            
+            footerCaptureVisualizationBtn.addEventListener('click', () => {
+                this.streamManager.displaySettings.captureVisualization = !this.streamManager.displaySettings.captureVisualization;
+                footerCaptureVisualizationBtn.textContent = `Capture Visualization: ${this.streamManager.displaySettings.captureVisualization ? 'On' : 'Off'}`;
+                footerCaptureVisualizationBtn.classList.toggle('active', this.streamManager.displaySettings.captureVisualization);
+                this.streamManager.saveDisplaySettings();
+                
+                // Send update to Live Display window if streaming
+                if (this.streamManager.isStreaming) {
+                    this.streamManager.channel.postMessage({
+                        type: 'display-settings', 
+                        data: this.streamManager.displaySettings
+                    });
+                }
+            });
+        }
+
+        const footerCaptureInfiniteZoomBtn = document.getElementById('footerCaptureInfiniteZoomBtn');
+        if (footerCaptureInfiniteZoomBtn) {
+            // Set initial state
+            footerCaptureInfiniteZoomBtn.textContent = `Capture Infinite Zoom: ${this.streamManager.displaySettings.captureInfiniteZoom ? 'On' : 'Off'}`;
+            footerCaptureInfiniteZoomBtn.classList.toggle('active', this.streamManager.displaySettings.captureInfiniteZoom);
+            
+            footerCaptureInfiniteZoomBtn.addEventListener('click', () => {
+                this.streamManager.displaySettings.captureInfiniteZoom = !this.streamManager.displaySettings.captureInfiniteZoom;
+                footerCaptureInfiniteZoomBtn.textContent = `Capture Infinite Zoom: ${this.streamManager.displaySettings.captureInfiniteZoom ? 'On' : 'Off'}`;
+                footerCaptureInfiniteZoomBtn.classList.toggle('active', this.streamManager.displaySettings.captureInfiniteZoom);
+                this.streamManager.saveDisplaySettings();
+                
+                // Send update to Live Display window if streaming
+                if (this.streamManager.isStreaming) {
+                    this.streamManager.channel.postMessage({
+                        type: 'display-settings', 
+                        data: this.streamManager.displaySettings
+                    });
+                }
+            });
+        }
+
+        const footerMatchVideoInputBtn = document.getElementById('footerMatchVideoInputBtn');
+        if (footerMatchVideoInputBtn) {
+            // Set initial state
+            footerMatchVideoInputBtn.textContent = `Match Video Input: ${this.streamManager.displaySettings.matchVideoInput ? 'On' : 'Off'}`;
+            footerMatchVideoInputBtn.classList.toggle('active', this.streamManager.displaySettings.matchVideoInput);
+            
+            footerMatchVideoInputBtn.addEventListener('click', () => {
+                this.streamManager.displaySettings.matchVideoInput = !this.streamManager.displaySettings.matchVideoInput;
+                footerMatchVideoInputBtn.textContent = `Match Video Input: ${this.streamManager.displaySettings.matchVideoInput ? 'On' : 'Off'}`;
+                footerMatchVideoInputBtn.classList.toggle('active', this.streamManager.displaySettings.matchVideoInput);
+                
+                // When toggling OFF, set aspect ratio button to match video input
+                if (!this.streamManager.displaySettings.matchVideoInput && 
+                    (this.videoMode === 'camera' || this.videoMode === 'file')) {
+                    this.updateAspectRatioToMatchVideo();
+                }
+                
+                this.streamManager.saveDisplaySettings();
+                
+                // Reconfigure capture canvas with new aspect ratio logic
+                if (this.streamManager.isStreaming) {
+                    this.streamManager.reconfigureCapture();
+                    this.streamManager.channel.postMessage({
+                        type: 'display-settings', 
+                        data: this.streamManager.displaySettings
+                    });
+                }
+            });
+        }
+
+        // Display Enhancement Controls
+        
+        // Sharpness slider
+        const footerDisplaySharpness = document.getElementById('footerDisplaySharpness');
+        if (footerDisplaySharpness) {
+            // Set initial value
+            footerDisplaySharpness.value = this.streamManager.displaySettings.displaySharpness || 0;
+            document.getElementById('footerDisplaySharpnessValue').textContent = footerDisplaySharpness.value + '%';
+            
+            footerDisplaySharpness.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('footerDisplaySharpnessValue').textContent = value + '%';
+                
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.displaySharpness = value;
+                    this.streamManager.saveDisplaySettings();
+                    
+                    // Send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
+                }
+            });
+        }
+
+        // Letterbox color picker
+        const footerLetterboxColor = document.getElementById('footerLetterboxColor');
+        if (footerLetterboxColor) {
+            // Set initial value
+            footerLetterboxColor.value = this.streamManager.displaySettings.letterboxColor || '#000000';
+            document.getElementById('footerLetterboxColorValue').textContent = footerLetterboxColor.value;
+            
+            footerLetterboxColor.addEventListener('input', (e) => {
+                const value = e.target.value;
+                document.getElementById('footerLetterboxColorValue').textContent = value;
+                
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.letterboxColor = value;
+                    this.streamManager.saveDisplaySettings();
+                    
+                    // Send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
+                }
+            });
+        }
+
+        // Mirror background toggle
+        const footerMirrorBackgroundBtn = document.getElementById('footerMirrorBackgroundBtn');
+        if (footerMirrorBackgroundBtn) {
+            // Set initial state
+            const isActive = this.streamManager.displaySettings.mirrorBackground || false;
+            footerMirrorBackgroundBtn.textContent = `Mirror Background: ${isActive ? 'On' : 'Off'}`;
+            footerMirrorBackgroundBtn.classList.toggle('active', isActive);
+            
+            // Show/hide blur slider based on initial state
+            const blurContainer = document.getElementById('footerMirrorBlurContainer');
+            if (blurContainer) {
+                blurContainer.style.display = isActive ? 'block' : 'none';
+            }
+            
+            footerMirrorBackgroundBtn.addEventListener('click', () => {
+                this.streamManager.displaySettings.mirrorBackground = !this.streamManager.displaySettings.mirrorBackground;
+                const newState = this.streamManager.displaySettings.mirrorBackground;
+                
+                footerMirrorBackgroundBtn.textContent = `Mirror Background: ${newState ? 'On' : 'Off'}`;
+                footerMirrorBackgroundBtn.classList.toggle('active', newState);
+                
+                // Show/hide blur slider
+                const blurContainer = document.getElementById('footerMirrorBlurContainer');
+                if (blurContainer) {
+                    blurContainer.style.display = newState ? 'block' : 'none';
+                }
+                
+                this.streamManager.saveDisplaySettings();
+                
+                // Send to display window if streaming
+                if (this.streamManager.isStreaming) {
+                    this.streamManager.channel.postMessage({
+                        type: 'display-settings', 
+                        data: this.streamManager.displaySettings
+                    });
+                }
+            });
+        }
+
+        // Mirror background blur slider
+        const footerMirrorBackgroundBlur = document.getElementById('footerMirrorBackgroundBlur');
+        if (footerMirrorBackgroundBlur) {
+            // Set initial value
+            footerMirrorBackgroundBlur.value = this.streamManager.displaySettings.mirrorBackgroundBlur || 20;
+            document.getElementById('footerMirrorBackgroundBlurValue').textContent = footerMirrorBackgroundBlur.value + 'px';
+            
+            footerMirrorBackgroundBlur.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('footerMirrorBackgroundBlurValue').textContent = value + 'px';
+                
+                if (this.streamManager) {
+                    this.streamManager.displaySettings.mirrorBackgroundBlur = value;
+                    this.streamManager.saveDisplaySettings();
+                    
+                    // Send to display window if streaming
+                    if (this.streamManager.isStreaming) {
+                        this.streamManager.channel.postMessage({
+                            type: 'display-settings', 
+                            data: this.streamManager.displaySettings
+                        });
+                    }
+                }
+            });
+        }
     }
 
     initializeFooterRecordControls() {
@@ -5466,6 +5739,57 @@ class GitItUpVisualizer {
             else if (this.recordManager.videoQuality === 'low') sizeMB *= 0.5;
             sizeSpan.textContent = `~${Math.round(sizeMB)} MB/min`;
         }
+    }
+
+    updateAspectRatioToMatchVideo() {
+        // Calculate video aspect ratio and select closest matching button
+        if (!this.videoElement || this.videoElement.videoWidth <= 0 || this.videoElement.videoHeight <= 0) {
+            console.log('No valid video dimensions for aspect ratio matching');
+            return;
+        }
+        
+        const videoAspect = this.videoElement.videoWidth / this.videoElement.videoHeight;
+        console.log(`Video aspect ratio: ${this.videoElement.videoWidth}x${this.videoElement.videoHeight} = ${videoAspect.toFixed(3)}`);
+        
+        // Define standard aspect ratios and their tolerance
+        const aspectRatios = [
+            { ratio: '16:9', value: 16/9, tolerance: 0.1 },
+            { ratio: '4:3', value: 4/3, tolerance: 0.1 },
+            { ratio: '9:16', value: 9/16, tolerance: 0.1 },
+            { ratio: '1:1', value: 1/1, tolerance: 0.1 },
+            { ratio: '21:9', value: 21/9, tolerance: 0.1 }
+        ];
+        
+        // Find closest matching aspect ratio
+        let closestMatch = aspectRatios[0]; // Default to 16:9
+        let smallestDiff = Math.abs(videoAspect - aspectRatios[0].value);
+        
+        for (const ar of aspectRatios) {
+            const diff = Math.abs(videoAspect - ar.value);
+            if (diff < smallestDiff) {
+                smallestDiff = diff;
+                closestMatch = ar;
+            }
+        }
+        
+        console.log(`Closest aspect ratio match: ${closestMatch.ratio} (diff: ${smallestDiff.toFixed(3)})`);
+        
+        // Update the streamManager setting
+        if (this.streamManager) {
+            this.streamManager.displaySettings.aspectRatio = closestMatch.ratio;
+            this.streamManager.saveDisplaySettings();
+        }
+        
+        // Update all aspect ratio buttons to show the selected one
+        document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+            if (btn.dataset.ratio === closestMatch.ratio) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        console.log(`Updated aspect ratio buttons to select: ${closestMatch.ratio}`);
     }
 
     createAudioInputDropdown() {
@@ -9856,11 +10180,40 @@ class GitItUpVisualizer {
                 this.videoElement.loop = this.videoFileLoop;
             }
 
-            // Set video source
+            // Create capture video element for clean video (no effects) - same as camera setup
+            if (!this.captureVideoElement) {
+                this.captureVideoElement = document.createElement('video');
+                this.captureVideoElement.id = 'bgVideoCaptureClean';
+                this.captureVideoElement.muted = true; // Capture video is always muted
+                this.captureVideoElement.playsInline = true;
+                this.captureVideoElement.autoplay = true;
+                this.captureVideoElement.loop = this.videoFileLoop;
+                
+                this.captureVideoElement.style.cssText = `
+                    position: absolute;
+                    top: -9999px;
+                    left: -9999px;
+                    width: 1px;
+                    height: 1px;
+                    visibility: hidden;
+                    pointer-events: none;
+                    filter: none !important; /* Force no filters */
+                    opacity: 1 !important; /* Force full opacity */
+                    transform: none !important; /* Force no transform */
+                `;
+                document.body.appendChild(this.captureVideoElement);
+            }
+
+            // Set video source for both elements
             const url = URL.createObjectURL(file);
             this.videoElement.src = url;
             this.videoElement.loop = this.videoFileLoop;
             this.videoElement.muted = false; // Keep unmuted, control via gain node
+            
+            // Set same source for capture element (clean, no effects)
+            this.captureVideoElement.src = url;
+            this.captureVideoElement.loop = this.videoFileLoop;
+            this.captureVideoElement.muted = true; // Capture video is always muted
 
             // Make containers transparent if not already done (same as camera video)
             if (!container.classList.contains('video-active')) {
@@ -9920,6 +10273,9 @@ class GitItUpVisualizer {
                         resolved = true;
                         clearTimeout(timeout);
                         this.videoElement.play().then(() => {
+                            // Also ensure capture video is playing
+                            return this.captureVideoElement.play();
+                        }).then(() => {
                             this.applyVideoFilters();
                             this.detectVideoFileInfo();
                             

@@ -1845,15 +1845,33 @@
                 <button class="panel-close-btn" id="footerDisplaySettingsClose">×</button>
             </div>
 
-            <!-- Presentation Mode -->
+            <!-- Capture Settings -->
             <div class="control-group">
-                <div class="group-label">Presentation Mode</div>
+                <div class="group-label">Capture Settings</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerCaptureVisualizationBtn">Capture Visualization: On</button>
+                    <button class="effect-toggle-btn" id="footerCaptureVideoBtn">Capture Video: On</button>
+                </div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn" id="footerCaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                </div>
+            </div>
+
+            <!-- Video Input Aspect -->
+            <div class="control-group">
+                <div class="group-label">Video Input Aspect</div>
+                <div class="button-container">
+                    <button class="effect-toggle-btn active" id="footerMatchVideoInputBtn">Match Video Input: On</button>
+                </div>
+            </div>
+
+            <!-- Display Mode -->
+            <div class="control-group">
+                <div class="group-label">Display Mode</div>
                 <div class="preset-buttons">
-                    <button class="display-mode-btn active" data-mode="original">Original</button>
-                    <button class="display-mode-btn" data-mode="fit">Fit</button>
+                    <button class="display-mode-btn active" data-mode="fit">Fit</button>
                     <button class="display-mode-btn" data-mode="fill">Fill</button>
                     <button class="display-mode-btn" data-mode="stretch">Stretch</button>
-                    <button class="display-mode-btn" data-mode="performance">Performance</button>
                 </div>
             </div>
 
@@ -1890,8 +1908,8 @@
             <div class="control-group">
                 <div class="group-label">Aspect Ratio</div>
                 <div class="preset-buttons">
-                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
-                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
+                    <button class="aspect-ratio-btn" data-ratio="16:9">16:9</button>
+                    <button class="aspect-ratio-btn active" data-ratio="4:3">4:3</button>
                     <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
                     <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
                     <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
@@ -1935,14 +1953,6 @@
                 </div>
             </div>
 
-            <!-- Capture Settings -->
-            <div class="control-group">
-                <div class="group-label">Capture Settings</div>
-                <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerCaptureVisualizationBtn">Capture Visualization: On</button>
-                    <button class="effect-toggle-btn" id="footerCaptureVideoBtn">Capture Video: On</button>
-                </div>
-            </div>
         </div>
 
         <!-- Record Settings Panel (exact copy from sidebar) -->
