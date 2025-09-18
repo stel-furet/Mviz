@@ -1,0 +1,748 @@
+/* Base CSS - Simplified UI Component Classes */
+
+/* ========================================
+   CSS VARIABLES & THEMES
+   ======================================== */
+:root {
+    /* Dark Theme Variables */
+    --primary-bg: #1a1a1a;
+    --secondary-bg: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent-color: #6b7280;
+    --hover-color: #374151;
+    --highlight-color: #9ca3af;
+    --border-color: #4b5563;
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
+}
+
+/* ========================================
+   BASE STYLES & RESET
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+/* Primary Button - Main action buttons */
+.btn-primary {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    height: 32px !important;
+    box-sizing: border-box;
+}
+
+.btn-primary:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.btn-primary.active {
+    background: var(--highlight-color);
+    color: var(--primary-bg);
+}
+
+/* Secondary Button - Secondary actions */
+.btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 6px 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 60px;
+    height: 32px !important;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secondary:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+/* Live Mode Button - Live mode indicators */
+.btn-live {
+    background: #ff3333;
+    color: white;
+    border: 1px solid #ff3333;
+    border-radius: 5px;
+    padding: 6px 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 60px;
+    height: 32px !important;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-live:hover {
+    background: #cc2222;
+    color: white;
+}
+
+/* Effect Toggle Button - Toggle states */
+.btn-toggle {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px !important;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px !important;
+    transition: all 0.2s ease;
+    width: 100%;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 32px !important;
+    line-height: normal;
+}
+
+.btn-toggle:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-toggle.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Toggle Button 32px Wide - Special case for visualizer toggle */
+.btn-toggle-32w {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px !important;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px !important;
+    transition: all 0.2s ease;
+    width: 32px !important;
+    height: 32px !important;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    line-height: normal;
+    margin-right: 1px;
+}
+
+.btn-toggle-32w:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-toggle-32w.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-toggle-32w .toggle-text {
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.btn-toggle-32w:hover .toggle-text {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.btn-toggle-32w.active .toggle-text {
+    color: var(--primary-bg);
+}
+
+.btn-toggle-32w.active:hover .toggle-text {
+    color: var(--primary-bg);
+}
+
+
+/* Morph Button - Morph controls */
+.btn-morph {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 80px;
+    height: 32px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.btn-morph:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    transform: translateY(-2px);
+}
+
+.btn-morph.active {
+    background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080);
+    background-size: 200% 100%;
+    animation: morph-gradient 3s linear infinite;
+    color: white;
+}
+
+@keyframes morph-gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* Square Button - For icon buttons like C V B A */
+.btn-square {
+    background: var(--hover-color);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-square:hover {
+    background: var(--accent-color);
+    color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.btn-square.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Gear Button - Settings/gear buttons (attached to parent buttons) */
+.btn-gear {
+    background: var(--hover-color);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 0;
+    font-size: 10px;
+    font-weight: bold;
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.btn-gear:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-gear.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Button Pair Container - For button + gear button pairs */
+.btn-pair {
+    display: flex;
+    align-items: flex-start;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+}
+
+/* Force all gear buttons to have consistent width and height */
+.btn-gear {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+}
+
+/* Force gear buttons in btn-pair containers to have consistent width and height */
+.btn-pair .btn-gear {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-bottom: 1px !important; /* Move icon up 1px to center it better */
+}
+
+/* ========================================
+   SLIDERS
+   ======================================== */
+
+/* Slider Container - Base container for all sliders */
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 8px 0;
+}
+
+/* Slider Label - Always on top, left justified */
+.slider-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: left;
+    margin-bottom: 2px;
+}
+
+/* Slider 1 - Value on right only */
+.slider-1-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    margin: 0 3px;
+}
+
+.slider-1 {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.slider-1::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.slider-1::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.slider-1-value {
+    min-width: 40px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Slider 2 - Values on left and right */
+.slider-2-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    margin: 0 3px;
+}
+
+.slider-2 {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.slider-2::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.slider-2::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid var(--primary-bg, #f5f3e9);
+}
+
+.slider-2-value {
+    min-width: 40px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ========================================
+   DROPDOWNS
+   ======================================== */
+
+/* Standard Dropdown */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    min-width: 120px;
+}
+
+.dropdown-toggle {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    float: right;
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+.dropdown-toggle:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    min-width: 100%;
+    top: 100%;
+    left: 0;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+    padding: 12px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--hover-color);
+}
+
+.dropdown-item.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+/* Native Select */
+.select {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* ========================================
+   INPUT ELEMENTS
+   ======================================== */
+
+/* Text Input */
+.input-text {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-size: 12px;
+    width: 100%;
+    margin: 4px 0;
+    transition: all 0.3s ease;
+}
+
+.input-text:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: var(--secondary-bg);
+}
+
+/* Number Input */
+.input-number {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-size: 12px;
+    width: 100%;
+    margin: 4px 0;
+    transition: all 0.3s ease;
+}
+
+.input-number:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: var(--secondary-bg);
+}
+
+/* Color Input */
+.input-color {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 4px 0;
+}
+
+/* ========================================
+   PANELS & CONTAINERS
+   ======================================== */
+
+/* Panel Header */
+.panel-header {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.panel-header h2 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Control Group */
+.control-group {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.control-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.control-group h4 {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+/* Button Container */
+.btn-container {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   SPECIAL ELEMENTS
+   ======================================== */
+
+/* Energy Bar */
+.energy-container {
+    margin: 8px 0;
+}
+
+.energy-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.energy-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.energy-fill {
+    height: 100%;
+    background: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+/* Input Mode Container */
+.input-mode-container {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+/* Morph Controls */
+.morph-controls {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   LAYOUT & UTILITIES
+   ======================================== */
+
+/* Flex utilities */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Spacing utilities */
+.margin-sm { margin: 4px; }
+.margin-md { margin: 8px; }
+.margin-lg { margin: 16px; }
+
+.padding-sm { padding: 4px; }
+.padding-md { padding: 8px; }
+.padding-lg { padding: 16px; }
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+    .btn-container {
+        flex-direction: column;
+    }
+    
+    .input-mode-container,
+    .morph-controls {
+        flex-direction: column;
+    }
+    
+    .slider-1-wrapper,
+    .slider-2-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ========================================
+   INDICATORS
+   ======================================== */
+
+/* Loop Indicator - Shows loop count on loop button */
+.loop-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 14px;
+    font-weight: bold;
+    color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

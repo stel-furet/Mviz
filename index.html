@@ -28,6 +28,7 @@
     
     <!-- Music Metadata Library - Embedded lightweight parser -->
     <script src="https://content.app-sources.com/s/30493493849384938/uploads/music-metadata-browser.min.js"></script>
+    <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="vizzy.css">
     
     <!-- JavaScript Modules -->
@@ -56,34 +57,34 @@
         <div class="header-controls-container">
             <!-- Input Controls -->
             <div class="input-controls" id="input-controls">
-                <button class="control-btn live-color-btn" id="footerLiveColorBtn" title="Background Color">
+                <button class="btn-square" id="footerLiveColorBtn" title="Background Color">
                     <span class="color-icon">C</span>
                 </button>
-                <button class="control-btn live-background-btn" id="footerLiveBackgroundBtn" title="Background Image">
+                <button class="btn-square" id="footerLiveBackgroundBtn" title="Background Image">
                     <span class="background-icon">B</span>
                 </button>
-                <button class="control-btn live-video-btn" id="footerLiveVideoBtn" title="Live Video Input">
+                <button class="btn-square" id="footerLiveVideoBtn" title="Live Video Input">
                     <span class="video-icon">V</span>
                 </button>
                 <!-- Hidden file input for video from file -->
                 <input type="file" id="videoFileInput" accept="video/*" style="display: none;">
-                <button class="control-btn live-audio-btn" id="footerLiveAudioBtn" title="Live Audio Input">
+                <button class="btn-square" id="footerLiveAudioBtn" title="Live Audio Input">
                     <span class="audio-icon">A</span>
                 </button>
             </div>
 
             <!-- Visualizer Controls -->
             <div class="visualizer-controls">
-            <button class="control-btn visualizer-btn" id="footerVisualizerBtn" title="Visualizer">
+            <button class="btn-primary" id="footerVisualizerBtn" title="Visualizer">
                 <span class="visualizer-icon">Visualizer</span>
             </button>
-            <button class="control-btn visualizer-toggle-btn" id="footerVisualizerToggleBtn" title="Toggle Visualization">
+            <button class="btn-toggle-32w" id="footerVisualizerToggleBtn" title="Toggle Visualization">
                 <span class="toggle-text">ON</span>
             </button>
-            <button class="control-btn visualizer-random-btn" id="footerVisualizerRandomBtn" title="Random Mode">
-                <span class="random-text">RANDOM</span>
+            <button class="btn-primary" id="footerVisualizerRandomBtn" title="Random Mode">
+                <span class="random-text">Random</span>
             </button>
-            <button class="control-btn morph-btn" id="footerMorphBtn" title="Morph between visualizations">
+            <button class="btn-morph" id="footerMorphBtn" title="Morph between visualizations">
                 <span class="morph-btn-text">Start Morph</span>
             </button>
             <select class="morph-speed-select" id="footerMorphSpeedSelect">
@@ -103,20 +104,15 @@
 
         <!-- Advanced Visualization Controls -->
         <div class="advanced-viz" id="advanced-viz">
-            <button class="control-btn kaleidoscope-btn" id="headerKaleidoscopeBtn" title="Kaleidoscope">
+            <button class="btn-toggle" id="headerKaleidoscopeBtn" title="Kaleidoscope">
                 <span class="kaleidoscope-btn-text">Kaleidoscope</span>
             </button>
-            <button class="control-btn infinite-zoom-btn" id="headerInfiniteZoomBtn" title="Infinite Zoom">
+            <button class="btn-toggle" id="headerInfiniteZoomBtn" title="Infinite Zoom">
                 <span class="infinite-zoom-btn-text">Infinite Zoom</span>
             </button>
-                    <div class="button-group">
-                        <button class="control-btn blobs-btn" id="headerBlobsBtn" title="Blobs">
-                            <span class="blobs-btn-text">Blobs</span>
-                        </button>
-                        <button class="gear-btn" id="blobsGearBtn" title="Blobs Settings">
-                            <span class="gear-icon">⚙️</span>
-                        </button>
-                    </div>
+            <button class="btn-toggle" id="headerBlobsBtn" title="Blobs">
+                <span class="blobs-btn-text">Blobs</span>
+            </button>
             
             <!-- Kaleidoscope settings panel -->
             <div class="kaleidoscope-panel" id="headerKaleidoscopePanel" style="display: none;">
@@ -176,13 +172,13 @@
                     
                     <!-- Center Animation Controls -->
                     <div class="control-group">
-                        <button class="effect-toggle-btn" id="headerKaleidoscopeAnimateBtn">Animate: Off</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeAnimateBtn">Animate: Off</button>
                     </div>
                     
                     <div class="control-group">
                         <div class="button-container">
-                            <button class="effect-toggle-btn" id="headerKaleidoscopeFloatBtn">Float</button>
-                            <button class="effect-toggle-btn" id="headerKaleidoscopeCircleBtn">Circle</button>
+                            <button class="btn-toggle" id="headerKaleidoscopeFloatBtn">Float</button>
+                            <button class="btn-toggle" id="headerKaleidoscopeCircleBtn">Circle</button>
                         </div>
                     </div>
                     
@@ -194,21 +190,21 @@
                         </div>
                     </div>
                     <div class="button-container">
-                        <button class="effect-toggle-btn" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
-                        <button class="effect-toggle-btn" id="headerKaleidoscopeVizBtn">Apply to Viz: On</button>
-                        <button class="effect-toggle-btn" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeVizBtn">Apply to Viz: On</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
                     </div>
                     <div class="button-container">
-                        <button class="effect-toggle-btn" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
                     </div>
                     <div class="apply-container"></div>
 
                     <div class="control-group">
                         <div class="group-label">Beat Reaction</div>
                         <div class="button-container">
-                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatBtn">Beat React: Off</button>
-                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatRotationBtn">Rotation: Off</button>
-                            <button class="effect-toggle-btn" id="headerKaleidoscopeBeatShapeBtn">Shape: Off</button>
+                            <button class="btn-toggle" id="headerKaleidoscopeBeatBtn">Beat React: Off</button>
+                            <button class="btn-toggle" id="headerKaleidoscopeBeatRotationBtn">Rotation: Off</button>
+                            <button class="btn-toggle" id="headerKaleidoscopeBeatShapeBtn">Shape: Off</button>
                         </div>
                         <div class="slider-container" id="headerBeatSensitivityContainer" style="display: none;">
                             <label>Sensitivity</label>
@@ -297,7 +293,7 @@
                         </div>
                     </div>
                     <div class="button-container">
-                        <button id="headerInfiniteZoomBeatReactBtn" class="toggle-btn">Beat React: Off</button>
+                        <button id="headerInfiniteZoomBeatReactBtn" class="btn-toggle">Beat React: Off</button>
                     </div>
                     <div class="control-group" id="headerInfiniteZoomBeatReactControls" style="display: none;">
                         <div class="group-label">Beat Reaction Controls</div>
@@ -309,16 +305,16 @@
                             </div>
                         </div>
                         <div class="button-container">
-                            <button id="headerInfiniteZoomBeatZoomBtn" class="toggle-btn">Beat Zoom: Off</button>
+                            <button id="headerInfiniteZoomBeatZoomBtn" class="btn-toggle">Beat Zoom: Off</button>
                         </div>
                         <div class="button-container">
-                            <button id="headerInfiniteZoomBeatRotationBtn" class="toggle-btn">Beat Rotation: Off</button>
+                            <button id="headerInfiniteZoomBeatRotationBtn" class="btn-toggle">Beat Rotation: Off</button>
                         </div>
                         <div class="button-container">
-                            <button id="headerInfiniteZoomBeatDensityBtn" class="toggle-btn">Beat Density: Off</button>
+                            <button id="headerInfiniteZoomBeatDensityBtn" class="btn-toggle">Beat Density: Off</button>
                         </div>
                         <div class="button-container">
-                            <button id="headerInfiniteZoomBeatShapeBtn" class="toggle-btn">Beat Shape: Off</button>
+                            <button id="headerInfiniteZoomBeatShapeBtn" class="btn-toggle">Beat Shape: Off</button>
                         </div>
                     </div>
                 </div>
@@ -378,7 +374,7 @@
                     <span id="blobsDecayValue">1x</span>
                 </div>
                 <div class="button-container">
-                    <button id="blobsBeatReactBtn" class="toggle-btn">Beat React: On</button>
+                    <button id="blobsBeatReactBtn" class="btn-toggle">Beat React: On</button>
                 </div>
                 </div>
             </div>
@@ -528,7 +524,7 @@
                     <!-- Image Selection -->
                     <div class="control-group">
                         <div class="group-label">Image</div>
-                        <button class="control-btn" id="backgroundSelectImageBtn">Select Image</button>
+                        <button class="btn-secondary" id="backgroundSelectImageBtn">Select Image</button>
                         <input type="file" id="backgroundImageFile" accept=".jpg,.jpeg,.png" style="display: none;">
                         <div class="background-file-info" id="backgroundFileInfo" style="display: none;">
                             <div class="file-preview-container">
@@ -543,7 +539,7 @@
 
                     <!-- Clear Background -->
                     <div class="control-group">
-                        <button class="control-btn clear-btn" id="backgroundClearBtn">Clear Background</button>
+                        <button class="btn-secondary" id="backgroundClearBtn">Clear Background</button>
                     </div>
                 </div>
             </div>
@@ -659,7 +655,7 @@
                         </button>
                         <input type="color" class="fs-color-picker" id="fsBgColorPicker" value="#000000">-->
 
-        <button id="fsMorphBtn" class="morph-btn">
+        <button id="fsMorphBtn" class="btn-morph">
             <span class="morph-btn-text">Morph</span>
         </button>
         <select class="fs-select fs-morph-speed" id="fsMorphSpeed">
@@ -812,13 +808,13 @@
 <footer class="footer">
     <div class="controls">
                     <div class="playback-controls">
-                        <button class="control-btn playlist-btn" id="footerPlaylistBtn" title="Playlist">
+                        <button class="btn-primary" id="footerPlaylistBtn" title="Playlist">
                             <span class="playlist-icon">Playlist</span>
                         </button>
-                        <button class="control-btn" id="prevBtn" title="Previous track">⏮</button>
-            <button class="control-btn" id="playBtn" title="Play/Pause">▶</button>
-            <button class="control-btn" id="nextBtn" title="Next track">⏭</button>
-            <button class="control-btn loop-btn" id="loopBtn" title="Toggle Loop (Off)">
+                        <button class="btn-square" id="prevBtn" title="Previous track">⏮</button>
+            <button class="btn-square" id="playBtn" title="Play/Pause">▶</button>
+            <button class="btn-square" id="nextBtn" title="Next track">⏭</button>
+            <button class="btn-square" id="loopBtn" title="Toggle Loop (Off)">
                 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
                 </svg>
@@ -846,23 +842,29 @@
         </div>
 
         <input type="color" class="color-picker-input" id="bgColorPicker" value="#000000" style="display: none;">
-        <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+        <button class="btn-toggle-32w" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
         
         <!-- Live Display, Record, and Autopilot buttons for quick access -->
         <div class="output-controls">
-            <button class="control-btn" id="liveDisplayBtn" title="Open Live Display Window">
-                Live Display
-            </button>
-            <button class="footer-settings-btn" id="footerDisplaySettingsBtn" title="Display Settings">⚙</button>
-            <button class="control-btn" id="recordBtn" title="Record Visualization">
-                <span class="record-text">Record</span>
-                <span class="record-timer" style="display: none;">00:00</span>
-            </button>
-            <button class="footer-settings-btn" id="footerRecordSettingsBtn" title="Recording Settings">⚙</button>
-            <button class="control-btn" id="footerAutopilotBtn" title="Toggle AI Autopilot">
-                <span class="autopilot-text">Autopilot</span>
-            </button>
-            <button class="footer-settings-btn" id="footerAutopilotSettingsBtn" title="Autopilot Settings">⚙</button>
+            <div class="btn-pair">
+                <button class="btn-toggle" id="liveDisplayBtn" title="Open Live Display Window">
+                    Live Display
+                </button>
+                <button class="btn-gear" id="footerDisplaySettingsBtn" title="Display Settings">⚙</button>
+            </div>
+            <div class="btn-pair">
+                <button class="btn-live" id="recordBtn" title="Record Visualization">
+                    <span class="record-text">Record</span>
+                    <span class="record-timer" style="display: none;">00:00</span>
+                </button>
+                <button class="btn-gear" id="footerRecordSettingsBtn" title="Recording Settings">⚙</button>
+            </div>
+            <div class="btn-pair">
+                <button class="btn-toggle" id="footerAutopilotBtn" title="Toggle AI Autopilot">
+                    <span class="autopilot-text">Autopilot</span>
+                </button>
+                <button class="btn-gear" id="footerAutopilotSettingsBtn" title="Autopilot Settings">⚙</button>
+            </div>
         </div>
         
         <!-- Footer Settings Panels -->
@@ -875,7 +877,7 @@
             
             <!-- Learning Analytics Button at Top -->
             <div class="control-group">
-                <button class="control-btn" id="footerLearningAnalyticsBtn" title="Open Learning Analytics Dashboard">
+                <button class="btn-secondary" id="footerLearningAnalyticsBtn" title="Open Learning Analytics Dashboard">
                     Learning Analytics
                 </button>
             </div>
@@ -895,7 +897,7 @@
             <div class="control-group">
                 <div class="group-label">Color Automation</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerAutoColorSchemesBtn">Auto Color Schemes: Off</button>
+                    <button class="btn-toggle" id="footerAutoColorSchemesBtn">Auto Color Schemes: Off</button>
                 </div>
             </div>
 
@@ -942,7 +944,7 @@
             <div class="control-group">
                 <div class="group-label">Advanced Controls</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnableParameterControlBtn">Parameter Control: Off</button>
+                    <button class="btn-toggle" id="footerEnableParameterControlBtn">Parameter Control: Off</button>
                 </div>
             </div>
 
@@ -950,10 +952,10 @@
             <div class="control-group">
                 <div class="group-label">Learning System</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnableLearningBtn">Learning: Off</button>
+                    <button class="btn-toggle" id="footerEnableLearningBtn">Learning: Off</button>
                 </div>
                 <div class="button-container">
-                    <button class="control-btn clear-btn" id="footerResetLearningBtn">Reset Learning</button>
+                    <button class="btn-secondary" id="footerResetLearningBtn">Reset Learning</button>
                 </div>
             </div>
 
@@ -971,10 +973,10 @@
             <div class="control-group">
                 <div class="group-label">Adaptive Tuning</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnableAdaptiveTuningBtn">Adaptive Tuning: Off</button>
+                    <button class="btn-toggle" id="footerEnableAdaptiveTuningBtn">Adaptive Tuning: Off</button>
                 </div>
                 <div class="button-container">
-                    <button class="control-btn" id="footerForceOptimizationBtn">Force Optimization</button>
+                    <button class="btn-secondary" id="footerForceOptimizationBtn">Force Optimization</button>
                 </div>
                 <div class="info-display" id="footerPerformanceDisplay">Performance: 0%</div>
             </div>
@@ -983,10 +985,10 @@
             <div class="control-group">
                 <div class="group-label">Predictive Behavior</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnablePredictiveBehaviorBtn">Predictive Behavior: Off</button>
+                    <button class="btn-toggle" id="footerEnablePredictiveBehaviorBtn">Predictive Behavior: Off</button>
                 </div>
                 <div class="button-container">
-                    <button class="control-btn" id="footerTestPredictionBtn">Test Prediction</button>
+                    <button class="btn-secondary" id="footerTestPredictionBtn">Test Prediction</button>
                 </div>
                 <div class="info-display" id="footerPredictionAccuracyDisplay">Accuracy: 0%</div>
             </div>
@@ -995,10 +997,10 @@
             <div class="control-group">
                 <div class="group-label">Multi-layered Intelligence</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: Off</button>
+                    <button class="btn-toggle" id="footerEnableMultiLayeredIntelligenceBtn">Multi-layered Intelligence: Off</button>
                 </div>
                 <div class="button-container">
-                    <button class="control-btn" id="footerTestIntelligenceBtn">Test Intelligence</button>
+                    <button class="btn-secondary" id="footerTestIntelligenceBtn">Test Intelligence</button>
                 </div>
                 <div class="info-display" id="footerIntelligenceDecisionsDisplay">Decisions: 0</div>
                 <div class="info-display" id="footerMetaLearningDisplay">Meta-Learning: 0%</div>
@@ -1009,7 +1011,7 @@
             <div class="control-group">
                 <div class="group-label">Video Effects</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerEnableVideoEffectsBtn">Video Effects: Off</button>
+                    <button class="btn-toggle" id="footerEnableVideoEffectsBtn">Video Effects: Off</button>
                 </div>
             </div>
 
@@ -1017,10 +1019,10 @@
             <div class="control-group">
                 <div class="group-label">Test Controls</div>
                 <div class="button-container">
-                    <button class="control-btn" id="footerTestParameterControlBtn">Test Parameter Control</button>
+                    <button class="btn-secondary" id="footerTestParameterControlBtn">Test Parameter Control</button>
                 </div>
                 <div class="button-container">
-                    <button class="control-btn" id="footerTestParametersBtn">Test Parameters</button>
+                    <button class="btn-secondary" id="footerTestParametersBtn">Test Parameters</button>
                 </div>
             </div>
         </div>
@@ -1035,11 +1037,11 @@
             <div class="control-group">
                 <div class="group-label">Capture Settings</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerCaptureVisualizationBtn">Capture Visualization: On</button>
-                    <button class="effect-toggle-btn" id="footerCaptureVideoBtn">Capture Video: On</button>
+                    <button class="btn-toggle" id="footerCaptureVisualizationBtn">Capture Visualization: On</button>
+                    <button class="btn-toggle" id="footerCaptureVideoBtn">Capture Video: On</button>
                 </div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerCaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                    <button class="btn-toggle" id="footerCaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
                 </div>
             </div>
 
@@ -1047,7 +1049,7 @@
             <div class="control-group">
                 <div class="group-label">Video Input Aspect</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn active" id="footerMatchVideoInputBtn">Match Video Input: On</button>
+                    <button class="btn-toggle active" id="footerMatchVideoInputBtn">Match Video Input: On</button>
                 </div>
             </div>
 
@@ -1118,7 +1120,7 @@
                     </div>
                 </div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn" id="footerMirrorBackgroundBtn">Mirror Background: Off</button>
+                    <button class="btn-toggle" id="footerMirrorBackgroundBtn">Mirror Background: Off</button>
                 </div>
                 <div class="slider-container" id="footerMirrorBlurContainer" style="display: none;">
                     <label>Background Blur</label>
@@ -1174,7 +1176,7 @@
             <div class="control-group">
                 <div class="group-label">Visualization</div>
                 <div class="button-container">
-                    <button class="effect-toggle-btn active" id="footerRecordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
+                    <button class="btn-toggle active" id="footerRecordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
                 </div>
             </div>
 
@@ -1215,7 +1217,7 @@
                 <div class="file-location-display" id="footerRecordFileLocation">
                     📥 Downloads folder
                 </div>
-                <button class="control-btn" id="footerRecordChooseLocationBtn">Choose Location</button>
+                <button class="btn-secondary" id="footerRecordChooseLocationBtn">Choose Location</button>
                 <div class="input-container">
                     <label>Filename</label>
                     <input type="text" id="footerRecordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
@@ -1244,6 +1246,138 @@
         </div>
     </div>
 </footer>
+
+<!-- Dummy UI Panel for Testing -->
+<div class="dummy-ui-modal" id="dummyUIModal" style="display: none;">
+    <div class="dummy-ui-content">
+        <div class="dummy-ui-header">
+            <h2>UI Elements Test Panel</h2>
+            <button class="dummy-ui-close-btn" id="dummyUICloseBtn">×</button>
+        </div>
+        
+        <div class="dummy-ui-body">
+            <!-- Buttons Section -->
+            <div class="control-group">
+                <h4>Buttons</h4>
+                <div class="btn-container">
+                    <button class="btn-primary">Primary Button</button>
+                    <button class="btn-secondary">Secondary Button</button>
+                    <button class="btn-primary active">Toggle Button</button>
+                    <button class="btn-live">Live Mode Button</button>
+                    <button class="btn-toggle">Effect Toggle</button>
+                    <button class="btn-toggle active">Active Toggle</button>
+                </div>
+            </div>
+            
+            <!-- Square Buttons Section -->
+            <div class="control-group">
+                <h4>Square Buttons (C V B A style)</h4>
+                <div class="btn-container">
+                    <button class="btn-square">C</button>
+                    <button class="btn-square">V</button>
+                    <button class="btn-square">B</button>
+                    <button class="btn-square">A</button>
+                    <button class="btn-square active">X</button>
+                </div>
+            </div>
+            
+            <!-- Sliders Section -->
+            <div class="control-group">
+                <h4>Sliders</h4>
+                <div class="slider-container">
+                    <label class="slider-label">Slider 2 (Dual Values)</label>
+                    <div class="slider-2-wrapper">
+                        <span class="slider-2-value">0</span>
+                        <input type="range" class="slider-2" min="0" max="100" value="50">
+                        <span class="slider-2-value">100</span>
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label class="slider-label">Slider 1 (Right Value)</label>
+                    <div class="slider-1-wrapper">
+                        <input type="range" class="slider-1" min="0" max="100" value="25">
+                        <span class="slider-1-value">25</span>
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label class="slider-label">Slider 2 (Custom Range)</label>
+                    <div class="slider-2-wrapper">
+                        <span class="slider-2-value">10</span>
+                        <input type="range" class="slider-2" min="0" max="100" value="75">
+                        <span class="slider-2-value">90</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dropdowns Section -->
+            <div class="control-group">
+                <h4>Dropdowns</h4>
+                <div class="dropdown">
+                    <button class="dropdown-toggle">Select Option</button>
+                    <div class="dropdown-content">
+                        <div class="dropdown-item">Option 1</div>
+                        <div class="dropdown-item active">Option 2</div>
+                        <div class="dropdown-item">Option 3</div>
+                    </div>
+                </div>
+                <select class="select">
+                    <option>Native Select</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                </select>
+            </div>
+            
+            <!-- Input Elements Section -->
+            <div class="control-group">
+                <h4>Input Elements</h4>
+                <input type="text" placeholder="Text Input" class="input-text">
+                <input type="number" placeholder="Number Input" class="input-number">
+                <input type="color" class="input-color">
+            </div>
+            
+            <!-- Special Elements Section -->
+            <div class="control-group">
+                <h4>Special Elements</h4>
+                <div class="energy-container">
+                    <div class="energy-label">Energy Bar</div>
+                    <div class="energy-bar">
+                        <div class="energy-fill" style="width: 75%;"></div>
+                    </div>
+                </div>
+                <div class="input-mode-container">
+                    <button class="btn-secondary">Audio Mode</button>
+                    <button class="btn-live">Live Mode</button>
+                </div>
+                <div class="morph-controls">
+                    <button class="btn-morph">Start Morph</button>
+                    <button class="btn-morph active">Morph ON</button>
+                </div>
+            </div>
+            
+            <!-- Panel Headers Section -->
+            <div class="control-group">
+                <h4>Panel Headers</h4>
+                <div class="panel-header">
+                    <span>Sample Panel Header</span>
+                    <button class="btn-secondary">×</button>
+                </div>
+            </div>
+            
+            <!-- Control Groups Section -->
+            <div class="control-group">
+                <h4>Control Groups</h4>
+                <div class="control-group">
+                    <h4>Nested Control Group</h4>
+                    <div class="btn-container">
+                        <button class="btn-primary">Nested Button 1</button>
+                        <button class="btn-primary">Nested Button 2</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
 

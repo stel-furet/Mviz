@@ -6241,21 +6241,14 @@ class GitItUpVisualizer {
         `;
         
         const audioToggle = document.createElement('button');
-        audioToggle.className = 'control-btn';
+        audioToggle.className = 'btn-toggle';
         audioToggle.id = 'headerLiveAudioToggleBtn';
         
         audioToggle.textContent = this.liveAudioEnabled ? 'ON' : 'OFF';
-        audioToggle.style.cssText = `
-            background: ${this.liveAudioEnabled ? 'var(--accent-color)' : 'var(--hover-color)'};
-            color: ${this.liveAudioEnabled ? 'white' : 'var(--text-primary)'};
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 60px;
-        `;
+        // Let btn-toggle class handle the styling
+        if (this.liveAudioEnabled) {
+            audioToggle.classList.add('active');
+        }
         
         audioToggle.onclick = (e) => {
             e.preventDefault();
@@ -6264,11 +6257,14 @@ class GitItUpVisualizer {
             // Call toggleLiveAudio on this instance
             this.toggleLiveAudio();
             
-            // Update button text and style
+            // Update button text and active class
             const isOn = this.liveAudioEnabled;
             audioToggle.textContent = isOn ? 'ON' : 'OFF';
-            audioToggle.style.background = isOn ? 'var(--accent-color)' : 'var(--hover-color)';
-            audioToggle.style.color = isOn ? 'white' : 'var(--text-primary)';
+            if (isOn) {
+                audioToggle.classList.add('active');
+            } else {
+                audioToggle.classList.remove('active');
+            }
         };
         
         toggleSection.appendChild(audioToggle);
@@ -6730,20 +6726,13 @@ class GitItUpVisualizer {
         `;
         
         const videoToggle = document.createElement('button');
-        videoToggle.className = 'dropdown-toggle viz-toggle-btn video-toggle';
+        videoToggle.className = 'btn-toggle';
         videoToggle.id = 'videoToggleBtn';
         videoToggle.textContent = this.videoMode === 'camera' || this.videoMode === 'file' ? 'ON' : 'OFF';
-        videoToggle.style.cssText = `
-            background: ${this.videoMode === 'camera' || this.videoMode === 'file' ? 'var(--accent-color)' : 'var(--hover-color)'};
-            color: ${this.videoMode === 'camera' || this.videoMode === 'file' ? 'white' : 'var(--text-primary)'};
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 60px;
-        `;
+        // Let btn-toggle class handle the styling
+        if (this.videoMode === 'camera' || this.videoMode === 'file') {
+            videoToggle.classList.add('active');
+        }
         
         videoToggle.onclick = (e) => {
             e.preventDefault();
@@ -7112,19 +7101,9 @@ class GitItUpVisualizer {
         
         const pulseBtn = document.createElement('button');
         pulseBtn.textContent = 'Pulse: Off';
-        pulseBtn.className = 'effect-toggle-btn';
+        pulseBtn.className = 'btn-toggle';
         pulseBtn.id = 'headerVideoPulseBtn';
-        pulseBtn.style.cssText = `
-            background: var(--hover-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            width: 100%;
-            margin-bottom: 8px;
-        `;
+        // Let btn-toggle class handle the styling
         
         pulseBtn.onclick = (e) => {
             e.preventDefault();
@@ -7216,18 +7195,9 @@ class GitItUpVisualizer {
         
         const aspectBtn = document.createElement('button');
         aspectBtn.textContent = 'Match Video Aspect: On';
-        aspectBtn.className = 'effect-toggle-btn active';
+        aspectBtn.className = 'btn-toggle active';
         aspectBtn.id = 'matchVisualizationAspectBtn';
-        aspectBtn.style.cssText = `
-            background: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            width: 100%;
-        `;
+        // Let btn-toggle class handle the styling
         
         aspectBtn.onclick = (e) => {
             e.preventDefault();
@@ -12354,6 +12324,43 @@ https://rogueamoeba.com/loopback/
         
         this.updateBlobsButton();
     }
+
+    toggleHeaderBlobs() {
+        const panel = document.getElementById('headerBlobsPanel');
+        const btn = document.getElementById('headerBlobsBtn');
+        
+        console.log('🔵 toggleHeaderBlobs called', { panel, btn });
+        
+        // Toggle panel visibility
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            console.log('🔵 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
+            
+            if (isVisible) {
+                panel.style.display = 'none';
+                console.log('🔵 Panel hidden');
+            } else {
+                // Position panel below button
+                const buttonRect = btn.getBoundingClientRect();
+                
+                console.log('🔵 Positioning panel:', { buttonRect });
+                
+                // Position relative to viewport, then adjust for scroll
+                panel.style.position = 'fixed';
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
+                panel.style.zIndex = '1000';
+                
+                panel.style.display = 'block';
+                console.log('🔵 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
+            }
+        } else {
+            console.error('🔵 headerBlobsPanel not found!');
+        }
+        
+        // Toggle blobs functionality
+        this.toggleBlobs();
+    }
     
     updateBlobsButton() {
         // Update header button
@@ -14149,7 +14156,7 @@ https://rogueamoeba.com/loopback/
         const headerBlobsBtn = document.getElementById('headerBlobsBtn');
         if (headerBlobsBtn) {
             headerBlobsBtn.addEventListener('click', () => {
-                this.toggleBlobs();
+                this.toggleHeaderBlobs();
             });
         }
 
@@ -14157,8 +14164,10 @@ https://rogueamoeba.com/loopback/
         document.addEventListener('click', (e) => {
             const kaleidoscopePanel = document.getElementById('headerKaleidoscopePanel');
             const infiniteZoomPanel = document.getElementById('headerInfiniteZoomPanel');
+            const blobsPanel = document.getElementById('headerBlobsPanel');
             const kaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
             const infiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
+            const blobsBtn = document.getElementById('headerBlobsBtn');
 
             // Close Kaleidoscope panel if clicking outside
             if (kaleidoscopePanel && kaleidoscopePanel.style.display !== 'none') {
@@ -14173,29 +14182,19 @@ https://rogueamoeba.com/loopback/
                     infiniteZoomPanel.style.display = 'none';
                 }
             }
+
+            // Close Blobs panel if clicking outside
+            if (blobsPanel && blobsPanel.style.display !== 'none') {
+                if (!blobsPanel.contains(e.target) && !blobsBtn.contains(e.target)) {
+                    blobsPanel.style.display = 'none';
+                }
+            }
         });
         
         // Sidebar infinite zoom controls removed - functionality moved to header
 
 
-        // Blobs gear button
-        const blobsGearBtn = document.getElementById('blobsGearBtn');
-        if (blobsGearBtn) {
-            blobsGearBtn.addEventListener('click', () => {
-                // Only toggle settings panel, don't affect Blobs state
-                const panel = document.getElementById('headerBlobsPanel');
-                if (panel) {
-                    const isVisible = panel.style.display !== 'none';
-                    if (isVisible) {
-                        panel.style.display = 'none';
-                    } else {
-                        // Position panel relative to Blobs button
-                        this.positionBlobsPanel();
-                        panel.style.display = 'block';
-                    }
-                }
-            });
-        }
+        // Blobs gear button removed - functionality moved to main button
         
         // Blobs close button
         const blobsCloseBtn = document.getElementById('headerBlobsCloseBtn');
@@ -15301,16 +15300,14 @@ https://rogueamoeba.com/loopback/
         // Helper function to update video toggle button state
         this.updateVideoToggleState = () => {
             // Update header video toggle (sidebar removed)
-            const headerVideoToggles = document.querySelectorAll('#headerVideoSettingsPanel .video-toggle');
+            const headerVideoToggles = document.querySelectorAll('#headerVideoSettingsPanel .btn-toggle');
             headerVideoToggles.forEach(toggle => {
                 if (this.videoMode === 'camera' || this.videoMode === 'file') {
                     toggle.textContent = 'ON';
-                    toggle.style.background = 'var(--accent-color)';
-                    toggle.style.color = 'white';
+                    toggle.classList.add('active');
                 } else {
                     toggle.textContent = 'OFF';
-                    toggle.style.background = 'var(--hover-color)';
-                    toggle.style.color = 'var(--text-primary)';
+                    toggle.classList.remove('active');
                 }
             });
             
@@ -15576,6 +15573,14 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 const popupOverlay = document.getElementById('popupOverlay');
                 if (popupOverlay) {
                     popupOverlay.addEventListener('click', () => this.closeInfoPopup());
+                }
+
+                // Dummy UI Panel close button
+                const dummyUICloseBtn = document.getElementById('dummyUICloseBtn');
+                if (dummyUICloseBtn) {
+                    dummyUICloseBtn.addEventListener('click', () => {
+                        this.toggleDummyUIPanel();
+                    });
                 }
 
                 // Progress bar click to seek
@@ -15953,6 +15958,12 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                             this.exitFullscreen();
                             this.closeInfoPopup();
                             break;
+                        case 'KeyU':
+                            if (e.ctrlKey || e.metaKey) {
+                                e.preventDefault();
+                                this.toggleDummyUIPanel();
+                            }
+                            break;
                     }
                 });
 
@@ -16085,6 +16096,18 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             closeInfoPopup() {
                 document.getElementById('infoPopup').classList.remove('active');
                 document.getElementById('popupOverlay').classList.remove('active');
+            }
+
+            // Dummy UI Panel Methods
+            toggleDummyUIPanel() {
+                const modal = document.getElementById('dummyUIModal');
+                if (modal) {
+                    if (modal.style.display === 'none') {
+                        modal.style.display = 'flex';
+                    } else {
+                        modal.style.display = 'none';
+                    }
+                }
             }
 
             // Morph Methods

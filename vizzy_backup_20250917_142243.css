@@ -298,6 +298,12 @@
             height: 32px;
         }
 
+        /* Ensure ON button is highlighted blue by default */
+        .viz-toggle-btn.active {
+            background: var(--accent-color) !important;
+            color: white !important;
+            border-color: var(--accent-color) !important;
+        }
 
         /* Spectrum controls container styling */
         .spectrum-controls-container {
@@ -1007,7 +1013,29 @@
             object-fit: cover;
         }
 
+        .viz-toggle-btn {
+            min-width: 50px !important;
+            text-align: center;
+            font-weight: 600;
+            margin-left: 8px;
+        }
 
+        .viz-toggle-btn.active {
+            background: var(--accent-color);
+            color: var(--primary-bg, #f5f3e9);
+        }
+
+        /* Video toggle button - green when active */
+        #videoToggleBtn.active {
+            background: #4CAF50 !important;
+            color: white !important;
+            border-color: #4CAF50 !important;
+        }
+        
+        /* Override dropdown-toggle triangle for video toggle */
+        #videoToggleBtn.dropdown-toggle::after {
+            display: none;
+        }
 
         /* Video Input Controls */
         .video-controls-panel {
@@ -1148,6 +1176,26 @@
             margin-top: 14px;
         }
 
+        .effect-toggle-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .effect-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .effect-toggle-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
 
         .preset-buttons {
             display: flex;
@@ -1873,6 +1921,40 @@
             gap: 8px;
         }
 
+        .morph-btn {
+            background: var(--hover-color);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px; /* Match visualizer button padding */
+            border-radius: 6px; /* Match visualizer button border radius */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            width: auto !important; /* Match visualizer button width */
+            min-width: 80px !important; /* Increased min-width for better spacing */
+            height: 36px !important; /* Match visualizer button height */
+        }
+
+        .morph-btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg, #f5f3e9);
+            transform: translateY(-2px);
+        }
+
+        .morph-btn.active {
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080);
+            background-size: 200% 100%;
+            animation: morph-gradient 3s linear infinite;
+            color: white;
+        }
+
+        /* Footer morph button active state */
+        #footerMorphBtn.active {
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080);
+            background-size: 200% 100%;
+            animation: morph-gradient 3s linear infinite;
+            color: white;
+        }
 
         @keyframes morph-gradient {
             0% {
@@ -1998,9 +2080,87 @@
         }
 
 /* Live Color Button Styles */
+.live-color-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+    margin-left: 15px; /* 15px gap from Previous Track button */
+}
 
+.live-color-btn .color-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
 
+.live-color-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
 
+.live-color-btn.active .color-icon {
+    color: var(--primary-bg);
+}
+
+.live-color-btn:hover .color-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.live-color-btn.active:hover .color-icon {
+    color: var(--primary-bg);
+}
+
+/* Live Background Button Styles */
+.live-background-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+    margin-left: 0px; /* No gap - adjacent to C button */
+}
+
+.live-background-btn .background-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.live-background-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-background-btn.active .background-icon {
+    color: var(--primary-bg);
+}
+
+.live-background-btn:hover .background-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.live-background-btn.active:hover .background-icon {
+    color: var(--primary-bg);
+}
+
+/* Live Audio Button Styles */
+.live-audio-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+}
+
+.live-audio-btn .audio-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.live-audio-btn:hover .audio-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Live Video Button Styles */
+.live-video-btn {
+    margin-right: 0px; /* No gap - buttons are adjacent */
+}
 
 /* Visualizer Button Styles */
 .visualizer-btn {
@@ -2062,9 +2222,59 @@
     align-items: center;
 }
 
-/* Kaleidoscope Button in Header - Now using btn-toggle class */
+/* Kaleidoscope Button in Header */
+.header .kaleidoscope-btn {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    white-space: nowrap;
+    width: auto !important;
+    min-width: 80px !important;
+}
 
-/* Blobs Button in Header - Now using btn-toggle class */
+.header .kaleidoscope-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.header .kaleidoscope-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Blobs Button in Header */
+.header .blobs-btn {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    white-space: nowrap;
+    width: auto !important;
+    min-width: 80px !important;
+}
+
+.header .blobs-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border-color: var(--accent-color);
+}
+
+.header .blobs-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
 
 /* Kaleidoscope Panel in Header */
 .header .kaleidoscope-panel {
@@ -2161,8 +2371,55 @@
     margin: 12px 0;
 }
 
+/* Toggle buttons in header Kaleidoscope panel - Match Infinite Zoom panel */
+.header .kaleidoscope-panel .effect-toggle-btn {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
 
-/* Infinite Zoom Button in Header - Now using btn-toggle class */
+.header .kaleidoscope-panel .effect-toggle-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.header .kaleidoscope-panel .effect-toggle-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Infinite Zoom Button in Header */
+.header .infinite-zoom-btn {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    white-space: nowrap;
+    width: auto !important;
+    min-width: 80px !important;
+    margin-left: 8px; /* 8px gap from Kaleidoscope button */
+}
+
+.header .infinite-zoom-btn:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.header .infinite-zoom-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
 
 /* Infinite Zoom Panel in Header */
 .header .infinite-zoom-panel {
@@ -2185,6 +2442,28 @@
     margin-bottom: 12px;
 }
 
+/* Toggle buttons in header Infinite Zoom panel - Match background image controls exactly */
+.header .infinite-zoom-panel .toggle-btn {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.header .infinite-zoom-panel .toggle-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.header .infinite-zoom-panel .toggle-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
 
 /* Slider styling in header Infinite Zoom panel - Match background image controls */
 .header .infinite-zoom-panel .slider {
@@ -2286,12 +2565,44 @@
             align-items: center;
         }
 
+        /* Header-specific button overrides to prevent footer CSS interference */
+        .header .visualizer-toggle-btn {
+            width: 36px !important; /* Force 36px wide for ON/OFF */
+            min-width: 36px !important;
+            max-width: 36px !important;
+            padding: 0 !important;
+        }
 
-        /* Header-specific button overrides removed - now using btn-toggle-32w */
+        .header .morph-btn {
+            padding: 8px 16px !important; /* Add proper spacing for Start Morph */
+            white-space: nowrap !important; /* Prevent text wrapping */
+        }
 
-
-/* Visualizer Toggle Button - Now using btn-toggle-32w class */
-
+/* Visualizer Toggle Button - Match B A V styling */
+.visualizer-toggle-btn {
+    height: 36px !important; /* Match B A V height */
+    margin-right: 1px !important; /* 1px gap to RNDM button */
+}
+.visualizer-toggle-btn .toggle-text {
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.visualizer-toggle-btn:hover .toggle-text {
+    color: rgba(255, 255, 255, 0.9);
+}
+.visualizer-toggle-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.visualizer-toggle-btn.active .toggle-text {
+    color: var(--primary-bg);
+}
+.visualizer-toggle-btn.active:hover .toggle-text {
+    color: var(--primary-bg);
+}
 
 /* Visualizer Random Button - Match B A V styling */
 .visualizer-random-btn {
@@ -2300,7 +2611,15 @@
 }
 
 /* Morph Button styles removed - now using sidebar morph controls in footer */
-/* Random button text styling removed - now inherits from btn-primary */
+.visualizer-random-btn .random-text {
+    font-size: 8px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.visualizer-random-btn:hover .random-text {
+    color: rgba(255, 255, 255, 0.9);
+}
 
 /* Playlist Button Styles */
 .playlist-btn {
@@ -2319,7 +2638,45 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
+.live-video-btn .video-icon {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+    transition: color 0.3s ease;
+}
 
+.live-video-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-video-btn.active .video-icon {
+    color: var(--primary-bg); /* Use primary background color for contrast */
+}
+
+.live-video-btn:hover .video-icon {
+    color: rgba(255, 255, 255, 0.9); /* Slightly more opaque on hover */
+}
+
+.live-video-btn.active:hover .video-icon {
+    color: var(--primary-bg); /* Keep primary background color on hover when active */
+}
+
+/* Live Audio Button Active State - Must come after general control-btn rules */
+.live-audio-btn.active {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-audio-btn.active .audio-icon {
+    color: var(--primary-bg);
+}
+
+.live-audio-btn.active:hover .audio-icon {
+    color: var(--primary-bg);
+}
 
         .control-btn:hover,
         .fullscreen-btn:hover,
@@ -2366,12 +2723,6 @@
             display: flex;
             gap: 8px;
             align-items: flex-start; /* Top-align with first row items */
-        }
-
-        /* Override gap for btn-pair containers within output-controls */
-        .output-controls .btn-pair {
-            gap: 2px !important;
-            margin: 0 !important;
         }
 
         .output-controls .control-btn {
@@ -2575,6 +2926,28 @@
             color: white;
         }
 
+        /* Match Kaleidoscope panel toggle buttons styling */
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn {
+            background: var(--hover-color, #2a2a2a);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .footer-settings-panel#footerAutopilotSettingsPanel .effect-toggle-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
 
         /* Action buttons - wider for readability */
         .footer-settings-panel#footerAutopilotSettingsPanel .control-btn {
@@ -2654,6 +3027,10 @@
         }
 
         /* Icon buttons should be 36px wide */
+        .footer .playback-controls .live-color-btn,
+        .footer .playback-controls .live-background-btn,
+        .footer .playback-controls .live-audio-btn,
+        .footer .playback-controls .live-video-btn,
         .footer .playback-controls #prevBtn,
         .footer .playback-controls #playBtn,
         .footer .playback-controls #nextBtn,
@@ -2790,23 +3167,26 @@
             padding: 0;
         }
 
-        /* Play button text should be semi-transparent white like C V B A buttons */
-        #playBtn {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Loop button icon should be semi-transparent white like C V B A buttons */
-        #loopBtn svg {
-            fill: rgba(255, 255, 255, 0.7);
-        }
-
-
         .loop-btn svg {
             width: 24px;
             height: 24px;
             fill: currentColor;
         }
 
+        .loop-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         .track-info {
             flex: 1;
@@ -3021,7 +3401,27 @@
             transform: rotate(90deg) scale(1.1);
         }
 
-        /* Old gear-btn class removed - now using btn-gear class */
+        .gear-btn {
+            background: var(--hover-color);
+            border: 1px solid var(--border-color, #898989);
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+
+        .gear-btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg, #f5f3e9);
+            transform: rotate(90deg) scale(1.1);
+        }
 
         .button-group {
             display: flex;
@@ -3077,94 +3477,6 @@
         .kaleidoscope-panel .toggle-btn.active {
             background: var(--accent-color, #ff6b6b);
             border-color: var(--accent-color, #ff6b6b);
-        }
-
-        /* Dummy UI Panel - Test Panel for UI Elements */
-        .dummy-ui-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .dummy-ui-content {
-            background: var(--secondary-bg, #1a1a1a);
-            border: 1px solid var(--border-color, #898989);
-            border-radius: 12px;
-            width: 280px;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .dummy-ui-header {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .dummy-ui-header h2 {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .dummy-ui-close-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 24px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .dummy-ui-close-btn:hover {
-            color: var(--accent-color);
-            transform: scale(1.2);
-        }
-
-        .dummy-ui-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        /* Control group labels in dummy panel - Match Kaleidoscope panel */
-        .dummy-ui-body .control-group h4 {
-            color: var(--text-secondary);
-            font-size: 12px;
-            margin-bottom: 4px;
-        }
-
-
-
-
-        /* Responsive design for dummy UI panel */
-        @media (max-width: 768px) {
-            .dummy-ui-content {
-                width: 280px;
-                height: 100%;
-                max-height: 100vh;
-                border-radius: 0;
-            }
-            
-            .dummy-ui-body {
-                padding: 16px;
-            }
         }
 
         /* Kaleidoscope canvas overlay */
@@ -3273,6 +3585,14 @@
             position: relative;
         }
 
+        #recordBtn {
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
 
         #recordBtn.recording {
             background: #ff3030 !important;
@@ -4208,6 +4528,10 @@
             line-height: 1.2;
         }
 
+        .tab-interface-active .effect-toggle-btn {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
 
         .tab-interface-active .video-settings-toggle {
             width: 28px;
