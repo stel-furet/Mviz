@@ -118,5 +118,4 @@
             }
         };
         
-        console.log('✓ Lightweight metadata parser loaded');
-console.log('✓ Lightweight metadata parser loaded');
+        // console.log('✓ Lightweight metadata parser loaded');

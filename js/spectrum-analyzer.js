@@ -39,7 +39,7 @@ class SpectrumAnalyzer {
         // Handle resize
         window.addEventListener('resize', () => this.handleResize());
 
-        console.log('Enhanced SpectrumAnalyzer created with channelLayout support');
+        // console.log('Enhanced SpectrumAnalyzer created with channelLayout support');
     }
 
     resetToDefaults() { // Full AudioMotion parameter set with single quotes for strings
@@ -184,11 +184,11 @@ class SpectrumAnalyzer {
             // Channel splitter for stereo
             this.splitter = this.audioCtx.createChannelSplitter(2);
 
-            console.log('Audio context initialized with stereo support:', {
-                sampleRate: this.audioCtx.sampleRate,
-                fftSize: this.analyser.fftSize,
-                frequencyBinCount: this.analyser.frequencyBinCount
-            });
+            // console.log('Audio context initialized with stereo support:', {
+            //     sampleRate: this.audioCtx.sampleRate,
+            //     fftSize: this.analyser.fftSize,
+            //     frequencyBinCount: this.analyser.frequencyBinCount
+            // });
         } catch (error) {
             console.error('Audio context setup failed:', error);
             this.dataArray = new Uint8Array(128);

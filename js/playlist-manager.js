@@ -29,10 +29,10 @@ class PlaylistManager {
         }
         
         // Test default artwork generation
-        console.log('Default artwork generated:', this.defaultArtwork.substring(0, 50) + '...');
+        // console.log('Default artwork generated:', this.defaultArtwork.substring(0, 50) + '...');
         
         // Test app icon generation
-        console.log('App icon generated:', this.appIcon.substring(0, 50) + '...');
+        // console.log('App icon generated:', this.appIcon.substring(0, 50) + '...');
         
         // Check music-metadata library availability
         this.checkMetadataLibrary();
@@ -45,7 +45,7 @@ class PlaylistManager {
         
         // Phase 4: Activate tabbed interface
         document.body.classList.add('tab-interface-active');
-        console.log('✓ Tabbed interface activated');
+        // console.log('✓ Tabbed interface activated');
         
         // Phase 3 test: Add temporary test function for Audio + Video tabs
         // testAudioTab removed - functionality moved to sidebar
@@ -346,7 +346,7 @@ class PlaylistManager {
             // Process files progressively
             await this.processFilesProgressively(files);
             
-            console.log('✅ Background rescan completed');
+            // console.log('✅ Background rescan completed');
             this.hideBackgroundScanIndicator();
             
         } catch (error) {
@@ -378,7 +378,7 @@ class PlaylistManager {
                         existingTrack.url = newTrack.url;
                         existingTrack.file = newTrack.file;
                         existingTrack._needsRescan = false;
-                        console.log(`✅ Enabled playback for: ${existingTrack.title}`);
+                        // console.log(`✅ Enabled playback for: ${existingTrack.title}`);
                     }
                 }
             });
@@ -496,7 +496,7 @@ class PlaylistManager {
                 }
             });
             
-            console.log('✓ Tabbed interface initialized (hidden)');
+            // console.log('✓ Tabbed interface initialized (hidden)');
             
         } catch (error) {
             console.error('Error initializing tabbed interface:', error);
@@ -536,7 +536,7 @@ class PlaylistManager {
         // Use our embedded lightweight metadata parser
         if (typeof window.lightweightMetadata !== 'undefined') {
             this.musicMetadata = window.lightweightMetadata;
-            console.log('✓ Lightweight metadata parser ready (supports MP3 ID3 tags)');
+            // console.log('✓ Lightweight metadata parser ready (supports MP3 ID3 tags)');
             return;
         }
         
@@ -550,7 +550,7 @@ class PlaylistManager {
             const cached = localStorage.getItem('vizzy_current_playlist');
             if (cached) {
                 this.currentPlaylist = JSON.parse(cached);
-                console.log('Loaded cached playlist:', this.currentPlaylist.tracks?.length || 0, 'tracks');
+                // console.log('Loaded cached playlist:', this.currentPlaylist.tracks?.length || 0, 'tracks');
                 
                 // Note: Cached playlists don't have file objects or blob URLs
                 // They will display metadata but won't be playable until folder is rescanned
@@ -910,7 +910,7 @@ class PlaylistManager {
     
     async extractMetadata(file) {
         try {
-            console.log(`Extracting metadata from: ${file.name}`);
+            // console.log(`Extracting metadata from: ${file.name}`);
             
             const track = {
                 id: this.generateTrackId(file),
@@ -933,7 +933,7 @@ class PlaylistManager {
                         track.duration = 0; // Will be calculated via Web Audio API
                         track.artwork = this.defaultArtwork; // Use default for now
                         
-                        console.log(`✓ Metadata extracted: "${track.title}" by ${track.artist} (${track.album})`);
+                        // console.log(`✓ Metadata extracted: "${track.title}" by ${track.artist} (${track.album})`);
                     } else {
                         this.applyFallbackMetadata(track, file);
                     }
@@ -955,7 +955,7 @@ class PlaylistManager {
             // Create object URL for playback
             track.url = URL.createObjectURL(file);
             track.file = file; // Keep reference to original file
-            console.log(`Created blob URL for ${track.title}: ${track.url}`);
+            // console.log(`Created blob URL for ${track.title}: ${track.url}`);
             
             return track;
             
@@ -1092,7 +1092,7 @@ class PlaylistManager {
         } else if (hasPlaylistActions) {
             console.log('New dropdown content with playlist actions already exists');
         } else {
-            console.error('Dropdown element not found!');
+            // console.error('Dropdown element not found!');
         }
         
         // Update header playlist if it exists
@@ -1471,7 +1471,7 @@ class PlaylistManager {
         console.log('tracksContainer found:', !!tracksContainer);
         
         if (!tracksContainer) {
-            console.error('playlistTracks container not found!');
+            // console.error('playlistTracks container not found!');
             return;
         }
         

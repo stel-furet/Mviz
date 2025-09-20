@@ -1616,6 +1616,7 @@ class RecordManager {
         this.compositeCtx = null;
         this.animationFrame = null;
         this.saveLocation = null;
+        this.healthCheckInterval = null;
         
         // Recording settings
         this.resolution = '1080p';
@@ -1650,7 +1651,7 @@ class RecordManager {
         };
         
         this.loadSettings();
-        console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
+        // console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
         this.initializeUI();
     }
     
@@ -1668,12 +1669,12 @@ class RecordManager {
                 this.saveLocation = settings.saveLocation || null;
                 this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
                 
-                console.log('Loaded recording settings:', {
-                    resolution: this.resolution,
-                    aspectRatio: this.aspectRatio,
-                    frameRate: this.frameRate,
-                    matchVisualizationAspect: this.matchVisualizationAspect
-                });
+                // console.log('Loaded recording settings:', {
+                //     resolution: this.resolution,
+                //     aspectRatio: this.aspectRatio,
+                //     frameRate: this.frameRate,
+                //     matchVisualizationAspect: this.matchVisualizationAspect
+                // });
             }
         } catch (e) {
             console.error('Error loading recording settings:', e);
@@ -1942,6 +1943,13 @@ class RecordManager {
                             this.visualizer.saveBackgroundImage();
                             this.updateBackgroundImageUI();
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
+                            
+                            // Update background image panel if it exists
+                            const backgroundPanel = document.getElementById('backgroundImagePanel');
+                            if (backgroundPanel) {
+                                this.visualizer.updateBackgroundPanelStates(backgroundPanel);
+                            }
+                            
                             console.log('💾 Background image saved and enabled');
                         }
                     };
@@ -2354,12 +2362,12 @@ class RecordManager {
             }
             backgroundImgBtn.classList.toggle('active', this.visualizer.backgroundImageEnabled);
             
-            console.log('🔄 Background toggle button updated:', {
-                enabled: this.visualizer.backgroundImageEnabled,
-                hasImage: !!this.visualizer.backgroundImage,
-                buttonText: textSpan?.textContent,
-                buttonActive: backgroundImgBtn.classList.contains('active')
-            });
+            // console.log('🔄 Background toggle button updated:', {
+            //     enabled: this.visualizer.backgroundImageEnabled,
+            //     hasImage: !!this.visualizer.backgroundImage,
+            //     buttonText: textSpan?.textContent,
+            //     buttonActive: backgroundImgBtn.classList.contains('active')
+            // });
             
             // Debug summary
             this.debugBackgroundImageState();
@@ -2369,28 +2377,28 @@ class RecordManager {
     debugBackgroundImageState() {
         if (!this.visualizer) return;
         
-        console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
-            'Image Data': this.visualizer.backgroundImage ? `Present (${this.visualizer.backgroundImage.length} chars)` : 'Missing',
-            'Enabled': this.visualizer.backgroundImageEnabled,
-            'Opacity': this.visualizer.backgroundImageOpacity + '%',
-            'Saturation': this.visualizer.backgroundImageSaturation + '%',
-            'Button Text': document.querySelector('#backgroundImgBtn .background-text')?.textContent,
-            'Button Active': document.querySelector('#backgroundImgBtn')?.classList.contains('active'),
-            'Canvas Elements': {
-                'Main Canvas': document.querySelector('#visualizationCanvas') ? 'Present' : 'Missing',
-                'Capture Canvas': document.querySelector('#captureCanvas') ? 'Present' : 'Missing',
-                'Composite Canvas': document.querySelector('#compositeCanvas') ? 'Present' : 'Missing',
-                'All Canvas Elements': document.querySelectorAll('canvas').length + ' found'
-            },
-            'Layer Order': [
-                'Layer 0: Background Image',
-                'Layer 1: Video (if active)',
-                'Layer 2: AudioMotion Visualization',
-                'Layer 3: Infinite Zoom',
-                'Layer 4: Kaleidoscope',
-                'Layer 5: Video Effects'
-            ]
-        });
+        // console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
+        //     'Image Data': this.visualizer.backgroundImage ? `Present (${this.visualizer.backgroundImage.length} chars)` : 'Missing',
+        //     'Enabled': this.visualizer.backgroundImageEnabled,
+        //     'Opacity': this.visualizer.backgroundImageOpacity + '%',
+        //     'Saturation': this.visualizer.backgroundImageSaturation + '%',
+        //     'Button Text': document.querySelector('#backgroundImgBtn .background-text')?.textContent,
+        //     'Button Active': document.querySelector('#backgroundImgBtn')?.classList.contains('active'),
+        //     'Canvas Elements': {
+        //         'Main Canvas': document.querySelector('#visualizationCanvas') ? 'Present' : 'Missing',
+        //         'Capture Canvas': document.querySelector('#captureCanvas') ? 'Present' : 'Missing',
+        //         'Composite Canvas': document.querySelector('#compositeCanvas') ? 'Present' : 'Missing',
+        //         'All Canvas Elements': document.querySelectorAll('canvas').length + ' found'
+        //     },
+        //     'Layer Order': [
+        //         'Layer 0: Background Image',
+        //         'Layer 1: Video (if active)',
+        //         'Layer 2: AudioMotion Visualization',
+        //         'Layer 3: Infinite Zoom',
+        //         'Layer 4: Kaleidoscope',
+        //         'Layer 5: Video Effects'
+        //     ]
+        // });
     }
 
     updateBackgroundImageUI() {
@@ -2477,7 +2485,7 @@ class RecordManager {
     updateUI() {
         // Footer recording info only (sidebar recording info removed)
         // The footer updateFooterRecordingInfo() method handles all recording info display
-        console.log('RecordManager.updateUI() - footer recording info handled by updateFooterRecordingInfo()');
+        // console.log('RecordManager.updateUI() - footer recording info handled by updateFooterRecordingInfo()');
     }
     
     getRecordingDimensions() {
@@ -2639,17 +2647,38 @@ class RecordManager {
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     this.recordedChunks.push(event.data);
+                    console.log(`📹 Data chunk received: ${event.data.size} bytes (total chunks: ${this.recordedChunks.length})`);
+                    
+                    // Monitor memory usage for long recordings
+                    const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+                    if (totalSize > 100 * 1024 * 1024) { // 100MB
+                        console.warn(`⚠️ Large recording detected: ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
+                    }
                 }
             };
             
             this.mediaRecorder.onstop = () => {
+                console.log('📹 MediaRecorder stopped, attempting to save...');
                 this.saveRecording();
+            };
+            
+            this.mediaRecorder.onerror = (event) => {
+                console.error('❌ MediaRecorder error:', event.error);
+                alert(`Recording error: ${event.error.message || 'Unknown error'}`);
+                this.stopRecording();
+            };
+            
+            this.mediaRecorder.onstart = () => {
+                console.log('📹 MediaRecorder started successfully');
             };
             
             this.mediaRecorder.start(1000); // Record in 1 second chunks
             
             // Start compositing loop
             this.startCompositing();
+            
+            // Start health monitoring for long recordings
+            this.startRecordingHealthCheck();
             
             console.log('Recording started successfully');
             
@@ -3224,6 +3253,12 @@ class RecordManager {
             this.timerInterval = null;
         }
         
+        // Stop health check
+        if (this.healthCheckInterval) {
+            clearInterval(this.healthCheckInterval);
+            this.healthCheckInterval = null;
+        }
+        
         // Stop animation frame
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
@@ -3232,7 +3267,18 @@ class RecordManager {
         
         // Stop media recorder
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-            this.mediaRecorder.stop();
+            console.log('🛑 Stopping MediaRecorder, current state:', this.mediaRecorder.state);
+            try {
+                this.mediaRecorder.stop();
+                console.log('✅ MediaRecorder stop() called successfully');
+            } catch (err) {
+                console.error('❌ Error stopping MediaRecorder:', err);
+                alert('Error stopping recording: ' + err.message);
+            }
+        } else if (this.mediaRecorder) {
+            console.log('⚠️ MediaRecorder already inactive, state:', this.mediaRecorder.state);
+        } else {
+            console.warn('⚠️ No MediaRecorder instance found');
         }
         
         // Clean up temporary canvases
@@ -3257,35 +3303,66 @@ class RecordManager {
     }
     
     async saveRecording() {
-        console.log('saveRecording called, recordedChunks:', this.recordedChunks.length);
+        console.log('💾 saveRecording called, recordedChunks:', this.recordedChunks.length);
+        
         if (this.recordedChunks.length === 0) {
-            console.warn('No recorded data to save');
+            console.warn('❌ No recorded data to save');
+            alert('No recording data found. Recording may have failed silently.');
+            return;
+        }
+        
+        // Calculate total size before creating blob
+        const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+        console.log(`📊 Total recording size: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
+        
+        // Check for reasonable size limits
+        if (totalSize === 0) {
+            console.error('❌ All recorded chunks are empty');
+            alert('Recording failed: All data chunks are empty.');
+            return;
+        }
+        
+        if (totalSize > 2 * 1024 * 1024 * 1024) { // 2GB limit
+            console.error('❌ Recording too large:', (totalSize / 1024 / 1024 / 1024).toFixed(2) + 'GB');
+            alert('Recording too large to save. Please try shorter recordings.');
             return;
         }
         
         try {
+            console.log('🔨 Creating blob from', this.recordedChunks.length, 'chunks...');
             const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-            console.log('Blob created, size:', blob.size, 'bytes');
+            
+            if (blob.size === 0) {
+                console.error('❌ Blob created but size is 0');
+                alert('Recording failed: Blob creation resulted in empty file.');
+                return;
+            }
+            
+            console.log('✅ Blob created successfully, size:', blob.size, 'bytes (', (blob.size / 1024 / 1024).toFixed(2), 'MB)');
+            
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const filename = `${this.customFilename}_${timestamp}.webm`;
-            console.log('Attempting to save as:', filename);
+            console.log('📁 Attempting to save as:', filename);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
                 // Save to chosen directory
                 try {
+                    console.log('💾 Saving to chosen directory...');
                     const fileHandle = await this.directoryHandle.getFileHandle(filename, { create: true });
                     const writable = await fileHandle.createWritable();
                     await writable.write(blob);
                     await writable.close();
                     
-                    console.log(`Recording saved to ${this.saveLocation}/${filename}`);
+                    console.log(`✅ Recording saved to ${this.saveLocation}/${filename}`);
                     alert(`Recording saved successfully to ${this.saveLocation}/${filename}`);
                 } catch (err) {
-                    console.error('Error saving to chosen directory:', err);
+                    console.error('❌ Error saving to chosen directory:', err);
+                    console.log('🔄 Falling back to download...');
                     this.fallbackDownload(blob, filename);
                 }
             } else {
                 // Fallback to downloads folder
+                console.log('💾 Saving to Downloads folder...');
                 this.fallbackDownload(blob, filename);
             }
             
@@ -3298,36 +3375,111 @@ class RecordManager {
         this.recordedChunks = [];
     }
     
+    startRecordingHealthCheck() {
+        // Check recording health every 30 seconds
+        this.healthCheckInterval = setInterval(() => {
+            if (!this.isRecording) return;
+            
+            const elapsed = Date.now() - this.recordingStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            
+            console.log(`🔍 Recording health check - ${minutes}min elapsed, chunks: ${this.recordedChunks.length}`);
+            
+            // Check if MediaRecorder is still active
+            if (this.mediaRecorder && this.mediaRecorder.state === 'inactive') {
+                console.error('❌ MediaRecorder became inactive during recording!');
+                alert('Recording stopped unexpectedly. This may indicate a browser limitation or error.');
+                this.stopRecording();
+                return;
+            }
+            
+            // Check if we're still receiving data chunks
+            if (this.recordedChunks.length === 0 && minutes > 1) {
+                console.warn('⚠️ No data chunks received after 1 minute');
+            }
+            
+            // Check memory usage
+            const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+            if (totalSize > 500 * 1024 * 1024) { // 500MB
+                console.warn(`⚠️ Large recording: ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
+            }
+            
+            // Check for potential browser limitations
+            if (minutes > 5 && this.recordedChunks.length < minutes * 30) { // Should have ~30 chunks per minute
+                console.warn('⚠️ Low chunk count detected - recording may be failing');
+            }
+            
+        }, 30000); // Check every 30 seconds
+    }
+    
     fallbackDownload(blob, filename) {
-        console.log('fallbackDownload called with blob size:', blob.size, 'filename:', filename);
-        const url = URL.createObjectURL(blob);
-        console.log('Created blob URL:', url);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        console.log('Download link created, triggering click...');
-        document.body.appendChild(a);
+        console.log('💾 fallbackDownload called with blob size:', blob.size, 'filename:', filename);
         
-        // Add error handling for download
-        a.addEventListener('error', (e) => {
-            console.error('Download failed:', e);
-            alert('Download failed. Please check your browser settings and try again.');
-        });
-        
-        // Try to trigger download with timeout fallback
-        try {
-        a.click();
-            console.log('Download click triggered successfully');
-        } catch (e) {
-            console.error('Error triggering download click:', e);
-            alert('Unable to trigger download. Please check your browser settings.');
+        if (!blob || blob.size === 0) {
+            console.error('❌ Invalid blob for download');
+            alert('Cannot download: Invalid recording data.');
+            return;
         }
         
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        console.log(`Recording downloaded as ${filename}`);
-        alert(`Recording saved to Downloads folder as ${filename}`);
+        try {
+            const url = URL.createObjectURL(blob);
+            console.log('🔗 Created blob URL:', url);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            console.log('📎 Download link created, triggering click...');
+            
+            // Add comprehensive error handling for download
+            a.addEventListener('error', (e) => {
+                console.error('❌ Download failed:', e);
+                alert('Download failed. Please check your browser settings and try again.');
+                URL.revokeObjectURL(url);
+            });
+            
+            // Add timeout to detect if download actually started
+            let downloadStarted = false;
+            const downloadTimeout = setTimeout(() => {
+                if (!downloadStarted) {
+                    console.warn('⚠️ Download may not have started - no user interaction detected');
+                    // Don't show alert here as it might be a false positive
+                }
+            }, 2000);
+            
+            // Try to trigger download
+            try {
+                document.body.appendChild(a);
+                a.click();
+                downloadStarted = true;
+                console.log('✅ Download click triggered successfully');
+                
+                // Clean up after a short delay
+                setTimeout(() => {
+                    if (document.body.contains(a)) {
+                        document.body.removeChild(a);
+                    }
+                    URL.revokeObjectURL(url);
+                    clearTimeout(downloadTimeout);
+                }, 1000);
+                
+                console.log(`✅ Recording download initiated: ${filename}`);
+                alert(`Recording saved to Downloads folder as ${filename}`);
+                
+            } catch (e) {
+                console.error('❌ Error triggering download click:', e);
+                alert('Unable to trigger download. Please check your browser settings.');
+                if (document.body.contains(a)) {
+                    document.body.removeChild(a);
+                }
+                URL.revokeObjectURL(url);
+                clearTimeout(downloadTimeout);
+            }
+            
+        } catch (e) {
+            console.error('❌ Error in fallbackDownload:', e);
+            alert('Failed to prepare download. Recording may be corrupted.');
+        }
     }
 }
 
@@ -4920,6 +5072,7 @@ class GitItUpVisualizer {
     async init() {
         try {
             this.setupEventListeners();
+            this.setupFloatingPanelResizeHandler();
             this.loadPlaylist();
 
             this.loadBackgroundColor();
@@ -4964,11 +5117,11 @@ class GitItUpVisualizer {
 
     async initAudioMotion() {
         try {
-            console.log('Creating SpectrumAnalyzer instance...');
+            // console.log('Creating SpectrumAnalyzer instance...');
 
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
 
-            console.log('SpectrumAnalyzer initialized successfully');
+            // console.log('SpectrumAnalyzer initialized successfully');
 
         } catch (error) {
             console.error('SpectrumAnalyzer initialization error:', error);
@@ -6105,58 +6258,31 @@ class GitItUpVisualizer {
         // Create dropdown container
         const dropdown = document.createElement('div');
         dropdown.id = 'footerAudioInputDropdown';
-        dropdown.className = 'footer-audio-dropdown';
-        dropdown.style.cssText = `
-            position: fixed;
-            top: ${buttonRect.bottom + 4}px;
-            left: ${buttonRect.left}px;
-            background: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            z-index: 10000;
-            min-width: 320px;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        `;
+        dropdown.className = 'panel-floating';
+        dropdown.dataset.buttonId = 'footerLiveAudioBtn';
+        dropdown.style.left = `${buttonRect.left}px`;
+        dropdown.style.top = `${buttonRect.bottom + 4}px`;
+        dropdown.style.display = 'block';
 
         // Create header
         const header = document.createElement('div');
-        header.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        `;
+        header.className = 'panel-header';
         
-        const title = document.createElement('h3');
+        const title = document.createElement('span');
         title.textContent = 'Audio Input';
-        title.style.cssText = `
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 14px;
-        `;
         
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '×';
-        closeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-        `;
+        closeBtn.className = 'panel-close-btn';
         closeBtn.onclick = () => dropdown.remove();
         
         header.appendChild(title);
         header.appendChild(closeBtn);
         dropdown.appendChild(header);
+
+        // Create content wrapper
+        const content = document.createElement('div');
+        content.className = 'panel-content';
 
         // Create device list
         const deviceList = document.createElement('div');
@@ -6223,7 +6349,7 @@ class GitItUpVisualizer {
         };
         
         deviceList.appendChild(helpBtn);
-        dropdown.appendChild(deviceList);
+        content.appendChild(deviceList);
 
         // Add audio settings section after device list
         const settingsSection = document.createElement('div');
@@ -6273,7 +6399,8 @@ class GitItUpVisualizer {
         // Playlist Controls
         this.addPlaylistControlsGroup(settingsSection);
         
-        dropdown.appendChild(settingsSection);
+        content.appendChild(settingsSection);
+        dropdown.appendChild(content);
         
         // Prevent settings section from closing dropdown when clicked
         settingsSection.addEventListener('click', (e) => {
@@ -6511,57 +6638,31 @@ class GitItUpVisualizer {
         // Create dropdown container
         const dropdown = document.createElement('div');
         dropdown.id = 'footerVideoInputDropdown';
-        dropdown.style.cssText = `
-            position: fixed;
-            top: ${buttonRect.bottom + 4}px;
-            left: ${buttonRect.left}px;
-            background: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            z-index: 10000;
-            min-width: 320px;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        `;
+        dropdown.className = 'panel-floating';
+        dropdown.dataset.buttonId = 'footerLiveVideoBtn';
+        dropdown.style.left = `${buttonRect.left}px`;
+        dropdown.style.top = `${buttonRect.bottom + 4}px`;
+        dropdown.style.display = 'block';
 
         // Create header
         const header = document.createElement('div');
-        header.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        `;
+        header.className = 'panel-header';
         
-        const title = document.createElement('h3');
+        const title = document.createElement('span');
         title.textContent = 'Video Settings';
-        title.style.cssText = `
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 14px;
-        `;
         
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '×';
-        closeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-        `;
+        closeBtn.className = 'panel-close-btn';
         closeBtn.onclick = () => dropdown.remove();
         
         header.appendChild(title);
         header.appendChild(closeBtn);
         dropdown.appendChild(header);
+
+        // Create content wrapper
+        const content = document.createElement('div');
+        content.className = 'panel-content';
 
         // Create device list
         const deviceList = document.createElement('div');
@@ -6779,8 +6880,9 @@ class GitItUpVisualizer {
         // Stream Statistics
         this.addStreamStatsGroup(settingsSection);
         
-        dropdown.appendChild(deviceList);
-        dropdown.appendChild(settingsSection);
+        content.appendChild(deviceList);
+        content.appendChild(settingsSection);
+        dropdown.appendChild(content);
         
         // Refresh stats if camera is already active
         console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
@@ -6841,45 +6943,26 @@ class GitItUpVisualizer {
         controlGroup.appendChild(groupLabelEl);
         
         sliders.forEach(slider => {
-            const sliderContainer = document.createElement('div');
-            sliderContainer.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-bottom: 6px;
-            `;
+            const sliderWrapper = document.createElement('div');
+            sliderWrapper.className = 'slider-1-wrapper';
             
             const label = document.createElement('label');
             label.textContent = slider.label;
-            label.style.cssText = `
-                color: var(--text-primary);
-                font-size: 11px;
-                min-width: 70px;
-                flex-shrink: 0;
-            `;
+            label.className = 'slider-label';
             
             const input = document.createElement('input');
             input.type = 'range';
             input.id = slider.id;
+            input.className = 'slider-1';
             input.min = slider.min;
             input.max = slider.max;
             if (slider.step) input.step = slider.step;
             input.value = slider.value;
-            input.style.cssText = `
-                flex: 1;
-                height: 20px;
-            `;
             
             const valueSpan = document.createElement('span');
             valueSpan.id = slider.id.replace('Slider', 'Value');
+            valueSpan.className = 'slider-1-value';
             valueSpan.textContent = slider.value + (slider.suffix || '');
-            valueSpan.style.cssText = `
-                color: var(--text-secondary);
-                font-size: 11px;
-                min-width: 40px;
-                text-align: right;
-                flex-shrink: 0;
-            `;
             
             // Header video sliders work independently (no sidebar sync needed)
             input.addEventListener('input', (e) => {
@@ -6893,10 +6976,10 @@ class GitItUpVisualizer {
                 valueSpan.textContent = e.target.value + (slider.suffix || '');
             });
             
-            sliderContainer.appendChild(label);
-            sliderContainer.appendChild(input);
-            sliderContainer.appendChild(valueSpan);
-            controlGroup.appendChild(sliderContainer);
+            sliderWrapper.appendChild(label);
+            sliderWrapper.appendChild(input);
+            sliderWrapper.appendChild(valueSpan);
+            controlGroup.appendChild(sliderWrapper);
         });
         
         container.appendChild(controlGroup);
@@ -6969,41 +7052,25 @@ class GitItUpVisualizer {
         ];
         
         effectSliders.forEach(slider => {
-            const sliderContainer = document.createElement('div');
-            sliderContainer.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-bottom: 6px;
-            `;
+            const sliderWrapper = document.createElement('div');
+            sliderWrapper.className = 'slider-1-wrapper';
             
             const label = document.createElement('label');
             label.textContent = slider.label;
-            label.style.cssText = `
-                color: var(--text-primary);
-                font-size: 11px;
-                min-width: 70px;
-                flex-shrink: 0;
-            `;
+            label.className = 'slider-label';
             
             const input = document.createElement('input');
             input.type = 'range';
             input.id = slider.id;
+            input.className = 'slider-1';
             input.min = slider.min;
             input.max = slider.max;
             input.value = slider.value;
-            input.style.cssText = `flex: 1; height: 20px;`;
             
             const valueSpan = document.createElement('span');
             valueSpan.id = slider.id.replace('Slider', 'Value');
+            valueSpan.className = 'slider-1-value';
             valueSpan.textContent = slider.value === 16 && slider.id === 'videoPosterizeSlider' ? 'Off' : slider.value + slider.suffix;
-            valueSpan.style.cssText = `
-                color: var(--text-secondary);
-                font-size: 11px;
-                min-width: 40px;
-                text-align: right;
-                flex-shrink: 0;
-            `;
             
             input.addEventListener('input', (e) => {
                 e.preventDefault();
@@ -7020,10 +7087,10 @@ class GitItUpVisualizer {
                 }
             });
             
-            sliderContainer.appendChild(label);
-            sliderContainer.appendChild(input);
-            sliderContainer.appendChild(valueSpan);
-            controlGroup.appendChild(sliderContainer);
+            sliderWrapper.appendChild(label);
+            sliderWrapper.appendChild(input);
+            sliderWrapper.appendChild(valueSpan);
+            controlGroup.appendChild(sliderWrapper);
         });
         
         // Effect toggle buttons
@@ -7433,10 +7500,10 @@ class GitItUpVisualizer {
         // Check if live audio is enabled
         const isActive = this.liveAudioEnabled;
         
-        console.log('A button state check:', {
-            liveAudioEnabled: this.liveAudioEnabled,
-            isActive: isActive
-        });
+        // console.log('A button state check:', {
+        //     liveAudioEnabled: this.liveAudioEnabled,
+        //     isActive: isActive
+        // });
         
         if (isActive) {
             footerBtn.classList.add('active');
@@ -7452,10 +7519,10 @@ class GitItUpVisualizer {
         // Check if video is active using existing video system
         const isActive = this.videoMode === 'camera' || this.videoMode === 'file';
         
-        console.log('V button state check:', {
-            videoMode: this.videoMode,
-            isActive: isActive
-        });
+        // console.log('V button state check:', {
+        //     videoMode: this.videoMode,
+        //     isActive: isActive
+        // });
         
         if (isActive) {
             footerBtn.classList.add('active');
@@ -7471,10 +7538,10 @@ class GitItUpVisualizer {
         // Check if visualization is enabled
         const isActive = this.visualizationEnabled;
         
-        console.log('Visualizer button state check:', {
-            visualizationEnabled: this.visualizationEnabled,
-            isActive: isActive
-        });
+        // console.log('Visualizer button state check:', {
+        //     visualizationEnabled: this.visualizationEnabled,
+        //     isActive: isActive
+        // });
         
         if (isActive) {
             footerBtn.classList.add('active');
@@ -7608,55 +7675,22 @@ class GitItUpVisualizer {
         // Create panel container
         const panel = document.createElement('div');
         panel.id = 'colorPickerPanel';
-        panel.className = 'color-picker-panel';
-        panel.style.cssText = `
-            position: fixed;
-            top: ${buttonRect.bottom + 4}px;
-            left: ${buttonRect.left}px;
-            background: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            z-index: 10000;
-            min-width: 200px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        `;
+        panel.className = 'panel-floating';
+        panel.dataset.buttonId = 'footerLiveColorBtn';
+        panel.style.left = `${buttonRect.left}px`;
+        panel.style.top = `${buttonRect.bottom + 4}px`;
+        panel.style.display = 'block';
 
         // Create header
         const header = document.createElement('div');
-        header.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        `;
+        header.className = 'panel-header';
         
-        const title = document.createElement('h3');
+        const title = document.createElement('span');
         title.textContent = 'Background Color';
-        title.style.cssText = `
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 14px;
-        `;
         
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '×';
-        closeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        
+        closeBtn.className = 'panel-close-btn';
         closeBtn.addEventListener('click', () => {
             panel.remove();
         });
@@ -7683,7 +7717,13 @@ class GitItUpVisualizer {
         });
         
         panel.appendChild(header);
-        panel.appendChild(colorInput);
+        
+        // Create content wrapper
+        const content = document.createElement('div');
+        content.className = 'panel-content';
+        content.appendChild(colorInput);
+        panel.appendChild(content);
+        
         document.body.appendChild(panel);
         
         // Close panel when clicking outside
@@ -7722,41 +7762,28 @@ class GitItUpVisualizer {
         // Create panel container
         const panel = document.createElement('div');
         panel.id = 'backgroundImagePanel';
-        panel.className = 'background-image-panel';
+        panel.className = 'panel-floating';
+        panel.dataset.buttonId = 'footerLiveBackgroundBtn';
         
         // Get button position for panel positioning
         const button = document.getElementById('footerLiveBackgroundBtn');
         const buttonRect = button.getBoundingClientRect();
         
         // Position panel below button, left-aligned
-        panel.style.position = 'fixed';
-        panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
         panel.style.left = `${buttonRect.left}px`;
-        panel.style.zIndex = '10000';
-        panel.style.background = 'var(--secondary-bg)';
-        panel.style.border = '1px solid var(--border-color)';
-        panel.style.borderRadius = '8px';
-        panel.style.padding = '15px';
-        panel.style.minWidth = '250px';
-        panel.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
+        panel.style.display = 'block';
         
-        // Panel content - match sidebar styling exactly
+        // Panel content - use new CSS classes
         panel.innerHTML = `
             <div class="panel-header">
-                <h4 style="margin: 0 0 15px 0; color: var(--text-primary);">Background Image</h4>
-                <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">×</button>
+                <span>Background Image</span>
+                <button class="panel-close-btn">×</button>
             </div>
-            
-            <!-- Background Image Toggle -->
-            <div class="control-group">
-                <button class="dropdown-toggle viz-toggle-btn" id="panelBackgroundToggle" title="Toggle Background Image">
-                    <span class="background-text">Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}</span>
-                </button>
-            </div>
+            <div class="panel-content">
             
             <!-- Image Selection -->
             <div class="control-group">
-                <div class="group-label">Image</div>
                 <button class="control-btn" id="panelBackgroundSelect">Select Image</button>
                 <div class="background-file-info" id="panelBackgroundFileInfo" style="display: none;">
                     <div class="file-preview-container">
@@ -7769,39 +7796,46 @@ class GitItUpVisualizer {
                 </div>
             </div>
             
+            <!-- Background Image Toggle -->
+            <div class="control-group">
+                <button class="btn-toggle" id="panelBackgroundToggle" title="Toggle Background Image">
+                    <span class="background-text">Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}</span>
+                </button>
+            </div>
+            
             <!-- Opacity -->
             <div class="control-group">
-                <div class="group-label">Opacity</div>
-                <div class="slider-container">
-                    <input type="range" id="panelOpacitySlider" class="control-slider" min="0" max="100" value="${this.backgroundImageOpacity || 100}">
-                    <span class="slider-value" id="panelOpacityValue">${this.backgroundImageOpacity || 100}%</span>
+                <div class="slider-1-wrapper">
+                    <label class="slider-label">Opacity</label>
+                    <input type="range" id="panelOpacitySlider" class="slider-1" min="0" max="100" value="${this.backgroundImageOpacity || 100}">
+                    <span class="slider-1-value" id="panelOpacityValue">${this.backgroundImageOpacity || 100}%</span>
                 </div>
             </div>
 
             <!-- Saturation -->
             <div class="control-group">
-                <div class="group-label">Saturation</div>
-                <div class="slider-container">
-                    <input type="range" id="panelSaturationSlider" class="control-slider" min="0" max="200" value="${this.backgroundImageSaturation || 100}">
-                    <span class="slider-value" id="panelSaturationValue">${this.backgroundImageSaturation || 100}%</span>
+                <div class="slider-1-wrapper">
+                    <label class="slider-label">Saturation</label>
+                    <input type="range" id="panelSaturationSlider" class="slider-1" min="0" max="200" value="${this.backgroundImageSaturation || 100}">
+                    <span class="slider-1-value" id="panelSaturationValue">${this.backgroundImageSaturation || 100}%</span>
                 </div>
             </div>
             
             <!-- Posterization -->
             <div class="control-group">
-                <div class="group-label">Posterization</div>
-                <div class="slider-container">
-                    <input type="range" id="panelPosterizeSlider" class="control-slider" min="0" max="16" value="${this.backgroundImagePosterize || 16}">
-                    <span class="slider-value" id="panelPosterizeValue">${this.backgroundImagePosterize || 16}</span>
+                <div class="slider-1-wrapper">
+                    <label class="slider-label">Posterization</label>
+                    <input type="range" id="panelPosterizeSlider" class="slider-1" min="0" max="16" value="${this.backgroundImagePosterize || 16}">
+                    <span class="slider-1-value" id="panelPosterizeValue">${this.backgroundImagePosterize || 16}</span>
                 </div>
             </div>
             
             <!-- Contrast -->
             <div class="control-group">
-                <div class="group-label">Contrast</div>
-                <div class="slider-container">
-                    <input type="range" id="panelContrastSlider" class="control-slider" min="0" max="200" value="${this.backgroundImageContrast || 100}">
-                    <span class="slider-value" id="panelContrastValue">${this.backgroundImageContrast || 100}%</span>
+                <div class="slider-1-wrapper">
+                    <label class="slider-label">Contrast</label>
+                    <input type="range" id="panelContrastSlider" class="slider-1" min="0" max="200" value="${this.backgroundImageContrast || 100}">
+                    <span class="slider-1-value" id="panelContrastValue">${this.backgroundImageContrast || 100}%</span>
                 </div>
             </div>
             
@@ -7820,6 +7854,7 @@ class GitItUpVisualizer {
             <div class="control-group">
                 <button class="control-btn clear-btn" id="panelBackgroundClear">Clear Background</button>
             </div>
+            </div>
         `;
         
         // Add event listeners
@@ -7830,11 +7865,17 @@ class GitItUpVisualizer {
         
         // Update active states
         this.updateBackgroundPanelStates(panel);
+        
+        // Also update file info if image already exists
+        if (this.backgroundImage && this.backgroundImageFileName) {
+            console.log('🖼️ Background image already exists, updating panel file info');
+            this.updateBackgroundPanelStates(panel);
+        }
     }
 
     setupBackgroundPanelEvents(panel) {
         // Close button
-        const closeBtn = panel.querySelector('.close-btn');
+        const closeBtn = panel.querySelector('.panel-close-btn');
         closeBtn.addEventListener('click', () => {
             panel.remove();
         });
@@ -7923,6 +7964,48 @@ class GitItUpVisualizer {
         backgroundText.textContent = `Background IMG: ${this.backgroundImageEnabled ? 'ON' : 'OFF'}`;
         toggleBtn.classList.toggle('active', this.backgroundImageEnabled);
         
+        // Update file info display
+        const fileInfo = panel.querySelector('#panelBackgroundFileInfo');
+        const fileName = panel.querySelector('#panelBackgroundFileName');
+        const fileSize = panel.querySelector('#panelBackgroundFileSize');
+        const imagePreview = panel.querySelector('#panelBackgroundImagePreview');
+        
+        if (fileInfo && fileName && fileSize && imagePreview) {
+            if (this.backgroundImage && this.backgroundImageFileName) {
+                console.log('🖼️ Updating background panel file info:', {
+                    fileName: this.backgroundImageFileName,
+                    fileSize: this.backgroundImageFileSize,
+                    hasImage: !!this.backgroundImage
+                });
+                
+                fileInfo.style.display = 'block';
+                fileName.textContent = this.backgroundImageFileName;
+                fileSize.textContent = this.backgroundImageFileSize ? this.formatFileSize(this.backgroundImageFileSize) : '';
+                
+                // Create preview image
+                const img = new Image();
+                img.onload = () => {
+                    console.log('🖼️ Image loaded successfully for preview');
+                    imagePreview.innerHTML = '';
+                    imagePreview.appendChild(img);
+                };
+                img.onerror = (e) => {
+                    console.error('❌ Error loading image for preview:', e);
+                };
+                img.src = this.backgroundImage;
+            } else {
+                console.log('🖼️ No background image, hiding file info');
+                fileInfo.style.display = 'none';
+            }
+        } else {
+            console.log('🖼️ Missing file info elements:', {
+                fileInfo: !!fileInfo,
+                fileName: !!fileName,
+                fileSize: !!fileSize,
+                imagePreview: !!imagePreview
+            });
+        }
+        
         // Update size buttons
         const sizeBtns = panel.querySelectorAll('.size-btn');
         sizeBtns.forEach(btn => {
@@ -7937,6 +8020,14 @@ class GitItUpVisualizer {
         this.updateFooterBackgroundButton();
         
         console.log('Background image toggled to:', this.backgroundImageEnabled);
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
     updateFooterBackgroundButton() {
@@ -9220,7 +9311,7 @@ class GitItUpVisualizer {
             const saved = localStorage.getItem('mviz_video_source');
             if (saved) {
                 const videoSource = JSON.parse(saved);
-                console.log('Video source loaded:', videoSource);
+                // console.log('Video source loaded:', videoSource);
                 return videoSource;
             }
         } catch (e) {
@@ -10078,7 +10169,7 @@ class GitItUpVisualizer {
             
             // Debug URL validity
             if (track.url) {
-                console.log(`Track "${track.title}" has URL: ${track.url.substring(0, 50)}...`);
+                // console.log(`Track "${track.title}" has URL: ${track.url.substring(0, 50)}...`);
             } else {
                 console.warn(`Track "${track.title}" has no URL - needs rescan`);
             }
@@ -10110,7 +10201,7 @@ class GitItUpVisualizer {
             this.updatePlaylistPanelDisplay(this.currentPlaylistPanel);
         }
         
-        console.log(`✅ Visualizer playlist updated with ${this.playlist.length} tracks`);
+        // console.log(`✅ Visualizer playlist updated with ${this.playlist.length} tracks`);
         
         // Debug: Check if any tracks have valid URLs and clear track display if needed
         const playableTracks = this.playlist.filter(t => t.url && t.url.startsWith('blob:'));
@@ -10121,7 +10212,7 @@ class GitItUpVisualizer {
                 trackTitle.textContent = 'No track loaded';
             }
         }
-        console.log(`Playable tracks: ${playableTracks.length}/${this.playlist.length}`);
+        // console.log(`Playable tracks: ${playableTracks.length}/${this.playlist.length}`);
     }
     
     playTrackById(trackId) {
@@ -13485,7 +13576,7 @@ https://rogueamoeba.com/loopback/
             // Apply all filters
             if (filters.length > 0) {
                 ctx.filter = filters.join(' ');
-                console.log('🎨 Applied background image filters:', ctx.filter);
+                // console.log('🎨 Applied background image filters:', ctx.filter);
             }
             
             ctx.drawImage(this.cachedBackgroundImage, drawX, drawY, drawWidth, drawHeight);
@@ -13800,6 +13891,28 @@ https://rogueamoeba.com/loopback/
                 root.style.setProperty('--text-secondary', '#ffffff');
                 break;
         }
+    }
+
+    // Setup floating panel resize handler for C V B A panels
+    setupFloatingPanelResizeHandler() {
+        // Update all floating panel positions on window resize
+        window.addEventListener('resize', () => {
+            this.updateAllFloatingPanelPositions();
+        });
+    }
+
+    // Update positions of all floating panels
+    updateAllFloatingPanelPositions() {
+        const panels = document.querySelectorAll('.panel-floating[data-button-id]');
+        panels.forEach(panel => {
+            const buttonId = panel.dataset.buttonId;
+            const button = document.getElementById(buttonId);
+            if (button && panel.style.display !== 'none') {
+                const buttonRect = button.getBoundingClientRect();
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 4}px`;
+            }
+        });
     }
 
     // * new event listeners
@@ -15370,7 +15483,7 @@ https://rogueamoeba.com/loopback/
         // Footer Live Audio button
         const footerLiveAudioBtn = document.getElementById('footerLiveAudioBtn');
         if (footerLiveAudioBtn) {
-            console.log('Footer Live Audio button found, adding event listener');
+            // console.log('Footer Live Audio button found, adding event listener');
             footerLiveAudioBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15391,7 +15504,7 @@ https://rogueamoeba.com/loopback/
         // Footer Live Video button
         const footerLiveVideoBtn = document.getElementById('footerLiveVideoBtn');
         if (footerLiveVideoBtn) {
-            console.log('Footer Live Video button found, adding event listener');
+            // console.log('Footer Live Video button found, adding event listener');
             footerLiveVideoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15407,7 +15520,7 @@ https://rogueamoeba.com/loopback/
         // Footer Live Color button
         const footerLiveColorBtn = document.getElementById('footerLiveColorBtn');
         if (footerLiveColorBtn) {
-            console.log('Footer Live Color button found, adding event listener');
+            // console.log('Footer Live Color button found, adding event listener');
             footerLiveColorBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15423,7 +15536,7 @@ https://rogueamoeba.com/loopback/
         // Footer Live Background button
         const footerLiveBackgroundBtn = document.getElementById('footerLiveBackgroundBtn');
         if (footerLiveBackgroundBtn) {
-            console.log('Footer Live Background button found, adding event listener');
+            // console.log('Footer Live Background button found, adding event listener');
             footerLiveBackgroundBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15444,7 +15557,7 @@ https://rogueamoeba.com/loopback/
         // Footer Playlist button
         const footerPlaylistBtn = document.getElementById('footerPlaylistBtn');
         if (footerPlaylistBtn) {
-            console.log('Footer Playlist button found, adding event listener');
+            // console.log('Footer Playlist button found, adding event listener');
             footerPlaylistBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15460,7 +15573,7 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer button
         const footerVisualizerBtn = document.getElementById('footerVisualizerBtn');
         if (footerVisualizerBtn) {
-            console.log('Footer Visualizer button found, adding event listener');
+            // console.log('Footer Visualizer button found, adding event listener');
             footerVisualizerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15476,7 +15589,7 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer Toggle button
         const footerVisualizerToggleBtn = document.getElementById('footerVisualizerToggleBtn');
         if (footerVisualizerToggleBtn) {
-            console.log('Footer Visualizer Toggle button found, adding event listener');
+            // console.log('Footer Visualizer Toggle button found, adding event listener');
             footerVisualizerToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -15492,7 +15605,7 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer Random button
         const footerVisualizerRandomBtn = document.getElementById('footerVisualizerRandomBtn');
         if (footerVisualizerRandomBtn) {
-            console.log('Footer Visualizer Random button found, adding event listener');
+            // console.log('Footer Visualizer Random button found, adding event listener');
             footerVisualizerRandomBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
