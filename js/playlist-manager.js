@@ -1127,33 +1127,9 @@ class PlaylistManager {
         headerContainer.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown" style="margin-bottom: 10px; display: flex; gap: 8px;">
-                <button class="playlist-scan-btn" style="
-                    background: var(--accent-color);
-                    color: white;
-                    border: 1px solid var(--accent-color);
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                " title="Add Music Folder">📁 Add Folder</button>
-                <button class="playlist-import-btn" style="
-                    background: var(--hover-color);
-                    color: var(--text-primary);
-                    border: 1px solid var(--border-color);
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                " title="Import Playlist">📥</button>
-                <button class="playlist-export-btn" style="
-                    background: var(--hover-color);
-                    color: var(--text-primary);
-                    border: 1px solid var(--border-color);
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                " title="Export Playlist">📤</button>
+                <button class="playlist-scan-btn btn-primary" title="Add Music Folder">📁 Add Folder</button>
+                <button class="playlist-import-btn btn-secondary" title="Import Playlist">📥</button>
+                <button class="playlist-export-btn btn-secondary" title="Export Playlist">📤</button>
             </div>
             
             <!-- Playlist Stats -->
@@ -1232,22 +1208,8 @@ class PlaylistManager {
                             ${track.album ? `<div class="track-album" style="color: var(--text-secondary); font-size: 10px;">${track.album}</div>` : ''}
                         </div>
                         <div class="track-controls" style="display: flex; gap: 5px;">
-                            <button class="track-play-btn" data-track-id="${track.id}" style="
-                                background: none;
-                                border: none;
-                                color: var(--accent-color);
-                                cursor: pointer;
-                                font-size: 12px;
-                                padding: 2px;
-                            " title="Play">▶</button>
-                            <button class="track-remove-btn" data-track-id="${track.id}" style="
-                                background: none;
-                                border: none;
-                                color: var(--text-secondary);
-                                cursor: pointer;
-                                font-size: 10px;
-                                padding: 2px;
-                            " title="Remove">✕</button>
+                            <button class="track-play-btn btn-square" data-track-id="${track.id}" title="Play">▶</button>
+                            <button class="track-remove-btn btn-square" data-track-id="${track.id}" title="Remove">✕</button>
                         </div>
                     </div>
                 `;

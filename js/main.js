@@ -1616,7 +1616,6 @@ class RecordManager {
         this.compositeCtx = null;
         this.animationFrame = null;
         this.saveLocation = null;
-        this.healthCheckInterval = null;
         
         // Recording settings
         this.resolution = '1080p';
@@ -2647,38 +2646,17 @@ class RecordManager {
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     this.recordedChunks.push(event.data);
-                    console.log(`📹 Data chunk received: ${event.data.size} bytes (total chunks: ${this.recordedChunks.length})`);
-                    
-                    // Monitor memory usage for long recordings
-                    const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-                    if (totalSize > 100 * 1024 * 1024) { // 100MB
-                        console.warn(`⚠️ Large recording detected: ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
-                    }
                 }
             };
             
             this.mediaRecorder.onstop = () => {
-                console.log('📹 MediaRecorder stopped, attempting to save...');
                 this.saveRecording();
-            };
-            
-            this.mediaRecorder.onerror = (event) => {
-                console.error('❌ MediaRecorder error:', event.error);
-                alert(`Recording error: ${event.error.message || 'Unknown error'}`);
-                this.stopRecording();
-            };
-            
-            this.mediaRecorder.onstart = () => {
-                console.log('📹 MediaRecorder started successfully');
             };
             
             this.mediaRecorder.start(1000); // Record in 1 second chunks
             
             // Start compositing loop
             this.startCompositing();
-            
-            // Start health monitoring for long recordings
-            this.startRecordingHealthCheck();
             
             console.log('Recording started successfully');
             
@@ -3253,12 +3231,6 @@ class RecordManager {
             this.timerInterval = null;
         }
         
-        // Stop health check
-        if (this.healthCheckInterval) {
-            clearInterval(this.healthCheckInterval);
-            this.healthCheckInterval = null;
-        }
-        
         // Stop animation frame
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
@@ -3267,18 +3239,7 @@ class RecordManager {
         
         // Stop media recorder
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-            console.log('🛑 Stopping MediaRecorder, current state:', this.mediaRecorder.state);
-            try {
-                this.mediaRecorder.stop();
-                console.log('✅ MediaRecorder stop() called successfully');
-            } catch (err) {
-                console.error('❌ Error stopping MediaRecorder:', err);
-                alert('Error stopping recording: ' + err.message);
-            }
-        } else if (this.mediaRecorder) {
-            console.log('⚠️ MediaRecorder already inactive, state:', this.mediaRecorder.state);
-        } else {
-            console.warn('⚠️ No MediaRecorder instance found');
+            this.mediaRecorder.stop();
         }
         
         // Clean up temporary canvases
@@ -3303,66 +3264,35 @@ class RecordManager {
     }
     
     async saveRecording() {
-        console.log('💾 saveRecording called, recordedChunks:', this.recordedChunks.length);
-        
+        console.log('saveRecording called, recordedChunks:', this.recordedChunks.length);
         if (this.recordedChunks.length === 0) {
-            console.warn('❌ No recorded data to save');
-            alert('No recording data found. Recording may have failed silently.');
-            return;
-        }
-        
-        // Calculate total size before creating blob
-        const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-        console.log(`📊 Total recording size: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
-        
-        // Check for reasonable size limits
-        if (totalSize === 0) {
-            console.error('❌ All recorded chunks are empty');
-            alert('Recording failed: All data chunks are empty.');
-            return;
-        }
-        
-        if (totalSize > 2 * 1024 * 1024 * 1024) { // 2GB limit
-            console.error('❌ Recording too large:', (totalSize / 1024 / 1024 / 1024).toFixed(2) + 'GB');
-            alert('Recording too large to save. Please try shorter recordings.');
+            console.warn('No recorded data to save');
             return;
         }
         
         try {
-            console.log('🔨 Creating blob from', this.recordedChunks.length, 'chunks...');
             const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-            
-            if (blob.size === 0) {
-                console.error('❌ Blob created but size is 0');
-                alert('Recording failed: Blob creation resulted in empty file.');
-                return;
-            }
-            
-            console.log('✅ Blob created successfully, size:', blob.size, 'bytes (', (blob.size / 1024 / 1024).toFixed(2), 'MB)');
-            
+            console.log('Blob created, size:', blob.size, 'bytes');
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const filename = `${this.customFilename}_${timestamp}.webm`;
-            console.log('📁 Attempting to save as:', filename);
+            console.log('Attempting to save as:', filename);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
                 // Save to chosen directory
                 try {
-                    console.log('💾 Saving to chosen directory...');
                     const fileHandle = await this.directoryHandle.getFileHandle(filename, { create: true });
                     const writable = await fileHandle.createWritable();
                     await writable.write(blob);
                     await writable.close();
                     
-                    console.log(`✅ Recording saved to ${this.saveLocation}/${filename}`);
+                    console.log(`Recording saved to ${this.saveLocation}/${filename}`);
                     alert(`Recording saved successfully to ${this.saveLocation}/${filename}`);
                 } catch (err) {
-                    console.error('❌ Error saving to chosen directory:', err);
-                    console.log('🔄 Falling back to download...');
+                    console.error('Error saving to chosen directory:', err);
                     this.fallbackDownload(blob, filename);
                 }
             } else {
                 // Fallback to downloads folder
-                console.log('💾 Saving to Downloads folder...');
                 this.fallbackDownload(blob, filename);
             }
             
@@ -3375,111 +3305,36 @@ class RecordManager {
         this.recordedChunks = [];
     }
     
-    startRecordingHealthCheck() {
-        // Check recording health every 30 seconds
-        this.healthCheckInterval = setInterval(() => {
-            if (!this.isRecording) return;
-            
-            const elapsed = Date.now() - this.recordingStartTime;
-            const minutes = Math.floor(elapsed / 60000);
-            
-            console.log(`🔍 Recording health check - ${minutes}min elapsed, chunks: ${this.recordedChunks.length}`);
-            
-            // Check if MediaRecorder is still active
-            if (this.mediaRecorder && this.mediaRecorder.state === 'inactive') {
-                console.error('❌ MediaRecorder became inactive during recording!');
-                alert('Recording stopped unexpectedly. This may indicate a browser limitation or error.');
-                this.stopRecording();
-                return;
-            }
-            
-            // Check if we're still receiving data chunks
-            if (this.recordedChunks.length === 0 && minutes > 1) {
-                console.warn('⚠️ No data chunks received after 1 minute');
-            }
-            
-            // Check memory usage
-            const totalSize = this.recordedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
-            if (totalSize > 500 * 1024 * 1024) { // 500MB
-                console.warn(`⚠️ Large recording: ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
-            }
-            
-            // Check for potential browser limitations
-            if (minutes > 5 && this.recordedChunks.length < minutes * 30) { // Should have ~30 chunks per minute
-                console.warn('⚠️ Low chunk count detected - recording may be failing');
-            }
-            
-        }, 30000); // Check every 30 seconds
-    }
-    
     fallbackDownload(blob, filename) {
-        console.log('💾 fallbackDownload called with blob size:', blob.size, 'filename:', filename);
+        console.log('fallbackDownload called with blob size:', blob.size, 'filename:', filename);
+        const url = URL.createObjectURL(blob);
+        console.log('Created blob URL:', url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        console.log('Download link created, triggering click...');
+        document.body.appendChild(a);
         
-        if (!blob || blob.size === 0) {
-            console.error('❌ Invalid blob for download');
-            alert('Cannot download: Invalid recording data.');
-            return;
-        }
+        // Add error handling for download
+        a.addEventListener('error', (e) => {
+            console.error('Download failed:', e);
+            alert('Download failed. Please check your browser settings and try again.');
+        });
         
+        // Try to trigger download with timeout fallback
         try {
-            const url = URL.createObjectURL(blob);
-            console.log('🔗 Created blob URL:', url);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.style.display = 'none';
-            console.log('📎 Download link created, triggering click...');
-            
-            // Add comprehensive error handling for download
-            a.addEventListener('error', (e) => {
-                console.error('❌ Download failed:', e);
-                alert('Download failed. Please check your browser settings and try again.');
-                URL.revokeObjectURL(url);
-            });
-            
-            // Add timeout to detect if download actually started
-            let downloadStarted = false;
-            const downloadTimeout = setTimeout(() => {
-                if (!downloadStarted) {
-                    console.warn('⚠️ Download may not have started - no user interaction detected');
-                    // Don't show alert here as it might be a false positive
-                }
-            }, 2000);
-            
-            // Try to trigger download
-            try {
-                document.body.appendChild(a);
-                a.click();
-                downloadStarted = true;
-                console.log('✅ Download click triggered successfully');
-                
-                // Clean up after a short delay
-                setTimeout(() => {
-                    if (document.body.contains(a)) {
-                        document.body.removeChild(a);
-                    }
-                    URL.revokeObjectURL(url);
-                    clearTimeout(downloadTimeout);
-                }, 1000);
-                
-                console.log(`✅ Recording download initiated: ${filename}`);
-                alert(`Recording saved to Downloads folder as ${filename}`);
-                
-            } catch (e) {
-                console.error('❌ Error triggering download click:', e);
-                alert('Unable to trigger download. Please check your browser settings.');
-                if (document.body.contains(a)) {
-                    document.body.removeChild(a);
-                }
-                URL.revokeObjectURL(url);
-                clearTimeout(downloadTimeout);
-            }
-            
+        a.click();
+            console.log('Download click triggered successfully');
         } catch (e) {
-            console.error('❌ Error in fallbackDownload:', e);
-            alert('Failed to prepare download. Recording may be corrupted.');
+            console.error('Error triggering download click:', e);
+            alert('Unable to trigger download. Please check your browser settings.');
         }
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log(`Recording downloaded as ${filename}`);
+        alert(`Recording saved to Downloads folder as ${filename}`);
     }
 }
 
@@ -6295,17 +6150,7 @@ class GitItUpVisualizer {
         // Add devices
         this.availableDevices.forEach(device => {
             const deviceBtn = document.createElement('button');
-            deviceBtn.style.cssText = `
-                background: var(--hover-color);
-                border: 1px solid var(--border-color);
-                color: var(--text-primary);
-                padding: 8px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-                text-align: left;
-                transition: all 0.2s ease;
-                font-size: 12px;
-            `;
+            deviceBtn.className = 'btn-secondary';
             
             let displayName = device.label || `Input ${device.deviceId.substr(0, 5)}`;
             if (displayName.includes('BlackHole') || displayName.includes('Loopback') || displayName.includes('Virtual') || displayName.includes('Soundflower')) {
@@ -6318,30 +6163,13 @@ class GitItUpVisualizer {
                 dropdown.remove();
             };
             
-            deviceBtn.onmouseover = () => {
-                deviceBtn.style.background = '#404040';
-            };
-            deviceBtn.onmouseout = () => {
-                deviceBtn.style.background = 'var(--hover-color)';
-            };
-            
             deviceList.appendChild(deviceBtn);
         });
 
         // Add help option
         const helpBtn = document.createElement('button');
-        helpBtn.style.cssText = `
-            background: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: left;
-            margin-top: 8px;
-            transition: all 0.2s ease;
-            font-size: 12px;
-        `;
+        helpBtn.className = 'btn-primary';
+        helpBtn.style.marginTop = '8px';
         helpBtn.textContent = '❓ System audio help...';
         helpBtn.onclick = () => {
             this.showSystemAudioHelp();
@@ -6479,35 +6307,9 @@ class GitItUpVisualizer {
                 console.log('Creating fallback playlist structure...');
                 headerPlaylist.innerHTML = `
                     <div class="playlist-actions-dropdown" style="margin-bottom: 10px;">
-                        <button class="playlist-scan-btn" style="
-                            background: var(--accent-color);
-                            color: white;
-                            border: 1px solid var(--accent-color);
-                            padding: 8px 12px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            margin-right: 8px;
-                            font-size: 12px;
-                        ">📁 Add Folder</button>
-                        <button class="playlist-import-btn" style="
-                            background: var(--hover-color);
-                            color: var(--text-primary);
-                            border: 1px solid var(--border-color);
-                            padding: 8px 12px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            margin-right: 8px;
-                            font-size: 12px;
-                        ">📥</button>
-                        <button class="playlist-export-btn" style="
-                            background: var(--hover-color);
-                            color: var(--text-primary);
-                            border: 1px solid var(--border-color);
-                            padding: 8px 12px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-size: 12px;
-                        ">📤</button>
+                        <button class="playlist-scan-btn btn-primary" style="margin-right: 8px;">📁 Add Folder</button>
+                        <button class="playlist-import-btn btn-secondary" style="margin-right: 8px;">📥</button>
+                        <button class="playlist-export-btn btn-secondary">📤</button>
                     </div>
                     <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
                         <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
@@ -6677,17 +6479,7 @@ class GitItUpVisualizer {
             const deviceBtn = document.createElement('button');
             const isActive = this.videoMode === 'camera' && this.currentVideoDeviceId === device.deviceId;
             
-            deviceBtn.style.cssText = `
-                background: ${isActive ? 'var(--accent-color)' : 'var(--hover-color)'};
-                border: 1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'};
-                color: ${isActive ? 'white' : 'var(--text-primary)'};
-                padding: 8px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-                text-align: left;
-                transition: all 0.2s ease;
-                font-size: 12px;
-            `;
+            deviceBtn.className = isActive ? 'btn-primary' : 'btn-secondary';
             
             let displayName = device.label || `Camera ${device.deviceId.substr(0, 5)}`;
             if (displayName.includes('FaceTime') || displayName.includes('Built-in') || displayName.includes('USB')) {
@@ -6708,17 +6500,6 @@ class GitItUpVisualizer {
                 // Don't close panel - let user adjust settings
             };
             
-            deviceBtn.onmouseover = () => {
-                if (!isActive) {
-                    deviceBtn.style.background = '#404040';
-                }
-            };
-            deviceBtn.onmouseout = () => {
-                if (!isActive) {
-                    deviceBtn.style.background = 'var(--hover-color)';
-                }
-            };
-            
             deviceList.appendChild(deviceBtn);
         });
 
@@ -6736,17 +6517,7 @@ class GitItUpVisualizer {
         const fileBtn = document.createElement('button');
         const isFileActive = this.videoMode === 'file';
         
-        fileBtn.style.cssText = `
-            background: ${isFileActive ? 'var(--accent-color)' : 'var(--hover-color)'};
-            border: 1px solid ${isFileActive ? 'var(--accent-color)' : 'var(--border-color)'};
-            color: ${isFileActive ? 'white' : 'var(--text-primary)'};
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s ease;
-            font-size: 12px;
-        `;
+        fileBtn.className = isFileActive ? 'btn-primary' : 'btn-secondary';
         
         let fileDisplayName = '📁 Video from file';
         if (this.videoFile) {
@@ -6770,33 +6541,15 @@ class GitItUpVisualizer {
             // Don't close panel - let user adjust settings
         };
         
-        fileBtn.onmouseover = () => {
-            if (!isFileActive) {
-                fileBtn.style.background = '#404040';
-            }
-        };
-        fileBtn.onmouseout = () => {
-            if (!isFileActive) {
-                fileBtn.style.background = 'var(--hover-color)';
-            }
-        };
-        
         deviceList.appendChild(fileBtn);
+
+        // Add File Controls directly below the file button (no section label)
+        this.addInlineFileControls(deviceList);
 
         // Add help option
         const helpBtn = document.createElement('button');
-        helpBtn.style.cssText = `
-            background: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: left;
-            margin-top: 8px;
-            transition: all 0.2s ease;
-            font-size: 12px;
-        `;
+        helpBtn.className = 'btn-primary';
+        helpBtn.style.marginTop = '8px';
         helpBtn.textContent = '❓ Video input help...';
         helpBtn.onclick = () => {
             alert('Video Input Help:\n\n' +
@@ -6874,8 +6627,7 @@ class GitItUpVisualizer {
         // Presets
         this.addPresetsControlGroup(settingsSection);
         
-        // File Controls (for video file playback)
-        this.addFileControlsGroup(settingsSection);
+        // File Controls moved inline below "Video from file" button
         
         // Stream Statistics
         this.addStreamStatsGroup(settingsSection);
@@ -6902,6 +6654,12 @@ class GitItUpVisualizer {
                     loop: this.videoFileLoop
                 };
                 this.updateVideoFileStats(videoInfo);
+                
+                // Also update File Controls if a video file is loaded
+                if (this.videoFile) {
+                    this.updateVideoFileControls(this.videoFile);
+                    this.startVideoProgressUpdates();
+                }
             }, 100);
         }
 
@@ -7316,18 +7074,8 @@ class GitItUpVisualizer {
         presets.forEach(preset => {
             const presetBtn = document.createElement('button');
             presetBtn.textContent = preset.charAt(0).toUpperCase() + preset.slice(1).replace('-', ' ');
-            presetBtn.className = 'video-preset-btn';
+                presetBtn.className = 'btn-preset';
             presetBtn.dataset.preset = preset;
-            presetBtn.style.cssText = `
-                background: var(--hover-color);
-                border: 1px solid var(--border-color);
-                color: var(--text-primary);
-                padding: 4px 8px;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 10px;
-                text-align: center;
-            `;
             
             presetBtn.onclick = (e) => {
                 e.preventDefault();
@@ -7344,23 +7092,8 @@ class GitItUpVisualizer {
         container.appendChild(controlGroup);
     }
 
-    addFileControlsGroup(container) {
-        const controlGroup = document.createElement('div');
-        controlGroup.style.cssText = `margin-bottom: 15px;`;
-        
-        const groupLabel = document.createElement('div');
-        groupLabel.textContent = 'File Controls';
-        groupLabel.style.cssText = `
-            color: var(--text-secondary);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        `;
-        controlGroup.appendChild(groupLabel);
-        
-        // File info display
+    addInlineFileControls(container) {
+        // File info display (no section label, appears directly below file button)
         const fileInfo = document.createElement('div');
         fileInfo.id = 'headerVideoFileInfo';
         fileInfo.style.cssText = `
@@ -7369,6 +7102,7 @@ class GitItUpVisualizer {
             border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px;
+            margin-top: 8px;
             margin-bottom: 8px;
         `;
         
@@ -7391,24 +7125,19 @@ class GitItUpVisualizer {
         
         const loopBtn = document.createElement('button');
         loopBtn.id = 'headerVideoFileLoopBtn';
-        loopBtn.className = 'video-file-control-btn active';
+        loopBtn.className = 'video-file-control-btn btn-toggle active';
         loopBtn.textContent = 'Loop';
-        loopBtn.style.cssText = `
-            background: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            flex: 1;
-        `;
+        loopBtn.style.fontSize = '10px';
+        loopBtn.style.padding = '4px 8px';
+        loopBtn.style.flex = '1';
         
         const muteBtn = document.createElement('button');
         muteBtn.id = 'headerVideoFileMuteBtn';
-        muteBtn.className = 'video-file-control-btn active';
+        muteBtn.className = 'video-file-control-btn btn-toggle active';
         muteBtn.textContent = 'Muted';
-        muteBtn.style.cssText = loopBtn.style.cssText;
+        muteBtn.style.fontSize = '10px';
+        muteBtn.style.padding = '4px 8px';
+        muteBtn.style.flex = '1';
         
         // Add event prevention to file control buttons
         loopBtn.onclick = (e) => {
@@ -7425,20 +7154,60 @@ class GitItUpVisualizer {
         muteBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // Let the original JavaScript handle the functionality
+            // Toggle mute state and update audio gain
             if (window.visualizer) {
                 window.visualizer.videoFileMuted = !window.visualizer.videoFileMuted;
                 muteBtn.textContent = window.visualizer.videoFileMuted ? 'Muted' : 'Sound';
                 muteBtn.classList.toggle('active', window.visualizer.videoFileMuted);
+                
+                // Update the audio gain node to actually mute/unmute the video audio
+                if (window.visualizer.videoAudioGain) {
+                    window.visualizer.videoAudioGain.gain.value = window.visualizer.videoFileMuted ? 0 : 1;
+                }
             }
         };
         
         fileControlsInline.appendChild(loopBtn);
         fileControlsInline.appendChild(muteBtn);
         
+        // Progress bar container
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'video-progress-container';
+        
+        // Progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'video-progress-bar';
+        
+        const progressFill = document.createElement('div');
+        progressFill.className = 'video-progress-fill';
+        progressFill.id = 'headerVideoProgressFill';
+        
+        progressBar.appendChild(progressFill);
+        
+        // Time display
+        const timeDisplay = document.createElement('div');
+        timeDisplay.className = 'video-time-display';
+        
+        const currentTime = document.createElement('span');
+        currentTime.className = 'video-current-time';
+        currentTime.id = 'headerVideoCurrentTime';
+        currentTime.textContent = '0:00';
+        
+        const totalTime = document.createElement('span');
+        totalTime.className = 'video-total-time';
+        totalTime.id = 'headerVideoTotalTime';
+        totalTime.textContent = '0:00';
+        
+        timeDisplay.appendChild(currentTime);
+        timeDisplay.appendChild(totalTime);
+        
+        progressContainer.appendChild(progressBar);
+        progressContainer.appendChild(timeDisplay);
+        
         fileInfo.appendChild(fileName);
         fileInfo.appendChild(fileControlsInline);
-        controlGroup.appendChild(fileInfo);
+        fileInfo.appendChild(progressContainer);
+        container.appendChild(fileInfo);
         
         // Hidden file input (already exists in HTML, but we need it available)
         const fileInput = document.createElement('input');
@@ -7446,9 +7215,7 @@ class GitItUpVisualizer {
         fileInput.id = 'videoFileInput';
         fileInput.accept = 'video/*';
         fileInput.style.display = 'none';
-        controlGroup.appendChild(fileInput);
-        
-        container.appendChild(controlGroup);
+        container.appendChild(fileInput);
     }
 
     addStreamStatsGroup(container) {
@@ -10939,6 +10706,12 @@ class GitItUpVisualizer {
             controlsPanel.style.display = 'block';
             }
 
+            // Update File Controls section in Video panel
+            this.updateVideoFileControls(file);
+            
+            // Start progress updates for the new video file
+            this.startVideoProgressUpdates();
+
 
             // If stream manager active, rebuild capture
             if (this.streamManager && this.streamManager.isStreaming) {
@@ -11215,6 +10988,9 @@ class GitItUpVisualizer {
             
             this.currentVideoDeviceId = null;
             this.videoFile = null;
+            
+            // Hide File Controls section
+            this.hideVideoFileControls();
         }
 
         
@@ -15394,7 +15170,7 @@ https://rogueamoeba.com/loopback/
 
         // Preset buttons
         // Live video presets (exclude file browser presets)
-        document.querySelectorAll('.video-preset-btn:not([data-target="fileBrowser"])').forEach(btn => {
+        document.querySelectorAll('.btn-preset:not([data-target="fileBrowser"])').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const preset = e.target.dataset.preset;
                 console.log('Applying LIVE VIDEO preset:', preset);
@@ -15431,6 +15207,105 @@ https://rogueamoeba.com/loopback/
             
             // Update footer video button
             this.updateFooterLiveVideoButton();
+        };
+
+        this.updateVideoFileControls = (file) => {
+            // Update File Controls section in Video panel
+            const fileInfo = document.getElementById('headerVideoFileInfo');
+            const fileName = document.getElementById('headerVideoFileName');
+            const loopBtn = document.getElementById('headerVideoFileLoopBtn');
+            const muteBtn = document.getElementById('headerVideoFileMuteBtn');
+            
+            if (fileInfo && fileName && loopBtn && muteBtn) {
+                // Show the file info section
+                fileInfo.style.display = 'block';
+                
+                // Update file name
+                fileName.textContent = file.name;
+                
+                // Update loop button state
+                loopBtn.classList.toggle('active', this.videoFileLoop);
+                loopBtn.textContent = this.videoFileLoop ? 'Loop' : 'No Loop';
+                
+                // Update mute button state
+                muteBtn.classList.toggle('active', this.videoFileMuted);
+                muteBtn.textContent = this.videoFileMuted ? 'Muted' : 'Sound';
+                
+                // Ensure audio gain node matches mute state
+                if (this.videoAudioGain) {
+                    this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
+                }
+            }
+        };
+
+        this.hideVideoFileControls = () => {
+            // Hide File Controls section in Video panel
+            const fileInfo = document.getElementById('headerVideoFileInfo');
+            const fileName = document.getElementById('headerVideoFileName');
+            
+            if (fileInfo && fileName) {
+                // Hide the file info section
+                fileInfo.style.display = 'none';
+                
+                // Reset file name
+                fileName.textContent = 'No file selected';
+            }
+            
+            // Stop progress updates
+            this.stopVideoProgressUpdates();
+        };
+
+        this.startVideoProgressUpdates = () => {
+            // Stop any existing progress updates
+            this.stopVideoProgressUpdates();
+            
+            if (!this.videoElement) return;
+            
+            // Update progress immediately
+            this.updateVideoProgress();
+            
+            // Start interval for progress updates (every 100ms for smooth updates)
+            this.videoProgressInterval = setInterval(() => {
+                this.updateVideoProgress();
+            }, 100);
+        };
+
+        this.stopVideoProgressUpdates = () => {
+            if (this.videoProgressInterval) {
+                clearInterval(this.videoProgressInterval);
+                this.videoProgressInterval = null;
+            }
+        };
+
+        this.updateVideoProgress = () => {
+            if (!this.videoElement) return;
+            
+            const progressFill = document.getElementById('headerVideoProgressFill');
+            const currentTimeEl = document.getElementById('headerVideoCurrentTime');
+            const totalTimeEl = document.getElementById('headerVideoTotalTime');
+            
+            if (progressFill && currentTimeEl && totalTimeEl) {
+                const currentTime = this.videoElement.currentTime;
+                const duration = this.videoElement.duration;
+                
+                if (duration > 0) {
+                    // Update progress bar
+                    const progressPercent = (currentTime / duration) * 100;
+                    progressFill.style.width = `${progressPercent}%`;
+                    
+                    // Update time displays
+                    currentTimeEl.textContent = this.formatTime(currentTime);
+                    totalTimeEl.textContent = this.formatTime(duration);
+                }
+            }
+        };
+
+        this.formatTime = (seconds) => {
+            if (isNaN(seconds) || seconds === Infinity) return '0:00';
+            
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
         };
 
         const videoDeviceSelect = document.getElementById('videoDeviceSelect');

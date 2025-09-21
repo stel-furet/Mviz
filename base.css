@@ -306,6 +306,51 @@ body {
     color: white;
 }
 
+/* Preset Button - Small preset selection buttons */
+.btn-preset {
+    background: var(--hover-color) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 10px !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    min-height: auto !important;
+    max-height: none !important;
+    font-weight: normal !important;
+    line-height: normal !important;
+    text-decoration: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: scale(0.9) !important;
+    transform-origin: center !important;
+}
+.btn-preset:hover {
+    background: var(--accent-color) !important;
+    color: white !important;
+}
+.btn-preset.active {
+    background: var(--accent-color) !important;
+    color: white !important;
+}
+
 /* Button Pair Container - For button + gear button pairs */
 .btn-pair {
     display: flex;
@@ -927,4 +972,53 @@ html body .slider-2-wrapper .slider-2-value {
     color: var(--text-secondary);
     font-size: 12px;
     margin-bottom: 4px;
+}
+
+/* ========================================
+   VIDEO PROGRESS BAR
+   ======================================== */
+
+/* Video Progress Container - Contains progress bar and time display */
+.video-progress-container {
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* Video Progress Bar - Background track */
+.video-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Video Progress Fill - Active progress indicator */
+.video-progress-fill {
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+/* Video Time Display - Shows current/total time */
+.video-time-display {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+/* Video Current Time - Left side time */
+.video-current-time {
+    font-family: monospace;
+}
+
+/* Video Total Time - Right side time */
+.video-total-time {
+    font-family: monospace;
 }
