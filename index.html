@@ -846,11 +846,12 @@
         
         <!-- Footer Settings Panels -->
         <!-- Autopilot Settings Panel (moved from sidebar) -->
-        <div class="footer-settings-panel" id="footerAutopilotSettingsPanel" style="display: none;">
+        <div class="panel-floating" id="footerAutopilotSettingsPanel" style="display: none;" data-button-id="footerAutopilotSettingsBtn">
             <div class="panel-header">
                 <span>AI Autopilot Settings</span>
                 <button class="panel-close-btn" id="footerAutopilotSettingsClose">×</button>
             </div>
+            <div class="panel-content">
             
             <!-- Learning Analytics Button at Top -->
             <div class="control-group">
@@ -1002,13 +1003,15 @@
                     <button class="btn-secondary" id="footerTestParametersBtn">Test Parameters</button>
                 </div>
             </div>
+            </div>
         </div>
         <!-- Display Settings Panel (moved from sidebar) -->
-        <div class="footer-settings-panel" id="footerDisplaySettingsPanel" style="display: none;">
+        <div class="panel-floating" id="footerDisplaySettingsPanel" style="display: none;" data-button-id="footerDisplaySettingsBtn">
             <div class="panel-header">
                 <span>Display Settings</span>
                 <button class="panel-close-btn" id="footerDisplaySettingsClose">×</button>
             </div>
+            <div class="panel-content">
 
             <!-- Capture Settings -->
             <div class="control-group">
@@ -1117,15 +1120,16 @@
                     <button class="display-preset-btn" data-preset="projector">Projector</button>
                 </div>
             </div>
-
+            </div>
         </div>
 
         <!-- Record Settings Panel (exact copy from sidebar) -->
-        <div class="footer-settings-panel" id="footerRecordSettingsPanel" style="display: none;">
+        <div class="panel-floating" id="footerRecordSettingsPanel" style="display: none;" data-button-id="footerRecordSettingsBtn">
             <div class="panel-header">
                 <span>Recording Settings</span>
                 <button class="panel-close-btn" id="footerRecordSettingsClose">×</button>
             </div>
+            <div class="panel-content">
 
             <!-- Resolution -->
             <div class="control-group">
@@ -1219,6 +1223,7 @@
                         <span id="footerRecordingEstSize">~50 MB/min</span>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>

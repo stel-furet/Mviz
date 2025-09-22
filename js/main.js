@@ -5092,7 +5092,11 @@ class GitItUpVisualizer {
         panel.style.display = 'block';
         button.classList.add('active');
         
-        // Position panel relative to gear button
+        // Use new panel positioning system for panel-floating class
+        if (panel.classList.contains('panel-floating')) {
+            this.positionFloatingPanel(panel, button);
+        } else {
+            // Legacy positioning for old footer-settings-panel class
         const buttonRect = button.getBoundingClientRect();
         
         // Position: bottom edge 6px above gear icon's top edge, right edge aligned with gear icon's right edge
@@ -5111,12 +5115,13 @@ class GitItUpVisualizer {
                 panel.style.left = '10px';
             }
             
-            // Adjust if panel goes off top edge
-            if (panelRect.top < 10) {
-                panel.style.bottom = 'auto';
-                panel.style.top = '10px';
-            }
-        }, 10);
+                // Adjust if panel goes off top edge
+                if (panelRect.top < 10) {
+                    panel.style.bottom = 'auto';
+                    panel.style.top = '10px';
+                }
+            }, 10);
+        }
     }
     
     closeFooterSettingsPanel(panelId) {
@@ -7636,7 +7641,7 @@ class GitItUpVisualizer {
         // Also update file info if image already exists
         if (this.backgroundImage && this.backgroundImageFileName) {
             console.log('🖼️ Background image already exists, updating panel file info');
-            this.updateBackgroundPanelStates(panel);
+        this.updateBackgroundPanelStates(panel);
         }
     }
 
@@ -7888,7 +7893,7 @@ class GitItUpVisualizer {
         if (existingPanel) {
             existingPanel.remove();
         }
-
+        
         // Get button position for panel positioning
         const button = document.getElementById('footerPlaylistBtn');
         if (!button) {
@@ -13760,6 +13765,33 @@ https://rogueamoeba.com/loopback/
         });
     }
 
+    // Position a single floating panel relative to its button
+    positionFloatingPanel(panel, button) {
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Special positioning for Autopilot panel (right-aligned)
+        if (button.id === 'footerAutopilotSettingsBtn') {
+            panel.style.left = 'auto';
+            panel.style.right = `${window.innerWidth - buttonRect.right}px`;
+            panel.style.top = `${buttonRect.top - 4}px`;
+            panel.style.transform = 'translateY(-100%)';
+        } else {
+            // Default left-aligned positioning
+            panel.style.left = `${buttonRect.left}px`;
+            panel.style.right = 'auto';
+            
+            // Special positioning for panels that should appear above button
+            if (button.id === 'footerPlaylistBtn' || button.id === 'footerDisplaySettingsBtn' || button.id === 'footerRecordSettingsBtn') {
+                panel.style.top = `${buttonRect.top - 4}px`;
+                panel.style.transform = 'translateY(-100%)';
+            } else {
+                // Default positioning for other panels (appears below button)
+                panel.style.top = `${buttonRect.bottom + 4}px`;
+                panel.style.transform = 'none';
+            }
+        }
+    }
+
     // Update positions of all floating panels
     updateAllFloatingPanelPositions() {
         const panels = document.querySelectorAll('.panel-floating[data-button-id]');
@@ -13767,18 +13799,7 @@ https://rogueamoeba.com/loopback/
             const buttonId = panel.dataset.buttonId;
             const button = document.getElementById(buttonId);
             if (button && panel.style.display !== 'none') {
-                const buttonRect = button.getBoundingClientRect();
-                panel.style.left = `${buttonRect.left}px`;
-                
-                // Special positioning for playlist panel (appears above button)
-                if (buttonId === 'footerPlaylistBtn') {
-                    panel.style.top = `${buttonRect.top - 4}px`;
-                    panel.style.transform = 'translateY(-100%)';
-                } else {
-                    // Default positioning for other panels (appears below button)
-                    panel.style.top = `${buttonRect.bottom + 4}px`;
-                    panel.style.transform = 'none';
-                }
+                this.positionFloatingPanel(panel, button);
             }
         });
     }
