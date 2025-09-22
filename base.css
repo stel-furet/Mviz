@@ -702,6 +702,17 @@ html body .slider-2-wrapper .slider-2-value {
     font-weight: 500;
 }
 
+/* Button Container - For grouping buttons */
+.button-container {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* ========================================
    INPUT ELEMENTS
    ======================================== */
@@ -920,7 +931,7 @@ html body .slider-2-wrapper .slider-2-value {
 .panel-floating {
     position: fixed;
     width: 280px;
-    max-height: 90vh;
+    max-height: 84vh;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -981,6 +992,13 @@ html body .slider-2-wrapper .slider-2-value {
     color: var(--text-secondary);
     font-size: 12px;
     margin-bottom: 4px;
+}
+
+/* Button Container in Floating Panels - Ensure buttons don't get clipped */
+.panel-floating .button-container {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
 }
 
 /* ========================================

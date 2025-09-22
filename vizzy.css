@@ -1112,12 +1112,6 @@
             opacity: 0.8;
         }
 
-        .button-container {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
         .beat-button-container {
             display: flex;
             gap: 8px;
@@ -2109,14 +2103,6 @@
     border: 2px solid var(--primary-bg, #f5f3e9);
 }
 
-/* Button container styling in header Kaleidoscope panel - Match Infinite Zoom panel */
-.header .kaleidoscope-panel .button-container {
-    display: flex;
-    gap: 8px;
-    margin: 8px 0;
-    flex-wrap: wrap;
-}
-
 /* Control group styling in header Kaleidoscope panel - Match Infinite Zoom panel */
 .header .kaleidoscope-panel .control-group {
     margin: 12px 0;
@@ -2207,14 +2193,6 @@
     text-align: right;
     font-size: 12px;
     color: var(--text-secondary);
-}
-
-/* Button container styling in header Infinite Zoom panel - Match background image controls */
-.header .infinite-zoom-panel .button-container {
-    display: flex;
-    gap: 8px;
-    margin: 8px 0;
-    flex-wrap: wrap;
 }
 
 /* Control group styling in header Infinite Zoom panel */
@@ -2497,14 +2475,6 @@
             background: var(--accent-color);
             cursor: pointer;
             border: 2px solid var(--primary-bg, #f5f3e9);
-        }
-
-        /* Match Kaleidoscope panel button container styling */
-        .footer-settings-panel#footerAutopilotSettingsPanel .button-container {
-            display: flex;
-            gap: 8px;
-            margin: 8px 0;
-            flex-wrap: wrap;
         }
 
         /* Match Kaleidoscope panel preset buttons styling */
@@ -4123,12 +4093,6 @@
         }
 
         /* Better alignment and spacing in panels */
-        .section-panel .button-container {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
 
         .section-panel .preset-buttons {
             display: flex;

@@ -123,52 +123,40 @@
                 <div class="panel-content">
 
                 <div class="control-group">
-                    <div class="group-label">Segments</div>
-                    <div class="slider-container">
-                        <input type="range" id="headerKaleidoscopeSegments" min="2" max="24" value="6" step="1" class="slider">
-                        <span id="headerKaleidoscopeSegmentsValue">6</span>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Segments</div>
+                        <input type="range" id="headerKaleidoscopeSegments" min="2" max="24" value="6" step="1" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeSegmentsValue">6</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Rings</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeRings" min="1" max="5" value="1" step="1" class="slider">
-                            <span id="headerKaleidoscopeRingsValue">1</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Rings</div>
+                        <input type="range" id="headerKaleidoscopeRings" min="1" max="5" value="1" step="1" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeRingsValue">1</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Ring Spacing</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeRingSpacing" min="5" max="30" value="20" step="5" class="slider">
-                            <span id="headerKaleidoscopeRingSpacingValue">20%</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Ring Spacing</div>
+                        <input type="range" id="headerKaleidoscopeRingSpacing" min="5" max="30" value="20" step="5" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeRingSpacingValue">20%</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Rotation Speed</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeSpeed" min="0" max="6" value="0" step="0.25" class="slider">
-                            <span id="headerKaleidoscopeSpeedValue">0</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Rotation Speed</div>
+                        <input type="range" id="headerKaleidoscopeSpeed" min="0" max="6" value="0" step="0.25" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeSpeedValue">0</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Scale</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10" class="slider">
-                            <span id="headerKaleidoscopeScaleValue">100%</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Scale</div>
+                        <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeScaleValue">100%</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Center X</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeCenterX" min="0" max="100" value="50" step="1" class="slider">
-                            <span id="headerKaleidoscopeCenterXValue">50%</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Center X</div>
+                        <input type="range" id="headerKaleidoscopeCenterX" min="0" max="100" value="50" step="1" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeCenterXValue">50%</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Center Y</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeCenterY" min="0" max="100" value="50" step="1" class="slider">
-                            <span id="headerKaleidoscopeCenterYValue">50%</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Center Y</div>
+                        <input type="range" id="headerKaleidoscopeCenterY" min="0" max="100" value="50" step="1" class="slider-1">
+                        <span class="slider-1-value" id="headerKaleidoscopeCenterYValue">50%</span>
                     </div>
                     
                     <!-- Center Animation Controls -->
@@ -184,10 +172,10 @@
                     </div>
                     
                     <div class="control-group">
-                        <div class="group-label">Speed</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerKaleidoscopeAnimSpeed" min="-100" max="100" value="25" step="1" class="slider">
-                            <span id="headerKaleidoscopeAnimSpeedValue">25</span>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Speed</div>
+                            <input type="range" id="headerKaleidoscopeAnimSpeed" min="-100" max="100" value="25" step="1" class="slider-1">
+                            <span class="slider-1-value" id="headerKaleidoscopeAnimSpeedValue">25</span>
                         </div>
                     </div>
                     <div class="button-container">
@@ -309,61 +297,62 @@
             </div>
 
             <!-- Blobs settings panel -->
-            <div class="kaleidoscope-panel" id="headerBlobsPanel" style="display: none;">
+            <div class="panel-floating" id="headerBlobsPanel" style="display: none;" data-button-id="headerBlobsBtn">
                 <div class="panel-header">
                     <span>Blobs Settings</span>
                     <button class="panel-close-btn" id="headerBlobsCloseBtn">×</button>
                 </div>
-
-                <div class="control-group">
-                    <div class="slider-container">
-                        <label for="blobsOpacitySlider">Opacity:</label>
-                        <input type="range" id="blobsOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
-                        <span id="blobsOpacityValue">100%</span>
+                <div class="panel-content">
+                    <div class="control-group">
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Opacity</div>
+                        <input type="range" id="blobsOpacitySlider" min="0" max="100" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsOpacityValue">100%</span>
                     </div>
-                    <div class="slider-container">
-                        <label for="blobsSaturationSlider">Saturation:</label>
-                        <input type="range" id="blobsSaturationSlider" min="0" max="200" step="1" value="100" class="slider">
-                        <span id="blobsSaturationValue">100%</span>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Saturation</div>
+                        <input type="range" id="blobsSaturationSlider" min="0" max="200" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsSaturationValue">100%</span>
                     </div>
-                    <div class="slider-container">
-                        <label for="blobsPosterizeSlider">Posterize:</label>
-                        <input type="range" id="blobsPosterizeSlider" min="2" max="16" step="1" value="16" class="slider">
-                        <span id="blobsPosterizeValue">16</span>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Posterize</div>
+                        <input type="range" id="blobsPosterizeSlider" min="2" max="16" step="1" value="16" class="slider-1">
+                        <span class="slider-1-value" id="blobsPosterizeValue">16</span>
                     </div>
-                    <div class="slider-container">
-                        <label for="blobsContrastSlider">Contrast:</label>
-                        <input type="range" id="blobsContrastSlider" min="10" max="300" step="1" value="100" class="slider">
-                        <span id="blobsContrastValue">100%</span>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Contrast</div>
+                        <input type="range" id="blobsContrastSlider" min="10" max="300" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsContrastValue">100%</span>
                     </div>
-                    <div class="slider-container">
-                        <label for="blobsBrightnessSlider">Brightness:</label>
-                        <input type="range" id="blobsBrightnessSlider" min="10" max="300" step="1" value="100" class="slider">
-                        <span id="blobsBrightnessValue">100%</span>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Brightness</div>
+                        <input type="range" id="blobsBrightnessSlider" min="10" max="300" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsBrightnessValue">100%</span>
                     </div>
-                    <div class="slider-container">
-                        <label for="blobsIntensitySlider">Intensity:</label>
-                    <input type="range" id="blobsIntensitySlider" min="10" max="200" step="1" value="100" class="slider">
-                    <span id="blobsIntensityValue">100%</span>
-                </div>
-                <div class="slider-container">
-                    <label for="blobsMinSizeSlider">Min Size:</label>
-                    <input type="range" id="blobsMinSizeSlider" min="0.5" max="10" step="0.1" value="2" class="slider">
-                    <span id="blobsMinSizeValue">2</span>
-                </div>
-                <div class="slider-container">
-                    <label for="blobsMaxSizeSlider">Max Size:</label>
-                    <input type="range" id="blobsMaxSizeSlider" min="1" max="20" step="0.1" value="8" class="slider">
-                    <span id="blobsMaxSizeValue">8</span>
-                </div>
-                <div class="slider-container">
-                    <label for="blobsDecaySlider">Lifespan:</label>
-                    <input type="range" id="blobsDecaySlider" min="1" max="10" step="0.1" value="1" class="slider">
-                    <span id="blobsDecayValue">1x</span>
-                </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Intensity</div>
+                        <input type="range" id="blobsIntensitySlider" min="10" max="200" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsIntensityValue">100%</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Min Size</div>
+                        <input type="range" id="blobsMinSizeSlider" min="0.5" max="10" step="0.1" value="2" class="slider-1">
+                        <span class="slider-1-value" id="blobsMinSizeValue">2</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Max Size</div>
+                        <input type="range" id="blobsMaxSizeSlider" min="1" max="20" step="0.1" value="8" class="slider-1">
+                        <span class="slider-1-value" id="blobsMaxSizeValue">8</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Lifespan</div>
+                        <input type="range" id="blobsDecaySlider" min="1" max="10" step="0.1" value="1" class="slider-1">
+                        <span class="slider-1-value" id="blobsDecayValue">1x</span>
+                    </div>
                 <div class="button-container">
                     <button id="blobsBeatReactBtn" class="btn-toggle">Beat React: On</button>
                 </div>
+                    </div>
                 </div>
             </div>
         </div>
