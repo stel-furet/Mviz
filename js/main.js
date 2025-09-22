@@ -6307,9 +6307,9 @@ class GitItUpVisualizer {
                 console.log('Creating fallback playlist structure...');
                 headerPlaylist.innerHTML = `
                     <div class="playlist-actions-dropdown" style="margin-bottom: 10px;">
-                        <button class="playlist-scan-btn btn-primary" style="margin-right: 8px;">📁 Add Folder</button>
-                        <button class="playlist-import-btn btn-secondary" style="margin-right: 8px;">📥</button>
-                        <button class="playlist-export-btn btn-secondary">📤</button>
+                        <button class="btn-primary" style="margin-right: 8px;">📁 Add Folder</button>
+                        <button class="btn-secondary" style="margin-right: 8px;">📥</button>
+                        <button class="btn-secondary">📤</button>
                     </div>
                     <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
                         <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
@@ -6319,7 +6319,7 @@ class GitItUpVisualizer {
                 `;
                 
                 // Bind the Add Folder button immediately
-                const scanBtn = headerPlaylist.querySelector('.playlist-scan-btn');
+                const scanBtn = headerPlaylist.querySelector('.btn-primary');
                 if (scanBtn) {
                     scanBtn.onclick = (e) => {
                         e.preventDefault();
@@ -6348,7 +6348,7 @@ class GitItUpVisualizer {
                 }
                 
                 // Bind Import button
-                const importBtn = headerPlaylist.querySelector('.playlist-import-btn');
+                const importBtn = headerPlaylist.querySelector('.btn-secondary:nth-of-type(1)');
                 if (importBtn) {
                     importBtn.onclick = (e) => {
                         e.preventDefault();
@@ -6361,7 +6361,7 @@ class GitItUpVisualizer {
                 }
                 
                 // Bind Export button
-                const exportBtn = headerPlaylist.querySelector('.playlist-export-btn');
+                const exportBtn = headerPlaylist.querySelector('.btn-secondary:nth-of-type(2)');
                 if (exportBtn) {
                     exportBtn.onclick = (e) => {
                         e.preventDefault();
@@ -7889,84 +7889,198 @@ class GitItUpVisualizer {
             existingPanel.remove();
         }
 
-        // Create panel container
-        const panel = document.createElement('div');
-        panel.id = 'playlistPanel';
-        panel.className = 'playlist-panel';
-        
         // Get button position for panel positioning
         const button = document.getElementById('footerPlaylistBtn');
+        if (!button) {
+            console.error('Footer Playlist button not found');
+            return;
+        }
+        
         const buttonRect = button.getBoundingClientRect();
         
-        // Position panel above button, left-aligned
-        panel.style.position = 'fixed';
-        panel.style.top = `${buttonRect.top - 4}px`;
+        // Create panel container using panel-floating structure
+        const panel = document.createElement('div');
+        panel.id = 'playlistPanel';
+        panel.className = 'panel-floating';
+        panel.dataset.buttonId = 'footerPlaylistBtn';
         panel.style.left = `${buttonRect.left}px`;
+        panel.style.top = `${buttonRect.top - 4}px`;
         panel.style.transform = 'translateY(-100%)';
-        panel.style.zIndex = '10000';
-        panel.style.background = 'var(--secondary-bg)';
-        panel.style.border = '1px solid var(--border-color)';
-        panel.style.borderRadius = '8px';
-        panel.style.padding = '15px';
-        panel.style.minWidth = '300px';
-        panel.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        panel.style.display = 'block';
         
-        // Panel content - separate from sidebar with panel-specific IDs
-        panel.innerHTML = `
-            <div class="panel-header">
-                <h4 style="margin: 0 0 15px 0; color: var(--text-primary);">Playlist</h4>
-                <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">×</button>
-            </div>
-            
-            <!-- Playlist Actions -->
-            <div class="playlist-actions-dropdown">
-                <button class="playlist-scan-btn" id="panelPlaylistScanBtn" title="Add Music Folder">📁 Add Folder</button>
-                <button class="playlist-import-btn" id="panelPlaylistImportBtn" title="Import Playlist">📥</button>
-                <button class="playlist-export-btn" id="panelPlaylistExportBtn" title="Export Playlist">📤</button>
-            </div>
-            
-            <!-- Scanning Progress (hidden by default) -->
-            <div class="playlist-progress" id="panelPlaylistProgress" style="display: none;">
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="panelProgressBar"></div>
-                </div>
-                <div class="progress-info">
-                    <span class="progress-text" id="panelProgressText">Scanning music folder...</span>
-                    <span class="progress-count" id="panelProgressCount">0/0 files</span>
-                    <span class="progress-eta" id="panelProgressEta">Est: calculating...</span>
-                </div>
-                <button class="progress-cancel-btn" id="panelProgressCancelBtn">Cancel</button>
-            </div>
-            
-            <!-- Playlist Stats -->
-            <div class="playlist-stats" id="panelPlaylistStats">
-                <span class="playlist-track-count" id="panelPlaylistTrackCount">No tracks loaded</span>
-                <span class="playlist-duration" id="panelPlaylistDuration">0:00:00</span>
-            </div>
-            
-            <!-- Tracks Container -->
-            <div class="playlist-tracks-container" id="panelPlaylistTracksContainer">
-                <div class="playlist-tracks" id="panelPlaylistTracks">
-                    <!-- Artist groups will be populated here -->
-                    <div class="empty-playlist">
-                        <div class="empty-playlist-icon">🎵</div>
-                        <div class="empty-playlist-text">No music loaded</div>
-                        <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
-                    </div>
-                </div>
-            </div>
-        `;
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'panel-header';
+        
+        const title = document.createElement('span');
+        title.textContent = 'Playlist';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'panel-close-btn';
+        closeBtn.textContent = '×';
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        
+        // Create content
+        const content = document.createElement('div');
+        content.className = 'panel-content';
+        
+        // Playlist Actions
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'playlist-actions-dropdown';
+        
+        const scanBtn = document.createElement('button');
+        scanBtn.className = 'btn-primary';
+        scanBtn.id = 'panelPlaylistScanBtn';
+        scanBtn.title = 'Add Music Folder';
+        scanBtn.textContent = '📁 Add Folder';
+        
+        const importBtn = document.createElement('button');
+        importBtn.className = 'btn-secondary';
+        importBtn.id = 'panelPlaylistImportBtn';
+        importBtn.title = 'Import Playlist';
+        importBtn.textContent = '📥';
+        
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'btn-secondary';
+        exportBtn.id = 'panelPlaylistExportBtn';
+        exportBtn.title = 'Export Playlist';
+        exportBtn.textContent = '📤';
+        
+        actionsContainer.appendChild(scanBtn);
+        actionsContainer.appendChild(importBtn);
+        actionsContainer.appendChild(exportBtn);
+        
+        // Scanning Progress (hidden by default)
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'playlist-progress';
+        progressContainer.id = 'panelPlaylistProgress';
+        progressContainer.style.display = 'none';
+        
+        const progressBarContainer = document.createElement('div');
+        progressBarContainer.className = 'progress-bar-container';
+        
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.id = 'panelProgressBar';
+        
+        progressBarContainer.appendChild(progressBar);
+        
+        const progressInfo = document.createElement('div');
+        progressInfo.className = 'progress-info';
+        
+        const progressText = document.createElement('span');
+        progressText.className = 'progress-text';
+        progressText.id = 'panelProgressText';
+        progressText.textContent = 'Scanning music folder...';
+        
+        const progressCount = document.createElement('span');
+        progressCount.className = 'progress-count';
+        progressCount.id = 'panelProgressCount';
+        progressCount.textContent = '0/0 files';
+        
+        const progressEta = document.createElement('span');
+        progressEta.className = 'progress-eta';
+        progressEta.id = 'panelProgressEta';
+        progressEta.textContent = 'Est: calculating...';
+        
+        progressInfo.appendChild(progressText);
+        progressInfo.appendChild(progressCount);
+        progressInfo.appendChild(progressEta);
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-secondary progress-cancel-btn';
+        cancelBtn.id = 'panelProgressCancelBtn';
+        cancelBtn.textContent = 'Cancel';
+        
+        progressContainer.appendChild(progressBarContainer);
+        progressContainer.appendChild(progressInfo);
+        progressContainer.appendChild(cancelBtn);
+        
+        // Playlist Stats
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'playlist-stats';
+        statsContainer.id = 'panelPlaylistStats';
+        
+        const trackCount = document.createElement('span');
+        trackCount.className = 'playlist-track-count';
+        trackCount.id = 'panelPlaylistTrackCount';
+        trackCount.textContent = 'No tracks loaded';
+        
+        const duration = document.createElement('span');
+        duration.className = 'playlist-duration';
+        duration.id = 'panelPlaylistDuration';
+        duration.textContent = '0:00:00';
+        
+        statsContainer.appendChild(trackCount);
+        statsContainer.appendChild(duration);
+        
+        // Tracks Container
+        const tracksContainer = document.createElement('div');
+        tracksContainer.className = 'playlist-tracks-container';
+        tracksContainer.id = 'panelPlaylistTracksContainer';
+        
+        const tracksList = document.createElement('div');
+        tracksList.className = 'playlist-tracks';
+        tracksList.id = 'panelPlaylistTracks';
+        
+        // Empty playlist state
+        const emptyPlaylist = document.createElement('div');
+        emptyPlaylist.className = 'empty-playlist';
+        
+        const emptyIcon = document.createElement('div');
+        emptyIcon.className = 'empty-playlist-icon';
+        emptyIcon.textContent = '🎵';
+        
+        const emptyText = document.createElement('div');
+        emptyText.className = 'empty-playlist-text';
+        emptyText.textContent = 'No music loaded';
+        
+        const emptySubtext = document.createElement('div');
+        emptySubtext.className = 'empty-playlist-subtext';
+        emptySubtext.textContent = 'Click "Add Folder" to scan your music library';
+        
+        emptyPlaylist.appendChild(emptyIcon);
+        emptyPlaylist.appendChild(emptyText);
+        emptyPlaylist.appendChild(emptySubtext);
+        
+        tracksList.appendChild(emptyPlaylist);
+        tracksContainer.appendChild(tracksList);
+        
+        // Assemble content
+        content.appendChild(actionsContainer);
+        content.appendChild(progressContainer);
+        content.appendChild(statsContainer);
+        content.appendChild(tracksContainer);
+        
+        // Assemble panel
+        panel.appendChild(header);
+        panel.appendChild(content);
         
         // Add event listeners
         this.setupPlaylistPanelEvents(panel);
         
         // Add to document
         document.body.appendChild(panel);
+        
+        // Add click-outside-to-close logic
+        const closeOnOutsideClick = (e) => {
+            if (!panel.contains(e.target) && e.target !== button) {
+                panel.remove();
+                document.removeEventListener('click', closeOnOutsideClick);
+            }
+        };
+        
+        // Add click listener after a short delay to prevent immediate closing
+        setTimeout(() => {
+            document.addEventListener('click', closeOnOutsideClick);
+        }, 100);
     }
 
     setupPlaylistPanelEvents(panel) {
         // Close button
-        const closeBtn = panel.querySelector('.close-btn');
+        const closeBtn = panel.querySelector('.panel-close-btn');
         closeBtn.addEventListener('click', () => {
             panel.remove();
         });
@@ -8053,55 +8167,32 @@ class GitItUpVisualizer {
         // Create panel container
         const panel = document.createElement('div');
         panel.id = 'visualizerPanel';
-        panel.className = 'visualizer-panel';
-        panel.style.cssText = `
-            position: fixed;
-            top: ${buttonRect.bottom + 4}px;
-            left: ${buttonRect.left}px;
-            background: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            z-index: 10000;
-            min-width: 250px;
-        `;
+        panel.className = 'panel-floating';
+        panel.dataset.buttonId = 'footerVisualizerBtn';
+        panel.style.display = 'block';
+        panel.style.left = `${buttonRect.left}px`;
+        panel.style.top = `${buttonRect.bottom + 5}px`;
 
         // Create header
         const header = document.createElement('div');
-        header.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        `;
+        header.className = 'panel-header';
         
-        const title = document.createElement('h3');
+        const title = document.createElement('span');
         title.textContent = 'Visualizer';
-        title.style.cssText = `
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 14px;
-        `;
         
         const closeBtn = document.createElement('button');
+        closeBtn.className = 'panel-close-btn';
         closeBtn.innerHTML = '×';
-        closeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-        `;
         closeBtn.onclick = () => panel.remove();
         
         header.appendChild(title);
         header.appendChild(closeBtn);
         panel.appendChild(header);
+
+        // Create content container
+        const content = document.createElement('div');
+        content.className = 'panel-content';
+        panel.appendChild(content);
 
         // Create presets section
         const presetsSection = document.createElement('div');
@@ -8227,7 +8318,7 @@ class GitItUpVisualizer {
         presetsControls.appendChild(importPresetsFile);
 
         presetsSection.appendChild(presetsControls);
-        panel.appendChild(presetsSection);
+        content.appendChild(presetsSection);
 
         // Create spectrum controls section
         const spectrumSection = document.createElement('div');
@@ -8385,7 +8476,7 @@ class GitItUpVisualizer {
         spectrumControls.appendChild(spectrumTopRow);
         spectrumControls.appendChild(randomButton);
         spectrumSection.appendChild(spectrumControls);
-        panel.appendChild(spectrumSection);
+        content.appendChild(spectrumSection);
 
         // Create color scheme controls section
         const colorSchemeSection = document.createElement('div');
@@ -8486,7 +8577,7 @@ class GitItUpVisualizer {
         colorSchemeDropdown.appendChild(colorSchemeButton);
         colorSchemeDropdown.appendChild(colorSchemeDropdownContent);
         colorSchemeSection.appendChild(colorSchemeDropdown);
-        panel.appendChild(colorSchemeSection);
+        content.appendChild(colorSchemeSection);
 
         // Create visualization mode list
         const modeList = document.createElement('div');
@@ -8555,10 +8646,19 @@ class GitItUpVisualizer {
             modeList.appendChild(modeBtn);
         });
 
-        panel.appendChild(modeList);
+        content.appendChild(modeList);
         
         // Add to document
         document.body.appendChild(panel);
+
+        // Add click-outside-to-close logic
+        const closeOnOutsideClick = (e) => {
+            if (!panel.contains(e.target) && e.target !== button) {
+                panel.remove();
+                document.removeEventListener('click', closeOnOutsideClick);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeOnOutsideClick), 100);
 
         // Connect presets functionality
         this.connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile);
@@ -8735,23 +8835,8 @@ class GitItUpVisualizer {
                         </div>
                     `;
                 } else {
-                    // Display tracks with drag and drop support
-                    let html = '';
-                    trackList.forEach((track, index) => {
-                        html += `
-                            <div class="track-item" data-track-id="${track.id}" data-track-index="${index}" draggable="true">
-                                <div class="track-info">
-                                    <div class="track-title">${track.title || 'Unknown Title'}</div>
-                                    <div class="track-duration">${this.formatDuration(track.duration || 0)}</div>
-                                </div>
-                                <div class="track-actions">
-                                    <button class="track-play-btn" data-track-id="${track.id}" title="Play">▶</button>
-                                    <button class="track-remove-btn" data-track-id="${track.id}" title="Remove">×</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    tracks.innerHTML = html;
+                    // Use the existing renderTrackListToContainer method for artist grouping
+                    this.playlistManager.renderTrackListToContainer(trackList, tracks);
                     
                     // Add event listeners for track buttons
                     this.setupPanelTrackEvents(panel);
@@ -12152,11 +12237,10 @@ https://rogueamoeba.com/loopback/
             if (isVisible) {
                 panel.style.display = 'none';
             } else {
-                // Position panel below button like video panel
+                // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
-                panel.style.position = 'fixed';
-                panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
                 panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
                 panel.style.display = 'block';
             }
 
@@ -12454,11 +12538,10 @@ https://rogueamoeba.com/loopback/
             if (isVisible) {
                 panel.style.display = 'none';
             } else {
-                // Position panel below button like video panel
+                // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
-                panel.style.position = 'fixed';
-                panel.style.top = `${buttonRect.bottom + 4}px`; // 4px gap below button
                 panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
                 panel.style.display = 'block';
             }
             
@@ -13686,7 +13769,16 @@ https://rogueamoeba.com/loopback/
             if (button && panel.style.display !== 'none') {
                 const buttonRect = button.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
-                panel.style.top = `${buttonRect.bottom + 4}px`;
+                
+                // Special positioning for playlist panel (appears above button)
+                if (buttonId === 'footerPlaylistBtn') {
+                    panel.style.top = `${buttonRect.top - 4}px`;
+                    panel.style.transform = 'translateY(-100%)';
+                } else {
+                    // Default positioning for other panels (appears below button)
+                    panel.style.top = `${buttonRect.bottom + 4}px`;
+                    panel.style.transform = 'none';
+                }
             }
         });
     }
@@ -14441,34 +14533,64 @@ https://rogueamoeba.com/loopback/
 
         const headerInfiniteZoomSpeedSlider = document.getElementById('headerInfiniteZoomSpeedSlider');
         const headerInfiniteZoomSpeedValue = document.getElementById('headerInfiniteZoomSpeedValue');
+        console.log('Speed slider found:', !!headerInfiniteZoomSpeedSlider, 'Speed value found:', !!headerInfiniteZoomSpeedValue);
+        console.log('Speed slider element:', headerInfiniteZoomSpeedSlider);
+        console.log('Speed value element:', headerInfiniteZoomSpeedValue);
         if (headerInfiniteZoomSpeedSlider && headerInfiniteZoomSpeedValue) {
+            console.log('Setting up Speed slider event listener');
             headerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
+                console.log('Speed slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomSpeedValue.textContent = value;
                 if (this.infiniteZoom) {
-                    // Convert from -100 to 100 range to -1 to 1 range
-                    this.infiniteZoom.speed = value / 100;
+                    // Convert -100 to 100 range to zoom speed
+                    // 0 = no movement, 50 = normal speed, 100 = very fast, -100 = very fast reverse
+                    if (value === 0) {
+                        this.infiniteZoom.zoomSpeed = 0;
+                        this.infiniteZoom.baseZoomSpeed = 0;
+                    } else {
+                        // Convert to actual zoom speed: -100 to 100 becomes -0.1 to 0.1
+                        const newSpeed = (value / 100) * 0.1;
+                        this.infiniteZoom.zoomSpeed = newSpeed;
+                        this.infiniteZoom.baseZoomSpeed = newSpeed;
+                    }
                 }
             });
+            console.log('Speed slider event listener attached successfully');
+        } else {
+            console.error('Speed slider or value element not found!');
         }
 
         const headerInfiniteZoomRotationSlider = document.getElementById('headerInfiniteZoomRotationSlider');
         const headerInfiniteZoomRotationValue = document.getElementById('headerInfiniteZoomRotationValue');
+        console.log('Rotation slider found:', !!headerInfiniteZoomRotationSlider, 'Rotation value found:', !!headerInfiniteZoomRotationValue);
+        console.log('Rotation slider element:', headerInfiniteZoomRotationSlider);
+        console.log('Rotation value element:', headerInfiniteZoomRotationValue);
         if (headerInfiniteZoomRotationSlider && headerInfiniteZoomRotationValue) {
+            console.log('Setting up Rotation slider event listener');
             headerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
+                console.log('Rotation slider input event triggered:', e.target.value);
                 const value = parseFloat(e.target.value);
                 headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
                 if (this.infiniteZoom) {
-                    // Convert from -10 to 10 range to -0.1 to 0.1 range
-                    this.infiniteZoom.rotation = value / 10;
+                    this.infiniteZoom.rotationSpeed = value;
+                    this.infiniteZoom.baseRotationSpeed = value;
                 }
             });
+            console.log('Rotation slider event listener attached successfully');
+        } else {
+            console.error('Rotation slider or value element not found!');
         }
 
         const headerInfiniteZoomOpacitySlider = document.getElementById('headerInfiniteZoomOpacitySlider');
         const headerInfiniteZoomOpacityValue = document.getElementById('headerInfiniteZoomOpacityValue');
+        console.log('Opacity slider found:', !!headerInfiniteZoomOpacitySlider, 'Opacity value found:', !!headerInfiniteZoomOpacityValue);
+        console.log('Opacity slider element:', headerInfiniteZoomOpacitySlider);
+        console.log('Opacity value element:', headerInfiniteZoomOpacityValue);
         if (headerInfiniteZoomOpacitySlider && headerInfiniteZoomOpacityValue) {
+            console.log('Setting up Opacity slider event listener');
             headerInfiniteZoomOpacitySlider.addEventListener('input', (e) => {
+                console.log('Opacity slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomOpacityValue.textContent = value + '%';
                 if (this.infiniteZoom) {
@@ -14479,6 +14601,9 @@ https://rogueamoeba.com/loopback/
                     });
                 }
             });
+            console.log('Opacity slider event listener attached successfully');
+        } else {
+            console.error('Opacity slider or value element not found!');
         }
 
         const headerInfiniteZoomBeatReactBtn = document.getElementById('headerInfiniteZoomBeatReactBtn');

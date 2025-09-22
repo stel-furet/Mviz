@@ -163,16 +163,32 @@ class InfiniteZoomVisualization {
         this.objects.forEach(obj => {
             obj.depth -= this.zoomSpeed * 50;
             
-            // Handle object recycling based on zoom direction
-            if (this.zoomSpeed > 0 && obj.depth < 50) {
+            // Dynamic recycling thresholds based on zoom speed (Option 2)
+            let recycleThresholdClose, recycleThresholdFar, newDepthMin, newDepthMax;
+            
+            if (this.zoomSpeed > 0) {
+                // Zoom in: adjust thresholds for faster recycling
+                recycleThresholdClose = 50; // Objects recycle when they get too close
+                newDepthMin = 1000;
+                newDepthMax = 1500;
+            } else if (this.zoomSpeed < 0) {
+                // Zoom out: adjust thresholds for faster recycling to prevent stopping
+                // Use much lower threshold to ensure continuous object flow
+                recycleThresholdFar = Math.abs(this.zoomSpeed) > 0.1 ? 500 : 1000; // Faster recycling for higher speeds
+                newDepthMin = 50;
+                newDepthMax = 150;
+            }
+            
+            // Handle object recycling based on dynamic thresholds
+            if (this.zoomSpeed > 0 && obj.depth < recycleThresholdClose) {
                 // Zoom in: reset objects that get too close
-                obj.depth = 1000 + Math.random() * 500;
+                obj.depth = newDepthMin + Math.random() * (newDepthMax - newDepthMin);
                 obj.x = Math.random() * this.canvas.width;
                 obj.y = Math.random() * this.canvas.height;
                 obj.color = this.generateColor();
-            } else if (this.zoomSpeed < 0 && obj.depth > 2000) {
-                // Zoom out: reset objects that get too far
-                obj.depth = 100 + Math.random() * 200;
+            } else if (this.zoomSpeed < 0 && obj.depth > recycleThresholdFar) {
+                // Zoom out: reset objects that get too far (with dynamic threshold)
+                obj.depth = newDepthMin + Math.random() * (newDepthMax - newDepthMin);
                 obj.x = Math.random() * this.canvas.width;
                 obj.y = Math.random() * this.canvas.height;
                 obj.color = this.generateColor();
@@ -206,9 +222,9 @@ class InfiniteZoomVisualization {
             console.log('🔍 Using test audio features (no audio features):', testFeatures);
             audioFeatures = testFeatures;
         } else if (audioFeatures.energy === 0) {
-            console.log('🔍 Real audio features received but energy is 0 - using as-is');
+            // console.log('🔍 Real audio features received but energy is 0 - using as-is');
         } else {
-            console.log('🔍 Using real audio features with energy:', audioFeatures.energy);
+            // console.log('🔍 Using real audio features with energy:', audioFeatures.energy);
         }
         
         // Track energy history
@@ -291,7 +307,7 @@ class InfiniteZoomVisualization {
             // Beat React is disabled - restore all base values
             this.zoomSpeed = this.baseZoomSpeed;
             this.rotationSpeed = this.baseRotationSpeed;
-            console.log('🔍 Beat React disabled - Restored base values - Zoom:', this.zoomSpeed, 'Rotation:', this.rotationSpeed);
+            // console.log('🔍 Beat React disabled - Restored base values - Zoom:', this.zoomSpeed, 'Rotation:', this.rotationSpeed);
         }
     }
     
@@ -304,23 +320,10 @@ class InfiniteZoomVisualization {
         // Apply opacity
         this.ctx.globalAlpha = this.opacity;
         
-        // Apply rotation if any
-        if (this.currentRotation !== 0) {
-            this.ctx.save();
-            this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-            this.ctx.rotate(this.currentRotation);
-            this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);
-        }
-        
-        // Draw objects
+        // Draw objects with individual rotation
         this.objects.forEach(obj => {
             this.drawObject(obj);
         });
-        
-        // Restore rotation
-        if (this.currentRotation !== 0) {
-            this.ctx.restore();
-        }
         
         // Reset alpha
         this.ctx.globalAlpha = 1.0;
@@ -340,14 +343,35 @@ class InfiniteZoomVisualization {
     }
     
     drawObject(obj) {
+        this.drawObjectToContext(this.ctx, obj, 0, 0);
+    }
+    
+    drawObjectToContext(ctx, obj, offsetX = 0, offsetY = 0) {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
         
         // Calculate screen position based on depth
         const scale = 100 / obj.depth;
-        const screenX = centerX + (obj.x - centerX) * scale;
-        const screenY = centerY + (obj.y - centerY) * scale;
+        let screenX = centerX + (obj.x - centerX) * scale + offsetX;
+        let screenY = centerY + (obj.y - centerY) * scale + offsetY;
         const screenSize = obj.size * scale;
+        
+        // Apply individual object rotation around the center point
+        if (this.currentRotation !== 0) {
+            // Calculate relative position from center
+            const relX = screenX - centerX;
+            const relY = screenY - centerY;
+            
+            // Apply rotation transformation
+            const cos = Math.cos(this.currentRotation);
+            const sin = Math.sin(this.currentRotation);
+            const rotatedX = relX * cos - relY * sin;
+            const rotatedY = relX * sin + relY * cos;
+            
+            // Update screen position
+            screenX = centerX + rotatedX;
+            screenY = centerY + rotatedY;
+        }
         
         // Skip if too small or off-screen
         if (screenSize < 0.5 || screenX < -50 || screenX > this.canvas.width + 50 || 
@@ -355,101 +379,111 @@ class InfiniteZoomVisualization {
             return;
         }
         
-        this.ctx.save();
-        this.ctx.translate(screenX, screenY);
-        this.ctx.rotate(obj.rotation);
-        this.ctx.fillStyle = obj.color;
-        this.ctx.globalAlpha = Math.min(1, scale * 2);
+        ctx.save();
+        ctx.translate(screenX, screenY);
+        // Add global rotation to individual object rotation
+        ctx.rotate(obj.rotation + this.currentRotation);
+        ctx.fillStyle = obj.color;
+        // Apply both global opacity and depth-based alpha
+        ctx.globalAlpha = this.opacity * Math.min(1, scale * 2);
         
         switch (obj.shape) {
             case 'circle':
-                this.ctx.beginPath();
-                this.ctx.arc(0, 0, screenSize / 2, 0, Math.PI * 2);
-                this.ctx.fill();
+                ctx.beginPath();
+                ctx.arc(0, 0, screenSize / 2, 0, Math.PI * 2);
+                ctx.fill();
                 break;
                 
             case 'square':
-                this.ctx.fillRect(-screenSize / 2, -screenSize / 2, screenSize, screenSize);
+                ctx.fillRect(-screenSize / 2, -screenSize / 2, screenSize, screenSize);
                 break;
                 
             case 'rectangle':
-                this.ctx.fillRect(-screenSize / 2, -screenSize / 4, screenSize, screenSize / 2);
+                ctx.fillRect(-screenSize / 2, -screenSize / 4, screenSize, screenSize / 2);
                 break;
                 
             case 'triangle':
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, -screenSize / 2);
-                this.ctx.lineTo(-screenSize / 2, screenSize / 2);
-                this.ctx.lineTo(screenSize / 2, screenSize / 2);
-                this.ctx.closePath();
-                this.ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(0, -screenSize / 2);
+                ctx.lineTo(-screenSize / 2, screenSize / 2);
+                ctx.lineTo(screenSize / 2, screenSize / 2);
+                ctx.closePath();
+                ctx.fill();
                 break;
                 
             case 'star':
-                this.drawStar(0, 0, screenSize / 2, 5);
+                this.drawStarToContext(ctx, 0, 0, screenSize / 2, 5);
                 break;
                 
             case 'mushroom':
-                this.drawMushroom(0, 0, screenSize);
+                this.drawMushroomToContext(ctx, 0, 0, screenSize);
                 break;
         }
         
-        this.ctx.restore();
+        ctx.restore();
     }
     
     drawStar(x, y, radius, points) {
-        this.ctx.beginPath();
+        this.drawStarToContext(this.ctx, x, y, radius, points);
+    }
+    
+    drawStarToContext(ctx, x, y, radius, points) {
+        ctx.beginPath();
         for (let i = 0; i < points * 2; i++) {
             const angle = (i * Math.PI) / points;
             const r = i % 2 === 0 ? radius : radius * 0.5;
             const px = x + Math.cos(angle) * r;
             const py = y + Math.sin(angle) * r;
             if (i === 0) {
-                this.ctx.moveTo(px, py);
+                ctx.moveTo(px, py);
             } else {
-                this.ctx.lineTo(px, py);
+                ctx.lineTo(px, py);
             }
         }
-        this.ctx.closePath();
-        this.ctx.fill();
+        ctx.closePath();
+        ctx.fill();
     }
     
     drawMushroom(x, y, size) {
+        this.drawMushroomToContext(this.ctx, x, y, size);
+    }
+    
+    drawMushroomToContext(ctx, x, y, size) {
         // Generate random colors for each mushroom
         const capColor = this.generateMushroomCapColor();
         const stemColor = this.generateMushroomStemColor();
         
         // Cap (red with white spots)
-        this.ctx.fillStyle = capColor;
-        this.ctx.strokeStyle = '#000000';
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.ellipse(x, y - size / 4, size / 3, size / 4, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.stroke();
+        ctx.fillStyle = capColor;
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(x, y - size / 4, size / 3, size / 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
         
         // White spots on cap
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.strokeStyle = '#000000';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
         const spotCount = Math.floor(Math.random() * 4) + 2; // 2-5 spots
         for (let i = 0; i < spotCount; i++) {
             const spotX = x + (Math.random() - 0.5) * size * 0.4;
             const spotY = y - size / 4 + (Math.random() - 0.5) * size * 0.3;
             const spotSize = Math.random() * size * 0.08 + size * 0.03;
             
-            this.ctx.beginPath();
-            this.ctx.ellipse(spotX, spotY, spotSize, spotSize * 0.8, 0, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(spotX, spotY, spotSize, spotSize * 0.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
         }
         
         // Stem (light colored)
-        this.ctx.fillStyle = stemColor;
-        this.ctx.strokeStyle = '#000000';
-        this.ctx.beginPath();
-        this.ctx.ellipse(x, y + size / 8, size / 12, size / 3, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.stroke();
+        ctx.fillStyle = stemColor;
+        ctx.strokeStyle = '#000000';
+        ctx.beginPath();
+        ctx.ellipse(x, y + size / 8, size / 12, size / 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
     }
     
     generateMushroomCapColor() {

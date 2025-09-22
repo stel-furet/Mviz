@@ -686,11 +686,20 @@ html body .slider-2-wrapper .slider-2-value {
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
+    margin-bottom: 10px;
 }
 
 .select:focus {
     outline: none;
     border-color: var(--accent-color);
+}
+
+/* Group Label - For section headers */
+.group-label {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 /* ========================================
@@ -911,7 +920,7 @@ html body .slider-2-wrapper .slider-2-value {
 .panel-floating {
     position: fixed;
     width: 280px;
-    max-height: 70vh;
+    max-height: 90vh;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -1022,3 +1031,160 @@ html body .slider-2-wrapper .slider-2-value {
 .video-total-time {
     font-family: monospace;
 }
+
+/* ========================================
+   PLAYLIST PROGRESS ELEMENTS
+   ======================================== */
+
+/* Playlist Progress Container - Contains progress bar and info */
+.playlist-progress {
+    margin-bottom: 12px;
+}
+
+/* Progress Bar Container - Background track */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+/* Progress Bar - Active progress indicator */
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color) 0%, #4CAF50 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Progress Info - Text display above progress bar */
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* Progress Text Elements */
+.progress-text {
+    flex: 1;
+}
+
+.progress-count {
+    margin-left: 8px;
+    font-family: monospace;
+}
+
+.progress-eta {
+    margin-left: 8px;
+    font-family: monospace;
+}
+
+/* Progress Cancel Button */
+.progress-cancel-btn {
+    background: #ff4444 !important;
+    border: none !important;
+    color: white !important;
+    padding: 4px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    transition: all 0.2s ease !important;
+    min-width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    width: auto !important;
+}
+
+.progress-cancel-btn:hover {
+    background: #ff6666 !important;
+}
+
+/* ========================================
+   PLAYLIST TRACK ELEMENTS
+   ======================================== */
+
+/* Track Item - Individual track container */
+.track-item {
+    padding: 6px 8px;
+    margin-bottom: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.track-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Artist Header - Artist name display */
+.artist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+/* Artist Group - Container for artist and their tracks */
+.artist-group {
+    margin-bottom: 16px;
+}
+
+/* Track Info - Text content area */
+.track-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Track Title - Track name styling */
+.track-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Track Album - Album name styling */
+.track-album {
+    color: var(--text-secondary);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Track Controls - Control buttons container */
+.track-controls {
+    display: flex;
+    gap: 5px;
+}
+
+/* ========================================
+   PLAYLIST PANEL HEIGHT OVERRIDE
+   ======================================== */
+
+/* Header Playlist Dropdown - Override height for main playlist panel */
+#headerPlaylistDropdown {
+    max-height: 900px !important;
+}
+

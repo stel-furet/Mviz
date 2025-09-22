@@ -115,11 +115,12 @@
             </button>
             
             <!-- Kaleidoscope settings panel -->
-            <div class="kaleidoscope-panel" id="headerKaleidoscopePanel" style="display: none;">
+            <div class="panel-floating" id="headerKaleidoscopePanel" data-button-id="headerKaleidoscopeBtn" style="display: none;">
                 <div class="panel-header">
                     <span>Kaleidoscope Settings</span>
                     <button class="panel-close-btn" id="headerKaleidoscopeCloseBtn">×</button>
                 </div>
+                <div class="panel-content">
 
                 <div class="control-group">
                     <div class="group-label">Segments</div>
@@ -223,18 +224,20 @@
                         <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
                     </div>
                 </div>
+                </div>
             </div>
             
             <!-- Infinite Zoom settings panel -->
-            <div class="infinite-zoom-panel" id="headerInfiniteZoomPanel" style="display: none;">
+            <div class="panel-floating" id="headerInfiniteZoomPanel" data-button-id="headerInfiniteZoomBtn" style="display: none;">
                 <div class="panel-header">
                     <span>Infinite Zoom Settings</span>
                     <button class="panel-close-btn" id="headerInfiniteZoomCloseBtn">×</button>
                 </div>
+                <div class="panel-content">
 
                 <div class="control-group">
                     <div class="button-container">
-                        <select id="headerInfiniteZoomShapeSelect" class="dropdown-select">
+                        <select id="headerInfiniteZoomShapeSelect" class="select">
                             <option value="circle">Circle</option>
                             <option value="square">Square</option>
                             <option value="rectangle">Rectangle</option>
@@ -243,66 +246,50 @@
                             <option value="mushroom">Mushroom</option>
                         </select>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Color Randomness</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider">
-                            <span id="headerInfiniteZoomColorRandomValue">0.5</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Color Randomness</div>
+                        <input type="range" id="headerInfiniteZoomColorRandomSlider" min="0" max="1" step="0.1" value="0.5" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomColorRandomValue">0.5</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Min Size</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider">
-                            <span id="headerInfiniteZoomMinSizeValue">2</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Min Size</div>
+                        <input type="range" id="headerInfiniteZoomMinSizeSlider" min="1" max="10" step="1" value="2" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomMinSizeValue">2</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Max Size</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider">
-                            <span id="headerInfiniteZoomMaxSizeValue">20</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Max Size</div>
+                        <input type="range" id="headerInfiniteZoomMaxSizeSlider" min="10" max="50" step="5" value="20" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomMaxSizeValue">20</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Density</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider">
-                            <span id="headerInfiniteZoomDensityValue">50</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Density</div>
+                        <input type="range" id="headerInfiniteZoomDensitySlider" min="1" max="100" step="1" value="50" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomDensityValue">50</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Speed</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider">
-                            <span id="headerInfiniteZoomSpeedValue">50</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Speed</div>
+                        <input type="range" id="headerInfiniteZoomSpeedSlider" min="-100" max="100" step="1" value="50" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomSpeedValue">50</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Rotation</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider">
-                            <span id="headerInfiniteZoomRotationValue">0.0</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Rotation</div>
+                        <input type="range" id="headerInfiniteZoomRotationSlider" min="-10" max="10" step="0.1" value="0" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomRotationValue">0.0</span>
                     </div>
-                    <div class="control-group">
-                        <div class="group-label">Opacity</div>
-                        <div class="slider-container">
-                            <input type="range" id="headerInfiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider">
-                            <span id="headerInfiniteZoomOpacityValue">100%</span>
-                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Opacity</div>
+                        <input type="range" id="headerInfiniteZoomOpacitySlider" min="0" max="100" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="headerInfiniteZoomOpacityValue">100%</span>
                     </div>
                     <div class="button-container">
                         <button id="headerInfiniteZoomBeatReactBtn" class="btn-toggle">Beat React: Off</button>
                     </div>
                     <div class="control-group" id="headerInfiniteZoomBeatReactControls" style="display: none;">
                         <div class="group-label">Beat Reaction Controls</div>
-                        <div class="control-group">
-                            <div class="group-label">Sensitivity</div>
-                            <div class="slider-container">
-                                <input type="range" id="headerInfiniteZoomSensitivitySlider" min="0" max="100" step="1" value="14" class="slider">
-                                <span id="headerInfiniteZoomSensitivityValue">14%</span>
-                            </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Sensitivity</div>
+                            <input type="range" id="headerInfiniteZoomSensitivitySlider" min="0" max="100" step="1" value="14" class="slider-1">
+                            <span class="slider-1-value" id="headerInfiniteZoomSensitivityValue">14%</span>
                         </div>
                         <div class="button-container">
                             <button id="headerInfiniteZoomBeatZoomBtn" class="btn-toggle">Beat Zoom: Off</button>
@@ -317,6 +304,7 @@
                             <button id="headerInfiniteZoomBeatShapeBtn" class="btn-toggle">Beat Shape: Off</button>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
 

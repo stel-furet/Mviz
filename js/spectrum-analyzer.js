@@ -546,13 +546,13 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (!isCapturedViaKaleidoscope) {
-                    console.log('🔍 AI features have no energy, trying basic audio features...');
+                    // console.log('🔍 AI features have no energy, trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
                     audioFeatures = basicFeatures;
                     if (!isCapturedViaKaleidoscope) {
-                        console.log('🔍 Using basic audio features instead:', audioFeatures);
+                        // console.log('🔍 Using basic audio features instead:', audioFeatures);
                     }
                 }
             }

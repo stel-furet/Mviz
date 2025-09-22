@@ -142,9 +142,9 @@ class PlaylistManager {
         dropdown.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown">
-                <button class="playlist-scan-btn" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
-                <button class="playlist-import-btn" id="playlistImportBtn" title="Import Playlist">📥</button>
-                <button class="playlist-export-btn" id="playlistExportBtn" title="Export Playlist">📤</button>
+                <button class="btn-primary" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
+                <button class="btn-secondary" id="playlistImportBtn" title="Import Playlist">📥</button>
+                <button class="btn-secondary" id="playlistExportBtn" title="Export Playlist">📤</button>
             </div>
             
             <!-- Scanning Progress (hidden by default) -->
@@ -157,7 +157,7 @@ class PlaylistManager {
                     <span class="progress-count" id="progressCount">0/0 files</span>
                     <span class="progress-eta" id="progressEta">Est: calculating...</span>
                 </div>
-                <button class="progress-cancel-btn" id="progressCancelBtn">Cancel</button>
+                <button class="btn-secondary progress-cancel-btn" id="progressCancelBtn">Cancel</button>
             </div>
             
             <!-- Playlist Stats -->
@@ -775,6 +775,7 @@ class PlaylistManager {
             this.displayPlaylist();
             this.hideProgress();
             
+            
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Folder selection cancelled by user');
@@ -1126,26 +1127,26 @@ class PlaylistManager {
         // Create basic structure
         headerContainer.innerHTML = `
             <!-- Playlist Actions -->
-            <div class="playlist-actions-dropdown" style="margin-bottom: 10px; display: flex; gap: 8px;">
-                <button class="playlist-scan-btn btn-primary" title="Add Music Folder">📁 Add Folder</button>
-                <button class="playlist-import-btn btn-secondary" title="Import Playlist">📥</button>
-                <button class="playlist-export-btn btn-secondary" title="Export Playlist">📤</button>
+            <div class="playlist-actions-dropdown">
+                <button class="btn-primary" title="Add Music Folder">📁 Add Folder</button>
+                <button class="btn-secondary" title="Import Playlist">📥</button>
+                <button class="btn-secondary" title="Export Playlist">📤</button>
             </div>
             
             <!-- Playlist Stats -->
-            <div class="playlist-stats" style="margin-bottom: 10px; font-size: 11px; color: var(--text-secondary);">
+            <div class="playlist-stats">
                 <span class="playlist-track-count">${statsHtml}</span>
-                <span class="playlist-duration" style="margin-left: 10px;">${durationHtml}</span>
+                <span class="playlist-duration">${durationHtml}</span>
             </div>
             
             <!-- Tracks Container -->
             <div class="playlist-tracks-container">
                 <div class="playlist-tracks" id="headerPlaylistTracks">
                     ${hasPlaylist ? '' : `
-                        <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
-                            <div style="font-size: 12px;">No music loaded</div>
-                            <div style="font-size: 11px; margin-top: 4px;">Click "Add Folder" to scan your music library</div>
+                        <div class="empty-playlist">
+                            <div class="empty-playlist-icon">🎵</div>
+                            <div class="empty-playlist-text">No music loaded</div>
+                            <div class="empty-playlist-subtext">Click "Add Folder" to scan your music library</div>
                         </div>
                     `}
                 </div>
@@ -1187,27 +1188,17 @@ class PlaylistManager {
         
         // Render each artist group
         Object.keys(artistGroups).sort().forEach(artist => {
-            html += `<div class="artist-group" style="margin-bottom: 15px;">`;
-            html += `<div class="artist-header" style="font-weight: bold; color: var(--text-primary); margin-bottom: 5px; font-size: 12px;">${artist}</div>`;
+            html += `<div class="artist-group">`;
+            html += `<div class="artist-header">${artist}</div>`;
             
             artistGroups[artist].forEach(track => {
                 html += `
-                    <div class="track-item" data-track-id="${track.id}" style="
-                        padding: 6px 8px;
-                        margin-bottom: 2px;
-                        background: rgba(255,255,255,0.02);
-                        border-radius: 3px;
-                        cursor: pointer;
-                        font-size: 11px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    " draggable="true">
+                    <div class="track-item" data-track-id="${track.id}" draggable="true">
                         <div class="track-info">
-                            <div class="track-title" style="color: var(--text-primary);">${track.title || 'Unknown Title'}</div>
-                            ${track.album ? `<div class="track-album" style="color: var(--text-secondary); font-size: 10px;">${track.album}</div>` : ''}
+                            <div class="track-title">${track.title || 'Unknown Title'}</div>
+                            ${track.album ? `<div class="track-album">${track.album}</div>` : ''}
                         </div>
-                        <div class="track-controls" style="display: flex; gap: 5px;">
+                        <div class="track-controls">
                             <button class="track-play-btn btn-square" data-track-id="${track.id}" title="Play">▶</button>
                             <button class="track-remove-btn btn-square" data-track-id="${track.id}" title="Remove">✕</button>
                         </div>
@@ -1225,9 +1216,9 @@ class PlaylistManager {
         headerContainer.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown">
-                <button class="playlist-scan-btn" title="Add Music Folder">📁 Add Folder</button>
-                <button class="playlist-import-btn" title="Import Playlist">📥</button>
-                <button class="playlist-export-btn" title="Export Playlist">📤</button>
+                <button class="btn-primary" title="Add Music Folder">📁 Add Folder</button>
+                <button class="btn-secondary" title="Import Playlist">📥</button>
+                <button class="btn-secondary" title="Export Playlist">📤</button>
             </div>
             
             <!-- Scanning Progress (hidden by default) -->
@@ -1240,7 +1231,7 @@ class PlaylistManager {
                     <span class="progress-count">0/0 files</span>
                     <span class="progress-eta">Est: calculating...</span>
                 </div>
-                <button class="progress-cancel-btn">Cancel</button>
+                <button class="btn-secondary progress-cancel-btn">Cancel</button>
             </div>
             
             <!-- Playlist Stats -->
@@ -1268,7 +1259,7 @@ class PlaylistManager {
     
     bindHeaderPlaylistEvents(headerContainer) {
         // Bind Add Folder button
-        const scanBtn = headerContainer.querySelector('.playlist-scan-btn');
+        const scanBtn = headerContainer.querySelector('.btn-primary');
         if (scanBtn) {
             scanBtn.onclick = (e) => {
                 e.preventDefault();
@@ -1278,7 +1269,7 @@ class PlaylistManager {
         }
         
         // Bind Import button
-        const importBtn = headerContainer.querySelector('.playlist-import-btn');
+        const importBtn = headerContainer.querySelector('.btn-secondary:nth-of-type(1)');
         if (importBtn) {
             importBtn.onclick = (e) => {
                 e.preventDefault();
@@ -1291,7 +1282,7 @@ class PlaylistManager {
         }
         
         // Bind Export button
-        const exportBtn = headerContainer.querySelector('.playlist-export-btn');
+        const exportBtn = headerContainer.querySelector('.btn-secondary:nth-of-type(2)');
         if (exportBtn) {
             exportBtn.onclick = (e) => {
                 e.preventDefault();

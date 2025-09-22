@@ -2776,12 +2776,6 @@
             margin-left: 10px;
         }
 
-        .track-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            text-align: left;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             color: var(--accent-color);
@@ -3555,7 +3549,7 @@
         }
 
         .playlist-tracks-container {
-            max-height: 250px;
+            max-height: 900px;
             overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
@@ -3564,7 +3558,7 @@
         }
 
         .dropdown-content .playlist-tracks-container {
-            max-height: 400px; /* Doubled height for better usability */
+            max-height: 800px; /* Increased height for better usability */
         }
 
         .playlist-tracks {
@@ -3604,19 +3598,6 @@
             opacity: 0.7;
         }
 
-        .artist-group {
-            margin-bottom: 16px;
-        }
-
-        .artist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            margin-bottom: 8px;
-            cursor: pointer;
         }
 
         .artist-name {
@@ -3674,14 +3655,6 @@
             min-width: 0;
         }
 
-        .track-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .track-details {
