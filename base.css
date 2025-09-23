@@ -151,6 +151,21 @@ body {
     color: white;
 }
 
+/* Special case for Kaleidoscope panel buttons - use info-color for active state */
+#headerKaleidoscopeVideoBtn.active,
+#headerKaleidoscopeVizBtn.active,
+#headerKaleidoscopeInfiniteZoomBtn.active,
+#headerKaleidoscopeShapeBtn.active {
+    background: var(--info-color);
+    color: white;
+}
+
+/* Special case for main Kaleidoscope button - use info-color for active state */
+#headerKaleidoscopeBtn.active {
+    background: var(--info-color);
+    color: white;
+}
+
 /* Toggle Button 32px Wide - Special case for visualizer toggle */
 .btn-toggle-32w {
     background: var(--hover-color, #2a2a2a);
@@ -178,7 +193,7 @@ body {
 }
 
 .btn-toggle-32w.active {
-    background: var(--accent-color);
+    background: var(--info-color);
     color: white;
 }
 
@@ -702,6 +717,33 @@ html body .slider-2-wrapper .slider-2-value {
     font-weight: 500;
 }
 
+/* Display Mode, Aspect Ratio, and Display Preset Buttons */
+.display-mode-btn,
+.aspect-ratio-btn,
+.display-preset-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.display-mode-btn:hover,
+.aspect-ratio-btn:hover,
+.display-preset-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.display-mode-btn.active,
+.aspect-ratio-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
 /* Button Container - For grouping buttons */
 .button-container {
     display: flex;
@@ -777,6 +819,12 @@ html body .slider-2-wrapper .slider-2-value {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--secondary-bg);
+    z-index: 1;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .panel-header h2 {
@@ -955,6 +1003,9 @@ html body .slider-2-wrapper .slider-2-value {
     border-bottom: 1px solid var(--border-color);
     background: var(--secondary-bg);
     border-radius: 8px 8px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 /* Panel Content */

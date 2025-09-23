@@ -3234,29 +3234,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
-        .aspect-ratio-btn, .framerate-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s ease;
-            margin: 2px;
-        }
-
-        .aspect-ratio-btn:hover, .framerate-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: var(--accent-color);
-        }
-
-        .aspect-ratio-btn.active, .framerate-btn.active {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: white;
-        }
-
         .control-select {
             width: 100%;
             padding: 8px;
@@ -4199,32 +4176,6 @@
         }
 
         /* Sidebar-specific autopilot settings panel positioning - removed */
-
-        .display-mode-btn,
-        .aspect-ratio-btn,
-        .display-preset-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s ease;
-            margin: 2px;
-        }
-
-        .display-mode-btn:hover,
-        .aspect-ratio-btn:hover,
-        .display-preset-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .display-mode-btn.active,
-        .aspect-ratio-btn.active {
-            background: var(--accent-color);
-            color: white;
-        }
 
         /* Camera Stats Styles */
         .stats-container {

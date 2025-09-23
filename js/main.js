@@ -4417,7 +4417,7 @@ class GitItUpVisualizer {
         this.kaleidoscopeCenterX = 0.5;
         this.kaleidoscopeCenterY = 0.5;
         this.kaleidoscopeApplyToVideo = false;
-        this.kaleidoscopeApplyToViz = true; // Default to ON
+        this.kaleidoscopeApplyToViz = false; // Default to OFF
         this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
         
         // Blobs properties
@@ -6312,9 +6312,9 @@ class GitItUpVisualizer {
                 console.log('Creating fallback playlist structure...');
                 headerPlaylist.innerHTML = `
                     <div class="playlist-actions-dropdown" style="margin-bottom: 10px;">
-                        <button class="btn-primary" style="margin-right: 8px;">📁 Add Folder</button>
-                        <button class="btn-secondary" style="margin-right: 8px;">📥</button>
-                        <button class="btn-secondary">📤</button>
+                        <button class="btn-primary" style="margin-right: 8px;">Add Folder</button>
+                        <button class="btn-secondary" style="margin-right: 8px;">Import</button>
+                        <button class="btn-secondary">Export</button>
                     </div>
                     <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
                         <div style="font-size: 24px; margin-bottom: 8px;">🎵</div>
@@ -7939,19 +7939,19 @@ class GitItUpVisualizer {
         scanBtn.className = 'btn-primary';
         scanBtn.id = 'panelPlaylistScanBtn';
         scanBtn.title = 'Add Music Folder';
-        scanBtn.textContent = '📁 Add Folder';
+        scanBtn.textContent = 'Add Folder';
         
         const importBtn = document.createElement('button');
         importBtn.className = 'btn-secondary';
         importBtn.id = 'panelPlaylistImportBtn';
         importBtn.title = 'Import Playlist';
-        importBtn.textContent = '📥';
+        importBtn.textContent = 'Import';
         
         const exportBtn = document.createElement('button');
         exportBtn.className = 'btn-secondary';
         exportBtn.id = 'panelPlaylistExportBtn';
         exportBtn.title = 'Export Playlist';
-        exportBtn.textContent = '📤';
+        exportBtn.textContent = 'Export';
         
         actionsContainer.appendChild(scanBtn);
         actionsContainer.appendChild(importBtn);
@@ -8071,7 +8071,8 @@ class GitItUpVisualizer {
         
         // Add click-outside-to-close logic
         const closeOnOutsideClick = (e) => {
-            if (!panel.contains(e.target) && e.target !== button) {
+            const importInput = document.getElementById('playlistImportInput');
+            if (!panel.contains(e.target) && e.target !== button && e.target !== importInput) {
                 panel.remove();
                 document.removeEventListener('click', closeOnOutsideClick);
             }
@@ -12249,14 +12250,34 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'block';
             }
 
-            // Update button based on kaleidoscope state (not panel state)
-            if (this.kaleidoscopeEnabled) {
-                btnText.textContent = 'Kaleidoscope On';
+            // Update button based on any Apply To button being ON
+            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom;
+            if (anyApplyToActive) {
+                btnText.textContent = 'Kaleidoscope';
                 btn.classList.add('active');
             } else {
-                btnText.textContent = 'Kaleidoscope Off';
+                btnText.textContent = 'Kaleidoscope';
                 btn.classList.remove('active');
             }
+        }
+    }
+
+    updateKaleidoscopeButtonState() {
+        const btn = document.getElementById('headerKaleidoscopeBtn');
+        if (!btn) return;
+        
+        const btnText = btn.querySelector('.kaleidoscope-btn-text');
+        if (!btnText) return;
+        
+        // Check if any Apply To button is active
+        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom;
+        
+        if (anyApplyToActive) {
+            btnText.textContent = 'Kaleidoscope';
+            btn.classList.add('active');
+        } else {
+            btnText.textContent = 'Kaleidoscope';
+            btn.classList.remove('active');
         }
     }
 
@@ -12535,36 +12556,53 @@ https://rogueamoeba.com/loopback/
     toggleHeaderInfiniteZoom() {
         const panel = document.getElementById('headerInfiniteZoomPanel');
         const btn = document.getElementById('headerInfiniteZoomBtn');
-        const btnText = btn.querySelector('.infinite-zoom-btn-text');
         
-        // Toggle panel visibility
+        // Toggle panel visibility only
         if (panel) {
             const isVisible = panel.style.display !== 'none';
             if (isVisible) {
                 panel.style.display = 'none';
+                btn.classList.remove('active');
             } else {
                 // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
                 panel.style.top = `${buttonRect.bottom + 5}px`;
                 panel.style.display = 'block';
+                btn.classList.add('active');
             }
-            
-            if (!isVisible) {
-                // Panel is opening - toggle infinite zoom state
-                if (this.infiniteZoom) {
-                    if (this.infiniteZoom.isActive) {
-                        this.infiniteZoom.stop();
-                        btnText.textContent = 'Infinite Zoom Off';
-                        btn.classList.remove('active');
-                    } else {
-                        this.infiniteZoom.initialize();
-                        this.infiniteZoom.start();
-                        btnText.textContent = 'Infinite Zoom On';
-                        btn.classList.add('active');
-                    }
-                }
-            }
+        }
+    }
+
+    toggleInfiniteZoom() {
+        if (!this.infiniteZoom) return;
+
+        // Toggle infinite zoom visibility
+        if (this.infiniteZoom.isActive) {
+            this.infiniteZoom.stop();
+        } else {
+            this.infiniteZoom.initialize();
+            this.infiniteZoom.start();
+        }
+
+        // Update toggle button state
+        this.updateInfiniteZoomToggleButton();
+    }
+
+    updateInfiniteZoomToggleButton() {
+        const toggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
+        if (!toggleBtn) return;
+
+        const toggleText = toggleBtn.querySelector('.toggle-text');
+        if (!toggleText) return;
+
+        // Update button text and state
+        if (this.infiniteZoom && this.infiniteZoom.isActive) {
+            toggleText.textContent = 'ON';
+            toggleBtn.classList.add('active');
+        } else {
+            toggleText.textContent = 'OFF';
+            toggleBtn.classList.remove('active');
         }
     }
 
@@ -14144,6 +14182,9 @@ https://rogueamoeba.com/loopback/
             headerKaleidoscopeBtn.addEventListener('click', () => {
                 this.toggleHeaderKaleidoscope();
             });
+            
+            // Initialize button state
+            this.updateKaleidoscopeButtonState();
         }
 
         // Header Infinite Zoom button
@@ -14151,6 +14192,16 @@ https://rogueamoeba.com/loopback/
         if (headerInfiniteZoomBtn) {
             headerInfiniteZoomBtn.addEventListener('click', () => {
                 this.toggleHeaderInfiniteZoom();
+            });
+        }
+
+        // Header Infinite Zoom Toggle button
+        const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
+        if (headerInfiniteZoomToggleBtn) {
+            headerInfiniteZoomToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleInfiniteZoom();
             });
         }
 
@@ -15114,6 +15165,9 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeApplyToVideo ? 'On' : 'Off'
                 }`;
                 headerKaleidoscopeVideoBtn.classList.toggle('active', this.kaleidoscopeApplyToVideo);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
 
                 // Enable kaleidoscope if turning on
                 if (this.kaleidoscopeApplyToVideo) {
@@ -15144,6 +15198,9 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeApplyToViz ? 'On' : 'Off'
                 }`;
                 headerKaleidoscopeVizBtn.classList.toggle('active', this.kaleidoscopeApplyToViz);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
 
                 // Enable kaleidoscope if turning on, disable if both are off
                 if (this.kaleidoscopeApplyToViz) {
@@ -15174,6 +15231,9 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'
                 }`;
                 headerKaleidoscopeInfiniteZoomBtn.classList.toggle('active', this.kaleidoscopeApplyToInfiniteZoom);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
 
                 // Enable kaleidoscope if turning on IZ, disable if all are off
                 if (this.kaleidoscopeApplyToInfiniteZoom) {
@@ -17016,6 +17076,11 @@ if (window.visualizer && window.visualizer.updateFooterVisualizerButton) {
         // Initialize Visualizer Toggle Button State
         if (window.visualizer && window.visualizer.updateFooterVisualizerToggleButton) {
             window.visualizer.updateFooterVisualizerToggleButton();
+        }
+
+        // Initialize Infinite Zoom Toggle Button State
+        if (window.visualizer && window.visualizer.updateInfiniteZoomToggleButton) {
+            window.visualizer.updateInfiniteZoomToggleButton();
         }
 
         // Initialize Footer Morph Controls

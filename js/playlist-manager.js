@@ -142,9 +142,9 @@ class PlaylistManager {
         dropdown.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown">
-                <button class="btn-primary" id="playlistScanBtn" title="Add Music Folder">📁 Add Folder</button>
-                <button class="btn-secondary" id="playlistImportBtn" title="Import Playlist">📥</button>
-                <button class="btn-secondary" id="playlistExportBtn" title="Export Playlist">📤</button>
+                <button class="btn-primary" id="playlistScanBtn" title="Add Music Folder">Add Folder</button>
+                <button class="btn-secondary" id="playlistImportBtn" title="Import Playlist">Import</button>
+                <button class="btn-secondary" id="playlistExportBtn" title="Export Playlist">Export</button>
             </div>
             
             <!-- Scanning Progress (hidden by default) -->
@@ -1128,9 +1128,9 @@ class PlaylistManager {
         headerContainer.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown">
-                <button class="btn-primary" title="Add Music Folder">📁 Add Folder</button>
-                <button class="btn-secondary" title="Import Playlist">📥</button>
-                <button class="btn-secondary" title="Export Playlist">📤</button>
+                <button class="btn-primary" title="Add Music Folder">Add Folder</button>
+                <button class="btn-secondary" title="Import Playlist">Import</button>
+                <button class="btn-secondary" title="Export Playlist">Export</button>
             </div>
             
             <!-- Playlist Stats -->
@@ -1216,9 +1216,9 @@ class PlaylistManager {
         headerContainer.innerHTML = `
             <!-- Playlist Actions -->
             <div class="playlist-actions-dropdown">
-                <button class="btn-primary" title="Add Music Folder">📁 Add Folder</button>
-                <button class="btn-secondary" title="Import Playlist">📥</button>
-                <button class="btn-secondary" title="Export Playlist">📤</button>
+                <button class="btn-primary" title="Add Music Folder">Add Folder</button>
+                <button class="btn-secondary" title="Import Playlist">Import</button>
+                <button class="btn-secondary" title="Export Playlist">Export</button>
             </div>
             
             <!-- Scanning Progress (hidden by default) -->

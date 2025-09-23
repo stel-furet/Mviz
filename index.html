@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Vizzy - Advanced Music Visualizer with Live Display and Multiple Visualization Modes">
+    <meta name="description" content="MV PRO - Advanced Music Visualizer with Live Display and Multiple Visualization Modes">
     <meta name="keywords" content="music visualizer, audio visualization, live display, spectrum analyzer, music player">
     <meta name="author" content="GitItUp">
     <meta name="theme-color" content="#2969b0">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Vizzy-Music Visualizer">
+    <meta property="og:title" content="MV PRO - Music Visualizer">
     <meta property="og:description" content="Advanced music visualizer with live display capabilities">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Vizzy-Music Visualizer">
+    <meta property="twitter:title" content="MV PRO - Music Visualizer">
     <meta property="twitter:description" content="Advanced music visualizer with live display capabilities">
     
-    <title>Vizzy-Music Visualizer</title>
+    <title>MV PRO - Music Visualizer</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
@@ -49,8 +49,7 @@
     <div class="header-content">
         <!-- Logo on the left -->
         <div class="logo">
-            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTgiIGN5PSIxOCIgcj0iMTgiIGZpbGw9IiMyOTY5YjAiLz4KPHBhdGggZD0iTTE4IDZMMjIgMTBIMTRMMTggNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xOCAzMEwyMiAyNkgxNEwxOCAzMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik02IDE4TDEwIDE0VjIyTDYgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMzAgMThMMjYgMTRWMjJMMzAgMThaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" alt="Vizzy Logo" />
-            <h1>Vizzy</h1>
+            <h1>MV PRO</h1>
             </div>
 
         <!-- Control Groups Container -->
@@ -110,6 +109,9 @@
             <button class="btn-toggle" id="headerInfiniteZoomBtn" title="Infinite Zoom">
                 <span class="infinite-zoom-btn-text">Infinite Zoom</span>
             </button>
+            <button class="btn-toggle-32w" id="headerInfiniteZoomToggleBtn" title="Toggle Infinite Zoom">
+                <span class="toggle-text">ON</span>
+            </button>
             <button class="btn-toggle" id="headerBlobsBtn" title="Blobs">
                 <span class="blobs-btn-text">Blobs</span>
             </button>
@@ -117,10 +119,18 @@
             <!-- Kaleidoscope settings panel -->
             <div class="panel-floating" id="headerKaleidoscopePanel" data-button-id="headerKaleidoscopeBtn" style="display: none;">
                 <div class="panel-header">
-                    <span>Kaleidoscope Settings</span>
+                    <span>Kaleidoscope</span>
                     <button class="panel-close-btn" id="headerKaleidoscopeCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
+                    <div class="button-container">
+                        <button class="btn-toggle" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeVizBtn">Apply to Viz: Off</button>
+                        <button class="btn-toggle" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
+                    </div>
 
                 <div class="control-group">
                     <div class="slider-1-wrapper">
@@ -159,32 +169,24 @@
                         <span class="slider-1-value" id="headerKaleidoscopeCenterYValue">50%</span>
                     </div>
                     
+                    <!-- Separator -->
+                    <div style="border-bottom: 1px solid var(--border-color); margin: 12px 0;"></div>
+                    
                     <!-- Center Animation Controls -->
-                    <div class="control-group">
+                    <div class="control-group" style="border-bottom: none;">
                         <button class="btn-toggle" id="headerKaleidoscopeAnimateBtn">Animate: Off</button>
                     </div>
                     
-                    <div class="control-group">
+                    <div class="control-group" style="border-bottom: none;">
                         <div class="button-container">
                             <button class="btn-toggle" id="headerKaleidoscopeFloatBtn">Float</button>
                             <button class="btn-toggle" id="headerKaleidoscopeCircleBtn">Circle</button>
                         </div>
-                    </div>
-                    
-                    <div class="control-group">
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Speed</div>
                             <input type="range" id="headerKaleidoscopeAnimSpeed" min="-100" max="100" value="25" step="1" class="slider-1">
                             <span class="slider-1-value" id="headerKaleidoscopeAnimSpeedValue">25</span>
                         </div>
-                    </div>
-                    <div class="button-container">
-                        <button class="btn-toggle" id="headerKaleidoscopeVideoBtn">Apply to Video: Off</button>
-                        <button class="btn-toggle" id="headerKaleidoscopeVizBtn">Apply to Viz: On</button>
-                        <button class="btn-toggle" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
-                    </div>
-                    <div class="button-container">
-                        <button class="btn-toggle" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
                     </div>
                     <div class="apply-container"></div>
 
@@ -941,8 +943,8 @@
             <div class="control-group">
                 <div class="group-label">User Feedback</div>
                 <div class="button-container">
-                    <button class="feedback-btn" id="footerThumbsUpBtn">👍 Like</button>
-                    <button class="feedback-btn" id="footerThumbsDownBtn">👎 Dislike</button>
+                    <button class="btn-preset" id="footerThumbsUpBtn">Like</button>
+                    <button class="btn-preset" id="footerThumbsDownBtn">Dislike</button>
                 </div>
                 <div class="info-display" id="footerFeedbackStatsDisplay">Satisfaction: 0% (0/0)</div>
             </div>
@@ -1048,7 +1050,7 @@
                 <div class="group-label">Capture Quality</div>
                 <div class="slider-container">
                     <label>Resolution</label>
-                    <select id="footerCaptureResolution" class="quality-select">
+                    <select id="footerCaptureResolution" class="select">
                         <option value="3840">4K (3840px)</option>
                         <option value="2560" selected>2K (2560px)</option>
                         <option value="1920">1080p (1920px)</option>
@@ -1058,17 +1060,17 @@
                 </div>
                 <div class="slider-container">
                     <label>Frame Rate</label>
-                    <select id="footerCaptureFrameRate" class="quality-select">
+                    <select id="footerCaptureFrameRate" class="select">
                         <option value="60" selected>60 FPS</option>
                         <option value="30">30 FPS</option>
                         <option value="24">24 FPS</option>
                         <option value="15">15 FPS</option>
                     </select>
                 </div>
-                <div class="slider-container">
-                    <label>Bitrate</label>
-                    <input type="range" id="footerCaptureBitrate" min="1" max="50" value="30" step="0.5">
-                    <span id="footerCaptureBitrateValue">30 Mbps</span>
+                <div class="slider-1-wrapper">
+                    <div class="slider-label">Bitrate</div>
+                    <input type="range" id="footerCaptureBitrate" min="1" max="50" value="30" step="0.5" class="slider-1">
+                    <span class="slider-1-value" id="footerCaptureBitrateValue">30 Mbps</span>
                 </div>
             </div>
 
@@ -1087,10 +1089,10 @@
             <!-- Display Enhancement -->
             <div class="control-group">
                 <div class="group-label">Display Enhancement</div>
-                <div class="slider-container">
-                    <label>Sharpness</label>
-                    <input type="range" id="footerDisplaySharpness" min="0" max="100" value="0">
-                    <span id="footerDisplaySharpnessValue">0%</span>
+                <div class="slider-1-wrapper">
+                    <div class="slider-label">Sharpness</div>
+                    <input type="range" id="footerDisplaySharpness" min="0" max="100" value="0" class="slider-1">
+                    <span class="slider-1-value" id="footerDisplaySharpnessValue">0%</span>
                 </div>
                 <div class="slider-container">
                     <label>Letterbox Color</label>
@@ -1134,7 +1136,7 @@
             <!-- Resolution -->
             <div class="control-group">
                 <div class="group-label">Resolution</div>
-                <select id="footerRecordResolutionSelect" class="control-select">
+                <select id="footerRecordResolutionSelect" class="select">
                     <option value="canvas">Canvas Size</option>
                     <option value="720p">720p (1280×720)</option>
                     <option value="1080p" selected>1080p (1920×1080)</option>
@@ -1173,7 +1175,7 @@
             <!-- Video Quality -->
             <div class="control-group">
                 <div class="group-label">Video Quality</div>
-                <select id="footerRecordVideoQualitySelect" class="control-select">
+                <select id="footerRecordVideoQualitySelect" class="select">
                     <option value="auto" selected>Auto</option>
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
@@ -1184,7 +1186,7 @@
             <!-- Audio Quality -->
             <div class="control-group">
                 <div class="group-label">Audio Quality</div>
-                <select id="footerRecordAudioQualitySelect" class="control-select">
+                <select id="footerRecordAudioQualitySelect" class="select">
                     <option value="auto" selected>Auto</option>
                     <option value="high">High (320 kbps)</option>
                     <option value="medium">Medium (192 kbps)</option>
