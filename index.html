@@ -155,7 +155,7 @@
                     </div>
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Scale</div>
-                        <input type="range" id="headerKaleidoscopeScale" min="50" max="200" value="100" step="10" class="slider-1">
+                        <input type="range" id="headerKaleidoscopeScale" min="50" max="300" value="100" step="10" class="slider-1">
                         <span class="slider-1-value" id="headerKaleidoscopeScaleValue">100%</span>
                     </div>
                     <div class="slider-1-wrapper">
@@ -1074,18 +1074,6 @@
                 </div>
             </div>
 
-            <!-- Aspect Ratio -->
-            <div class="control-group">
-                <div class="group-label">Aspect Ratio</div>
-                <div class="preset-buttons">
-                    <button class="aspect-ratio-btn" data-ratio="16:9">16:9</button>
-                    <button class="aspect-ratio-btn active" data-ratio="4:3">4:3</button>
-                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                    <button class="aspect-ratio-btn" data-ratio="21:9">21:9</button>
-                </div>
-            </div>
-
             <!-- Display Enhancement -->
             <div class="control-group">
                 <div class="group-label">Display Enhancement</div>
@@ -1133,59 +1121,27 @@
             </div>
             <div class="panel-content">
 
-            <!-- Resolution -->
+            <!-- Recording Settings -->
             <div class="control-group">
-                <div class="group-label">Resolution</div>
+                <div class="group-label">Recording Settings</div>
                 <select id="footerRecordResolutionSelect" class="select">
                     <option value="canvas">Canvas Size</option>
                     <option value="720p">720p (1280×720)</option>
                     <option value="1080p" selected>1080p (1920×1080)</option>
                     <option value="4k">4K (3840×2160)</option>
                 </select>
-            </div>
-
-            <!-- Aspect Ratio -->
-            <div class="control-group">
-                <div class="group-label">Aspect Ratio</div>
-                <div class="preset-buttons">
-                    <button class="aspect-ratio-btn active" data-ratio="16:9">16:9</button>
-                    <button class="aspect-ratio-btn" data-ratio="4:3">4:3</button>
-                    <button class="aspect-ratio-btn" data-ratio="9:16">9:16</button>
-                    <button class="aspect-ratio-btn" data-ratio="1:1">1:1</button>
-                </div>
-            </div>
-
-            <!-- Visualization Aspect Ratio -->
-            <div class="control-group">
-                <div class="group-label">Visualization</div>
-                <div class="button-container">
-                    <button class="btn-toggle active" id="footerRecordMatchVisualizationAspectBtn">Match Video Aspect: On</button>
-                </div>
-            </div>
-
-            <!-- Frame Rate -->
-            <div class="control-group">
-                <div class="group-label">Frame Rate</div>
-                <div class="preset-buttons">
-                    <button class="framerate-btn active" data-fps="30">30 FPS</button>
-                    <button class="framerate-btn" data-fps="60">60 FPS</button>
-                </div>
-            </div>
-
-            <!-- Video Quality -->
-            <div class="control-group">
-                <div class="group-label">Video Quality</div>
+                <select id="footerRecordFrameRateSelect" class="select">
+                    <option value="30" selected>30 FPS</option>
+                    <option value="60">60 FPS</option>
+                </select>
                 <select id="footerRecordVideoQualitySelect" class="select">
                     <option value="auto" selected>Auto</option>
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
                     <option value="low">Low</option>
+                    <option value="4k">4K</option>
+                    <option value="4k-ultra">4K Ultra</option>
                 </select>
-            </div>
-
-            <!-- Audio Quality -->
-            <div class="control-group">
-                <div class="group-label">Audio Quality</div>
                 <select id="footerRecordAudioQualitySelect" class="select">
                     <option value="auto" selected>Auto</option>
                     <option value="high">High (320 kbps)</option>
@@ -1208,24 +1164,6 @@
                 </div>
             </div>
 
-            <!-- Recording Info -->
-            <div class="control-group">
-                <div class="group-label">Recording Info</div>
-                <div class="recording-info">
-                    <div class="info-item">
-                        <span class="info-label">Output:</span>
-                        <span id="footerRecordingOutput">1920×1080 @ 30fps</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Format:</span>
-                        <span id="footerRecordingFormat">WebM (VP9/Opus)</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Est. Size:</span>
-                        <span id="footerRecordingEstSize">~50 MB/min</span>
-                    </div>
-                </div>
-            </div>
             </div>
         </div>
     </div>

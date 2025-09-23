@@ -1636,10 +1636,12 @@ class RecordManager {
         
         // Quality presets
         this.videoQualityPresets = {
-            'auto': 5000000, // 5 Mbps
-            'high': 8000000, // 8 Mbps
-            'medium': 3000000, // 3 Mbps
-            'low': 1500000 // 1.5 Mbps
+            'auto': 5000000,        // 5 Mbps
+            'high': 8000000,         // 8 Mbps  
+            'medium': 3000000,       // 3 Mbps
+            'low': 1500000,          // 1.5 Mbps
+            '4k': 80000000,          // 80 Mbps (NEW)
+            '4k-ultra': 120000000    // 120 Mbps (NEW)
         };
         
         this.audioQualityPresets = {
@@ -1755,43 +1757,17 @@ class RecordManager {
             });
         }
         
-        // Aspect ratio buttons
-        document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
-            // Set initial active state based on current aspect ratio
-            if (btn.dataset.ratio === this.aspectRatio) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-            
-            btn.addEventListener('click', (e) => { // Update sidebar record only (footer removed)
-                document.querySelectorAll('#recordSettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.aspectRatio = btn.dataset.ratio;
-                console.log('Aspect ratio changed to:', this.aspectRatio);
-                this.updateUI();
-                this.saveSettings();
-            });
-        });
-        
-        // Frame rate buttons
-        document.querySelectorAll('.framerate-btn').forEach(btn => {
-            // Set initial active state based on current frame rate
-            if (parseInt(btn.dataset.fps) === this.frameRate) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-            
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.framerate-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.frameRate = parseInt(btn.dataset.fps);
+        // Frame rate select
+        const frameRateSelect = document.getElementById('recordFrameRateSelect');
+        if (frameRateSelect) {
+            frameRateSelect.value = this.frameRate.toString();
+            frameRateSelect.addEventListener('change', (e) => {
+                this.frameRate = parseInt(e.target.value);
                 console.log('Frame rate changed to:', this.frameRate);
                 this.updateUI();
                 this.saveSettings();
             });
-        });
+        }
         
         // Quality selects
         const videoQualitySelect = document.getElementById('recordVideoQualitySelect');
@@ -1833,27 +1809,6 @@ class RecordManager {
             });
         }
 
-        // Match Visualization Aspect Ratio toggle
-        const matchVisualizationAspectBtn = document.getElementById('recordMatchVisualizationAspectBtn');
-        if (matchVisualizationAspectBtn) {
-            // Set initial state
-            matchVisualizationAspectBtn.textContent = this.matchVisualizationAspect ? 'Match Video Aspect: On' : 'Match Video Aspect: Off';
-            matchVisualizationAspectBtn.classList.toggle('active', this.matchVisualizationAspect);
-            
-            matchVisualizationAspectBtn.addEventListener('click', () => {
-                this.matchVisualizationAspect = !this.matchVisualizationAspect;
-                matchVisualizationAspectBtn.textContent = this.matchVisualizationAspect ? 'Match Video Aspect: On' : 'Match Video Aspect: Off';
-                matchVisualizationAspectBtn.classList.toggle('active', this.matchVisualizationAspect);
-                
-                // Apply aspect ratio matching if video is active
-                if (this.visualizer && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && this.visualizer.videoElement) {
-                    this.visualizer.updateVisualizationAspectRatio();
-                }
-                
-                console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
-                this.saveSettings();
-            });
-        }
     }
 
     initializeBackgroundImageControls() {
@@ -2524,19 +2479,15 @@ class RecordManager {
             console.log('videoReadyState:', this.visualizer.videoElement.readyState);
         }
         
-        // If matching video aspect and video is active, use video aspect ratio
-        if (this.matchVisualizationAspect && this.visualizer && 
-            (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && 
-            this.visualizer.videoElement && 
-            this.visualizer.videoElement.videoWidth > 0 && 
-            this.visualizer.videoElement.videoHeight > 0) {
-            
-            const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
-            targetAspect = videoAspect;
-            console.log(`✓ Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
+        // Always use window/canvas dimensions for recording - don't force video aspect ratio
+        // This ensures recording captures whatever is visible in the window
+        const canvas = this.visualizer.audioMotion?.canvas;
+        if (canvas) {
+            targetAspect = canvas.width / canvas.height;
+            console.log(`✓ Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
         } else {
-            // Use manual aspect ratio setting
-        const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+            // Fallback to manual aspect ratio setting
+            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
             console.log(`✓ Using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
@@ -2746,25 +2697,18 @@ class RecordManager {
             (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
             this.visualizer.videoElement.readyState >= 2) {
             
-            // Use video dimensions to calculate shared letterboxing
+            // Use video dimensions to calculate proper letterboxing (fit to width, crop top/bottom)
             const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
             const canvasAspect = width / height;
             
-            if (videoAspect > canvasAspect) {
-                // Video is wider, fit to width
-                sharedDrawWidth = width;
-                sharedDrawHeight = width / videoAspect;
-                sharedDrawX = 0;
-                sharedDrawY = (height - sharedDrawHeight) / 2;
-            } else {
-                // Video is taller, fit to height
-                sharedDrawHeight = height;
-                sharedDrawWidth = height * videoAspect;
-                sharedDrawX = (width - sharedDrawWidth) / 2;
-                sharedDrawY = 0;
-            }
+            // Always fit video to width and crop top/bottom (like display)
+            sharedDrawWidth = width;
+            sharedDrawHeight = width / videoAspect;
+            sharedDrawX = 0;
+            sharedDrawY = (height - sharedDrawHeight) / 2;
             
-            console.log(`Shared letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
             
             // Draw video background with shared dimensions
             if (this.visualizer.kaleidoscopeEnabled && 
@@ -2784,20 +2728,20 @@ class RecordManager {
                 const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                 if (opacity > 0) {
                     this.compositeCtx.globalAlpha = opacity;
-                    this.drawVideoWithEffects(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                     this.compositeCtx.globalAlpha = 1;
                 }
             }
             
-            // Draw visualization using the same shared dimensions
-            console.log(`Drawing visualization with shared dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
-            this.compositeCtx.drawImage(sourceCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+            // Draw visualization using full canvas dimensions (not letterboxed like video)
+            console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
+            this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
             if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                 if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
                 }
             }
             
@@ -2945,6 +2889,101 @@ class RecordManager {
             
             this.compositeCtx.fillStyle = gradient;
             this.compositeCtx.fillRect(0, 0, width, height);
+            this.compositeCtx.restore();
+        }
+    }
+    
+    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight) {
+        const video = this.visualizer.videoElement;
+        
+        if (!video || video.readyState < 2) return;
+        
+        // Apply video effects directly to the video element
+        this.compositeCtx.save();
+        
+        // Build filter string
+        const filters = [];
+        
+        // Apply posterize FIRST with stronger effect
+        if (this.visualizer.videoPosterize < 16) {
+            const steps = this.visualizer.videoPosterize;
+            const posterizeAmount = (16 - steps) / 16;
+            filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+            filters.push(`brightness(${95}%)`);
+            filters.push(`saturate(${200}%)`);
+            if (steps < 8) {
+                filters.push(`contrast(${150}%)`);
+            }
+        }
+        
+        // Apply other video adjustments
+        if (this.visualizer.videoBrightness !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`brightness(${this.visualizer.videoBrightness}%)`);
+        }
+        if (this.visualizer.videoContrast !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`contrast(${this.visualizer.videoContrast}%)`);
+        }
+        if (this.visualizer.videoSaturation !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`saturate(${this.visualizer.videoSaturation}%)`);
+        }
+        if (this.visualizer.videoHueRotate !== 0) {
+            filters.push(`hue-rotate(${this.visualizer.videoHueRotate}deg)`);
+        }
+        if (this.visualizer.videoGrayscale > 0) {
+            filters.push(`grayscale(${this.visualizer.videoGrayscale}%)`);
+        }
+        if (this.visualizer.videoSepia > 0) {
+            filters.push(`sepia(${this.visualizer.videoSepia}%)`);
+        }
+        if (this.visualizer.videoBlur > 0) {
+            filters.push(`blur(${this.visualizer.videoBlur}px)`);
+        }
+        if (this.visualizer.videoInvert) {
+            filters.push('invert(100%)');
+        }
+        
+        // Apply filters
+        this.compositeCtx.filter = filters.length > 0 ? filters.join(' ') : 'none';
+        
+        // Calculate pulse scale if enabled
+        let scale = 1;
+        if (this.visualizer.videoPulse) {
+            const pulseDuration = this.visualizer.videoPulseRate * 1000;
+            const pulsePhase = (Date.now() % pulseDuration) / pulseDuration;
+            scale = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.02);
+        }
+        
+        // Apply pulse scaling
+        if (scale !== 1) {
+            const centerX = drawX + drawWidth / 2;
+            const centerY = drawY + drawHeight / 2;
+            this.compositeCtx.translate(centerX, centerY);
+            this.compositeCtx.scale(scale, scale);
+            this.compositeCtx.translate(-centerX, -centerY);
+        }
+        
+        // Draw video with proper letterboxing
+        this.compositeCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+        
+        this.compositeCtx.restore();
+        
+        // Apply vignette effect if enabled
+        if (this.visualizer.videoVignette > 0) {
+            this.compositeCtx.save();
+            const intensity = this.visualizer.videoVignette / 100;
+            const size = (100 - this.visualizer.videoVignette) / 100;
+            
+            const gradient = this.compositeCtx.createRadialGradient(
+                drawX + drawWidth / 2, drawY + drawHeight / 2, 
+                Math.min(drawWidth, drawHeight) * size * 0.5,
+                drawX + drawWidth / 2, drawY + drawHeight / 2, 
+                Math.max(drawWidth, drawHeight) * 0.7
+            );
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            gradient.addColorStop(1, `rgba(0, 0, 0, ${intensity})`);
+            
+            this.compositeCtx.fillStyle = gradient;
+            this.compositeCtx.fillRect(drawX, drawY, drawWidth, drawHeight);
             this.compositeCtx.restore();
         }
     }
@@ -5115,12 +5154,12 @@ class GitItUpVisualizer {
                 panel.style.left = '10px';
             }
             
-                // Adjust if panel goes off top edge
-                if (panelRect.top < 10) {
-                    panel.style.bottom = 'auto';
-                    panel.style.top = '10px';
-                }
-            }, 10);
+            // Adjust if panel goes off top edge
+            if (panelRect.top < 10) {
+                panel.style.bottom = 'auto';
+                panel.style.top = '10px';
+            }
+        }, 10);
         }
     }
     
@@ -5862,58 +5901,16 @@ class GitItUpVisualizer {
             });
         }
         
-        // Aspect ratio buttons (exact same as sidebar)
-        const footerAspectRatioBtns = document.querySelectorAll('#footerRecordSettingsPanel .aspect-ratio-btn');
-        footerAspectRatioBtns.forEach(btn => {
-            // Set initial active state
-            if (btn.dataset.ratio === this.recordManager.aspectRatio) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-            
-            btn.addEventListener('click', (e) => {
-                // Update footer aspect ratio buttons only (sidebar sync removed)
-                document.querySelectorAll('#footerRecordSettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.recordManager.aspectRatio = btn.dataset.ratio;
-                console.log('Footer: Aspect ratio changed to:', btn.dataset.ratio);
-                this.recordManager.updateUI();
-                this.recordManager.saveSettings();
-                
-                // Update footer recording info to reflect new aspect ratio
-                this.updateFooterRecordingInfo();
-                
-                // Also update sidebar recording info if it exists
-                this.recordManager.updateUI();
-                
-                // Recreate composite canvas if recording is active to apply new aspect ratio immediately
-                if (this.recordManager.isRecording && this.recordManager.compositeCanvas) {
-                    console.log('Recreating composite canvas for new aspect ratio...');
-                    this.recordManager.setupCompositeCanvas();
-                }
-            });
-        });
-        
-        // Frame rate buttons (exact same as sidebar)
-        const footerFramerateBtns = document.querySelectorAll('#footerRecordSettingsPanel .framerate-btn');
-        footerFramerateBtns.forEach(btn => {
-            // Set initial active state
-            if (parseInt(btn.dataset.fps) === this.recordManager.frameRate) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-            
-            btn.addEventListener('click', (e) => {
-                // Update all framerate buttons (both footer and sidebar)
-                document.querySelectorAll('.framerate-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.recordManager.frameRate = parseInt(btn.dataset.fps);
+        // Frame rate select (exact same as sidebar)
+        const footerFrameRateSelect = document.getElementById('footerRecordFrameRateSelect');
+        if (footerFrameRateSelect) {
+            footerFrameRateSelect.value = this.recordManager.frameRate.toString();
+            footerFrameRateSelect.addEventListener('change', (e) => {
+                this.recordManager.frameRate = parseInt(e.target.value);
                 this.recordManager.updateUI();
                 this.recordManager.saveSettings();
             });
-        });
+        }
         
         // Video quality select (exact same as sidebar)
         const footerVideoQualitySelect = document.getElementById('footerRecordVideoQualitySelect');
@@ -5976,78 +5973,8 @@ class GitItUpVisualizer {
             });
         }
         
-        // Match visualization aspect button
-        const footerMatchVisualizationBtn = document.getElementById('footerRecordMatchVisualizationAspectBtn');
-        if (footerMatchVisualizationBtn) {
-            // Initialize state
-            const isMatching = this.recordManager.matchVisualizationAspect !== false; // Default true
-            footerMatchVisualizationBtn.textContent = `Match Video Aspect: ${isMatching ? 'On' : 'Off'}`;
-            footerMatchVisualizationBtn.classList.toggle('active', isMatching);
-            
-            footerMatchVisualizationBtn.addEventListener('click', () => {
-                this.recordManager.matchVisualizationAspect = !this.recordManager.matchVisualizationAspect;
-                const isOn = this.recordManager.matchVisualizationAspect;
-                footerMatchVisualizationBtn.textContent = `Match Video Aspect: ${isOn ? 'On' : 'Off'}`;
-                footerMatchVisualizationBtn.classList.toggle('active', isOn);
-                
-                // Footer controls work independently (sidebar sync removed)
-                
-                this.recordManager.saveSettings();
-                
-                // Update recording info to show aspect ratio source change
-                this.updateFooterRecordingInfo();
-                
-                // Recreate composite canvas if recording is active to apply new aspect ratio immediately
-                if (this.recordManager.isRecording && this.recordManager.compositeCanvas) {
-                    console.log('Recreating composite canvas for video aspect matching change...');
-                    this.recordManager.setupCompositeCanvas();
-                }
-            });
-        }
-        
-        // Initialize the recording info display
-        this.updateFooterRecordingInfo();
     }
     
-    updateFooterRecordingInfo() {
-        if (!this.recordManager) return;
-        
-        // Update output info using actual recording dimensions
-        const outputSpan = document.getElementById('footerRecordingOutput');
-        if (outputSpan) {
-            const dimensions = this.recordManager.getRecordingDimensions();
-            const resolution = `${dimensions.width}×${dimensions.height}`;
-            
-            // Show aspect ratio source
-            let aspectInfo = '';
-            if (this.recordManager.matchVisualizationAspect && 
-                (this.videoMode === 'camera' || this.videoMode === 'file') && 
-                this.videoElement && this.videoElement.videoWidth > 0) {
-                aspectInfo = ' (Video Aspect)';
-            } else {
-                aspectInfo = ` (${this.recordManager.aspectRatio})`;
-            }
-            
-            outputSpan.textContent = `${resolution} @ ${this.recordManager.frameRate}fps${aspectInfo}`;
-        }
-        
-        // Update format info
-        const formatSpan = document.getElementById('footerRecordingFormat');
-        if (formatSpan) {
-            formatSpan.textContent = 'WebM (VP9/Opus)';
-        }
-        
-        // Update estimated size
-        const sizeSpan = document.getElementById('footerRecordingEstSize');
-        if (sizeSpan) {
-            // Rough estimate based on quality settings
-            let sizeMB = 50; // Base estimate
-            if (this.recordManager.videoQuality === 'high') sizeMB *= 1.5;
-            else if (this.recordManager.videoQuality === 'low') sizeMB *= 0.5;
-            sizeSpan.textContent = `~${Math.round(sizeMB)} MB/min`;
-        }
-    }
-
     updateAspectRatioToMatchVideo() {
         // Calculate video aspect ratio and select closest matching button
         if (!this.videoElement || this.videoElement.videoWidth <= 0 || this.videoElement.videoHeight <= 0) {
@@ -9191,77 +9118,12 @@ class GitItUpVisualizer {
         console.log('audioMotion exists:', !!this.audioMotion);
         console.log('videoMode:', this.videoMode);
 
-        if (!this.matchVisualizationAspect || !this.videoElement || !this.audioMotion) {
-            console.log('Early return - missing required components');
-            return;
-        }
-
-        try {
-            // Get video dimensions
-            const videoWidth = this.videoElement.videoWidth;
-            const videoHeight = this.videoElement.videoHeight;
-            
-            console.log('Raw video dimensions:', videoWidth, 'x', videoHeight);
-            console.log('Video readyState:', this.videoElement.readyState);
-            console.log('Video currentTime:', this.videoElement.currentTime);
-            
-            if (!videoWidth || !videoHeight) {
-                console.warn('Video dimensions not available yet - scheduling retry');
-                // Try again in a bit
-                setTimeout(() => this.updateVisualizationAspectRatio(), 500);
-                return;
-            }
-
-            const videoAspect = videoWidth / videoHeight;
-            console.log(`✓ Video aspect ratio: ${videoWidth}x${videoHeight} (${videoAspect.toFixed(3)})`);
-
-            // Get current canvas dimensions
-            const currentWidth = this.audioMotion.canvas.width;
-            const currentHeight = this.audioMotion.canvas.height;
-            const currentAspect = currentWidth / currentHeight;
-
-            console.log(`✓ Current canvas aspect ratio: ${currentWidth}x${currentHeight} (${currentAspect.toFixed(3)})`);
-
-            // Only resize if aspect ratios are significantly different (avoid tiny adjustments)
-            const aspectDiff = Math.abs(videoAspect - currentAspect);
-            console.log('Aspect ratio difference:', aspectDiff);
-            
-            if (aspectDiff < 0.01) {
-                console.log('✓ Aspect ratios already match, no resize needed');
-                return;
-            }
-
-            // Calculate new canvas dimensions maintaining current height
-            const newWidth = Math.round(currentHeight * videoAspect);
-            
-            console.log(`🔄 Resizing visualization canvas: ${currentWidth}x${currentHeight} → ${newWidth}x${currentHeight}`);
-            
-            // Resize the AudioMotion canvas
-            this.audioMotion.canvas.width = newWidth;
-            this.audioMotion.canvas.height = currentHeight;
-            
-            console.log('Canvas resized, triggering AudioMotion handleResize...');
-            
-            // Trigger AudioMotion to handle the resize
-            if (this.audioMotion.handleResize) {
-                this.audioMotion.handleResize();
-                console.log('✓ AudioMotion handleResize called');
-            } else {
-                console.log('⚠ AudioMotion handleResize not available, using fallback');
-                // Fallback: manually trigger resize handling
-                const container = document.getElementById('visualizer');
-                if (container) {
-                    container.style.width = newWidth + 'px';
-                    container.style.height = currentHeight + 'px';
-                    console.log('✓ Container resized manually');
-                }
-            }
-
-            console.log('✅ Visualization canvas resized to match video aspect ratio');
-
-        } catch (error) {
-            console.error('❌ Error updating visualization aspect ratio:', error);
-        }
+        // DISABLED: Don't resize canvas to match video aspect ratio
+        // This ensures visualizations render correctly regardless of video presence
+        console.log('✓ Canvas resizing disabled - preserving visualization rendering quality');
+        console.log('✓ Recording will capture whatever is visible in the window');
+        
+        return;
     }
 
     restoreOriginalAspectRatio() {
@@ -12578,11 +12440,11 @@ https://rogueamoeba.com/loopback/
         if (!this.infiniteZoom) return;
 
         // Toggle infinite zoom visibility
-        if (this.infiniteZoom.isActive) {
-            this.infiniteZoom.stop();
-        } else {
-            this.infiniteZoom.initialize();
-            this.infiniteZoom.start();
+                    if (this.infiniteZoom.isActive) {
+                        this.infiniteZoom.stop();
+                    } else {
+                        this.infiniteZoom.initialize();
+                        this.infiniteZoom.start();
         }
 
         // Update toggle button state
@@ -12699,7 +12561,7 @@ https://rogueamoeba.com/loopback/
 
         // Scale reaction
         const scaleBoost = 1 + (energy * this.kaleidoscopeBeatSensitivity * 2);
-        const newScale = Math.min(2, Math.max(0.3, this.kaleidoscopeBaseScale * scaleBoost));
+        const newScale = Math.min(3, Math.max(0.3, this.kaleidoscopeBaseScale * scaleBoost));
         this.kaleidoscopeScale = newScale;
 
         // Rotation speed reaction
@@ -14771,7 +14633,7 @@ https://rogueamoeba.com/loopback/
         }
 
         // Beat rotation toggle
-        const beatRotationBtn = document.getElementById('kaleidoscopeBeatRotationBtn');
+        const beatRotationBtn = document.getElementById('headerKaleidoscopeBeatRotationBtn');
         if (beatRotationBtn) {
             beatRotationBtn.addEventListener('click', () => {
                 this.kaleidoscopeBeatRotation = !this.kaleidoscopeBeatRotation;
@@ -14783,7 +14645,7 @@ https://rogueamoeba.com/loopback/
         }
 
         // Beat shape toggle
-        const beatShapeBtn = document.getElementById('kaleidoscopeBeatShapeBtn');
+        const beatShapeBtn = document.getElementById('headerKaleidoscopeBeatShapeBtn');
         if (beatShapeBtn) {
             beatShapeBtn.addEventListener('click', () => {
                 this.kaleidoscopeBeatShape = !this.kaleidoscopeBeatShape;
@@ -14875,7 +14737,7 @@ https://rogueamoeba.com/loopback/
 
         // Beat reactive toggle
         // Beat reactive toggle
-        const kaleidoscopeBeatBtn = document.getElementById('kaleidoscopeBeatBtn');
+        const kaleidoscopeBeatBtn = document.getElementById('headerKaleidoscopeBeatBtn');
         if (kaleidoscopeBeatBtn) {
             kaleidoscopeBeatBtn.addEventListener('click', () => {
                 this.kaleidoscopeBeatReactive = !this.kaleidoscopeBeatReactive;
@@ -14884,21 +14746,21 @@ https://rogueamoeba.com/loopback/
                 }`;
                 kaleidoscopeBeatBtn.classList.toggle('active', this.kaleidoscopeBeatReactive);
 
-                const sensitivityContainer = document.getElementById('beatSensitivityContainer');
+                const sensitivityContainer = document.getElementById('headerBeatSensitivityContainer');
                 if (sensitivityContainer) {
                     sensitivityContainer.style.display = this.kaleidoscopeBeatReactive ? 'block' : 'none';
                 }
 
                 // Store base values when enabling
-                if (this.kaleidoscopeBeatReactive) { // Reset scale to max 150% if it's higher
-                    if (this.kaleidoscopeScale > 1.5) {
-                        this.kaleidoscopeScale = 1.5;
+                if (this.kaleidoscopeBeatReactive) { // Reset scale to max 300% if it's higher
+                    if (this.kaleidoscopeScale > 3) {
+                        this.kaleidoscopeScale = 3;
                         // Update slider and display
                         const scaleSlider = document.getElementById('kaleidoscopeScale');
                         const scaleValue = document.getElementById('kaleidoscopeScaleValue');
                         if (scaleSlider && scaleValue) {
-                            scaleSlider.value = 150;
-                            scaleValue.textContent = '150%';
+                            scaleSlider.value = 300;
+                            scaleValue.textContent = '300%';
                         }
                     }
                     this.kaleidoscopeBaseScale = this.kaleidoscopeScale;
@@ -14908,12 +14770,12 @@ https://rogueamoeba.com/loopback/
         }
 
         // Beat sensitivity
-        const beatSensitivitySlider = document.getElementById('kaleidoscopeBeatSensitivity');
+        const beatSensitivitySlider = document.getElementById('headerKaleidoscopeBeatSensitivity');
         if (beatSensitivitySlider) {
             beatSensitivitySlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 this.kaleidoscopeBeatSensitivity = value / 100;
-                document.getElementById('kaleidoscopeBeatSensitivityValue').textContent = `${value}%`;
+                document.getElementById('headerKaleidoscopeBeatSensitivityValue').textContent = `${value}%`;
             });
         }
 
