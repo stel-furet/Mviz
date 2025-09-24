@@ -4042,13 +4042,19 @@ class LiveDisplayManager {
             // Create composite canvas (same as Record)
             await this.setupCompositeCanvas();
             
+            // Start compositing (same as Record) - this needs to happen before capturing the stream
+            this.startCompositing();
+            
+            // Wait a moment for the first frame to be drawn
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             // Get stream from composite canvas with frame rate from displaySettings
             const frameRate = this.displaySettings.frameRate || 30;
-            const videoStream = this.compositeCanvas.captureStream(frameRate);
-            console.log(`LiveDisplay ${this.displayId}: Stream created with ${videoStream.getVideoTracks().length} video tracks`);
+            this.stream = this.compositeCanvas.captureStream(frameRate);
+            console.log(`LiveDisplay ${this.displayId}: Stream created with ${this.stream.getVideoTracks().length} video tracks`);
             
             // Debug stream properties
-            videoStream.getVideoTracks().forEach((track, index) => {
+            this.stream.getVideoTracks().forEach((track, index) => {
                 console.log(`LiveDisplay ${this.displayId}: Track ${index}:`, {
                     kind: track.kind,
                     enabled: track.enabled,
@@ -4057,29 +4063,28 @@ class LiveDisplayManager {
                 });
             });
             
-            // Setup WebRTC (new)
-            this.pc = new RTCPeerConnection({
-                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-            });
+            // Always create a fresh WebRTC connection
+            if (this.pc) {
+                console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection`);
+                this.pc.close();
+                this.pc = null;
+            }
             
-            // Add tracks to peer connection
-            videoStream.getVideoTracks().forEach(track => {
-                this.pc.addTrack(track, videoStream);
-            });
+            // Reset connection state
+            this.hasAnswered = false;
+            this.pendingIceCandidates = [];
             
-            // Start compositing (same as Record)
-            this.startCompositing();
-            
-            // Setup WebRTC negotiation
+            // Setup WebRTC negotiation (creates this.pc and adds tracks)
             this.setupWebRTC();
             
-            // If display is already ready, create and send offer
-            if (this.displayReady) {
-                console.log(`LiveDisplay ${this.displayId}: Display already ready - creating offer`);
-                this.createAndSendOffer();
-            } else {
-                console.log(`LiveDisplay ${this.displayId}: Waiting for display to be ready before creating offer`);
-            }
+            // Always create and send offer after setup
+            console.log(`LiveDisplay ${this.displayId}: Creating offer after WebRTC setup`);
+            
+            // Add a small delay to ensure the WebRTC connection is fully set up
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Create and send offer
+            await this.createAndSendOffer();
             
             console.log(`LiveDisplay ${this.displayId}: Streaming started successfully`);
             
@@ -4091,6 +4096,53 @@ class LiveDisplayManager {
     
     // NEW: WebRTC methods
     setupWebRTC() {
+        // Create a new RTCPeerConnection
+        if (this.pc) {
+            console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection in setupWebRTC`);
+            this.pc.close();
+        }
+        
+        this.pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        
+        console.log(`LiveDisplay ${this.displayId}: Created new RTCPeerConnection`);
+        
+        // Add tracks to peer connection if we have a stream
+        if (this.stream && this.stream.getTracks().length > 0) {
+            this.stream.getTracks().forEach(track => {
+                try {
+                    const sender = this.pc.addTrack(track, this.stream);
+                    console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection:`, sender ? 'success' : 'failed');
+                } catch (err) {
+                    console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection:`, err);
+                }
+            });
+        } else {
+            console.error(`LiveDisplay ${this.displayId}: No stream or tracks available to add!`);
+            
+            // If we don't have a stream yet, try to recreate it
+            if (!this.stream && this.compositeCanvas) {
+                try {
+                    const frameRate = this.displaySettings.frameRate || 30;
+                    this.stream = this.compositeCanvas.captureStream(frameRate);
+                    console.log(`LiveDisplay ${this.displayId}: Recreated stream with ${this.stream.getTracks().length} tracks`);
+                    
+                    // Now try to add the tracks
+                    this.stream.getTracks().forEach(track => {
+                        try {
+                            const sender = this.pc.addTrack(track, this.stream);
+                            console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection (retry):`, sender ? 'success' : 'failed');
+                        } catch (err) {
+                            console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection (retry):`, err);
+                        }
+                    });
+                } catch (err) {
+                    console.error(`LiveDisplay ${this.displayId}: Error recreating stream:`, err);
+                }
+            }
+        }
+        
         // Handle ICE candidates
         this.pc.onicecandidate = (event) => {
             if (event.candidate && this.channel) {
@@ -4108,8 +4160,8 @@ class LiveDisplayManager {
             }
         };
         
-        // Create and send offer immediately
-        this.createAndSendOffer();
+        // Don't create and send offer immediately - let startStreaming do it
+        // when it's ready
     }
     
     // Create and send WebRTC offer
@@ -4252,6 +4304,14 @@ class LiveDisplayManager {
         const channel = this.channel;
         const settingsChannel = this.settingsChannel;
         
+        // Send message to display window to prepare for reconnection
+        if (channel) {
+            channel.postMessage({
+                type: 'prepare-reconnect',
+                data: { displayId: this.displayId }
+            });
+        }
+        
         // Stop streaming but keep window and channels
         await this.stopStreamingInternal(false);
         
@@ -4260,6 +4320,17 @@ class LiveDisplayManager {
         this.displayReady = displayReady;
         this.channel = channel;
         this.settingsChannel = settingsChannel;
+        
+        // Short delay to ensure cleanup completes
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Ensure everything is completely reset
+        this.pc = null;
+        this.stream = null;
+        this.compositeCanvas = null;
+        this.compositeCtx = null;
+        this.hasAnswered = false;
+        this.pendingIceCandidates = [];
         
         // Start streaming again with new settings
         await this.startStreaming();

@@ -212,6 +212,9 @@
                     case 'ping':
                         this.channel.postMessage({type: 'pong'});
                         break;
+                    case 'prepare-reconnect':
+                        this.prepareForReconnection(data);
+                        break;
                 }
             };
 
@@ -608,6 +611,38 @@
                 }
             }
             this.pendingIceCandidates = [];
+        }
+        
+        // Handle reconnection preparation
+        prepareForReconnection(data) {
+            console.log(`Display ${this.displayId}: Preparing for reconnection`);
+            
+            // Clean up existing WebRTC connection
+            if (this.pc) {
+                console.log(`Display ${this.displayId}: Closing existing peer connection`);
+                this.pc.close();
+                this.pc = null;
+            }
+            
+            // Reset connection state
+            this.hasAnswered = false;
+            this.pendingIceCandidates = [];
+            
+            // Show reconnecting status
+            this.statusDiv.textContent = 'Reconnecting...';
+            this.statusDiv.classList.remove('connected');
+            this.statusDiv.classList.remove('hidden');
+            
+            // Send ready signal back to main window
+            this.channel.postMessage({
+                type: 'display-ready',
+                data: { 
+                    displayId: this.displayId,
+                    reconnecting: true
+                }
+            });
+            
+            console.log(`Display ${this.displayId}: Ready for reconnection`);
         }
 
         // In display.html's applyVideoFilters method:
