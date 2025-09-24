@@ -3425,7 +3425,22 @@ class LiveDisplayManager {
                 if (settings.captureKaleidoscope !== undefined) this.displaySettings.captureKaleidoscope = settings.captureKaleidoscope;
                 if (settings.captureInfiniteZoom !== undefined) this.displaySettings.captureInfiniteZoom = settings.captureInfiniteZoom;
                 
+                // Update presentation modes and other display settings
+                if (settings.presentationMode !== undefined) this.displaySettings.presentationMode = settings.presentationMode;
+                if (settings.displaySharpness !== undefined) this.displaySettings.displaySharpness = settings.displaySharpness;
+                if (settings.letterboxColor !== undefined) this.displaySettings.letterboxColor = settings.letterboxColor;
+                if (settings.mirrorBackground !== undefined) this.displaySettings.mirrorBackground = settings.mirrorBackground;
+                if (settings.mirrorBackgroundBlur !== undefined) this.displaySettings.mirrorBackgroundBlur = settings.mirrorBackgroundBlur;
+                
                 console.log(`DEBUG LiveDisplayManager ${this.displayId}: Settings updated to:`, this.displaySettings);
+                
+                // Send updated settings to display window
+                if (this.channel) {
+                    this.channel.postMessage({
+                        type: 'display-settings',
+                        data: this.displaySettings
+                    });
+                }
             }
         };
         
@@ -3438,12 +3453,17 @@ class LiveDisplayManager {
             this.customFilename = 'MV_PRO_Display';
             this.matchVisualizationAspect = true;
             
-            // Display settings for capture toggles
+            // Display settings for capture toggles and presentation modes
             this.displaySettings = {
                 captureVideo: true,
                 captureVisualization: true,
                 captureKaleidoscope: true,
-                captureInfiniteZoom: true
+                captureInfiniteZoom: true,
+                presentationMode: 'fit',
+                displaySharpness: 0,
+                letterboxColor: '#000000',
+                mirrorBackground: false,
+                mirrorBackgroundBlur: 20
             };
         
         // IDENTICAL to RecordManager presets
