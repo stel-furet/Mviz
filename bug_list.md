@@ -204,6 +204,55 @@ Unknown - needs research to determine current state
 
 ---
 
+#### Bug ID: BUG-010
+**Title**: Kaleidoscope Rotation Slows Down When Recording Starts
+**Severity**: 🟡 Medium
+**Status**: 🆕 New
+**Reported**: 2024-12-19
+**Reporter**: User
+**Assigned**: TBD
+
+**Description**: 
+Kaleidoscope rotation speed decreases when recording begins, causing inconsistent visual behavior.
+
+**Steps to Reproduce**:
+1. Enable Kaleidoscope visualization
+2. Set rotation speed to a desired value
+3. Start recording
+4. Observe rotation speed change
+
+**Expected Behavior**:
+Kaleidoscope rotation should maintain consistent speed during recording
+
+**Actual Behavior**:
+Rotation speed slows down when recording starts
+
+---
+
+#### Bug ID: BUG-011
+**Title**: Background Color Not Captured in Recording, Always Black
+**Severity**: 🟡 Medium
+**Status**: 🆕 New
+**Reported**: 2024-12-19
+**Reporter**: User
+**Assigned**: TBD
+
+**Description**: 
+The background color setting is not captured in recordings - the background always appears black regardless of the selected color.
+
+**Steps to Reproduce**:
+1. Set a background color in the visualization settings
+2. Start recording
+3. Review the recorded output
+
+**Expected Behavior**:
+The recording should capture the selected background color
+
+**Actual Behavior**:
+The recording background is always black, ignoring the color setting
+
+---
+
 #### Bug ID: BUG-009
 **Title**: File Video Audio Not Affecting Visualization When Unmuted
 **Severity**: 🟡 Medium
@@ -310,10 +359,10 @@ When adding new bugs, use this template:
 ## Bug Statistics
 
 ### Current Status Summary
-- **Total Bugs**: 9
+- **Total Bugs**: 11
 - **Critical**: 0
 - **High**: 0
-- **Medium**: 9
+- **Medium**: 11
 - **Low**: 0
 - **Resolved**: 0
 

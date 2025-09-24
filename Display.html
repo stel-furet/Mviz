@@ -174,7 +174,16 @@
             this.statusDiv = document.getElementById('connectionStatus');
             this.vignetteOverlay = document.getElementById('vignetteOverlay');
             this.pc = null;
-            this.channel = new BroadcastChannel('gitup-live-display');
+            
+            // Get displayId from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            this.displayId = urlParams.get('displayId') || '1';
+            
+            // Update window title to show display ID
+            document.title = `MV Pro Display ${this.displayId}`;
+            
+            // Create unique BroadcastChannel for this display
+            this.channel = new BroadcastChannel(`mvpro-live-display-${this.displayId}`);
             this.isConnected = false;
             this.displaySettings = {}; // Store display settings
             this.pendingIceCandidates = []; // Queue for ICE candidates received before remote description
@@ -378,17 +387,20 @@
 
                 // Handle incoming stream
                 this.pc.ontrack = (event) => {
-                    console.log('🎥 Received track:', event.track.kind);
+                    console.log(`🎥 Display ${this.displayId}: Received track:`, event.track.kind);
+                    console.log(`🎥 Display ${this.displayId}: Track state:`, event.track.readyState);
                     if (event.streams && event.streams[0]) {
+                        console.log(`📺 Display ${this.displayId}: Stream ID:`, event.streams[0].id);
+                        console.log(`📺 Display ${this.displayId}: Stream tracks:`, event.streams[0].getTracks().length);
                         // Only set video source if we don't already have it or it's different
                         if (!this.video.srcObject || this.video.srcObject.id !== event.streams[0].id) {
-                            console.log('📺 Setting video srcObject to received stream');
+                            console.log(`📺 Display ${this.displayId}: Setting video srcObject to received stream`);
                             this.video.srcObject = event.streams[0];
                         
                             // Ensure video plays
                             this.video.onloadedmetadata = () => {
-                                console.log('Video metadata loaded, dimensions:', this.video.videoWidth, 'x', this.video.videoHeight);
-                                console.log('🎯 Re-applying display settings after video metadata loaded...');
+                                console.log(`Display ${this.displayId}: Video metadata loaded, dimensions:`, this.video.videoWidth, 'x', this.video.videoHeight);
+                                console.log(`🎯 Display ${this.displayId}: Re-applying display settings after video metadata loaded...`);
                                 
                                 // Re-apply display settings now that video dimensions are available
                                 if (this.displaySettings) {
@@ -396,7 +408,7 @@
                                 }
                                 
                                 this.video.play().then(() => {
-                                    console.log('✅ Video started playing successfully');
+                                    console.log(`✅ Display ${this.displayId}: Video started playing successfully`);
                                 }).catch(error => {
                                     console.error('❌ Error starting video playback:', error);
                                 });

@@ -41,6 +41,7 @@
     <script src="js/ui-controls.js"></script>
     <script src="js/playlist-manager.js"></script>
     <script src="js/theme-system.js"></script>
+    <script src="js/multi-display-manager.js"></script>
     <script src="js/main.js"></script>
 </head>
 <body>
@@ -831,6 +832,26 @@
                 </button>
                 <button class="btn-gear" id="footerDisplaySettingsBtn" title="Display Settings">⚙</button>
             </div>
+            
+            <!-- Multi-Display Controls -->
+            <div class="btn-pair">
+                <button class="btn-toggle" id="display1Btn" title="Open Display 1 Window">
+                    Display 1
+                </button>
+                <button class="btn-gear" id="display1SettingsBtn" title="Display 1 Settings">⚙</button>
+            </div>
+            <div class="btn-pair">
+                <button class="btn-toggle" id="display2Btn" title="Open Display 2 Window">
+                    Display 2
+                </button>
+                <button class="btn-gear" id="display2SettingsBtn" title="Display 2 Settings">⚙</button>
+            </div>
+            <div class="btn-pair">
+                <button class="btn-toggle" id="display3Btn" title="Open Display 3 Window">
+                    Display 3
+                </button>
+                <button class="btn-gear" id="display3SettingsBtn" title="Display 3 Settings">⚙</button>
+            </div>
             <div class="btn-pair">
                 <button class="btn-live" id="recordBtn" title="Record Visualization">
                     <span class="record-text">Record</span>
@@ -1027,14 +1048,6 @@
                 </div>
             </div>
 
-            <!-- Video Input Aspect -->
-            <div class="control-group">
-                <div class="group-label">Video Input Aspect</div>
-                <div class="button-container">
-                    <button class="btn-toggle active" id="footerMatchVideoInputBtn">Match Video Input: On</button>
-                </div>
-            </div>
-
             <!-- Display Mode -->
             <div class="control-group">
                 <div class="group-label">Display Mode</div>
@@ -1042,35 +1055,6 @@
                     <button class="display-mode-btn active" data-mode="fit">Fit</button>
                     <button class="display-mode-btn" data-mode="fill">Fill</button>
                     <button class="display-mode-btn" data-mode="stretch">Stretch</button>
-                </div>
-            </div>
-
-            <!-- Quality Settings -->
-            <div class="control-group">
-                <div class="group-label">Capture Quality</div>
-                <div class="slider-container">
-                    <label>Resolution</label>
-                    <select id="footerCaptureResolution" class="select">
-                        <option value="3840">4K (3840px)</option>
-                        <option value="2560" selected>2K (2560px)</option>
-                        <option value="1920">1080p (1920px)</option>
-                        <option value="1280">720p (1280px)</option>
-                        <option value="960">SD (960px)</option>
-                    </select>
-                </div>
-                <div class="slider-container">
-                    <label>Frame Rate</label>
-                    <select id="footerCaptureFrameRate" class="select">
-                        <option value="60" selected>60 FPS</option>
-                        <option value="30">30 FPS</option>
-                        <option value="24">24 FPS</option>
-                        <option value="15">15 FPS</option>
-                    </select>
-                </div>
-                <div class="slider-1-wrapper">
-                    <div class="slider-label">Bitrate</div>
-                    <input type="range" id="footerCaptureBitrate" min="1" max="50" value="30" step="0.5" class="slider-1">
-                    <span class="slider-1-value" id="footerCaptureBitrateValue">30 Mbps</span>
                 </div>
             </div>
 
@@ -1164,6 +1148,199 @@
                 </div>
             </div>
 
+            </div>
+        </div>
+
+        <!-- Multi-Display Settings Panels -->
+        <!-- Display 1 Settings Panel -->
+        <div class="panel-floating" id="display1SettingsPanel" style="display: none;" data-button-id="display1SettingsBtn">
+            <div class="panel-header">
+                <span>Display 1 Settings</span>
+                <button class="panel-close-btn" id="display1SettingsClose">×</button>
+            </div>
+            <div class="panel-content">
+                <!-- Capture Settings -->
+                <div class="control-group">
+                    <div class="group-label">Capture Settings</div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display1CaptureVideoBtn">Capture Video: On</button>
+                        <button class="btn-toggle" id="display1CaptureVizBtn">Capture Visualization: On</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display1CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
+                        <button class="btn-toggle" id="display1CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                    </div>
+                </div>
+                
+                <!-- Display Mode -->
+                <div class="control-group">
+                    <div class="group-label">Display Mode</div>
+                    <div class="preset-buttons">
+                        <button class="display-mode-btn active" data-mode="fit">Fit</button>
+                        <button class="display-mode-btn" data-mode="fill">Fill</button>
+                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                        <button class="display-mode-btn" data-mode="original">Original</button>
+                    </div>
+                </div>
+                
+                <!-- Enhancement -->
+                <div class="control-group">
+                    <div class="group-label">Enhancement</div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Sharpness</div>
+                        <input type="range" id="display1Sharpness" min="0" max="100" value="0" class="slider-1">
+                        <span class="slider-1-value" id="display1SharpnessValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Letterbox Color</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="color" id="display1LetterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                            <span id="display1LetterboxColorValue">#000000</span>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display1MirrorBackgroundBtn">Mirror Background: Off</button>
+                    </div>
+                </div>
+                
+                <!-- Presets -->
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                        <button class="display-preset-btn" data-preset="social">Social</button>
+                        <button class="display-preset-btn" data-preset="performance">Performance</button>
+                        <button class="display-preset-btn" data-preset="projector">Projector</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Display 2 Settings Panel -->
+        <div class="panel-floating" id="display2SettingsPanel" style="display: none;" data-button-id="display2SettingsBtn">
+            <div class="panel-header">
+                <span>Display 2 Settings</span>
+                <button class="panel-close-btn" id="display2SettingsClose">×</button>
+            </div>
+            <div class="panel-content">
+                <!-- Capture Settings -->
+                <div class="control-group">
+                    <div class="group-label">Capture Settings</div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display2CaptureVideoBtn">Capture Video: On</button>
+                        <button class="btn-toggle" id="display2CaptureVizBtn">Capture Visualization: On</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display2CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
+                        <button class="btn-toggle" id="display2CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                    </div>
+                </div>
+                
+                <!-- Display Mode -->
+                <div class="control-group">
+                    <div class="group-label">Display Mode</div>
+                    <div class="preset-buttons">
+                        <button class="display-mode-btn active" data-mode="fit">Fit</button>
+                        <button class="display-mode-btn" data-mode="fill">Fill</button>
+                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                        <button class="display-mode-btn" data-mode="original">Original</button>
+                    </div>
+                </div>
+                
+                <!-- Enhancement -->
+                <div class="control-group">
+                    <div class="group-label">Enhancement</div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Sharpness</div>
+                        <input type="range" id="display2Sharpness" min="0" max="100" value="0" class="slider-1">
+                        <span class="slider-1-value" id="display2SharpnessValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Letterbox Color</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="color" id="display2LetterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                            <span id="display2LetterboxColorValue">#000000</span>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display2MirrorBackgroundBtn">Mirror Background: Off</button>
+                    </div>
+                </div>
+                
+                <!-- Presets -->
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                        <button class="display-preset-btn" data-preset="social">Social</button>
+                        <button class="display-preset-btn" data-preset="performance">Performance</button>
+                        <button class="display-preset-btn" data-preset="projector">Projector</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Display 3 Settings Panel -->
+        <div class="panel-floating" id="display3SettingsPanel" style="display: none;" data-button-id="display3SettingsBtn">
+            <div class="panel-header">
+                <span>Display 3 Settings</span>
+                <button class="panel-close-btn" id="display3SettingsClose">×</button>
+            </div>
+            <div class="panel-content">
+                <!-- Capture Settings -->
+                <div class="control-group">
+                    <div class="group-label">Capture Settings</div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display3CaptureVideoBtn">Capture Video: On</button>
+                        <button class="btn-toggle" id="display3CaptureVizBtn">Capture Visualization: On</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display3CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
+                        <button class="btn-toggle" id="display3CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                    </div>
+                </div>
+                
+                <!-- Display Mode -->
+                <div class="control-group">
+                    <div class="group-label">Display Mode</div>
+                    <div class="preset-buttons">
+                        <button class="display-mode-btn active" data-mode="fit">Fit</button>
+                        <button class="display-mode-btn" data-mode="fill">Fill</button>
+                        <button class="display-mode-btn" data-mode="stretch">Stretch</button>
+                        <button class="display-mode-btn" data-mode="original">Original</button>
+                    </div>
+                </div>
+                
+                <!-- Enhancement -->
+                <div class="control-group">
+                    <div class="group-label">Enhancement</div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Sharpness</div>
+                        <input type="range" id="display3Sharpness" min="0" max="100" value="0" class="slider-1">
+                        <span class="slider-1-value" id="display3SharpnessValue">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Letterbox Color</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="color" id="display3LetterboxColor" value="#000000" style="width: 50px; height: 30px;">
+                            <span id="display3LetterboxColorValue">#000000</span>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display3MirrorBackgroundBtn">Mirror Background: Off</button>
+                    </div>
+                </div>
+                
+                <!-- Presets -->
+                <div class="control-group">
+                    <div class="group-label">Presets</div>
+                    <div class="preset-buttons">
+                        <button class="display-preset-btn" data-preset="cinema">Cinema</button>
+                        <button class="display-preset-btn" data-preset="social">Social</button>
+                        <button class="display-preset-btn" data-preset="performance">Performance</button>
+                        <button class="display-preset-btn" data-preset="projector">Projector</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

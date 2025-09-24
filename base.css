@@ -1257,3 +1257,117 @@ html body .slider-2-wrapper .slider-2-value {
     max-height: 900px !important;
 }
 
+/* ========================================
+   MULTI-DISPLAY SYSTEM
+   ======================================== */
+
+/* Multi-Display Controls Container */
+.multi-display-controls {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--secondary-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* Display Buttons */
+.btn-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    min-width: 120px;
+    font-family: inherit;
+}
+
+.btn-display:hover {
+    background: var(--hover-color);
+    border-color: var(--accent-color);
+}
+
+.btn-display.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.btn-icon {
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+/* Display Mode Buttons */
+.display-mode-btn {
+    padding: 6px 12px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-family: inherit;
+}
+
+.display-mode-btn:hover {
+    background: var(--hover-color);
+}
+
+.display-mode-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Display Preset Buttons */
+.display-preset-btn {
+    padding: 6px 12px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-family: inherit;
+}
+
+.display-preset-btn:hover {
+    background: var(--hover-color);
+}
+
+.display-preset-btn.active {
+    background: var(--info-color);
+    color: white;
+    border-color: var(--info-color);
+}
+
+/* Multi-Display Settings Panels */
+.multi-display-controls .panel-floating {
+    max-height: 84vh;
+    overflow-y: auto;
+}
+
+.multi-display-controls .panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+}
+
+.multi-display-controls .panel-content {
+    padding: 16px;
+}
+
+

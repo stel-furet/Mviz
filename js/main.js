@@ -2487,7 +2487,7 @@ class RecordManager {
             console.log(`✓ Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
         } else {
             // Fallback to manual aspect ratio setting
-            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+        const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
             console.log(`✓ Using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
@@ -2702,10 +2702,10 @@ class RecordManager {
             const canvasAspect = width / height;
             
             // Always fit video to width and crop top/bottom (like display)
-            sharedDrawWidth = width;
-            sharedDrawHeight = width / videoAspect;
-            sharedDrawX = 0;
-            sharedDrawY = (height - sharedDrawHeight) / 2;
+                sharedDrawWidth = width;
+                sharedDrawHeight = width / videoAspect;
+                sharedDrawX = 0;
+                sharedDrawY = (height - sharedDrawHeight) / 2;
             
             console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
             console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
@@ -3380,6 +3380,816 @@ class RecordManager {
 // ****
 // ****
 
+// LiveDisplayManager - Exact duplicate of RecordManager for streaming
+class LiveDisplayManager {
+    constructor(visualizer, displayId = 'main') {
+        console.log(`DEBUG LiveDisplayManager: Constructor called with displayId: ${displayId}`);
+        this.visualizer = visualizer;
+        this.displayId = displayId;
+        this.isStreaming = false;
+        this.pc = null;
+        this.stream = null;
+        this.compositeCanvas = null;
+        this.compositeCtx = null;
+        this.animationFrame = null;
+        this.displayWindow = null;
+        // Create channel only if not passed from DisplayInstance
+        this.channel = null; // Will be set by setChannel() method
+        
+        // Create a dedicated channel for settings
+        this.settingsChannel = new BroadcastChannel(`mvpro-live-display-settings-${displayId}`);
+        console.log(`DEBUG LiveDisplayManager: Created settings channel for ${displayId}: mvpro-live-display-settings-${displayId}`);
+        
+        this.hasOffered = false;
+        this.displayReady = false; // Track if display window is ready
+        this.pendingIceCandidates = [];
+        
+        // Initialize display settings with defaults
+        this.displaySettings = {
+            captureVideo: true,
+            captureVisualization: true,
+            captureKaleidoscope: true,
+            captureInfiniteZoom: true
+        };
+        
+        // Set up settings channel message handler
+        this.settingsChannel.onmessage = (event) => {
+            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Settings channel received:`, event.data);
+            if (event.data && event.data.type === 'display-settings' && event.data.data) {
+                const settings = event.data.data;
+                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Updating settings from settings channel:`, settings);
+                
+                // Update display settings
+                if (settings.captureVideo !== undefined) this.displaySettings.captureVideo = settings.captureVideo;
+                if (settings.captureVisualization !== undefined) this.displaySettings.captureVisualization = settings.captureVisualization;
+                if (settings.captureKaleidoscope !== undefined) this.displaySettings.captureKaleidoscope = settings.captureKaleidoscope;
+                if (settings.captureInfiniteZoom !== undefined) this.displaySettings.captureInfiniteZoom = settings.captureInfiniteZoom;
+                
+                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Settings updated to:`, this.displaySettings);
+            }
+        };
+        
+            // IDENTICAL to RecordManager settings
+            this.resolution = '1080p';
+            this.aspectRatio = '16:9';
+            this.frameRate = 30;
+            this.videoQuality = 'auto';
+            this.audioQuality = 'auto';
+            this.customFilename = 'MV_PRO_Display';
+            this.matchVisualizationAspect = true;
+            
+            // Display settings for capture toggles
+            this.displaySettings = {
+                captureVideo: true,
+                captureVisualization: true,
+                captureKaleidoscope: true,
+                captureInfiniteZoom: true
+            };
+        
+        // IDENTICAL to RecordManager presets
+        this.resolutionPresets = {
+            'canvas': { width: 0, height: 0 }, // Will be set dynamically
+            '720p': { width: 1280, height: 720 },
+            '1080p': { width: 1920, height: 1080 },
+            '4k': { width: 3840, height: 2160 }
+        };
+        
+        this.videoQualityPresets = {
+            'auto': 5000000,        // 5 Mbps
+            'high': 8000000,         // 8 Mbps  
+            'medium': 3000000,       // 3 Mbps
+            'low': 1500000,          // 1.5 Mbps
+            '4k': 80000000,          // 80 Mbps
+            '4k-ultra': 120000000    // 120 Mbps
+        };
+        
+        this.audioQualityPresets = {
+            'auto': 192000, // 192 kbps
+            'high': 320000, // 320 kbps
+            'medium': 192000, // 192 kbps
+            'low': 128000 // 128 kbps
+        };
+        
+        this.loadSettings();
+        this.initializeUI();
+    }
+    
+        // IDENTICAL to RecordManager methods
+        loadSettings() {
+            try {
+                const saved = localStorage.getItem(`mvpro_live_display_settings_${this.displayId}`);
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    this.resolution = settings.resolution || '1080p';
+                    this.aspectRatio = settings.aspectRatio || '16:9';
+                    this.frameRate = settings.frameRate || 30;
+                    this.videoQuality = settings.videoQuality || 'auto';
+                    this.audioQuality = settings.audioQuality || 'auto';
+                    this.customFilename = settings.customFilename || 'MV_PRO_Display';
+                    this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
+                }
+            } catch (e) {
+                console.error('Error loading live display settings:', e);
+            }
+        }
+    
+    saveSettings() {
+        try {
+            const settings = {
+                resolution: this.resolution,
+                aspectRatio: this.aspectRatio,
+                frameRate: this.frameRate,
+                videoQuality: this.videoQuality,
+                audioQuality: this.audioQuality,
+                customFilename: this.customFilename,
+                matchVisualizationAspect: this.matchVisualizationAspect
+            };
+            localStorage.setItem(`mvpro_live_display_settings_${this.displayId}`, JSON.stringify(settings));
+        } catch (e) {
+            console.error('Error saving live display settings:', e);
+        }
+    }
+    
+    initializeUI() {
+        // No UI initialization needed for independent system
+        console.log(`LiveDisplayManager ${this.displayId} initialized`);
+    }
+    
+    // Set the BroadcastChannel from DisplayInstance
+    setChannel(channel) {
+        console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting channel`, channel);
+        this.channel = channel;
+        
+        // Set up message handler for the channel
+        this.setupChannelMessageHandler();
+    }
+    
+    // Set up message handler for the channel
+    setupChannelMessageHandler() {
+        if (!this.channel) {
+            console.error(`DEBUG LiveDisplayManager ${this.displayId}: Cannot set up message handler - no channel`);
+            return;
+        }
+        
+        console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting up channel message handler`);
+        
+        // Handle incoming messages
+        this.channel.onmessage = async (event) => {
+            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Raw message event:`, event);
+            
+            if (!event.data) {
+                console.error(`DEBUG LiveDisplayManager ${this.displayId}: Received empty message event`);
+                return;
+            }
+            
+            const { type, data } = event.data;
+            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Received message:`, type, data);
+            
+            switch (type) {
+                case 'answer':
+                    await this.handleAnswer(data);
+                    break;
+                case 'ice-candidate':
+                    await this.handleIceCandidate(data);
+                    break;
+                case 'display-ready':
+                    console.log(`LiveDisplay ${this.displayId}: Display window ready`);
+                    // Store that display is ready, but only create offer if we're streaming
+                    this.displayReady = true;
+                    // Only create and send offer if we're already streaming
+                    if (this.isStreaming && this.pc) {
+                        console.log(`LiveDisplay ${this.displayId}: Display ready and streaming - creating offer`);
+                        this.createAndSendOffer();
+                    } else {
+                        console.log(`LiveDisplay ${this.displayId}: Display ready but not streaming yet - will create offer when streaming starts`);
+                    }
+                    break;
+                case 'pong':
+                    console.log(`LiveDisplay ${this.displayId}: Pong received`);
+                    break;
+                case 'display-settings':
+                    // Update display settings
+                    if (data) {
+                        console.log(`DEBUG LiveDisplay ${this.displayId}: Received display settings:`, data);
+                        console.log(`DEBUG LiveDisplay ${this.displayId}: Current settings:`, this.displaySettings);
+                        
+                        // Update capture settings
+                        if (data.captureVideo !== undefined) {
+                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVideo from ${this.displaySettings.captureVideo} to ${data.captureVideo}`);
+                            this.displaySettings.captureVideo = data.captureVideo;
+                        }
+                        if (data.captureVisualization !== undefined) {
+                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVisualization from ${this.displaySettings.captureVisualization} to ${data.captureVisualization}`);
+                            this.displaySettings.captureVisualization = data.captureVisualization;
+                        }
+                        if (data.captureKaleidoscope !== undefined) {
+                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureKaleidoscope from ${this.displaySettings.captureKaleidoscope} to ${data.captureKaleidoscope}`);
+                            this.displaySettings.captureKaleidoscope = data.captureKaleidoscope;
+                        }
+                        if (data.captureInfiniteZoom !== undefined) {
+                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureInfiniteZoom from ${this.displaySettings.captureInfiniteZoom} to ${data.captureInfiniteZoom}`);
+                            this.displaySettings.captureInfiniteZoom = data.captureInfiniteZoom;
+                        }
+                        
+                        console.log(`DEBUG LiveDisplay ${this.displayId}: Updated settings:`, this.displaySettings);
+                    } else {
+                        console.error(`DEBUG LiveDisplay ${this.displayId}: Received empty display settings`);
+                    }
+                    break;
+            }
+        };
+    }
+    
+    // IDENTICAL to RecordManager.getRecordingDimensions()
+    getRecordingDimensions() {
+        let targetWidth, targetHeight;
+        
+        if (this.resolution === 'canvas') {
+            // Use current canvas dimensions
+            const canvas = this.visualizer.audioMotion?.canvas;
+            if (canvas) {
+                targetWidth = canvas.width;
+                targetHeight = canvas.height;
+            } else {
+                targetWidth = 1920;
+                targetHeight = 1080;
+            }
+        } else {
+            const preset = this.resolutionPresets[this.resolution];
+            targetWidth = preset.width;
+            targetHeight = preset.height;
+        }
+        
+        console.log(`LiveDisplay ${this.displayId} dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
+        console.log(`Current aspect ratio setting: ${this.aspectRatio}`);
+        console.log(`Match visualization aspect: ${this.matchVisualizationAspect}`);
+        
+        // Determine target aspect ratio
+        let targetAspect;
+        
+        // Always use window/canvas dimensions for streaming - don't force video aspect ratio
+        // This ensures streaming captures whatever is visible in the window
+        const canvas = this.visualizer.audioMotion?.canvas;
+        if (canvas) {
+            targetAspect = canvas.width / canvas.height;
+            console.log(`✓ LiveDisplay ${this.displayId} using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
+        } else {
+            // Fallback to manual aspect ratio setting
+            const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
+            targetAspect = ratioW / ratioH;
+            console.log(`✓ LiveDisplay ${this.displayId} using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
+        }
+        console.log(`LiveDisplay ${this.displayId} final targetAspect:`, targetAspect);
+        
+        // Calculate final dimensions
+        const currentAspect = targetWidth / targetHeight;
+        
+        if (Math.abs(currentAspect - targetAspect) > 0.01) {
+            // Adjust dimensions to match target aspect ratio
+            if (currentAspect > targetAspect) {
+                // Too wide, reduce width
+                targetWidth = Math.round(targetHeight * targetAspect);
+            } else {
+                // Too tall, reduce height
+                targetHeight = Math.round(targetWidth / targetAspect);
+            }
+        }
+        
+        console.log(`LiveDisplay ${this.displayId} final dimensions: ${targetWidth}x${targetHeight}`);
+        
+        return { width: targetWidth, height: targetHeight };
+    }
+    
+    // IDENTICAL to RecordManager.setupCompositeCanvas()
+    async setupCompositeCanvas() {
+        const dimensions = this.getRecordingDimensions();
+        
+        this.compositeCanvas = document.createElement('canvas');
+        this.compositeCanvas.width = dimensions.width;
+        this.compositeCanvas.height = dimensions.height;
+        this.compositeCtx = this.compositeCanvas.getContext('2d');
+        
+        console.log(`LiveDisplay ${this.displayId} created composite canvas: ${dimensions.width}x${dimensions.height}`);
+    }
+    
+    // IDENTICAL to RecordManager.startCompositing()
+    startCompositing() {
+        const composite = () => {
+            if (!this.isStreaming) return;
+            
+            this.compositeFrame();
+            this.animationFrame = requestAnimationFrame(composite);
+        };
+        composite();
+    }
+    
+        // IDENTICAL to RecordManager.compositeFrame()
+        compositeFrame() {
+            if (!this.compositeCtx) return;
+            
+            const { width, height } = this.compositeCanvas;
+            
+            // Clear canvas with black background
+            this.compositeCtx.fillStyle = '#000000';
+            this.compositeCtx.fillRect(0, 0, width, height);
+            
+            // Debug: Log every 60 frames (once per second at 60fps)
+            if (!this.frameCount) this.frameCount = 0;
+            this.frameCount++;
+            // if (this.frameCount % 60 === 0) {
+            //     console.log(`LiveDisplay ${this.displayId}: Composite frame ${this.frameCount} - Canvas: ${width}x${height}`);
+            // }
+            
+            // Draw background image if available and enabled
+            if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
+                console.log(`🎥 LiveDisplay ${this.displayId}: Drawing background image in composite`);
+                this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
+            } else {
+                // console.log(`🎥 LiveDisplay ${this.displayId}: Background image skipped -`, {
+                //     hasImage: !!this.visualizer.backgroundImage,
+                //     enabled: this.visualizer.backgroundImageEnabled
+                // });
+            }
+        
+        // Debug logging for kaleidoscope state
+        if (this.visualizer.kaleidoscopeEnabled) {
+            console.log(`LiveDisplay ${this.displayId} Kaleidoscope enabled - ApplyToVideo:`, this.visualizer.kaleidoscopeApplyToVideo, 
+                       'ApplyToViz:', this.visualizer.kaleidoscopeApplyToViz);
+            if (this.visualizer.kaleidoscopeVideoCanvas) {
+                console.log(`LiveDisplay ${this.displayId} Kaleidoscope video canvas display:`, this.visualizer.kaleidoscopeVideoCanvas.style.display,
+                           'opacity:', this.visualizer.kaleidoscopeVideoCanvas.style.opacity);
+            }
+        }
+        
+        // Get source canvas (main visualization canvas)
+        let sourceCanvas = null;
+        
+        // Determine which canvas to capture based on current state
+        if (this.visualizer.kaleidoscopeEnabled) {
+            if (this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+            } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
+            } else if (this.visualizer.audioMotion?.canvas) {
+                sourceCanvas = this.visualizer.audioMotion.canvas;
+            }
+        } else if (this.visualizer.audioMotion?.canvas) {
+            sourceCanvas = this.visualizer.audioMotion.canvas;
+        }
+        
+        if (!sourceCanvas) {
+            console.warn(`LiveDisplay ${this.displayId}: No source canvas found for streaming`);
+            return;
+        }
+        
+        // Calculate shared letterboxing dimensions for both video and visualization
+        let sharedDrawWidth, sharedDrawHeight, sharedDrawX, sharedDrawY;
+        
+        if (this.visualizer.videoElement && 
+            (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
+            this.visualizer.videoElement.readyState >= 2) {
+            
+            // Use video dimensions to calculate proper letterboxing (fit to width, crop top/bottom)
+            const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            const canvasAspect = width / height;
+            
+            // Always fit video to width and crop top/bottom (like display)
+            sharedDrawWidth = width;
+            sharedDrawHeight = width / videoAspect;
+            sharedDrawX = 0;
+            sharedDrawY = (height - sharedDrawHeight) / 2;
+            
+            // console.log(`LiveDisplay ${this.displayId} video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            // console.log(`LiveDisplay ${this.displayId} video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
+            
+            // Log compositing frame with settings (every 60 frames)
+            if (!this.frameCount || this.frameCount % 60 === 0) {
+                console.log(`DEBUG LiveDisplay ${this.displayId}: Compositing frame ${this.frameCount} with settings:`, {
+                    captureVideo: this.displaySettings.captureVideo,
+                    captureVisualization: this.displaySettings.captureVisualization,
+                    captureKaleidoscope: this.displaySettings.captureKaleidoscope,
+                    captureInfiniteZoom: this.displaySettings.captureInfiniteZoom
+                });
+                
+                // Debug: Check if this.displaySettings is being updated
+                console.log(`DEBUG LiveDisplay ${this.displayId}: Full displaySettings object:`, JSON.stringify(this.displaySettings));
+            }
+            
+            // Draw video background with shared dimensions (if capture video is enabled)
+            if (this.displaySettings && this.displaySettings.captureVideo) {
+                if (this.visualizer.kaleidoscopeEnabled && 
+                    this.visualizer.kaleidoscopeApplyToVideo && 
+                    this.visualizer.kaleidoscopeVideoCanvas &&
+                    this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
+                    
+                    // Draw kaleidoscope video canvas (if capture kaleidoscope is enabled)
+                    if (this.displaySettings.captureKaleidoscope) {
+                        const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                        if (kaleidoscopeOpacity > 0) {
+                            this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                            this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                            this.compositeCtx.globalAlpha = 1;
+                        }
+                    }
+                } else {
+                    // Draw regular video with effects using shared dimensions
+                    const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
+                    if (opacity > 0) {
+                        this.compositeCtx.globalAlpha = opacity;
+                        this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                }
+            }
+            
+            // Draw visualization using full canvas dimensions (if capture visualization is enabled)
+            if (this.displaySettings && this.displaySettings.captureVisualization) {
+                // console.log(`LiveDisplay ${this.displayId} drawing visualization with full canvas dimensions: ${width}x${height}`);
+                this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+            }
+            
+            // Draw Infinite Zoom if active and not captured via kaleidoscope (if capture infinite zoom is enabled)
+            if (this.displaySettings && this.displaySettings.captureInfiniteZoom && 
+                this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && 
+                this.visualizer.infiniteZoom.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                if (shouldDrawSeparately) {
+                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
+                }
+            }
+            
+        } else {
+            // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
+            if (this.displaySettings && this.displaySettings.captureVisualization) {
+                this.drawScaledVisualization(sourceCanvas);
+            }
+            
+            // Draw Infinite Zoom if active and not captured via kaleidoscope (if capture infinite zoom is enabled)
+            if (this.displaySettings && this.displaySettings.captureInfiniteZoom && 
+                this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && 
+                this.visualizer.infiniteZoom.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
+            }
+        }
+    }
+    
+    // IDENTICAL to RecordManager.drawVideoWithProperLetterboxing()
+    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight) {
+        const video = this.visualizer.videoElement;
+        
+        if (!video || video.readyState < 2) return;
+        
+        // Apply video effects directly to the video element
+        this.compositeCtx.save();
+        
+        // Build filter string
+        const filters = [];
+        
+        // Apply posterize FIRST with stronger effect
+        if (this.visualizer.videoPosterize < 16) {
+            const steps = this.visualizer.videoPosterize;
+            const posterizeAmount = (16 - steps) / 16;
+            filters.push(`contrast(${300 + posterizeAmount * 200}%)`);
+            filters.push(`brightness(${95}%)`);
+            filters.push(`saturate(${200}%)`);
+            if (steps < 8) {
+                filters.push(`contrast(${150}%)`);
+            }
+        }
+        
+        // Apply other video adjustments
+        if (this.visualizer.videoBrightness !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`brightness(${this.visualizer.videoBrightness}%)`);
+        }
+        if (this.visualizer.videoContrast !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`contrast(${this.visualizer.videoContrast}%)`);
+        }
+        if (this.visualizer.videoSaturation !== 100 && this.visualizer.videoPosterize >= 16) {
+            filters.push(`saturate(${this.visualizer.videoSaturation}%)`);
+        }
+        if (this.visualizer.videoHueRotate !== 0) {
+            filters.push(`hue-rotate(${this.visualizer.videoHueRotate}deg)`);
+        }
+        if (this.visualizer.videoGrayscale > 0) {
+            filters.push(`grayscale(${this.visualizer.videoGrayscale}%)`);
+        }
+        if (this.visualizer.videoSepia > 0) {
+            filters.push(`sepia(${this.visualizer.videoSepia}%)`);
+        }
+        if (this.visualizer.videoBlur > 0) {
+            filters.push(`blur(${this.visualizer.videoBlur}px)`);
+        }
+        if (this.visualizer.videoInvert) {
+            filters.push('invert(100%)');
+        }
+        
+        // Apply filters
+        this.compositeCtx.filter = filters.length > 0 ? filters.join(' ') : 'none';
+        
+        // Calculate pulse scale if enabled
+        let scale = 1;
+        if (this.visualizer.videoPulse) {
+            const pulseDuration = this.visualizer.videoPulseRate * 1000;
+            const pulsePhase = (Date.now() % pulseDuration) / pulseDuration;
+            scale = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.02);
+        }
+        
+        // Apply pulse scaling
+        if (scale !== 1) {
+            const centerX = drawX + drawWidth / 2;
+            const centerY = drawY + drawHeight / 2;
+            this.compositeCtx.translate(centerX, centerY);
+            this.compositeCtx.scale(scale, scale);
+            this.compositeCtx.translate(-centerX, -centerY);
+        }
+        
+        // Draw video with proper letterboxing
+        this.compositeCtx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
+        
+        this.compositeCtx.restore();
+        
+        // Apply vignette effect if enabled
+        if (this.visualizer.videoVignette > 0) {
+            this.compositeCtx.save();
+            const intensity = this.visualizer.videoVignette / 100;
+            const size = (100 - this.visualizer.videoVignette) / 100;
+            
+            const gradient = this.compositeCtx.createRadialGradient(
+                drawX + drawWidth / 2, drawY + drawHeight / 2, 
+                Math.min(drawWidth, drawHeight) * size * 0.5,
+                drawX + drawWidth / 2, drawY + drawHeight / 2, 
+                Math.max(drawWidth, drawHeight) * 0.7
+            );
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            gradient.addColorStop(1, `rgba(0, 0, 0, ${intensity})`);
+            
+            this.compositeCtx.fillStyle = gradient;
+            this.compositeCtx.fillRect(drawX, drawY, drawWidth, drawHeight);
+            this.compositeCtx.restore();
+        }
+    }
+    
+    // IDENTICAL to RecordManager.drawScaledVisualization()
+    drawScaledVisualization(canvas) {
+        if (!canvas) return;
+        
+        const { width, height } = this.compositeCanvas;
+        const canvasAspect = canvas.width / canvas.height;
+        const targetAspect = width / height;
+        
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (canvasAspect > targetAspect) {
+            // Canvas is wider, fit to width
+            drawWidth = width;
+            drawHeight = width / canvasAspect;
+            drawX = 0;
+            drawY = (height - drawHeight) / 2;
+        } else {
+            // Canvas is taller, fit to height
+            drawHeight = height;
+            drawWidth = height * canvasAspect;
+            drawX = (width - drawWidth) / 2;
+            drawY = 0;
+        }
+        
+        this.compositeCtx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
+    }
+    
+    // NEW: WebRTC streaming instead of MediaRecorder
+    async startStreaming() {
+        if (this.isStreaming) return;
+        
+        try {
+            console.log(`LiveDisplay ${this.displayId}: Starting streaming...`);
+            
+            // Check if channel is available
+            if (!this.channel) {
+                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot start streaming - no channel available`);
+                return;
+            }
+            
+            this.isStreaming = true;
+            
+            // Create composite canvas (same as Record)
+            await this.setupCompositeCanvas();
+            
+            // Get stream from composite canvas (same as Record)
+            const videoStream = this.compositeCanvas.captureStream(this.frameRate);
+            console.log(`LiveDisplay ${this.displayId}: Stream created with ${videoStream.getVideoTracks().length} video tracks`);
+            
+            // Debug stream properties
+            videoStream.getVideoTracks().forEach((track, index) => {
+                console.log(`LiveDisplay ${this.displayId}: Track ${index}:`, {
+                    kind: track.kind,
+                    enabled: track.enabled,
+                    readyState: track.readyState,
+                    label: track.label
+                });
+            });
+            
+            // Setup WebRTC (new)
+            this.pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+            
+            // Add tracks to peer connection
+            videoStream.getVideoTracks().forEach(track => {
+                this.pc.addTrack(track, videoStream);
+            });
+            
+            // Start compositing (same as Record)
+            this.startCompositing();
+            
+            // Setup WebRTC negotiation
+            this.setupWebRTC();
+            
+            // If display is already ready, create and send offer
+            if (this.displayReady) {
+                console.log(`LiveDisplay ${this.displayId}: Display already ready - creating offer`);
+                this.createAndSendOffer();
+            } else {
+                console.log(`LiveDisplay ${this.displayId}: Waiting for display to be ready before creating offer`);
+            }
+            
+            console.log(`LiveDisplay ${this.displayId}: Streaming started successfully`);
+            
+        } catch (err) {
+            console.error(`LiveDisplay ${this.displayId}: Error starting streaming:`, err);
+            this.stopStreaming();
+        }
+    }
+    
+    // NEW: WebRTC methods
+    setupWebRTC() {
+        // Handle ICE candidates
+        this.pc.onicecandidate = (event) => {
+            if (event.candidate && this.channel) {
+                // Serialize ICE candidate for BroadcastChannel
+                const candidateData = {
+                    candidate: event.candidate.candidate,
+                    sdpMid: event.candidate.sdpMid,
+                    sdpMLineIndex: event.candidate.sdpMLineIndex,
+                    usernameFragment: event.candidate.usernameFragment
+                };
+                this.channel.postMessage({
+                    type: 'ice-candidate',
+                    data: candidateData
+                });
+            }
+        };
+        
+        // Create and send offer immediately
+        this.createAndSendOffer();
+    }
+    
+    // Create and send WebRTC offer
+    async createAndSendOffer() {
+        try {
+            if (!this.channel) {
+                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot send offer - no channel available`);
+                return;
+            }
+            
+            if (!this.pc) {
+                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot create offer - no peer connection available`);
+                console.log(`DEBUG LiveDisplay ${this.displayId}: Will create offer when streaming starts`);
+                return;
+            }
+            
+            const offer = await this.pc.createOffer();
+            await this.pc.setLocalDescription(offer);
+            console.log(`LiveDisplay ${this.displayId}: Created offer:`, offer.type);
+            
+            // Send offer to display window
+            this.channel.postMessage({
+                type: 'offer',
+                data: offer
+            });
+            console.log(`LiveDisplay ${this.displayId}: Offer sent to display window`);
+        } catch (error) {
+            console.error(`LiveDisplay ${this.displayId}: Error creating offer:`, error);
+        }
+    }
+    
+    async handleAnswer(answer) {
+        try {
+            // Check current state before setting remote description
+            if (this.pc.signalingState === 'have-local-offer') {
+                await this.pc.setRemoteDescription(answer);
+                console.log(`LiveDisplay ${this.displayId}: Answer set`);
+                
+                // Process any pending ICE candidates
+                this.processPendingIceCandidates();
+            } else {
+                console.log(`LiveDisplay ${this.displayId}: Ignoring answer - wrong state: ${this.pc.signalingState}`);
+            }
+        } catch (error) {
+            console.error(`LiveDisplay ${this.displayId}: Error handling answer:`, error);
+        }
+    }
+    
+    async handleIceCandidate(candidateData) {
+        try {
+            // Reconstruct RTCIceCandidate from serialized data
+            const candidate = new RTCIceCandidate(candidateData);
+            
+            if (this.pc.remoteDescription) {
+                await this.pc.addIceCandidate(candidate);
+                console.log(`LiveDisplay ${this.displayId}: ICE candidate added`);
+            } else {
+                this.pendingIceCandidates.push(candidate);
+                console.log(`LiveDisplay ${this.displayId}: ICE candidate queued`);
+            }
+        } catch (error) {
+            console.error(`LiveDisplay ${this.displayId}: Error adding ICE candidate:`, error);
+        }
+    }
+    
+    processPendingIceCandidates() {
+        this.pendingIceCandidates.forEach(candidate => {
+            this.pc.addIceCandidate(candidate);
+        });
+        this.pendingIceCandidates = [];
+    }
+    
+    openDisplayWindow() {
+        try {
+            const windowFeatures = 'width=1920,height=1080,resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no,location=no';
+            this.displayWindow = window.open(`Display.html?displayId=${this.displayId}`, `LiveDisplay_${this.displayId}`, windowFeatures);
+            
+            if (this.displayWindow) {
+                console.log(`LiveDisplay ${this.displayId}: Display window opened`);
+                return true;
+            } else {
+                console.error(`LiveDisplay ${this.displayId}: Failed to open display window`);
+                return false;
+            }
+        } catch (error) {
+            console.error(`LiveDisplay ${this.displayId}: Error opening display window:`, error);
+            return false;
+        }
+    }
+    
+    stopStreaming() {
+        if (!this.isStreaming) return;
+        
+        console.log(`LiveDisplay ${this.displayId}: Stopping streaming...`);
+        this.isStreaming = false;
+        
+        // Stop compositing
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+        
+        // Close WebRTC connection
+        if (this.pc) {
+            this.pc.close();
+            this.pc = null;
+        }
+        
+        // Stop stream tracks
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+        
+        // Clean up composite canvas
+        if (this.compositeCanvas) {
+            this.compositeCanvas = null;
+            this.compositeCtx = null;
+        }
+        
+        // Close display window
+        if (this.displayWindow && !this.displayWindow.closed) {
+            this.displayWindow.close();
+            this.displayWindow = null;
+        }
+        
+        // Close broadcast channel
+        if (this.channel) {
+            this.channel.close();
+            this.channel = null;
+        }
+        
+        // Close settings channel
+        if (this.settingsChannel) {
+            this.settingsChannel.close();
+            this.settingsChannel = null;
+        }
+        
+        console.log(`LiveDisplay ${this.displayId}: Streaming stopped`);
+    }
+        
+}
+
+// ****
+// ****
+
 // Fixed better canvas capture
 class StreamManager {
     constructor(visualizer) {
@@ -3449,7 +4259,7 @@ class StreamManager {
             captureVideo: true,  // Control video capture to Live Display
             captureVisualization: true,  // Control visualization capture to Live Display
             captureInfiniteZoom: true,  // Control Infinite Zoom capture to Live Display
-            matchVideoInput: true  // Control whether to match video input aspect ratio
+            matchVideoInput: false  // Control whether to match video input aspect ratio
         };
     }
 
@@ -3483,7 +4293,14 @@ class StreamManager {
             height = Math.round(width / videoAspect);
             console.log(`Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
         } else {
-            // Use manual aspect ratio setting
+            // Use canvas aspect ratio (like Record system) - captures whatever is visible
+            const canvas = this.visualizer.audioMotion?.canvas;
+            if (canvas && canvas.width > 0 && canvas.height > 0) {
+                const canvasAspect = canvas.width / canvas.height;
+                height = Math.round(width / canvasAspect);
+                console.log(`Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${canvasAspect.toFixed(3)})`);
+            } else {
+                // Fallback to manual aspect ratio setting
             const [ratioW, ratioH] = this.displaySettings.aspectRatio.split(':').map(Number);
             if (ratioW && ratioH) {
                 const aspectRatio = ratioW / ratioH;
@@ -3493,6 +4310,7 @@ class StreamManager {
                 // Fallback to 16:9 if invalid aspect ratio
                 height = Math.round(width * 9 / 16);
                 console.log('Using fallback 16:9 aspect ratio');
+                }
             }
         }
 
@@ -3777,7 +4595,7 @@ class StreamManager {
         const width = this.displaySettings.captureResolution;
         let height;
         
-        // Calculate height based on aspect ratio setting (same logic as reconfigureCapture)
+        // Calculate height based on aspect ratio setting
         if (this.displaySettings.matchVideoInput && 
             this.visualizer && (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') && 
             this.visualizer.videoElement && this.visualizer.videoElement.videoWidth > 0) {
@@ -3786,7 +4604,14 @@ class StreamManager {
             height = Math.round(width / videoAspect);
             console.log(`🎯 setupCaptureCanvas: Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
         } else {
-            // Use manual aspect ratio setting
+            // Use canvas aspect ratio (like Record system) - captures whatever is visible
+            const canvas = this.visualizer.audioMotion?.canvas;
+            if (canvas && canvas.width > 0 && canvas.height > 0) {
+                const canvasAspect = canvas.width / canvas.height;
+                height = Math.round(width / canvasAspect);
+                console.log(`🎯 setupCaptureCanvas: Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${canvasAspect.toFixed(3)})`);
+            } else {
+                // Fallback to manual aspect ratio setting
             const [ratioW, ratioH] = this.displaySettings.aspectRatio.split(':').map(Number);
             if (ratioW && ratioH) {
                 const aspectRatio = ratioW / ratioH;
@@ -3796,6 +4621,7 @@ class StreamManager {
                 // Fallback to 16:9 if invalid aspect ratio
                 height = Math.round(width * 9 / 16);
                 console.log('🎯 setupCaptureCanvas: Using fallback 16:9 aspect ratio');
+                }
             }
         }
 
@@ -4361,6 +5187,41 @@ class StreamManager {
 
 // ****
 // ****
+
+// Phase 1: Test LiveDisplayManager functionality
+async function testLiveDisplayManager() {
+    try {
+        console.log('🧪 Phase 1: Testing LiveDisplayManager...');
+        
+        if (!window.visualizer || !window.visualizer.liveDisplayManager) {
+            console.error('❌ Phase 1: LiveDisplayManager not available');
+            return;
+        }
+        
+        const manager = window.visualizer.liveDisplayManager;
+        
+        // Test 1: Verify composite canvas creation
+        await manager.setupCompositeCanvas();
+        console.log('✅ Test 1: Composite canvas created:', manager.compositeCanvas.width, 'x', manager.compositeCanvas.height);
+        
+        // Test 2: Verify streaming capability
+        const videoStream = manager.compositeCanvas.captureStream(30);
+        console.log('✅ Test 2: Stream created with tracks:', videoStream.getTracks().length);
+        
+        // Test 3: Verify compositing works
+        manager.startCompositing();
+        console.log('✅ Test 3: Compositing started');
+        
+        // Stop compositing after 1 second
+        setTimeout(() => {
+            manager.stopStreaming();
+            console.log('✅ Phase 1: All tests passed - LiveDisplayManager is working correctly');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('❌ Phase 1: Test failed:', error);
+    }
+}
 
 // GitItUp Visualizer Class with Audio Input and Morph Support
 class GitItUpVisualizer {
@@ -4976,6 +5837,13 @@ class GitItUpVisualizer {
 
             this.streamManager = new StreamManager(this);
             this.recordManager = new RecordManager(this);
+            
+            // Phase 1: Test LiveDisplayManager
+            this.liveDisplayManager = new LiveDisplayManager(this, 'test');
+            console.log('✅ Phase 1: LiveDisplayManager created successfully');
+            
+            // Test Phase 1 functionality
+            testLiveDisplayManager();
             this.playlistManager = new PlaylistManager(this);
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
@@ -5161,6 +6029,7 @@ class GitItUpVisualizer {
             }
         }, 10);
         }
+        
     }
     
     closeFooterSettingsPanel(panelId) {
@@ -5237,12 +6106,155 @@ class GitItUpVisualizer {
         console.log('Footer Autopilot settings panel closed');
     }
 
+
     initializeFooterSettingsControls() {
         // Initialize display settings controls with footer prefixed IDs
         this.initializeFooterDisplayControls();
         this.initializeFooterRecordControls();
         this.initializeFooterAutopilotControls();
         this.initializeLearningAnalyticsModal();
+    }
+
+    initializeDisplaySettingsPanels() {
+        console.log('Initializing display settings panels...');
+        
+        // Initialize display 1 settings
+        this.initializeDisplayPanelSettings('display1');
+        
+        // Initialize display 2 settings
+        this.initializeDisplayPanelSettings('display2');
+        
+        // Initialize display 3 settings
+        this.initializeDisplayPanelSettings('display3');
+    }
+
+    initializeDisplayPanelSettings(displayId) {
+        const panelId = `${displayId}SettingsPanel`;
+        
+        
+        // Display mode buttons
+        const displayModeBtns = document.querySelectorAll(`#${panelId} .display-mode-btn`);
+        displayModeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+                this.setDisplayMode(displayId, mode);
+            });
+        });
+        
+        // Enhancement sliders
+        const sharpnessSlider = document.getElementById(`${displayId}Sharpness`);
+        if (sharpnessSlider) {
+            sharpnessSlider.addEventListener('input', (e) => {
+                this.setDisplaySharpness(displayId, parseInt(e.target.value));
+            });
+        }
+        
+        // Letterbox color picker
+        const letterboxColorPicker = document.getElementById(`${displayId}LetterboxColor`);
+        if (letterboxColorPicker) {
+            letterboxColorPicker.addEventListener('change', (e) => {
+                this.setDisplayLetterboxColor(displayId, e.target.value);
+            });
+        }
+        
+        // Mirror background toggle
+        const mirrorBackgroundBtn = document.getElementById(`${displayId}MirrorBackgroundBtn`);
+        if (mirrorBackgroundBtn) {
+            mirrorBackgroundBtn.addEventListener('click', () => {
+                this.toggleDisplayMirrorBackground(displayId);
+            });
+        }
+        
+        // Preset buttons
+        const presetBtns = document.querySelectorAll(`#${panelId} .display-preset-btn`);
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                this.applyDisplayPreset(displayId, preset);
+            });
+        });
+    }
+
+
+    setDisplayMode(displayId, mode) {
+        // Update active button
+        const panelId = `${displayId}SettingsPanel`;
+        const modeBtns = document.querySelectorAll(`#${panelId} .display-mode-btn`);
+        modeBtns.forEach(btn => btn.classList.remove('active'));
+        
+        const activeBtn = document.querySelector(`#${panelId} .display-mode-btn[data-mode="${mode}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+        
+        console.log(`Display ${displayId}: Mode set to ${mode}`);
+    }
+
+    setDisplaySharpness(displayId, value) {
+        const valueDisplay = document.getElementById(`${displayId}SharpnessValue`);
+        if (valueDisplay) {
+            valueDisplay.textContent = `${value}%`;
+        }
+        
+        console.log(`Display ${displayId}: Sharpness set to ${value}%`);
+    }
+
+    setDisplayLetterboxColor(displayId, color) {
+        const valueDisplay = document.getElementById(`${displayId}LetterboxColorValue`);
+        if (valueDisplay) {
+            valueDisplay.textContent = color;
+        }
+        
+        console.log(`Display ${displayId}: Letterbox color set to ${color}`);
+    }
+
+    toggleDisplayMirrorBackground(displayId) {
+        const btn = document.getElementById(`${displayId}MirrorBackgroundBtn`);
+        if (!btn) return;
+        
+        const isActive = btn.classList.contains('active');
+        btn.classList.toggle('active');
+        btn.textContent = `Mirror Background: ${isActive ? 'Off' : 'On'}`;
+        
+        console.log(`Display ${displayId}: Mirror background ${isActive ? 'disabled' : 'enabled'}`);
+    }
+
+    applyDisplayPreset(displayId, preset) {
+        console.log(`Display ${displayId}: Applying preset ${preset}`);
+        
+        // Update active preset button
+        const panelId = `${displayId}SettingsPanel`;
+        const presetBtns = document.querySelectorAll(`#${panelId} .display-preset-btn`);
+        presetBtns.forEach(btn => btn.classList.remove('active'));
+        
+        const activeBtn = document.querySelector(`#${panelId} .display-preset-btn[data-preset="${preset}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+        
+        // Apply preset settings
+        switch (preset) {
+            case 'cinema':
+                this.setDisplayMode(displayId, 'fit');
+                this.setDisplaySharpness(displayId, 0);
+                this.setDisplayLetterboxColor(displayId, '#000000');
+                break;
+            case 'social':
+                this.setDisplayMode(displayId, 'fill');
+                this.setDisplaySharpness(displayId, 20);
+                this.setDisplayLetterboxColor(displayId, '#1a1a1a');
+                break;
+            case 'performance':
+                this.setDisplayMode(displayId, 'stretch');
+                this.setDisplaySharpness(displayId, 10);
+                this.setDisplayLetterboxColor(displayId, '#000000');
+                break;
+            case 'projector':
+                this.setDisplayMode(displayId, 'original');
+                this.setDisplaySharpness(displayId, 0);
+                this.setDisplayLetterboxColor(displayId, '#000000');
+                break;
+        }
     }
 
     initializeFooterDisplayControls() {
@@ -5262,82 +6274,6 @@ class GitItUpVisualizer {
                     
                     // Send to display window if streaming
                     if (this.streamManager.isStreaming) {
-                        this.streamManager.channel.postMessage({
-                            type: 'display-settings', 
-                            data: this.streamManager.displaySettings
-                        });
-                    }
-                }
-            });
-        });
-
-        // Capture bitrate slider
-        const footerCaptureBitrate = document.getElementById('footerCaptureBitrate');
-        if (footerCaptureBitrate) {
-            footerCaptureBitrate.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                document.getElementById('footerCaptureBitrateValue').textContent = value + ' Mbps';
-                
-                // Update settings using streamManager
-                if (this.streamManager) {
-                    this.streamManager.displaySettings.captureBitrate = value;
-                    this.streamManager.saveDisplaySettings();
-                    
-                    // Bitrate changes take effect on next WebRTC renegotiation
-                }
-            });
-        }
-
-        // Capture resolution select
-        const footerCaptureResolution = document.getElementById('footerCaptureResolution');
-        if (footerCaptureResolution) {
-            footerCaptureResolution.addEventListener('change', (e) => {
-                const value = parseInt(e.target.value);
-                if (this.streamManager) {
-                    this.streamManager.displaySettings.captureResolution = value;
-                    this.streamManager.saveDisplaySettings();
-                    
-                    // Reconfigure capture canvas with new resolution (preserves aspect ratio)
-                    if (this.streamManager.isStreaming) {
-                        this.streamManager.reconfigureCapture();
-                    }
-                }
-            });
-        }
-
-        // Capture frame rate select
-        const footerCaptureFrameRate = document.getElementById('footerCaptureFrameRate');
-        if (footerCaptureFrameRate) {
-            footerCaptureFrameRate.addEventListener('change', (e) => {
-                const value = parseInt(e.target.value);
-                if (this.streamManager) {
-                    this.streamManager.displaySettings.captureFrameRate = value;
-                    this.streamManager.saveDisplaySettings();
-                    
-                    // Reconfigure capture canvas with new frame rate (preserves aspect ratio)
-                    if (this.streamManager.isStreaming) {
-                        this.streamManager.reconfigureCapture();
-                    }
-                }
-            });
-        }
-
-        // Aspect ratio buttons - use same logic as sidebar
-        const footerAspectRatioButtons = document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn');
-        footerAspectRatioButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Update active state - footer only (sidebar sync removed)
-                document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const ratio = btn.dataset.ratio;
-                if (this.streamManager) {
-                    this.streamManager.displaySettings.aspectRatio = ratio;
-                    this.streamManager.saveDisplaySettings();
-                    
-                    // Reconfigure capture canvas with new aspect ratio
-                    if (this.streamManager.isStreaming) {
-                        this.streamManager.reconfigureCapture();
                         this.streamManager.channel.postMessage({
                             type: 'display-settings', 
                             data: this.streamManager.displaySettings
@@ -5974,7 +6910,7 @@ class GitItUpVisualizer {
         }
         
     }
-    
+
     updateAspectRatioToMatchVideo() {
         // Calculate video aspect ratio and select closest matching button
         if (!this.videoElement || this.videoElement.videoWidth <= 0 || this.videoElement.videoHeight <= 0) {
@@ -9123,7 +10059,7 @@ class GitItUpVisualizer {
         console.log('✓ Canvas resizing disabled - preserving visualization rendering quality');
         console.log('✓ Recording will capture whatever is visible in the window');
         
-        return;
+                return;
     }
 
     restoreOriginalAspectRatio() {
@@ -10960,50 +11896,30 @@ class GitItUpVisualizer {
         const presets = {
             cinema: {
                 presentationMode: 'fit',
-                aspectRatio: '21:9',
-                captureResolution: 2560,
-                captureFrameRate: 24,
-                captureBitrate: 30,
                 displaySharpness: 20,
                 letterboxColor: '#000000',
                 mirrorBackground: false
             },
             presentation: {
                 presentationMode: 'fit',
-                aspectRatio: '16:9',
-                captureResolution: 2560,
-                captureFrameRate: 30,
-                captureBitrate: 30,
                 displaySharpness: 30,
                 letterboxColor: '#1a1a1a',
                 mirrorBackground: false
             },
             social: {
                 presentationMode: 'fit',
-                aspectRatio: '1:1',
-                captureResolution: 2560,
-                captureFrameRate: 30,
-                captureBitrate: 30,
                 displaySharpness: 0,
                 letterboxColor: '#ffffff',
                 mirrorBackground: false
             },
             performance: {
                 presentationMode: 'fit',
-                aspectRatio: 'auto',
-                captureResolution: 2560,
-                captureFrameRate: 60,
-                captureBitrate: 30,
                 displaySharpness: 0,
                 letterboxColor: '#000000',
                 mirrorBackground: false
             },
             projector: {
                 presentationMode: 'fit',
-                aspectRatio: '4:3',
-                captureResolution: 2560,
-                captureFrameRate: 60,
-                captureBitrate: 30,
                 displaySharpness: 50,
                 letterboxColor: '#000000',
                 mirrorBackground: true,
@@ -11013,8 +11929,19 @@ class GitItUpVisualizer {
 
         const settings = presets[preset];
         if (settings && this.streamManager) {
-            this.streamManager.updateDisplaySettings(settings);
-            this.updateDisplaySettingsUI(settings);
+            // Update only the settings we still have
+            Object.assign(this.streamManager.displaySettings, settings);
+            this.streamManager.saveDisplaySettings();
+            
+            // Update UI to reflect changes
+            this.updateDisplaySettingsUI();
+            
+            // Send to display window if streaming
+            if (this.streamManager.isStreaming) {
+                this.streamManager.channel.postMessage({type: 'display-settings', data: this.streamManager.displaySettings});
+            }
+            
+            console.log(`Applied ${preset} preset:`, settings);
         }
     }
 
@@ -13681,7 +14608,8 @@ https://rogueamoeba.com/loopback/
             panel.style.right = 'auto';
             
             // Special positioning for panels that should appear above button
-            if (button.id === 'footerPlaylistBtn' || button.id === 'footerDisplaySettingsBtn' || button.id === 'footerRecordSettingsBtn') {
+            if (button.id === 'footerPlaylistBtn' || button.id === 'footerDisplaySettingsBtn' || button.id === 'footerRecordSettingsBtn' || 
+                button.id === 'display1SettingsBtn' || button.id === 'display2SettingsBtn' || button.id === 'display3SettingsBtn') {
                 panel.style.top = `${buttonRect.top - 4}px`;
                 panel.style.transform = 'translateY(-100%)';
             } else {
@@ -13805,6 +14733,29 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Display settings close buttons
+        const display1SettingsClose = document.getElementById('display1SettingsClose');
+        const display2SettingsClose = document.getElementById('display2SettingsClose');
+        const display3SettingsClose = document.getElementById('display3SettingsClose');
+        
+        if (display1SettingsClose) {
+            display1SettingsClose.addEventListener('click', () => {
+                this.closeFooterSettingsPanel('display1SettingsPanel');
+            });
+        }
+        
+        if (display2SettingsClose) {
+            display2SettingsClose.addEventListener('click', () => {
+                this.closeFooterSettingsPanel('display2SettingsPanel');
+            });
+        }
+        
+        if (display3SettingsClose) {
+            display3SettingsClose.addEventListener('click', () => {
+                this.closeFooterSettingsPanel('display3SettingsPanel');
+            });
+        }
+
         // Click outside to close footer settings panels
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.footer-settings-panel') && !e.target.closest('.footer-settings-btn')) {
@@ -13816,6 +14767,9 @@ https://rogueamoeba.com/loopback/
         setTimeout(() => {
             this.initializeFooterSettingsControls();
         }, 100);
+
+        // Initialize display settings panels
+        this.initializeDisplaySettingsPanels();
 
         // Display Settings Panel Controls
         // Close button
@@ -16907,6 +17861,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new GitItUpVisualizer();
+
+// Initialize Multi-Display Manager (isolated system)
+window.multiDisplayManager = new MultiDisplayManager(window.visualizer);
 
 // Initialize footer Live Audio button state
 if (window.visualizer && window.visualizer.updateFooterLiveAudioButton) {
