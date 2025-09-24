@@ -502,8 +502,25 @@
                     }
                 };
 
+                // Check if we received bitrate information
+                const bitrate = offer.bitrate;
+                if (bitrate) {
+                    console.log(`Received bitrate setting: ${bitrate/1000000} Mbps`);
+                }
+                
+                // Create RTCSessionDescription if needed
+                let rtcOffer;
+                if (typeof offer === 'object' && offer.type && offer.sdp) {
+                    rtcOffer = new RTCSessionDescription({
+                        type: offer.type,
+                        sdp: offer.sdp
+                    });
+                } else {
+                    rtcOffer = offer;
+                }
+                
                 // Set remote description and create answer
-                await this.pc.setRemoteDescription(offer);
+                await this.pc.setRemoteDescription(rtcOffer);
                 
                 // Process any queued ICE candidates now that we have remote description
                 await this.processPendingIceCandidates();
@@ -511,10 +528,42 @@
                 // Only create and send answer if we haven't already
                 if (!this.hasAnswered) {
                     const answer = await this.pc.createAnswer();
-                    await this.pc.setLocalDescription(answer);
-
-                    // Send answer back
-                    this.channel.postMessage({type: 'answer', data: answer});
+                    
+                    // Apply bitrate to answer if provided in offer
+                    if (bitrate) {
+                        let sdp = answer.sdp;
+                        // Add b=AS line for bandwidth limitation
+                        sdp = sdp.replace(/(m=video.*\r\n)/g, `$1b=AS:${Math.floor(bitrate/1000)}\r\n`);
+                        
+                        // Create modified answer with bitrate
+                        const modifiedAnswer = new RTCSessionDescription({
+                            type: answer.type,
+                            sdp: sdp
+                        });
+                        
+                        await this.pc.setLocalDescription(modifiedAnswer);
+                        
+                        // Send serialized answer back
+                        this.channel.postMessage({
+                            type: 'answer', 
+                            data: {
+                                type: modifiedAnswer.type,
+                                sdp: modifiedAnswer.sdp
+                            }
+                        });
+                    } else {
+                        await this.pc.setLocalDescription(answer);
+                        
+                        // Send serialized answer back
+                        this.channel.postMessage({
+                            type: 'answer', 
+                            data: {
+                                type: answer.type,
+                                sdp: answer.sdp
+                            }
+                        });
+                    }
+                    
                     this.hasAnswered = true;
                     console.log('Answer sent successfully');
                 } else {

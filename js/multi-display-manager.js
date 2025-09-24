@@ -66,6 +66,35 @@ class MultiDisplayManager {
         // Capture toggles for this display
         this.setupDisplayCaptureToggles(displayId);
         
+        // Stream settings
+        // Resolution select
+        const resolutionSelect = document.getElementById(`display${displayId}ResolutionSelect`);
+        if (resolutionSelect) {
+            resolutionSelect.value = this.getDisplaySettings(displayId).resolution || '1080p';
+            resolutionSelect.addEventListener('change', () => {
+                this.updateDisplaySettings(displayId, { resolution: resolutionSelect.value });
+            });
+        }
+        
+        // Frame rate select
+        const frameRateSelect = document.getElementById(`display${displayId}FrameRateSelect`);
+        if (frameRateSelect) {
+            const frameRate = this.getDisplaySettings(displayId).frameRate;
+            frameRateSelect.value = frameRate ? frameRate.toString() : '30';
+            frameRateSelect.addEventListener('change', () => {
+                this.updateDisplaySettings(displayId, { frameRate: parseInt(frameRateSelect.value) });
+            });
+        }
+        
+        // Video quality select
+        const videoQualitySelect = document.getElementById(`display${displayId}VideoQualitySelect`);
+        if (videoQualitySelect) {
+            videoQualitySelect.value = this.getDisplaySettings(displayId).videoQuality || 'auto';
+            videoQualitySelect.addEventListener('change', () => {
+                this.updateDisplaySettings(displayId, { videoQuality: videoQualitySelect.value });
+            });
+        }
+        
         // Display mode buttons
         const modeButtons = document.querySelectorAll(`#display${displayId}SettingsPanel .display-mode-btn`);
         modeButtons.forEach(btn => {
@@ -408,7 +437,10 @@ class DisplayInstance {
             displaySharpness: 0,
             letterboxColor: '#000000',
             mirrorBackground: false,
-            mirrorBackgroundBlur: 20
+            mirrorBackgroundBlur: 20,
+            resolution: '1080p',
+            frameRate: 30,
+            videoQuality: 'auto'
         };
     }
     
