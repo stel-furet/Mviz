@@ -1370,4 +1370,11 @@ html body .slider-2-wrapper .slider-2-value {
     padding: 16px;
 }
 
+/* Hide legacy Live Display controls */
+#liveDisplayBtn, 
+#footerDisplaySettingsBtn, 
+#footerDisplaySettingsPanel {
+    display: none !important;
+}
+
 
