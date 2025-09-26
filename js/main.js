@@ -2745,6 +2745,19 @@ class RecordManager {
                 }
             }
             
+            // Draw WebGL visualization if active and not captured via kaleidoscope
+            if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
+                // Check WebGL support before attempting to draw
+                if (!this.visualizer.webglVisualization.webglSupported) {
+                    console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
+                } else {
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                    if (shouldDrawSeparately) {
+                        this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
+                    }
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing
             this.drawScaledVisualization(sourceCanvas);
@@ -2754,6 +2767,19 @@ class RecordManager {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
+            }
+            
+            // Draw WebGL visualization if active and not captured via kaleidoscope
+            if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
+                // Check WebGL support before attempting to draw
+                if (!this.visualizer.webglVisualization.webglSupported) {
+                    console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
+                } else {
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                    if (shouldDrawSeparately) {
+                        this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
+                    }
                 }
             }
         }

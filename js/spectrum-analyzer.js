@@ -513,6 +513,36 @@ class SpectrumAnalyzer {
                 window.visualizer.infiniteZoom.update(audioFeatures);
                 window.visualizer.infiniteZoom.draw();
             }
+            
+            // Still update WebGL even when main visualization is off
+            if (window.visualizer.webglVisualization && window.visualizer.webglVisualization.isActive) {
+                let audioFeatures = null;
+                
+                // Try to get audio features from AI Autopilot first
+                if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                    audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                }
+                
+                // Fallback: generate basic audio features from main audio analyzer
+                if (!audioFeatures && this.analyser && this.dataArray) {
+                    audioFeatures = this.generateBasicAudioFeatures();
+                    console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                } else if (!audioFeatures) {
+                    console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                } else if (audioFeatures && audioFeatures.energy === 0) {
+                    // Try to generate basic audio features if AI features have no energy
+                    console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                    const basicFeatures = this.generateBasicAudioFeatures();
+                    if (basicFeatures.energy > 0) {
+                        audioFeatures = basicFeatures;
+                        console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                    }
+                }
+                
+                window.visualizer.webglVisualization.update(audioFeatures);
+                window.visualizer.webglVisualization.draw();
+            }
+            
             this.animationFrame = requestAnimationFrame(() => this.animate());
             return; // Skip main drawing but keep loop running for quick resume
         }
