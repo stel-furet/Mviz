@@ -2751,7 +2751,7 @@ class RecordManager {
                 if (!this.visualizer.webglVisualization.webglSupported) {
                     console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
                 } else {
-                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                     if (shouldDrawSeparately) {
                         this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
                     }
@@ -2776,7 +2776,7 @@ class RecordManager {
                 if (!this.visualizer.webglVisualization.webglSupported) {
                     console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
                 } else {
-                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                     if (shouldDrawSeparately) {
                         this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
                     }
@@ -3916,7 +3916,7 @@ class LiveDisplayManager {
             if (this.displaySettings && this.displaySettings.captureWebGL && 
                 this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
                 this.visualizer.webglVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                 if (shouldDrawSeparately) {
                     this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
                 }
@@ -3942,7 +3942,7 @@ class LiveDisplayManager {
             if (this.displaySettings && this.displaySettings.captureWebGL && 
                 this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
                 this.visualizer.webglVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
                 }
@@ -5291,6 +5291,39 @@ class StreamManager {
                     }
                 }
 
+                // Layer 6: WebGL (only when NOT captured via kaleidoscope) AND CAPTURE WEBGL IS ENABLED
+                if (this.displaySettings.captureWebGL && this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
+                    // Check WebGL support before attempting to capture
+                    if (!this.visualizer.webglVisualization.webglSupported) {
+                        if (frameCount % 60 === 0) {
+                            console.warn('🎮 Stream: WebGL not supported - skipping WebGL capture');
+                        }
+                    } else {
+                        // Only capture WebGL separately if kaleidoscope is OFF or not applying to viz or not applying to webgl
+                        const shouldCaptureSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
+                        
+                        if (shouldCaptureSeparately) {
+                            this.captureCtx.save();
+                            this.captureCtx.globalAlpha = 1; // WebGL doesn't have opacity setting like Infinite Zoom
+                            this.captureCtx.filter = 'none';
+
+                            // Draw WebGL canvas with proper scaling
+                            this.captureCtx.save();
+                            this.captureCtx.scale(this.captureScale, this.captureScale);
+                            this.captureCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, this.baseCaptureWidth, this.baseCaptureHeight);
+                            this.captureCtx.restore();
+
+                            if (frameCount % 60 === 0) {
+                                console.log('Captured WebGL separately scaled by', this.captureScale + 'x');
+                            }
+
+                            this.captureCtx.restore();
+                        } else if (frameCount % 60 === 0) {
+                            console.log('WebGL captured via kaleidoscope - skipping separate capture');
+                        }
+                    }
+                }
+
                 frameCount++;
 
             } catch (error) {
@@ -5581,6 +5614,7 @@ class GitItUpVisualizer {
         this.kaleidoscopeApplyToVideo = false;
         this.kaleidoscopeApplyToViz = false; // Default to OFF
         this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
+        this.kaleidoscopeApplyToWebGL = false; // Default to disabled
         
         // Blobs properties
         this.blobsEnabled = false;
@@ -13322,7 +13356,7 @@ https://rogueamoeba.com/loopback/
             }
 
             // Update button based on any Apply To button being ON
-            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom;
+            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL;
             if (anyApplyToActive) {
                 btnText.textContent = 'Kaleidoscope';
                 btn.classList.add('active');
@@ -13341,7 +13375,7 @@ https://rogueamoeba.com/loopback/
         if (!btnText) return;
         
         // Check if any Apply To button is active
-        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom;
+        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL;
         
         if (anyApplyToActive) {
             btnText.textContent = 'Kaleidoscope';
@@ -13826,6 +13860,18 @@ https://rogueamoeba.com/loopback/
         const beatReactBtn = document.getElementById('webglBeatReactBtn');
         const beatReactControls = document.getElementById('webglBeatReactControls');
         if (beatReactBtn) {
+            // Initialize button state to match particle system state
+            if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                const currentState = this.webglVisualization.currentVisualization.beatReact;
+                beatReactBtn.textContent = `Beat React: ${currentState ? 'On' : 'Off'}`;
+                beatReactBtn.classList.toggle('active', currentState);
+                
+                // Show/hide individual beat controls based on current state
+                if (beatReactControls) {
+                    beatReactControls.style.display = currentState ? 'block' : 'none';
+                }
+            }
+            
             beatReactBtn.addEventListener('click', () => {
                 console.log('🥁 Beat React button clicked');
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
@@ -13834,6 +13880,37 @@ https://rogueamoeba.com/loopback/
                     
                     this.webglVisualization.currentVisualization.beatReact = !currentState;
                     const newState = this.webglVisualization.currentVisualization.beatReact;
+                    
+                    // Auto-enable individual controls when beat react is turned on
+                    if (newState) {
+                        this.webglVisualization.currentVisualization.beatSize = true;
+                        this.webglVisualization.currentVisualization.beatSpeed = true;
+                        this.webglVisualization.currentVisualization.beatCount = true;
+                        this.webglVisualization.currentVisualization.beatGeneration = true;
+                        
+                        // Update individual button states
+                        const beatSizeBtn = document.getElementById('webglBeatSizeBtn');
+                        const beatSpeedBtn = document.getElementById('webglBeatSpeedBtn');
+                        const beatCountBtn = document.getElementById('webglBeatCountBtn');
+                        const beatGenerationBtn = document.getElementById('webglBeatGenerationBtn');
+                        
+                        if (beatSizeBtn) {
+                            beatSizeBtn.textContent = 'Beat Size: On';
+                            beatSizeBtn.classList.add('active');
+                        }
+                        if (beatSpeedBtn) {
+                            beatSpeedBtn.textContent = 'Beat Speed: On';
+                            beatSpeedBtn.classList.add('active');
+                        }
+                        if (beatCountBtn) {
+                            beatCountBtn.textContent = 'Beat Count: On';
+                            beatCountBtn.classList.add('active');
+                        }
+                        if (beatGenerationBtn) {
+                            beatGenerationBtn.textContent = 'Beat Generation: On';
+                            beatGenerationBtn.classList.add('active');
+                        }
+                    }
                     
                     console.log('🥁 Beat React toggled to:', newState);
                     beatReactBtn.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
@@ -14566,6 +14643,16 @@ https://rogueamoeba.com/loopback/
                             this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
                         
+                        // Draw WebGL if active and enabled for kaleidoscope
+                        if (this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas && this.kaleidoscopeApplyToWebGL) {
+                            // Check WebGL support before attempting to draw
+                            if (this.webglVisualization.webglSupported) {
+                                this.kaleidoscopeVizCtx.drawImage(this.webglVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            } else {
+                                console.warn('🎮 Kaleidoscope: WebGL not supported - skipping WebGL capture');
+                            }
+                        }
+                        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -14580,6 +14667,16 @@ https://rogueamoeba.com/loopback/
                         // Draw infinite zoom if active and enabled for kaleidoscope
                         if (this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
                             this.kaleidoscopeVizCtx.drawImage(this.infiniteZoom.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        }
+                        
+                        // Draw WebGL if active and enabled for kaleidoscope
+                        if (this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas && this.kaleidoscopeApplyToWebGL) {
+                            // Check WebGL support before attempting to draw
+                            if (this.webglVisualization.webglSupported) {
+                                this.kaleidoscopeVizCtx.drawImage(this.webglVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                            } else {
+                                console.warn('🎮 Kaleidoscope: WebGL not supported - skipping WebGL capture');
+                            }
                         }
                         
         // Draw blobs if active and enabled for kaleidoscope
@@ -16803,6 +16900,44 @@ https://rogueamoeba.com/loopback/
                 }
 
                 // Sidebar kaleidoscope button removed - functionality moved to header
+            });
+        }
+
+        const headerKaleidoscopeWebGLBtn = document.getElementById('headerKaleidoscopeWebGLBtn');
+        if (headerKaleidoscopeWebGLBtn) {
+            headerKaleidoscopeWebGLBtn.textContent = `WebGL: ${
+                this.kaleidoscopeApplyToWebGL ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeWebGLBtn.classList.toggle('active', this.kaleidoscopeApplyToWebGL);
+            
+            headerKaleidoscopeWebGLBtn.addEventListener('click', () => {
+                // Check WebGL support before allowing toggle
+                if (this.webglVisualization && !this.webglVisualization.webglSupported) {
+                    console.warn('🎮 Kaleidoscope: WebGL not supported - cannot enable WebGL Apply');
+                    alert('WebGL not supported. Check Browser settings.');
+                    return;
+                }
+                
+                this.kaleidoscopeApplyToWebGL = !this.kaleidoscopeApplyToWebGL;
+                headerKaleidoscopeWebGLBtn.textContent = `WebGL: ${
+                    this.kaleidoscopeApplyToWebGL ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeWebGLBtn.classList.toggle('active', this.kaleidoscopeApplyToWebGL);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
+
+                // Enable kaleidoscope if turning on WebGL, disable if all are off
+                if (this.kaleidoscopeApplyToWebGL) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
             });
         }
 

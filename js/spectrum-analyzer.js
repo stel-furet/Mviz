@@ -475,7 +475,9 @@ class SpectrumAnalyzer {
             energy: Math.min(energy, 1),
             beat: beat,
             tempo: 120, // Default tempo
-            dominantFrequency: dominantFrequency
+            dominantFrequency: dominantFrequency,
+            frequencies: Array.from(this.dataArray).map(val => val / 255), // Convert to 0-1 range
+            waveform: Array.from(this.dataArray).map(val => val / 255) // Use frequency data as waveform for now
         };
         
         // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
@@ -497,7 +499,7 @@ class SpectrumAnalyzer {
                 // Fallback: generate basic audio features from main audio analyzer
                 if (!audioFeatures && this.analyser && this.dataArray) {
                     audioFeatures = this.generateBasicAudioFeatures();
-                    console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                    // console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
                 } else if (!audioFeatures) {
                     console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 } else if (audioFeatures && audioFeatures.energy === 0) {
@@ -526,16 +528,16 @@ class SpectrumAnalyzer {
                 // Fallback: generate basic audio features from main audio analyzer
                 if (!audioFeatures && this.analyser && this.dataArray) {
                     audioFeatures = this.generateBasicAudioFeatures();
-                    console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                    // console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
                 } else if (!audioFeatures) {
-                    console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    // console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
-                    console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;
-                        console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                        // console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
                     }
                 }
                 
@@ -567,7 +569,7 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isCapturedViaKaleidoscope) {
-                    console.log('🔍 Generated basic audio features:', audioFeatures);
+                    // console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isCapturedViaKaleidoscope) {
@@ -618,7 +620,7 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isWebGLCapturedViaKaleidoscope) {
-                    console.log('🔍 Generated basic audio features:', audioFeatures);
+                    // console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isWebGLCapturedViaKaleidoscope) {
