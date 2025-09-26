@@ -3409,7 +3409,8 @@ class LiveDisplayManager {
             captureVideo: true,
             captureVisualization: true,
             captureKaleidoscope: true,
-            captureInfiniteZoom: true
+            captureInfiniteZoom: true,
+            captureWebGL: true
         };
         
         // Set up settings channel message handler
@@ -3424,6 +3425,7 @@ class LiveDisplayManager {
                 if (settings.captureVisualization !== undefined) this.displaySettings.captureVisualization = settings.captureVisualization;
                 if (settings.captureKaleidoscope !== undefined) this.displaySettings.captureKaleidoscope = settings.captureKaleidoscope;
                 if (settings.captureInfiniteZoom !== undefined) this.displaySettings.captureInfiniteZoom = settings.captureInfiniteZoom;
+                if (settings.captureWebGL !== undefined) this.displaySettings.captureWebGL = settings.captureWebGL;
                 
                 // Update presentation modes and other display settings
                 if (settings.presentationMode !== undefined) this.displaySettings.presentationMode = settings.presentationMode;
@@ -3472,9 +3474,9 @@ class LiveDisplayManager {
             }
         };
         
-            // IDENTICAL to RecordManager settings
-            this.resolution = '1080p';
-            this.aspectRatio = '16:9';
+        // IDENTICAL to RecordManager settings
+        this.resolution = '1080p';
+        this.aspectRatio = '16:9';
             this.frameRate = 30;
             this.videoQuality = 'auto';
             this.audioQuality = 'auto';
@@ -3833,7 +3835,8 @@ class LiveDisplayManager {
                     captureVideo: this.displaySettings.captureVideo,
                     captureVisualization: this.displaySettings.captureVisualization,
                     captureKaleidoscope: this.displaySettings.captureKaleidoscope,
-                    captureInfiniteZoom: this.displaySettings.captureInfiniteZoom
+                    captureInfiniteZoom: this.displaySettings.captureInfiniteZoom,
+                    captureWebGL: this.displaySettings.captureWebGL
                 });
                 
                 // Debug: Check if this.displaySettings is being updated
@@ -3883,6 +3886,16 @@ class LiveDisplayManager {
                 }
             }
             
+            // Draw WebGL visualization if active and not captured via kaleidoscope (if capture WebGL is enabled)
+            if (this.displaySettings && this.displaySettings.captureWebGL && 
+                this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
+                this.visualizer.webglVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                if (shouldDrawSeparately) {
+                    this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization) {
@@ -3896,6 +3909,16 @@ class LiveDisplayManager {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
+            }
+            
+            // Draw WebGL visualization if active and not captured via kaleidoscope (if capture WebGL is enabled)
+            if (this.displaySettings && this.displaySettings.captureWebGL && 
+                this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
+                this.visualizer.webglVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
                 }
             }
         }
@@ -5537,6 +5560,10 @@ class GitItUpVisualizer {
         this.blobsEnabled = false;
         this.blobsVisualization = null;
         
+        // WebGL properties
+        this.webglEnabled = false;
+        this.webglVisualization = null;
+        
         // Center animation variables
         this.kaleidoscopeCenterAnimate = false;
         this.kaleidoscopeCenterAnimMode = 'float'; // 'float' or 'circle'
@@ -6061,6 +6088,15 @@ class GitItUpVisualizer {
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
             this.blobsVisualization = new BlobsVisualization(this);
+            this.webglVisualization = new WebGLVisualizationManager(this);
+            
+            // Initialize WebGL visualization immediately
+            if (this.webglVisualization) {
+                this.webglVisualization.initialize();
+                
+                // Setup WebGL controls AFTER visualization is initialized
+                this.setupWebGLControls();
+            }
             
             // Initialize playlist UI handlers
             this.initializePlaylistUI();
@@ -12164,16 +12200,16 @@ class GitItUpVisualizer {
         
         // Update presentation mode buttons
         if (settings.presentationMode) {
-            document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === settings.presentationMode);
-            });
+        document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === settings.presentationMode);
+        });
         }
 
         // Update aspect ratio buttons
         if (settings.aspectRatio) {
-            document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.ratio === settings.aspectRatio);
-            });
+        document.querySelectorAll('#footerDisplaySettingsPanel .aspect-ratio-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.ratio === settings.aspectRatio);
+        });
         }
 
         // Update capture resolution
@@ -13311,6 +13347,64 @@ https://rogueamoeba.com/loopback/
         this.updateBlobsButton();
     }
 
+    // WebGL toggle methods
+    toggleWebGL() {
+        this.webglEnabled = !this.webglEnabled;
+        
+        console.log('🎮 WebGL toggle:', {
+            enabled: this.webglEnabled,
+            visualization: !!this.webglVisualization,
+            canvas: this.webglVisualization ? this.webglVisualization.canvas : null
+        });
+        
+        if (this.webglEnabled) {
+            if (this.webglVisualization) {
+                this.webglVisualization.start();
+                console.log('🎮 WebGL enabled');
+            } else {
+                console.error('🎮 WebGL visualization not initialized!');
+                this.webglEnabled = false; // Revert if not initialized
+            }
+        } else {
+            if (this.webglVisualization) {
+                this.webglVisualization.stop();
+                console.log('🎮 WebGL disabled');
+            }
+        }
+        
+        this.updateWebGLButton();
+    }
+
+    updateWebGLButton() {
+        // Update header button
+        const headerBtn = document.getElementById('headerWebGLBtn');
+        const headerBtnText = headerBtn ? headerBtn.querySelector('.webgl-btn-text') : null;
+        
+        if (headerBtn && headerBtnText) {
+            if (this.webglEnabled) {
+                headerBtnText.textContent = 'WebGL On';
+                headerBtn.classList.add('active');
+            } else {
+                headerBtnText.textContent = 'WebGL';
+                headerBtn.classList.remove('active');
+            }
+        }
+        
+        // Update header toggle button
+        const headerToggleBtn = document.getElementById('headerWebGLToggleBtn');
+        const headerToggleText = headerToggleBtn ? headerToggleBtn.querySelector('.toggle-text') : null;
+        
+        if (headerToggleBtn && headerToggleText) {
+            if (this.webglEnabled) {
+                headerToggleText.textContent = 'ON';
+                headerToggleBtn.classList.add('active');
+            } else {
+                headerToggleText.textContent = 'OFF';
+                headerToggleBtn.classList.remove('active');
+            }
+        }
+    }
+
     toggleHeaderBlobs() {
         const panel = document.getElementById('headerBlobsPanel');
         const btn = document.getElementById('headerBlobsBtn');
@@ -13346,6 +13440,40 @@ https://rogueamoeba.com/loopback/
         
         // Toggle blobs functionality
         this.toggleBlobs();
+    }
+
+    toggleHeaderWebGL() {
+        const panel = document.getElementById('headerWebGLPanel');
+        const btn = document.getElementById('headerWebGLBtn');
+        
+        console.log('🎮 toggleHeaderWebGL called', { panel, btn });
+        
+        // Toggle panel visibility
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            console.log('🎮 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
+            
+            if (isVisible) {
+                panel.style.display = 'none';
+                console.log('🎮 Panel hidden');
+            } else {
+                // Position panel below button
+                const buttonRect = btn.getBoundingClientRect();
+                
+                console.log('🎮 Positioning panel:', { buttonRect });
+                
+                // Position relative to viewport, then adjust for scroll
+                panel.style.position = 'fixed';
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
+                panel.style.zIndex = '1000';
+                
+                panel.style.display = 'block';
+                console.log('🎮 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
+            }
+        } else {
+            console.error('🎮 headerWebGLPanel not found!');
+        }
     }
     
     updateBlobsButton() {
@@ -13508,9 +13636,11 @@ https://rogueamoeba.com/loopback/
             const maxSizeValue = document.getElementById('blobsMaxSizeValue');
             if (maxSizeSlider && maxSizeValue) {
                 maxSizeSlider.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    maxSizeValue.textContent = value.toFixed(1);
-                    this.blobsVisualization.setMaxSize(value);
+                    const sliderValue = parseFloat(e.target.value);
+                    // Convert slider value to pixel value
+                    const pixelValue = 8 + (sliderValue - 1) * (248 - 8) / (10 - 1);
+                    maxSizeValue.textContent = Math.round(pixelValue) + 'px';
+                    this.blobsVisualization.setMaxSize(sliderValue);
                 });
             }
             
@@ -13525,6 +13655,28 @@ https://rogueamoeba.com/loopback/
                 });
             }
             
+            // Agitate slider
+            const agitateSlider = document.getElementById('blobsAgitateSlider');
+            const agitateValue = document.getElementById('blobsAgitateValue');
+            if (agitateSlider && agitateValue) {
+                agitateSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value) / 100; // Convert percentage to multiplier
+                    agitateValue.textContent = Math.round(value * 100) + '%';
+                    this.blobsVisualization.setAgitate(value);
+                });
+            }
+            
+            // Density slider
+            const densitySlider = document.getElementById('blobsDensitySlider');
+            const densityValue = document.getElementById('blobsDensityValue');
+            if (densitySlider && densityValue) {
+                densitySlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    densityValue.textContent = value;
+                    this.blobsVisualization.setDensity(value);
+                });
+            }
+            
             // Beat React button
             const beatReactBtn = document.getElementById('blobsBeatReactBtn');
             if (beatReactBtn) {
@@ -13534,6 +13686,293 @@ https://rogueamoeba.com/loopback/
                     beatReactBtn.classList.toggle('active', this.blobsVisualization.beatReact);
                 });
             }
+    }
+
+    setupWebGLControls() {
+        console.log('🎮 WebGL: Setting up controls...');
+        
+        // Check if WebGL is supported before setting up controls
+        if (this.webglVisualization && !this.webglVisualization.webglSupported) {
+            console.warn('🎮 WebGL: Skipping control setup - WebGL not supported');
+            return;
+        }
+        
+        // Particle Count slider
+        const particleCountSlider = document.getElementById('webglParticleCountSlider');
+        const particleCountValue = document.getElementById('webglParticleCountValue');
+        console.log('🎮 WebGL: Particle count slider found:', !!particleCountSlider, 'Value element found:', !!particleCountValue);
+        if (particleCountSlider && particleCountValue) {
+            particleCountSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                particleCountValue.textContent = value;
+                console.log('🎮 WebGL: Particle count slider changed to:', value);
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ particleCount: value });
+                    console.log('🎮 WebGL: Settings updated for particle count:', value);
+                } else {
+                    console.warn('🎮 WebGL: Visualization not available for settings update');
+                }
+            });
+        } else {
+            console.warn('🎮 WebGL: Particle count slider elements not found');
+        }
+
+        // Particle Size slider
+        const particleSizeSlider = document.getElementById('webglParticleSizeSlider');
+        const particleSizeValue = document.getElementById('webglParticleSizeValue');
+        console.log('🎮 WebGL: Particle size slider found:', !!particleSizeSlider, 'Value element found:', !!particleSizeValue);
+        if (particleSizeSlider && particleSizeValue) {
+            particleSizeSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                particleSizeValue.textContent = value + 'px';
+                console.log('🎮 WebGL: Particle size slider changed to:', value);
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ particleSize: value });
+                }
+            });
+        } else {
+            console.warn('🎮 WebGL: Particle size slider elements not found');
+        }
+
+        // Speed slider
+        const speedSlider = document.getElementById('webglSpeedSlider');
+        const speedValue = document.getElementById('webglSpeedValue');
+        console.log('🎮 WebGL: Speed slider found:', !!speedSlider, 'Value element found:', !!speedValue);
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                speedValue.textContent = value.toFixed(1);
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ speed: value });
+                }
+            });
+        }
+
+        // Gravity slider
+        const gravitySlider = document.getElementById('webglGravitySlider');
+        const gravityValue = document.getElementById('webglGravityValue');
+        console.log('🎮 WebGL: Gravity slider found:', !!gravitySlider, 'Value element found:', !!gravityValue);
+        if (gravitySlider && gravityValue) {
+            gravitySlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                gravityValue.textContent = value.toFixed(1);
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ gravity: value });
+                }
+            });
+        }
+
+        // Audio Reactivity slider
+        const audioReactivitySlider = document.getElementById('webglAudioReactivitySlider');
+        const audioReactivityValue = document.getElementById('webglAudioReactivityValue');
+        if (audioReactivitySlider && audioReactivityValue) {
+            audioReactivitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                audioReactivityValue.textContent = value + '%';
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
+                }
+            });
+        } else {
+            console.warn('🎮 WebGL: Audio reactivity slider elements not found');
+        }
+
+        // Beat Intensity slider
+        const beatIntensitySlider = document.getElementById('webglBeatIntensitySlider');
+        const beatIntensityValue = document.getElementById('webglBeatIntensityValue');
+        if (beatIntensitySlider && beatIntensityValue) {
+            beatIntensitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                beatIntensityValue.textContent = value + '%';
+                console.log('🎮 WebGL: Beat intensity slider changed to:', value);
+                if (this.webglVisualization) {
+                    this.webglVisualization.setSettings({ beatIntensity: value });
+                    console.log('🎮 WebGL: Beat intensity settings updated:', value);
+                } else {
+                    console.warn('🎮 WebGL: Visualization not available for beat intensity update');
+                }
+            });
+        } else {
+            console.warn('🎮 WebGL: Beat intensity slider elements not found');
+        }
+
+        // Beat React button
+        const beatReactBtn = document.getElementById('webglBeatReactBtn');
+        const beatReactControls = document.getElementById('webglBeatReactControls');
+        if (beatReactBtn) {
+            beatReactBtn.addEventListener('click', () => {
+                console.log('🥁 Beat React button clicked');
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    const currentState = this.webglVisualization.currentVisualization.beatReact;
+                    console.log('🥁 Beat React current state:', currentState);
+                    
+                    this.webglVisualization.currentVisualization.beatReact = !currentState;
+                    const newState = this.webglVisualization.currentVisualization.beatReact;
+                    
+                    console.log('🥁 Beat React toggled to:', newState);
+                    beatReactBtn.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
+                    beatReactBtn.classList.toggle('active', newState);
+                    
+                    // Show/hide individual beat controls
+                    if (beatReactControls) {
+                        beatReactControls.style.display = newState ? 'block' : 'none';
+                    }
+                } else {
+                    console.warn('🥁 Beat React: WebGL visualization not available');
+                }
+            });
+        } else {
+            console.warn('🥁 Beat React: Button element not found');
+        }
+
+        // Individual Beat Control Buttons
+        const beatSizeBtn = document.getElementById('webglBeatSizeBtn');
+        if (beatSizeBtn) {
+            beatSizeBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.beatSize = !this.webglVisualization.currentVisualization.beatSize;
+                    beatSizeBtn.textContent = `Beat Size: ${this.webglVisualization.currentVisualization.beatSize ? 'On' : 'Off'}`;
+                    beatSizeBtn.classList.toggle('active', this.webglVisualization.currentVisualization.beatSize);
+                }
+            });
+        }
+
+        const beatSpeedBtn = document.getElementById('webglBeatSpeedBtn');
+        if (beatSpeedBtn) {
+            beatSpeedBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.beatSpeed = !this.webglVisualization.currentVisualization.beatSpeed;
+                    beatSpeedBtn.textContent = `Beat Speed: ${this.webglVisualization.currentVisualization.beatSpeed ? 'On' : 'Off'}`;
+                    beatSpeedBtn.classList.toggle('active', this.webglVisualization.currentVisualization.beatSpeed);
+                }
+            });
+        }
+
+        const beatCountBtn = document.getElementById('webglBeatCountBtn');
+        if (beatCountBtn) {
+            beatCountBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.beatCount = !this.webglVisualization.currentVisualization.beatCount;
+                    beatCountBtn.textContent = `Beat Count: ${this.webglVisualization.currentVisualization.beatCount ? 'On' : 'Off'}`;
+                    beatCountBtn.classList.toggle('active', this.webglVisualization.currentVisualization.beatCount);
+                }
+            });
+        }
+
+        const beatGenerationBtn = document.getElementById('webglBeatGenerationBtn');
+        if (beatGenerationBtn) {
+            beatGenerationBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.beatGeneration = !this.webglVisualization.currentVisualization.beatGeneration;
+                    beatGenerationBtn.textContent = `Beat Generation: ${this.webglVisualization.currentVisualization.beatGeneration ? 'On' : 'Off'}`;
+                    beatGenerationBtn.classList.toggle('active', this.webglVisualization.currentVisualization.beatGeneration);
+                }
+            });
+        }
+
+        // Energy React button
+        const energyReactBtn = document.getElementById('webglEnergyReactBtn');
+        const energyReactControls = document.getElementById('webglEnergyReactControls');
+        if (energyReactBtn) {
+            energyReactBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.energyReact = !this.webglVisualization.currentVisualization.energyReact;
+                    energyReactBtn.textContent = `Energy React: ${this.webglVisualization.currentVisualization.energyReact ? 'On' : 'Off'}`;
+                    energyReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.energyReact);
+                    
+                    // Show/hide individual energy controls
+                    if (energyReactControls) {
+                        energyReactControls.style.display = this.webglVisualization.currentVisualization.energyReact ? 'block' : 'none';
+                    }
+                }
+            });
+        }
+
+        // Energy React individual controls
+        const energySizeBtn = document.getElementById('webglEnergySizeBtn');
+        if (energySizeBtn) {
+            energySizeBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.energySize = !this.webglVisualization.currentVisualization.energySize;
+                    energySizeBtn.textContent = `Energy Size: ${this.webglVisualization.currentVisualization.energySize ? 'On' : 'Off'}`;
+                    energySizeBtn.classList.toggle('active', this.webglVisualization.currentVisualization.energySize);
+                }
+            });
+        }
+
+        const energySpeedBtn = document.getElementById('webglEnergySpeedBtn');
+        if (energySpeedBtn) {
+            energySpeedBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.energySpeed = !this.webglVisualization.currentVisualization.energySpeed;
+                    energySpeedBtn.textContent = `Energy Speed: ${this.webglVisualization.currentVisualization.energySpeed ? 'On' : 'Off'}`;
+                    energySpeedBtn.classList.toggle('active', this.webglVisualization.currentVisualization.energySpeed);
+                }
+            });
+        }
+
+        const energyCountBtn = document.getElementById('webglEnergyCountBtn');
+        if (energyCountBtn) {
+            energyCountBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.energyCount = !this.webglVisualization.currentVisualization.energyCount;
+                    energyCountBtn.textContent = `Energy Count: ${this.webglVisualization.currentVisualization.energyCount ? 'On' : 'Off'}`;
+                    energyCountBtn.classList.toggle('active', this.webglVisualization.currentVisualization.energyCount);
+                }
+            });
+        }
+
+        // Frequency React button
+        const frequencyReactBtn = document.getElementById('webglFrequencyReactBtn');
+        const frequencyReactControls = document.getElementById('webglFrequencyReactControls');
+        if (frequencyReactBtn) {
+            frequencyReactBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.frequencyReact = !this.webglVisualization.currentVisualization.frequencyReact;
+                    frequencyReactBtn.textContent = `Frequency React: ${this.webglVisualization.currentVisualization.frequencyReact ? 'On' : 'Off'}`;
+                    frequencyReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.frequencyReact);
+                    
+                    // Show/hide individual frequency controls
+                    if (frequencyReactControls) {
+                        frequencyReactControls.style.display = this.webglVisualization.currentVisualization.frequencyReact ? 'block' : 'none';
+                    }
+                }
+            });
+        }
+
+        // Frequency React individual controls
+        const bassReactBtn = document.getElementById('webglBassReactBtn');
+        if (bassReactBtn) {
+            bassReactBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.bassReact = !this.webglVisualization.currentVisualization.bassReact;
+                    bassReactBtn.textContent = `Bass React: ${this.webglVisualization.currentVisualization.bassReact ? 'On' : 'Off'}`;
+                    bassReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.bassReact);
+                }
+            });
+        }
+
+        const midReactBtn = document.getElementById('webglMidReactBtn');
+        if (midReactBtn) {
+            midReactBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.midReact = !this.webglVisualization.currentVisualization.midReact;
+                    midReactBtn.textContent = `Mid React: ${this.webglVisualization.currentVisualization.midReact ? 'On' : 'Off'}`;
+                    midReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.midReact);
+                }
+            });
+        }
+
+        const trebleReactBtn = document.getElementById('webglTrebleReactBtn');
+        if (trebleReactBtn) {
+            trebleReactBtn.addEventListener('click', () => {
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.trebleReact = !this.webglVisualization.currentVisualization.trebleReact;
+                    trebleReactBtn.textContent = `Treble React: ${this.webglVisualization.currentVisualization.trebleReact ? 'On' : 'Off'}`;
+                    trebleReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.trebleReact);
+                }
+            });
+        }
     }
     
     toggleInfiniteZoom() {
@@ -15241,6 +15680,23 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header WebGL Toggle button
+        const headerWebGLToggleBtn = document.getElementById('headerWebGLToggleBtn');
+        if (headerWebGLToggleBtn) {
+            headerWebGLToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Check if WebGL is supported before allowing interaction
+                if (this.webglVisualization && !this.webglVisualization.webglSupported) {
+                    console.warn('🎮 WebGL: Toggle clicked but WebGL not supported');
+                    return;
+                }
+                
+                this.toggleWebGL();
+            });
+        }
+
         // Header Blobs button
         const headerBlobsBtn = document.getElementById('headerBlobsBtn');
         if (headerBlobsBtn) {
@@ -15249,14 +15705,42 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header WebGL button
+        const headerWebGLBtn = document.getElementById('headerWebGLBtn');
+        if (headerWebGLBtn) {
+            headerWebGLBtn.addEventListener('click', () => {
+                // Check if WebGL is supported before allowing interaction
+                if (this.webglVisualization && !this.webglVisualization.webglSupported) {
+                    console.warn('🎮 WebGL: Button clicked but WebGL not supported');
+                    return;
+                }
+                this.toggleHeaderWebGL();
+            });
+        }
+
+        // WebGL panel close button
+        const headerWebGLCloseBtn = document.getElementById('headerWebGLCloseBtn');
+        if (headerWebGLCloseBtn) {
+            headerWebGLCloseBtn.addEventListener('click', () => {
+                const panel = document.getElementById('headerWebGLPanel');
+                if (panel) {
+                    panel.style.display = 'none';
+                }
+            });
+        }
+
         // Click outside to close panels
         document.addEventListener('click', (e) => {
             const kaleidoscopePanel = document.getElementById('headerKaleidoscopePanel');
             const infiniteZoomPanel = document.getElementById('headerInfiniteZoomPanel');
             const blobsPanel = document.getElementById('headerBlobsPanel');
+            const webglPanel = document.getElementById('headerWebGLPanel');
             const kaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
             const infiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
+            const infiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
             const blobsBtn = document.getElementById('headerBlobsBtn');
+            const webglBtn = document.getElementById('headerWebGLBtn');
+            const webglToggleBtn = document.getElementById('headerWebGLToggleBtn');
 
             // Close Kaleidoscope panel if clicking outside
             if (kaleidoscopePanel && kaleidoscopePanel.style.display !== 'none') {
@@ -15267,7 +15751,7 @@ https://rogueamoeba.com/loopback/
 
             // Close Infinite Zoom panel if clicking outside
             if (infiniteZoomPanel && infiniteZoomPanel.style.display !== 'none') {
-                if (!infiniteZoomPanel.contains(e.target) && !infiniteZoomBtn.contains(e.target)) {
+                if (!infiniteZoomPanel.contains(e.target) && !infiniteZoomBtn.contains(e.target) && !infiniteZoomToggleBtn.contains(e.target)) {
                     infiniteZoomPanel.style.display = 'none';
                 }
             }
@@ -15276,6 +15760,13 @@ https://rogueamoeba.com/loopback/
             if (blobsPanel && blobsPanel.style.display !== 'none') {
                 if (!blobsPanel.contains(e.target) && !blobsBtn.contains(e.target)) {
                     blobsPanel.style.display = 'none';
+                }
+            }
+
+            // Close WebGL panel if clicking outside
+            if (webglPanel && webglPanel.style.display !== 'none') {
+                if (!webglPanel.contains(e.target) && !webglBtn.contains(e.target) && !webglToggleBtn.contains(e.target)) {
+                    webglPanel.style.display = 'none';
                 }
             }
         });
@@ -15298,6 +15789,8 @@ https://rogueamoeba.com/loopback/
 
         // Blobs control sliders
         this.setupBlobsControls();
+
+        // WebGL control sliders - moved to after WebGL initialization
 
         // Infinite Zoom gear button
         const infiniteZoomGearBtn = document.getElementById('infiniteZoomGearBtn');
@@ -18152,7 +18645,7 @@ if (window.visualizer && window.visualizer.loadVideoSource) {
     }
 }
 
-// Add resize listener for Infinite Zoom, Blobs, and Kaleidoscope
+// Add resize listener for Infinite Zoom, Blobs, Kaleidoscope, and WebGL
 window.addEventListener('resize', () => {
     if (window.visualizer && window.visualizer.infiniteZoom) {
         window.visualizer.infiniteZoom.resize();
@@ -18162,6 +18655,9 @@ window.addEventListener('resize', () => {
     }
     if (window.visualizer && window.visualizer.resizeKaleidoscopeCanvases) {
         window.visualizer.resizeKaleidoscopeCanvases();
+    }
+    if (window.visualizer && window.visualizer.webglVisualization) {
+        window.visualizer.webglVisualization.resize();
     }
 });
 

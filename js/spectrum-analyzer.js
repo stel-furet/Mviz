@@ -571,6 +571,57 @@ class SpectrumAnalyzer {
             }
         }
         
+        // Update and draw WebGL if active (independent of Infinite Zoom)
+        if (window.visualizer && window.visualizer.webglVisualization && window.visualizer.webglVisualization.isActive) {
+            // Check if WebGL is being captured via kaleidoscope
+            const isWebGLCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
+                (window.visualizer.kaleidoscopeApplyToViz || window.visualizer.kaleidoscopeApplyToWebGL);
+            
+            let audioFeatures = null;
+            
+            // Try to get audio features from AI Autopilot first
+            if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+            }
+            
+            // Fallback: generate basic audio features from main audio analyzer
+            if (!audioFeatures && this.analyser && this.dataArray) {
+                audioFeatures = this.generateBasicAudioFeatures();
+                if (!isWebGLCapturedViaKaleidoscope) {
+                    console.log('🔍 Generated basic audio features:', audioFeatures);
+                }
+            } else if (!audioFeatures) {
+                if (!isWebGLCapturedViaKaleidoscope) {
+                    console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                }
+            } else if (audioFeatures && audioFeatures.energy === 0) {
+                // Try to generate basic audio features if AI features have no energy
+                if (!isWebGLCapturedViaKaleidoscope) {
+                    // console.log('🔍 AI features have no energy, trying basic audio features...');
+                }
+                const basicFeatures = this.generateBasicAudioFeatures();
+                if (basicFeatures.energy > 0) {
+                    audioFeatures = basicFeatures;
+                    if (!isWebGLCapturedViaKaleidoscope) {
+                        // console.log('🔍 Using basic audio features instead:', audioFeatures);
+                    }
+                }
+            }
+            
+            // Update WebGL (always needed for kaleidoscope to capture)
+            window.visualizer.webglVisualization.update(audioFeatures);
+            
+            // Always draw WebGL (needed for kaleidoscope to capture)
+            window.visualizer.webglVisualization.draw();
+            
+            // Hide canvas when captured via kaleidoscope to prevent background layer
+            if (isWebGLCapturedViaKaleidoscope) {
+                window.visualizer.webglVisualization.canvas.style.display = 'none';
+            } else {
+                window.visualizer.webglVisualization.canvas.style.display = 'block';
+            }
+        }
+        
         this.draw();
         this.animationFrame = requestAnimationFrame(() => this.animate());
     }

@@ -201,6 +201,23 @@ class MultiDisplayManager {
                 this.updateToggleButton(captureInfiniteZoomBtn, 'Capture Infinite Zoom', !currentState);
             });
         }
+        
+        // Capture WebGL toggle
+        const captureWebGLBtn = document.getElementById(`display${displayId}CaptureWebGLBtn`);
+        if (captureWebGLBtn) {
+            captureWebGLBtn.addEventListener('click', () => {
+                // Check if WebGL is supported before allowing toggle
+                if (this.visualizer.webglVisualization && !this.visualizer.webglVisualization.webglSupported) {
+                    console.warn(`🎮 Display ${displayId}: WebGL capture clicked but WebGL not supported`);
+                    alert('WebGL not supported. Check Browser settings.');
+                    return;
+                }
+                
+                const currentState = this.getDisplaySettings(displayId).captureWebGL !== false;
+                this.updateDisplaySettings(displayId, { captureWebGL: !currentState });
+                this.updateToggleButton(captureWebGLBtn, 'Capture WebGL', !currentState);
+            });
+        }
     }
     
     // Toggle display window (create/close)
@@ -387,6 +404,11 @@ class MultiDisplayManager {
             this.updateToggleButton(captureInfiniteZoomBtn, 'Capture Infinite Zoom', settings.captureInfiniteZoom !== false);
         }
         
+        const captureWebGLBtn = document.getElementById(`display${displayId}CaptureWebGLBtn`);
+        if (captureWebGLBtn) {
+            this.updateToggleButton(captureWebGLBtn, 'Capture WebGL', settings.captureWebGL !== false);
+        }
+        
         // Update mirror background toggle
         const mirrorBackgroundBtn = document.getElementById(`display${displayId}MirrorBackgroundBtn`);
         if (mirrorBackgroundBtn) {
@@ -433,6 +455,7 @@ class DisplayInstance {
             captureVisualization: true,
             captureKaleidoscope: true,
             captureInfiniteZoom: true,
+            captureWebGL: true,
             presentationMode: 'fit',
             displaySharpness: 0,
             letterboxColor: '#000000',

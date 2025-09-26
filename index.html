@@ -38,6 +38,7 @@
     <script src="js/ai-autopilot.js"></script>
     <script src="js/audio-system.js"></script>
     <script src="js/liquid-fire.js"></script>
+    <script src="js/mvpro_webgl.js"></script>
     <script src="js/ui-controls.js"></script>
     <script src="js/playlist-manager.js"></script>
     <script src="js/theme-system.js"></script>
@@ -115,6 +116,12 @@
             </button>
             <button class="btn-toggle" id="headerBlobsBtn" title="Blobs">
                 <span class="blobs-btn-text">Blobs</span>
+            </button>
+            <button class="btn-toggle" id="headerWebGLBtn" title="WebGL">
+                <span class="webgl-btn-text">WebGL</span>
+            </button>
+            <button class="btn-toggle-32w" id="headerWebGLToggleBtn" title="Toggle WebGL">
+                <span class="toggle-text">OFF</span>
             </button>
             
             <!-- Kaleidoscope settings panel -->
@@ -344,17 +351,117 @@
                     </div>
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Max Size</div>
-                        <input type="range" id="blobsMaxSizeSlider" min="1" max="20" step="0.1" value="8" class="slider-1">
-                        <span class="slider-1-value" id="blobsMaxSizeValue">8</span>
+                        <input type="range" id="blobsMaxSizeSlider" min="1" max="10" step="0.1" value="1" class="slider-1">
+                        <span class="slider-1-value" id="blobsMaxSizeValue">8px</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Agitate</div>
+                        <input type="range" id="blobsAgitateSlider" min="10" max="500" step="1" value="100" class="slider-1">
+                        <span class="slider-1-value" id="blobsAgitateValue">100%</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Density</div>
+                        <input type="range" id="blobsDensitySlider" min="100" max="500" step="1" value="200" class="slider-1">
+                        <span class="slider-1-value" id="blobsDensityValue">200</span>
                     </div>
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Lifespan</div>
-                        <input type="range" id="blobsDecaySlider" min="1" max="10" step="0.1" value="1" class="slider-1">
-                        <span class="slider-1-value" id="blobsDecayValue">1x</span>
+                        <input type="range" id="blobsDecaySlider" min="1" max="10" step="0.1" value="10" class="slider-1">
+                        <span class="slider-1-value" id="blobsDecayValue">10x</span>
                     </div>
                 <div class="button-container">
                     <button id="blobsBeatReactBtn" class="btn-toggle">Beat React: On</button>
                 </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WebGL settings panel -->
+            <div class="panel-floating" id="headerWebGLPanel" style="display: none;" data-button-id="headerWebGLBtn">
+                <div class="panel-header">
+                    <span>WebGL Settings</span>
+                    <button class="panel-close-btn" id="headerWebGLCloseBtn">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="control-group">
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Particle Count</div>
+                            <input type="range" id="webglParticleCountSlider" min="100" max="2000" step="50" value="500" class="slider-1">
+                            <span class="slider-1-value" id="webglParticleCountValue">500</span>
+                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Particle Size</div>
+                        <input type="range" id="webglParticleSizeSlider" min="1" max="20" step="0.5" value="5" class="slider-1">
+                        <span class="slider-1-value" id="webglParticleSizeValue">5px</span>
+                    </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Speed</div>
+                            <input type="range" id="webglSpeedSlider" min="0.1" max="5" step="0.1" value="1" class="slider-1">
+                            <span class="slider-1-value" id="webglSpeedValue">1.0</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Gravity</div>
+                            <input type="range" id="webglGravitySlider" min="0" max="2" step="0.1" value="0.5" class="slider-1">
+                            <span class="slider-1-value" id="webglGravityValue">0.5</span>
+                        </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Audio Reactivity</div>
+                        <input type="range" id="webglAudioReactivitySlider" min="0" max="100" step="1" value="50" class="slider-1">
+                        <span class="slider-1-value" id="webglAudioReactivityValue">50%</span>
+                    </div>
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Beat Intensity</div>
+                        <input type="range" id="webglBeatIntensitySlider" min="0" max="100" step="1" value="50" class="slider-1">
+                        <span class="slider-1-value" id="webglBeatIntensityValue">50%</span>
+                    </div>
+                    <div class="button-container">
+                        <button id="webglBeatReactBtn" class="btn-toggle">Beat React: Off</button>
+                    </div>
+                    <div class="control-group" id="webglBeatReactControls" style="display: none;">
+                        <div class="group-label">Beat Reaction Controls</div>
+                        <div class="button-container">
+                            <button id="webglBeatSizeBtn" class="btn-toggle">Beat Size: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglBeatSpeedBtn" class="btn-toggle">Beat Speed: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglBeatCountBtn" class="btn-toggle">Beat Count: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglBeatGenerationBtn" class="btn-toggle">Beat Generation: Off</button>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button id="webglEnergyReactBtn" class="btn-toggle">Energy React: Off</button>
+                    </div>
+                    <div class="control-group" id="webglEnergyReactControls" style="display: none;">
+                        <div class="group-label">Energy Reaction Controls</div>
+                        <div class="button-container">
+                            <button id="webglEnergySizeBtn" class="btn-toggle">Energy Size: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglEnergySpeedBtn" class="btn-toggle">Energy Speed: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglEnergyCountBtn" class="btn-toggle">Energy Count: Off</button>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button id="webglFrequencyReactBtn" class="btn-toggle">Frequency React: Off</button>
+                    </div>
+                    <div class="control-group" id="webglFrequencyReactControls" style="display: none;">
+                        <div class="group-label">Frequency Reaction Controls</div>
+                        <div class="button-container">
+                            <button id="webglBassReactBtn" class="btn-toggle">Bass React: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglMidReactBtn" class="btn-toggle">Mid React: Off</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="webglTrebleReactBtn" class="btn-toggle">Treble React: Off</button>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -1170,6 +1277,9 @@
                         <button class="btn-toggle" id="display1CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
                         <button class="btn-toggle" id="display1CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
                     </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display1CaptureWebGLBtn">Capture WebGL: On</button>
+                    </div>
                 </div>
                 
                 <!-- Stream Settings -->
@@ -1257,6 +1367,9 @@
                         <button class="btn-toggle" id="display2CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
                         <button class="btn-toggle" id="display2CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
                     </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display2CaptureWebGLBtn">Capture WebGL: On</button>
+                    </div>
                 </div>
                 
                 <!-- Stream Settings -->
@@ -1343,6 +1456,9 @@
                     <div class="button-container">
                         <button class="btn-toggle" id="display3CaptureKaleidoscopeBtn">Capture Kaleidoscope: On</button>
                         <button class="btn-toggle" id="display3CaptureInfiniteZoomBtn">Capture Infinite Zoom: On</button>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn-toggle" id="display3CaptureWebGLBtn">Capture WebGL: On</button>
                     </div>
                 </div>
                 

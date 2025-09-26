@@ -176,8 +176,8 @@ body {
     cursor: pointer;
     font-size: 12px !important;
     transition: all 0.2s ease;
-    width: 32px !important;
-    height: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
     white-space: nowrap;
     display: flex;
     align-items: center;
@@ -185,6 +185,13 @@ body {
     box-sizing: border-box;
     line-height: normal;
     margin-right: 1px;
+    margin-left: -3px;
+}
+
+/* Align toggle button to top of its container */
+.visualizer-controls .btn-toggle-32w,
+.advanced-viz .btn-toggle-32w {
+    align-self: flex-start;
 }
 
 .btn-toggle-32w:hover {
@@ -213,6 +220,22 @@ body {
 }
 
 .btn-toggle-32w.active:hover .toggle-text {
+    color: var(--primary-bg);
+}
+
+/* WebGL Button Text */
+.webgl-btn-text {
+    font-size: 12px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
+}
+
+.btn-toggle:hover .webgl-btn-text {
+    color: rgba(255, 255, 255, 1.0);
+}
+
+.btn-toggle.active .webgl-btn-text {
     color: var(--primary-bg);
 }
 
