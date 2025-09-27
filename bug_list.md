@@ -301,7 +301,60 @@ Kaleidoscope should return to center position when Animate is turned OFF
 Kaleidoscope remains in its last animated position
 
 ### 🟢 Low Priority Bugs
-*No low priority bugs currently reported*
+
+#### Bug ID: BUG-012
+**Title**: Fluid Dynamics Color Controls Don't Match User Expectations
+**Severity**: 🟢 Low
+**Status**: 🆕 New
+**Reported**: 2024-12-27
+**Reporter**: User
+**Assigned**: TBD
+
+**Description**: 
+Current fluid dynamics color controls (individual RGB sliders) don't reflect what users actually want. Users need intuitive color scheme selection and genre-based automatic color assignment.
+
+**Steps to Reproduce**:
+1. Open Fluid Dynamics panel
+2. Try to adjust colors using current controls
+3. Observe that controls don't provide intuitive color scheme selection
+
+**Expected Behavior**:
+- Color scheme selector (Warm, Cool, Vibrant, Natural)
+- Genre-based automatic color scheme assignment
+- Intuitive color controls that match user mental models
+
+**Actual Behavior**:
+- Only technical RGB/HSL controls available
+- No preset color schemes
+- No genre-based automation
+
+---
+
+#### Bug ID: BUG-013
+**Title**: Missing Energy-Based Physics User Controls
+**Severity**: 🟢 Low
+**Status**: 🆕 New
+**Reported**: 2024-12-27
+**Reporter**: User
+**Assigned**: TBD
+
+**Description**: 
+Fluid dynamics needs user controls for energy-based physics parameters to allow customization of how audio energy affects fluid behavior.
+
+**Steps to Reproduce**:
+1. Open Fluid Dynamics panel
+2. Look for energy-based physics controls
+3. Observe missing controls for energy-to-physics mapping
+
+**Expected Behavior**:
+- Energy sensitivity controls
+- Physics parameter mapping (energy → viscosity, curl, pressure)
+- Real-time adjustment of energy-based behavior
+
+**Actual Behavior**:
+- No user controls for energy-based physics
+- Fixed energy-to-physics mapping
+- No customization options
 
 ---
 
@@ -359,11 +412,11 @@ When adding new bugs, use this template:
 ## Bug Statistics
 
 ### Current Status Summary
-- **Total Bugs**: 11
+- **Total Bugs**: 13
 - **Critical**: 0
 - **High**: 0
 - **Medium**: 11
-- **Low**: 0
+- **Low**: 2
 - **Resolved**: 0
 
 ### Monthly Trends
