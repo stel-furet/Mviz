@@ -6147,6 +6147,7 @@ class GitItUpVisualizer {
             this.playlistManager = new PlaylistManager(this);
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
+            this.fluidDynamics = new FluidDynamicsVisualization(this);
             this.blobsVisualization = new BlobsVisualization(this);
             this.webglVisualization = new WebGLVisualizationManager(this);
             
@@ -13860,18 +13861,6 @@ https://rogueamoeba.com/loopback/
         const beatReactBtn = document.getElementById('webglBeatReactBtn');
         const beatReactControls = document.getElementById('webglBeatReactControls');
         if (beatReactBtn) {
-            // Initialize button state to match particle system state
-            if (this.webglVisualization && this.webglVisualization.currentVisualization) {
-                const currentState = this.webglVisualization.currentVisualization.beatReact;
-                beatReactBtn.textContent = `Beat React: ${currentState ? 'On' : 'Off'}`;
-                beatReactBtn.classList.toggle('active', currentState);
-                
-                // Show/hide individual beat controls based on current state
-                if (beatReactControls) {
-                    beatReactControls.style.display = currentState ? 'block' : 'none';
-                }
-            }
-            
             beatReactBtn.addEventListener('click', () => {
                 console.log('🥁 Beat React button clicked');
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
@@ -13880,37 +13869,6 @@ https://rogueamoeba.com/loopback/
                     
                     this.webglVisualization.currentVisualization.beatReact = !currentState;
                     const newState = this.webglVisualization.currentVisualization.beatReact;
-                    
-                    // Auto-enable individual controls when beat react is turned on
-                    if (newState) {
-                        this.webglVisualization.currentVisualization.beatSize = true;
-                        this.webglVisualization.currentVisualization.beatSpeed = true;
-                        this.webglVisualization.currentVisualization.beatCount = true;
-                        this.webglVisualization.currentVisualization.beatGeneration = true;
-                        
-                        // Update individual button states
-                        const beatSizeBtn = document.getElementById('webglBeatSizeBtn');
-                        const beatSpeedBtn = document.getElementById('webglBeatSpeedBtn');
-                        const beatCountBtn = document.getElementById('webglBeatCountBtn');
-                        const beatGenerationBtn = document.getElementById('webglBeatGenerationBtn');
-                        
-                        if (beatSizeBtn) {
-                            beatSizeBtn.textContent = 'Beat Size: On';
-                            beatSizeBtn.classList.add('active');
-                        }
-                        if (beatSpeedBtn) {
-                            beatSpeedBtn.textContent = 'Beat Speed: On';
-                            beatSpeedBtn.classList.add('active');
-                        }
-                        if (beatCountBtn) {
-                            beatCountBtn.textContent = 'Beat Count: On';
-                            beatCountBtn.classList.add('active');
-                        }
-                        if (beatGenerationBtn) {
-                            beatGenerationBtn.textContent = 'Beat Generation: On';
-                            beatGenerationBtn.classList.add('active');
-                        }
-                    }
                     
                     console.log('🥁 Beat React toggled to:', newState);
                     beatReactBtn.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
@@ -14125,6 +14083,27 @@ https://rogueamoeba.com/loopback/
         }
     }
 
+    toggleHeaderFluidDynamics() {
+        const panel = document.getElementById('headerFluidDynamicsPanel');
+        const btn = document.getElementById('headerFluidDynamicsBtn');
+        
+        // Toggle panel visibility only
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            if (isVisible) {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+            } else {
+                // Position panel using new system
+                const buttonRect = btn.getBoundingClientRect();
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
+                panel.style.display = 'block';
+                btn.classList.add('active');
+            }
+        }
+    }
+
     toggleInfiniteZoom() {
         if (!this.infiniteZoom) return;
 
@@ -14156,6 +14135,38 @@ https://rogueamoeba.com/loopback/
             toggleBtn.classList.remove('active');
         }
     }
+
+    toggleFluidDynamics() {
+        if (!this.fluidDynamics) return;
+
+        // Toggle fluid dynamics visibility (mirror Infinite Zoom exactly)
+        if (this.fluidDynamics.isActive) {
+            this.fluidDynamics.stop();
+        } else {
+            this.fluidDynamics.initialize();
+            this.fluidDynamics.start();
+        }
+
+        this.updateFluidDynamicsToggleButton();
+    }
+
+    updateFluidDynamicsToggleButton() {
+        const toggleBtn = document.getElementById('headerFluidDynamicsToggleBtn');
+        if (!toggleBtn) return;
+
+        const toggleText = toggleBtn.querySelector('.toggle-text');
+        if (!toggleText) return;
+
+        // Update button text and state (mirror Infinite Zoom exactly)
+        if (this.fluidDynamics && this.fluidDynamics.isActive) {
+            toggleText.textContent = 'ON';
+            toggleBtn.classList.add('active');
+        } else {
+            toggleText.textContent = 'OFF';
+            toggleBtn.classList.remove('active');
+        }
+    }
+
 
     startKaleidoscopeAnimation() {
         const animate = () => {
@@ -15793,6 +15804,14 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header Fluid Dynamics button
+        const headerFluidDynamicsBtn = document.getElementById('headerFluidDynamicsBtn');
+        if (headerFluidDynamicsBtn) {
+            headerFluidDynamicsBtn.addEventListener('click', () => {
+                this.toggleHeaderFluidDynamics();
+            });
+        }
+
         // Header Infinite Zoom Toggle button
         const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
         if (headerInfiniteZoomToggleBtn) {
@@ -15800,6 +15819,16 @@ https://rogueamoeba.com/loopback/
                 e.preventDefault();
                 e.stopPropagation();
                 this.toggleInfiniteZoom();
+            });
+        }
+
+        // Header Fluid Dynamics Toggle button
+        const headerFluidDynamicsToggleBtn = document.getElementById('headerFluidDynamicsToggleBtn');
+        if (headerFluidDynamicsToggleBtn) {
+            headerFluidDynamicsToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleFluidDynamics();
             });
         }
 
@@ -15858,12 +15887,15 @@ https://rogueamoeba.com/loopback/
             const infiniteZoomPanel = document.getElementById('headerInfiniteZoomPanel');
             const blobsPanel = document.getElementById('headerBlobsPanel');
             const webglPanel = document.getElementById('headerWebGLPanel');
+            const fluidDynamicsPanel = document.getElementById('headerFluidDynamicsPanel');
             const kaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
             const infiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
             const infiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
             const blobsBtn = document.getElementById('headerBlobsBtn');
             const webglBtn = document.getElementById('headerWebGLBtn');
             const webglToggleBtn = document.getElementById('headerWebGLToggleBtn');
+            const fluidDynamicsBtn = document.getElementById('headerFluidDynamicsBtn');
+            const fluidDynamicsToggleBtn = document.getElementById('headerFluidDynamicsToggleBtn');
 
             // Close Kaleidoscope panel if clicking outside
             if (kaleidoscopePanel && kaleidoscopePanel.style.display !== 'none') {
@@ -15890,6 +15922,15 @@ https://rogueamoeba.com/loopback/
             if (webglPanel && webglPanel.style.display !== 'none') {
                 if (!webglPanel.contains(e.target) && !webglBtn.contains(e.target) && !webglToggleBtn.contains(e.target)) {
                     webglPanel.style.display = 'none';
+                }
+            }
+
+            // Close Fluid Dynamics panel if clicking outside
+            if (fluidDynamicsPanel && fluidDynamicsPanel.style.display !== 'none') {
+                if (!fluidDynamicsPanel.contains(e.target) && 
+                    !fluidDynamicsBtn.contains(e.target) && 
+                    !fluidDynamicsToggleBtn.contains(e.target)) {
+                    fluidDynamicsPanel.style.display = 'none';
                 }
             }
         });
@@ -16419,6 +16460,113 @@ https://rogueamoeba.com/loopback/
         if (headerInfiniteZoomCloseBtn) {
             headerInfiniteZoomCloseBtn.addEventListener('click', () => {
                 document.getElementById('headerInfiniteZoomPanel').style.display = 'none';
+            });
+        }
+
+        // Header Fluid Dynamics close button
+        const headerFluidDynamicsCloseBtn = document.getElementById('headerFluidDynamicsCloseBtn');
+        if (headerFluidDynamicsCloseBtn) {
+            headerFluidDynamicsCloseBtn.addEventListener('click', () => {
+                document.getElementById('headerFluidDynamicsPanel').style.display = 'none';
+                document.getElementById('headerFluidDynamicsBtn').classList.remove('active');
+            });
+        }
+
+
+        // Fluid Dynamics Viscosity slider
+        const fluidDynamicsViscositySlider = document.getElementById('headerFluidDynamicsViscositySlider');
+        const fluidDynamicsViscosityValue = document.getElementById('headerFluidDynamicsViscosityValue');
+        console.log('🌊 Looking for viscosity slider:', !!fluidDynamicsViscositySlider, !!fluidDynamicsViscosityValue);
+        if (fluidDynamicsViscositySlider && fluidDynamicsViscosityValue) {
+            console.log('🌊 Attaching viscosity slider event listener');
+            fluidDynamicsViscositySlider.addEventListener('input', (e) => {
+                console.log('🌊 Viscosity slider moved to:', e.target.value);
+                const value = parseFloat(e.target.value);
+                fluidDynamicsViscosityValue.textContent = value.toFixed(1);
+                console.log('🌊 Fluid Dynamics object:', !!this.fluidDynamics, 'updateConfig method:', !!this.fluidDynamics?.updateConfig);
+                if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
+                    this.fluidDynamics.updateConfig({ VELOCITY_DISSIPATION: value });
+                } else {
+                    console.warn('🌊 Cannot update fluid config - object or method missing');
+                }
+            });
+        }
+
+        // Fluid Dynamics Pressure slider
+        const fluidDynamicsPressureSlider = document.getElementById('headerFluidDynamicsPressureSlider');
+        const fluidDynamicsPressureValue = document.getElementById('headerFluidDynamicsPressureValue');
+        if (fluidDynamicsPressureSlider && fluidDynamicsPressureValue) {
+            fluidDynamicsPressureSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                fluidDynamicsPressureValue.textContent = value.toFixed(1);
+                if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
+                    this.fluidDynamics.updateConfig({ PRESSURE: value });
+                }
+            });
+        }
+
+        // Fluid Dynamics Curl slider
+        const fluidDynamicsCurlSlider = document.getElementById('headerFluidDynamicsCurlSlider');
+        const fluidDynamicsCurlValue = document.getElementById('headerFluidDynamicsCurlValue');
+        if (fluidDynamicsCurlSlider && fluidDynamicsCurlValue) {
+            fluidDynamicsCurlSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                fluidDynamicsCurlValue.textContent = value;
+                if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
+                    this.fluidDynamics.updateConfig({ CURL: value });
+                }
+            });
+        }
+
+        // Fluid Dynamics Splat Force slider
+        const fluidDynamicsSplatForceSlider = document.getElementById('headerFluidDynamicsSplatForceSlider');
+        const fluidDynamicsSplatForceValue = document.getElementById('headerFluidDynamicsSplatForceValue');
+        if (fluidDynamicsSplatForceSlider && fluidDynamicsSplatForceValue) {
+            fluidDynamicsSplatForceSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                fluidDynamicsSplatForceValue.textContent = value;
+                if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
+                    this.fluidDynamics.updateConfig({ SPLAT_FORCE: value });
+                }
+            });
+        }
+
+        // Fluid Dynamics Colorful toggle
+        const fluidDynamicsColorfulBtn = document.getElementById('headerFluidDynamicsColorfulBtn');
+        if (fluidDynamicsColorfulBtn) {
+            fluidDynamicsColorfulBtn.addEventListener('click', () => {
+                if (this.fluidDynamics && this.fluidDynamics.config) {
+                    const newValue = !this.fluidDynamics.config.COLORFUL;
+                    this.fluidDynamics.updateConfig({ COLORFUL: newValue });
+                    fluidDynamicsColorfulBtn.textContent = `Colorful: ${newValue ? 'On' : 'Off'}`;
+                    fluidDynamicsColorfulBtn.classList.toggle('active', newValue);
+                }
+            });
+        }
+
+        // Fluid Dynamics Bloom toggle
+        const fluidDynamicsBloomBtn = document.getElementById('headerFluidDynamicsBloomBtn');
+        if (fluidDynamicsBloomBtn) {
+            fluidDynamicsBloomBtn.addEventListener('click', () => {
+                if (this.fluidDynamics && this.fluidDynamics.config) {
+                    const newValue = !this.fluidDynamics.config.BLOOM;
+                    this.fluidDynamics.updateConfig({ BLOOM: newValue });
+                    fluidDynamicsBloomBtn.textContent = `Bloom: ${newValue ? 'On' : 'Off'}`;
+                    fluidDynamicsBloomBtn.classList.toggle('active', newValue);
+                }
+            });
+        }
+
+        // Fluid Dynamics Sunrays toggle
+        const fluidDynamicsSunraysBtn = document.getElementById('headerFluidDynamicsSunraysBtn');
+        if (fluidDynamicsSunraysBtn) {
+            fluidDynamicsSunraysBtn.addEventListener('click', () => {
+                if (this.fluidDynamics && this.fluidDynamics.config) {
+                    const newValue = !this.fluidDynamics.config.SUNRAYS;
+                    this.fluidDynamics.updateConfig({ SUNRAYS: newValue });
+                    fluidDynamicsSunraysBtn.textContent = `Sunrays: ${newValue ? 'On' : 'Off'}`;
+                    fluidDynamicsSunraysBtn.classList.toggle('active', newValue);
+                }
             });
         }
 
@@ -17364,6 +17512,7 @@ https://rogueamoeba.com/loopback/
             footerVisualizerToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation(); // Additional protection
                 console.log('Footer Visualizer Toggle button clicked');
                 
                 // Toggle visualization ON/OFF

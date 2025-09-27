@@ -2,9 +2,9 @@
 class WebGLBeatDetector {
     constructor() {
         // Beat detection parameters (improved from Kaleidoscope/AudioAnalyzer)
-        this.beatThreshold = 1.05; // More sensitive than before (was 1.15)
+        this.beatThreshold = 1.15; // More sensitive than AudioAnalyzer (1.05)
         this.energySmoothing = 0.85; // Smoother than AudioAnalyzer (0.9)
-        this.fluxThreshold = 0.05; // More sensitive than before (was 0.08)
+        this.fluxThreshold = 0.08; // More sensitive than AudioAnalyzer (0.05)
         this.minBeatInterval = 80; // Faster than AudioAnalyzer (100ms)
         
         // Current analysis data
@@ -22,9 +22,9 @@ class WebGLBeatDetector {
         
         // Beat effects parameters
         this.beatIntensity = 0.5; // User configurable (0-1)
-        this.beatSizeBoost = 3.0; // Size multiplier on beat (increased from 1.5)
-        this.beatSpeedBoost = 4.0; // Speed multiplier on beat (increased from 2.0)
-        this.beatCountBoost = 8; // Extra particles on beat (increased from 3)
+        this.beatSizeBoost = 1.5; // Size multiplier on beat
+        this.beatSpeedBoost = 2.0; // Speed multiplier on beat
+        this.beatCountBoost = 3; // Extra particles on beat
         
         console.log('🥁 WebGL Beat Detector initialized');
     }
@@ -35,17 +35,13 @@ class WebGLBeatDetector {
             return;
         }
         
-        // Debug logging (minimal for performance)
-        if (Math.random() < 0.0001) { // 0.01% chance to log (very rare)
+        // Debug logging (very rare to avoid spam)
+        if (Math.random() < 0.001) { // 0.1% chance to log
             console.log('🥁 WebGL Beat Detector update - audioFeatures:', {
                 frequencies: audioFeatures.frequencies ? audioFeatures.frequencies.length : 'none',
                 waveform: audioFeatures.waveform ? audioFeatures.waveform.length : 'none',
                 energy: audioFeatures.energy,
-                beat: audioFeatures.beat,
-                currentEnergy: this.currentEnergy,
-                smoothedEnergy: this.smoothedEnergy,
-                beatDetected: this.beatDetected,
-                beatConfidence: this.beatConfidence
+                beat: audioFeatures.beat
             });
         }
         
@@ -126,7 +122,7 @@ class WebGLBeatDetector {
             // Keep only recent beats (last 5 seconds)
             this.beatHistory = this.beatHistory.filter(time => now - time < 5000);
             
-            // Log beat detection for debugging (reduced frequency for performance)
+            // Log beat detection for debugging (very rarely)
             if (Math.random() < 0.01) { // 1% chance to log
                 console.log(`🥁 WebGL Beat detected - Energy: ${energyIncrease.toFixed(2)}, Flux: ${this.spectralFlux.toFixed(3)}, Confidence: ${this.beatConfidence.toFixed(2)}`);
             }
@@ -545,26 +541,6 @@ class WebGLVisualizationManager {
                 if (audioMotionFeatures && audioMotionFeatures.energy > 0) {
                     audioData = audioMotionFeatures;
                 }
-                
-                // If we still don't have frequency/waveform data, try to get raw audio data
-                if (audioData && (!audioData.frequencies || !audioData.waveform)) {
-                    try {
-                        const frequencies = this.visualizer.audioMotion.getFrequencies ? 
-                            this.visualizer.audioMotion.getFrequencies() : 
-                            (this.visualizer.audioMotion.frequencies || []);
-                        const waveform = this.visualizer.audioMotion.getWaveform ? 
-                            this.visualizer.audioMotion.getWaveform() : 
-                            (this.visualizer.audioMotion.waveform || []);
-                        
-                        // Add raw audio data to the features
-                        audioData.frequencies = frequencies;
-                        audioData.waveform = waveform;
-                        
-                        console.log('🎮 WebGL: Added raw audio data - frequencies:', frequencies.length, 'waveform:', waveform.length);
-                    } catch (error) {
-                        console.warn('🎮 WebGL: Error getting raw audio data:', error);
-                    }
-                }
             } catch (error) {
                 console.warn('🎮 WebGL: Error getting AudioMotion audio features:', error);
             }
@@ -639,6 +615,7 @@ class WebGLVisualizationManager {
             this.beatDetector.setBeatIntensity(settings.beatIntensity / 100); // Convert percentage to 0-1
         }
     }
+    
 }
 
 // WebGL Particle System - Default Visualization
@@ -650,8 +627,8 @@ class WebGLParticleSystem {
         
         // Particle system properties
         this.particles = [];
-        this.maxParticles = 300; // Reduced from 500 for better performance
-        this.particleCount = 150; // Reduced from 200 for better performance
+        this.maxParticles = 500;
+        this.particleCount = 200;
         
         // Shader programs
         this.vertexShader = null;
@@ -888,18 +865,7 @@ class WebGLParticleSystem {
             const beatEffects = this.manager.beatDetector.getBeatEffects(this.beatReact);
             extraParticles = beatEffects.extraParticles;
             
-            // Debug: Log when beat effects are calculated (reduced frequency for performance)
-            if (Math.random() < 0.01) { // 1% chance to log
-                console.log('🥁 Beat effects calculated:', {
-                    beatDetected: beatInfo.beat,
-                    beatReact: this.beatReact,
-                    extraParticles: extraParticles,
-                    sizeMultiplier: beatEffects.sizeMultiplier,
-                    speedMultiplier: beatEffects.speedMultiplier
-                });
-            }
-            
-            // Debug beat react status (reduced frequency for performance)
+            // Debug beat react status (very rarely)
             if (beatInfo.beat && this.beatReact && beatEffects.sizeMultiplier > 1.0 && Math.random() < 0.01) {
                 console.log('🥁 Beat React ACTIVE:', { 
                     beatDetected: beatInfo.beat,
@@ -928,14 +894,7 @@ class WebGLParticleSystem {
         // Add new particles to maintain count + beat effects (only if Beat Count/Generation is enabled)
         const beatExtraParticles = (this.beatCount || this.beatGeneration) ? extraParticles : 0;
         const targetCount = this.particleCount + beatExtraParticles;
-        
-        // Add extra particles for beat effects
-        for (let i = 0; i < beatExtraParticles; i++) {
-            this.addParticle();
-        }
-        
-        // Add particles to maintain base count
-        while (this.particles.length < this.particleCount) {
+        while (this.particles.length < targetCount) {
             this.addParticle();
         }
         
@@ -1057,8 +1016,8 @@ class WebGLParticleSystem {
             return;
         }
         
-        // Debug: Log render info very rarely for performance
-        if (Math.random() < 0.001) { // 0.1% chance to log
+        // Debug: Log render info occasionally
+        if (Math.random() < 0.01) { // 1% chance to log
             const sampleParticle = this.particles[0];
             if (sampleParticle) {
                 const beatSizeMultiplier = sampleParticle.beatSizeMultiplier || 1.0;

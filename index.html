@@ -39,6 +39,7 @@
     <script src="js/audio-system.js"></script>
     <script src="js/liquid-fire.js"></script>
     <script src="js/mvpro_webgl.js"></script>
+    <script src="js/fluid-dynamics.js"></script>
     <script src="js/ui-controls.js"></script>
     <script src="js/playlist-manager.js"></script>
     <script src="js/theme-system.js"></script>
@@ -121,6 +122,12 @@
                 <span class="webgl-btn-text">WebGL</span>
             </button>
             <button class="btn-toggle-32w" id="headerWebGLToggleBtn" title="Toggle WebGL">
+                <span class="toggle-text">OFF</span>
+            </button>
+            <button class="btn-toggle" id="headerFluidDynamicsBtn" title="Fluid Dynamics">
+                <span class="fluid-dynamics-btn-text">Fluid Dynamics</span>
+            </button>
+            <button class="btn-toggle-32w" id="headerFluidDynamicsToggleBtn" title="Toggle Fluid Dynamics">
                 <span class="toggle-text">OFF</span>
             </button>
             
@@ -373,10 +380,51 @@
                 <div class="button-container">
                     <button id="blobsBeatReactBtn" class="btn-toggle">Beat React: On</button>
                 </div>
+                </div>
+                </div>
+            </div>
+            
+            <!-- Fluid Dynamics settings panel -->
+            <div class="panel-floating" id="headerFluidDynamicsPanel" data-button-id="headerFluidDynamicsBtn" style="display: none;">
+                <div class="panel-header">
+                    <span>Fluid Dynamics Settings</span>
+                    <button class="panel-close-btn" id="headerFluidDynamicsCloseBtn">×</button>
+                </div>
+                <div class="panel-content">
+                    <div class="control-group">
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Viscosity</div>
+                            <input type="range" id="headerFluidDynamicsViscositySlider" min="0.1" max="2.0" step="0.1" value="0.2" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsViscosityValue">0.2</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Pressure</div>
+                            <input type="range" id="headerFluidDynamicsPressureSlider" min="0.1" max="2.0" step="0.1" value="0.8" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsPressureValue">0.8</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Curl</div>
+                            <input type="range" id="headerFluidDynamicsCurlSlider" min="0" max="50" step="1" value="30" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsCurlValue">30</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Splat Force</div>
+                            <input type="range" id="headerFluidDynamicsSplatForceSlider" min="1000" max="10000" step="500" value="6000" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsSplatForceValue">6000</span>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerFluidDynamicsColorfulBtn" class="btn-toggle active">Colorful: On</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerFluidDynamicsBloomBtn" class="btn-toggle active">Bloom: On</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="headerFluidDynamicsSunraysBtn" class="btn-toggle active">Sunrays: On</button>
+                        </div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- WebGL settings panel -->
             <div class="panel-floating" id="headerWebGLPanel" style="display: none;" data-button-id="headerWebGLBtn">
                 <div class="panel-header">

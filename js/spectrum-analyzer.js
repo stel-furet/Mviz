@@ -475,9 +475,7 @@ class SpectrumAnalyzer {
             energy: Math.min(energy, 1),
             beat: beat,
             tempo: 120, // Default tempo
-            dominantFrequency: dominantFrequency,
-            frequencies: Array.from(this.dataArray).map(val => val / 255), // Convert to 0-1 range
-            waveform: Array.from(this.dataArray).map(val => val / 255) // Use frequency data as waveform for now
+            dominantFrequency: dominantFrequency
         };
         
         // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
@@ -487,34 +485,41 @@ class SpectrumAnalyzer {
 
     animate() { // Check if visualization is enabled through parent visualizer
         if (window.visualizer && !window.visualizer.visualizationEnabled) {
-            // Still update Infinite Zoom even when main visualization is off
-            if (window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
-                let audioFeatures = null;
-                
-                // Try to get audio features from AI Autopilot first
-                if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
-                    audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
-                }
-                
-                // Fallback: generate basic audio features from main audio analyzer
-                if (!audioFeatures && this.analyser && this.dataArray) {
-                    audioFeatures = this.generateBasicAudioFeatures();
-                    // console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
-                } else if (!audioFeatures) {
-                    console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
-                } else if (audioFeatures && audioFeatures.energy === 0) {
-                    // Try to generate basic audio features if AI features have no energy
+            // Generate audio features for both Infinite Zoom and Fluid Dynamics
+            let audioFeatures = null;
+            
+            // Try to get audio features from AI Autopilot first
+            if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+            }
+            
+            // Fallback: generate basic audio features from main audio analyzer
+            if (!audioFeatures && this.analyser && this.dataArray) {
+                audioFeatures = this.generateBasicAudioFeatures();
+                console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+            } else if (!audioFeatures) {
+                console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+            } else if (audioFeatures && audioFeatures.energy === 0) {
+                // Try to generate basic audio features if AI features have no energy
+                if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
                     console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
-                    const basicFeatures = this.generateBasicAudioFeatures();
-                    if (basicFeatures.energy > 0) {
-                        audioFeatures = basicFeatures;
+                }
+                const basicFeatures = this.generateBasicAudioFeatures();
+                if (basicFeatures.energy > 0) {
+                    audioFeatures = basicFeatures;
+                    if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
                         console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
                     }
                 }
-                
+            }
+            
+            // Still update Infinite Zoom even when main visualization is off
+            if (window.visualizer.infiniteZoom && window.visualizer.infiniteZoom.isActive) {
                 window.visualizer.infiniteZoom.update(audioFeatures);
                 window.visualizer.infiniteZoom.draw();
             }
+            
+            // Fluid Dynamics removed - now completely independent
             
             // Still update WebGL even when main visualization is off
             if (window.visualizer.webglVisualization && window.visualizer.webglVisualization.isActive) {
@@ -528,22 +533,23 @@ class SpectrumAnalyzer {
                 // Fallback: generate basic audio features from main audio analyzer
                 if (!audioFeatures && this.analyser && this.dataArray) {
                     audioFeatures = this.generateBasicAudioFeatures();
-                    // console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                    console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
                 } else if (!audioFeatures) {
-                    // console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
-                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                    console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;
-                        // console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                        console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
                     }
                 }
                 
                 window.visualizer.webglVisualization.update(audioFeatures);
                 window.visualizer.webglVisualization.draw();
             }
+            
             
             this.animationFrame = requestAnimationFrame(() => this.animate());
             return; // Skip main drawing but keep loop running for quick resume
@@ -569,7 +575,7 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isCapturedViaKaleidoscope) {
-                    // console.log('🔍 Generated basic audio features:', audioFeatures);
+                    console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isCapturedViaKaleidoscope) {
@@ -594,6 +600,8 @@ class SpectrumAnalyzer {
             
             // Always draw Infinite Zoom (needed for kaleidoscope to capture)
             window.visualizer.infiniteZoom.draw();
+            
+            // Fluid Dynamics removed - now completely independent
             
             // Hide canvas when captured via kaleidoscope to prevent background layer
             if (isCapturedViaKaleidoscope) {
@@ -620,7 +628,7 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isWebGLCapturedViaKaleidoscope) {
-                    // console.log('🔍 Generated basic audio features:', audioFeatures);
+                    console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isWebGLCapturedViaKaleidoscope) {
@@ -645,6 +653,7 @@ class SpectrumAnalyzer {
             
             // Always draw WebGL (needed for kaleidoscope to capture)
             window.visualizer.webglVisualization.draw();
+            
             
             // Hide canvas when captured via kaleidoscope to prevent background layer
             if (isWebGLCapturedViaKaleidoscope) {
