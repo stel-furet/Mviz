@@ -2758,6 +2758,14 @@ class RecordManager {
                 }
             }
             
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope
+            if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing
             this.drawScaledVisualization(sourceCanvas);
@@ -2780,6 +2788,14 @@ class RecordManager {
                     if (shouldDrawSeparately) {
                         this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
                     }
+                }
+            }
+            
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope
+            if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
                 }
             }
         }
@@ -5615,6 +5631,7 @@ class GitItUpVisualizer {
         this.kaleidoscopeApplyToViz = false; // Default to OFF
         this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
         this.kaleidoscopeApplyToWebGL = false; // Default to disabled
+        this.kaleidoscopeApplyToFluidDynamics = false; // Default to disabled
         
         // Blobs properties
         this.blobsEnabled = false;
@@ -11450,7 +11467,7 @@ class GitItUpVisualizer {
 
                     // Set z-index to ensure canvas is above video layers
                     this.audioMotion.canvas.style.position = 'absolute';
-                    this.audioMotion.canvas.style.zIndex = '3';
+                    this.audioMotion.canvas.style.zIndex = '2';
                 }
 
                 // Force the AudioMotion background to be transparent
@@ -11823,7 +11840,7 @@ class GitItUpVisualizer {
 
                     // Set z-index to ensure canvas is above video layers
                     this.audioMotion.canvas.style.position = 'absolute';
-                    this.audioMotion.canvas.style.zIndex = '3';
+                    this.audioMotion.canvas.style.zIndex = '2';
                 }
 
                 // Force the AudioMotion background to be transparent
@@ -13308,7 +13325,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVideoCanvas = document.createElement('canvas');
             this.kaleidoscopeVideoCanvas.className = 'kaleidoscope-canvas kaleidoscope-video';
             this.kaleidoscopeVideoCanvas.style.display = 'none';
-            this.kaleidoscopeVideoCanvas.style.zIndex = '2'; // Above video but below viz
+            this.kaleidoscopeVideoCanvas.style.zIndex = '100'; // Above all visualizations
             container.appendChild(this.kaleidoscopeVideoCanvas);
             this.kaleidoscopeVideoCtx = this.kaleidoscopeVideoCanvas.getContext('2d');
         }
@@ -13318,7 +13335,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVizCanvas = document.createElement('canvas');
             this.kaleidoscopeVizCanvas.className = 'kaleidoscope-canvas kaleidoscope-viz';
             this.kaleidoscopeVizCanvas.style.display = 'none';
-            this.kaleidoscopeVizCanvas.style.zIndex = '3'; // On top
+            this.kaleidoscopeVizCanvas.style.zIndex = '101'; // On top of everything
             container.appendChild(this.kaleidoscopeVizCanvas);
             this.kaleidoscopeVizCtx = this.kaleidoscopeVizCanvas.getContext('2d');
         }
@@ -13368,7 +13385,7 @@ https://rogueamoeba.com/loopback/
             }
 
             // Update button based on any Apply To button being ON
-            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL;
+            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics;
             if (anyApplyToActive) {
                 btnText.textContent = 'Kaleidoscope';
                 btn.classList.add('active');
@@ -13387,7 +13404,7 @@ https://rogueamoeba.com/loopback/
         if (!btnText) return;
         
         // Check if any Apply To button is active
-        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL;
+        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics;
         
         if (anyApplyToActive) {
             btnText.textContent = 'Kaleidoscope';
@@ -14585,9 +14602,11 @@ https://rogueamoeba.com/loopback/
             }
         }
 
-        // Check if we need to draw kaleidoscope (either AM viz, IZ, or Liquid Fire)
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, or Liquid Fire)
         const shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
                                      (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
+                                     (this.kaleidoscopeApplyToWebGL && this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas) ||
+                                     (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas) ||
                                      (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas);
 
         if (shouldDrawKaleidoscope) {
@@ -14674,6 +14693,11 @@ https://rogueamoeba.com/loopback/
                             }
                         }
                         
+        // Draw Fluid Dynamics if active and enabled for kaleidoscope
+        if (this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
+            this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+        }
+        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -14700,6 +14724,11 @@ https://rogueamoeba.com/loopback/
                             }
                         }
                         
+        // Draw Fluid Dynamics if active and enabled for kaleidoscope
+        if (this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
+            this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+        }
+        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -17238,7 +17267,46 @@ https://rogueamoeba.com/loopback/
                         this.initKaleidoscope();
                         this.startKaleidoscopeAnimation();
                     }
-                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom) {
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom && !this.kaleidoscopeApplyToFluidDynamics) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
+            });
+        }
+
+        // Fluid Dynamics Apply Button
+        const headerKaleidoscopeFluidBtn = document.getElementById('headerKaleidoscopeFluidBtn');
+        if (headerKaleidoscopeFluidBtn) {
+            headerKaleidoscopeFluidBtn.textContent = `Fluid: ${
+                this.kaleidoscopeApplyToFluidDynamics ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeFluidBtn.classList.toggle('active', this.kaleidoscopeApplyToFluidDynamics);
+            
+            headerKaleidoscopeFluidBtn.addEventListener('click', () => {
+                // Check Fluid Dynamics support before allowing toggle
+                if (!this.fluidDynamics || !this.fluidDynamics.canvas) {
+                    console.warn('🔮 Kaleidoscope: Fluid Dynamics not available - cannot enable Fluid Apply');
+                    alert('Fluid Dynamics not available. Please ensure Fluid Dynamics is enabled.');
+                    return;
+                }
+                
+                this.kaleidoscopeApplyToFluidDynamics = !this.kaleidoscopeApplyToFluidDynamics;
+                headerKaleidoscopeFluidBtn.textContent = `Fluid: ${
+                    this.kaleidoscopeApplyToFluidDynamics ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeFluidBtn.classList.toggle('active', this.kaleidoscopeApplyToFluidDynamics);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
+
+                // Enable kaleidoscope if turning on Fluid, disable if all are off
+                if (this.kaleidoscopeApplyToFluidDynamics) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom && !this.kaleidoscopeApplyToWebGL) {
                     this.stopKaleidoscopeAnimation();
                     this.kaleidoscopeEnabled = false;
                 }

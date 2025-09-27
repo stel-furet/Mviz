@@ -90,7 +90,7 @@ class BlobsVisualization {
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
         this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '9999'; // Very high z-index to ensure visibility
+        this.canvas.style.zIndex = '6'; // Above Fluid Dynamics (z-index: 5)
         this.canvas.style.display = 'none';
         
         // CANVAS OWNERSHIP TRACKING - Add unique identifier to canvas

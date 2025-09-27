@@ -93,7 +93,7 @@ class FluidDynamicsVisualization {
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '10000'; // Above blobs (9999) for testing
+        this.canvas.style.zIndex = '5'; // Above WebGL (z-index: 4)
         this.canvas.style.display = 'none';
         this.canvas.style.opacity = this.opacity.toString();
         this.canvas.style.visibility = 'visible';
@@ -1309,8 +1309,29 @@ class FluidDynamicsVisualization {
         const energy = audioFeatures.energy || 0;
         const currentScheme = this.getCurrentColorScheme();
         
-        // Pure color schemes (no frequency/beat injection)
         const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+        
+        // If custom colors are active, use them
+        if (this.usingCustomColors && this.currentCustomColors) {
+            const paletteSize = this.currentCustomColors.length;
+            let colorIndex;
+            if (energy > 0.7) {
+                colorIndex = Math.floor((0.7 + Math.random() * 0.3) * paletteSize);
+            } else if (energy > 0.4) {
+                colorIndex = Math.floor((0.3 + Math.random() * 0.4) * paletteSize);
+            } else {
+                colorIndex = Math.floor(Math.random() * 0.4 * paletteSize);
+            }
+            colorIndex = Math.min(colorIndex, paletteSize - 1);
+            const baseColor = this.currentCustomColors[colorIndex];
+            const energyMultiplier = 0.9 + (energy * 0.2); // Subtle brightness
+            const color = [
+                Math.min(Math.round(baseColor[0] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[1] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[2] * energyMultiplier), 255)
+            ];
+            return this.applySaturation(color); // Apply saturation
+        }
         
         if (pureSchemes.includes(currentScheme)) {
             // Use ONLY the selected color palette - no other color injection
@@ -1916,9 +1937,29 @@ class FluidDynamicsVisualization {
             const dx = Math.cos(injectAngle + Math.PI/2) * 8; // Gentle tangential force
             const dy = Math.sin(injectAngle + Math.PI/2) * 8;
             
-            // Pick dim color from waiting palette
-            const colorIndex = i % this.waitingAnimation.colors.length;
-            const color = this.waitingAnimation.colors[colorIndex];
+            // Pick dim color based on current scheme (not hardcoded blue/purple)
+            let color;
+            const currentScheme = this.getCurrentColorScheme();
+            
+            if (this.usingCustomColors && this.currentCustomColors) {
+                // Use custom colors at very low intensity
+                const colorIndex = i % this.currentCustomColors.length;
+                const baseColor = this.currentCustomColors[colorIndex];
+                color = [
+                    Math.max(5, Math.round(baseColor[0] * 0.15)), // Very dim (15% of original)
+                    Math.max(5, Math.round(baseColor[1] * 0.15)),
+                    Math.max(5, Math.round(baseColor[2] * 0.15))
+                ];
+            } else {
+                // Use current palette colors at very low intensity
+                const colorIndex = i % this.currentPalette.length;
+                const baseColor = this.currentPalette[colorIndex];
+                color = [
+                    Math.max(5, Math.round(baseColor[0] * 0.15)), // Very dim (15% of original)
+                    Math.max(5, Math.round(baseColor[1] * 0.15)),
+                    Math.max(5, Math.round(baseColor[2] * 0.15))
+                ];
+            }
             
             this.splat(x, y, dx, dy, color);
         }
@@ -1941,7 +1982,7 @@ class FluidDynamicsVisualization {
         this.config.CURL = 5; // Very low curl - gentle mixing only
         this.config.DENSITY_DISSIPATION = 0.95; // Slower fade for gentle presence
         
-        console.log('🌊 Entering waiting animation mode - very slow, dim blue/purple mixing');
+        console.log('🌊 Entering waiting animation mode - very slow, dim colors matching current scheme');
     }
     
     restoreFromWaitingMode() {
