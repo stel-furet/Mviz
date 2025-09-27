@@ -508,7 +508,14 @@ class FluidDynamicsVisualization {
             uniform sampler2D uTexture;
             
             void main () {
-                gl_FragColor = texture2D(uTexture, vUv);
+                vec4 fluid = texture2D(uTexture, vUv);
+                // If the fluid color is very dark (near black), make it transparent
+                float brightness = (fluid.r + fluid.g + fluid.b) / 3.0;
+                if (brightness < 0.1) {
+                    gl_FragColor = vec4(fluid.rgb, 0.0); // Make transparent
+                } else {
+                    gl_FragColor = fluid; // Keep original with alpha
+                }
             }
         `));
         

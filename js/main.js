@@ -3516,9 +3516,9 @@ class LiveDisplayManager {
             }
         };
         
-        // IDENTICAL to RecordManager settings
-        this.resolution = '1080p';
-        this.aspectRatio = '16:9';
+            // IDENTICAL to RecordManager settings
+            this.resolution = '1080p';
+            this.aspectRatio = '16:9';
             this.frameRate = 30;
             this.videoQuality = 'auto';
             this.audioQuality = 'auto';
@@ -14060,8 +14060,8 @@ https://rogueamoeba.com/loopback/
                     trebleReactBtn.textContent = `Treble React: ${this.webglVisualization.currentVisualization.trebleReact ? 'On' : 'Off'}`;
                     trebleReactBtn.classList.toggle('active', this.webglVisualization.currentVisualization.trebleReact);
                 }
-            });
-        }
+                });
+            }
     }
     
     toggleInfiniteZoom() {
@@ -14263,6 +14263,21 @@ https://rogueamoeba.com/loopback/
         // Show the original visualization canvas when kaleidoscope is stopped
         if (this.audioMotion && this.audioMotion.canvas) {
             this.audioMotion.canvas.style.visibility = 'visible';
+        }
+        
+        // Show Fluid Dynamics canvas when kaleidoscope is stopped
+        if (this.fluidDynamics && this.fluidDynamics.canvas) {
+            this.fluidDynamics.canvas.style.visibility = 'visible';
+        }
+        
+        // Show Infinite Zoom canvas when kaleidoscope is stopped
+        if (this.infiniteZoom && this.infiniteZoom.canvas) {
+            this.infiniteZoom.canvas.style.visibility = 'visible';
+        }
+        
+        // Show WebGL canvas when kaleidoscope is stopped
+        if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
+            this.webglVisualization.canvas.style.visibility = 'visible';
         }
 
         // Restore video opacity if needed
@@ -14619,6 +14634,21 @@ https://rogueamoeba.com/loopback/
             if (this.audioMotion && this.audioMotion.canvas) {
                 this.audioMotion.canvas.style.visibility = 'hidden';
             }
+            
+            // Hide Fluid Dynamics canvas when kaleidoscope is active and applying to fluid
+            if (this.fluidDynamics && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
+                this.fluidDynamics.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide Infinite Zoom canvas when kaleidoscope is active and applying to infinite zoom
+            if (this.infiniteZoom && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
+                this.infiniteZoom.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide WebGL canvas when kaleidoscope is active and applying to webgl
+            if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas && this.kaleidoscopeApplyToWebGL) {
+                this.webglVisualization.canvas.style.visibility = 'hidden';
+            }
 
             // Draw multiple rings for VISUALIZATION
             for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
@@ -14696,8 +14726,8 @@ https://rogueamoeba.com/loopback/
         // Draw Fluid Dynamics if active and enabled for kaleidoscope
         if (this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
-        }
-        
+                        }
+                        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -14727,8 +14757,8 @@ https://rogueamoeba.com/loopback/
         // Draw Fluid Dynamics if active and enabled for kaleidoscope
         if (this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
-        }
-        
+                        }
+                        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -14744,6 +14774,21 @@ https://rogueamoeba.com/loopback/
             // Show the original visualization canvas when kaleidoscope is not active
             if (this.audioMotion && this.audioMotion.canvas) {
                 this.audioMotion.canvas.style.visibility = 'visible';
+            }
+            
+            // Show Fluid Dynamics canvas when kaleidoscope is not active
+            if (this.fluidDynamics && this.fluidDynamics.canvas) {
+                this.fluidDynamics.canvas.style.visibility = 'visible';
+            }
+            
+            // Show Infinite Zoom canvas when kaleidoscope is not active
+            if (this.infiniteZoom && this.infiniteZoom.canvas) {
+                this.infiniteZoom.canvas.style.visibility = 'visible';
+            }
+            
+            // Show WebGL canvas when kaleidoscope is not active
+            if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
+                this.webglVisualization.canvas.style.visibility = 'visible';
             }
         }
     }
@@ -16752,8 +16797,8 @@ https://rogueamoeba.com/loopback/
                         fluidDynamicsBeatReactBtn.textContent = `Beat React: ${newValue ? 'On' : 'Off'}`;
                         fluidDynamicsBeatReactBtn.classList.toggle('active', newValue);
                     }
-                });
-            }
+            });
+        }
 
         // Beat rotation toggle
         const beatRotationBtn = document.getElementById('headerKaleidoscopeBeatRotationBtn');
