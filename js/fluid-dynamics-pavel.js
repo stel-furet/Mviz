@@ -95,7 +95,7 @@ class FluidDynamicsVisualization {
         this.canvas.style.pointerEvents = 'none';
         this.canvas.style.zIndex = '10000'; // Above blobs (9999) for testing
         this.canvas.style.display = 'none';
-        this.canvas.style.opacity = '1';
+        this.canvas.style.opacity = this.opacity.toString();
         this.canvas.style.visibility = 'visible';
         
         // Add to visualizer container
@@ -845,9 +845,20 @@ class FluidDynamicsVisualization {
             const ambientDx = (Math.random() - 0.5) * ambientForce;
             const ambientDy = (Math.random() - 0.5) * ambientForce;
             
-            // Softer colors for ambient flow - use a different approach
-            const ambientColors = [[34, 139, 34], [107, 142, 35], [218, 165, 32], [205, 133, 63]];
-            const ambientColor = ambientColors[Math.floor(Math.random() * ambientColors.length)];
+            // Use ambient colors for original schemes, palette colors for pure schemes
+            const currentScheme = this.getCurrentColorScheme();
+            const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+            
+            let ambientColor;
+            if (pureSchemes.includes(currentScheme)) {
+                // Pure schemes use only palette colors
+                ambientColor = this.getSpectrumColor({ energy: energy * 0.6 });
+            } else {
+                // Original schemes use hardcoded ambient colors
+                const ambientColors = [[34, 139, 34], [107, 142, 35], [218, 165, 32], [205, 133, 63]];
+                const baseColor = ambientColors[Math.floor(Math.random() * ambientColors.length)];
+                ambientColor = this.applySaturation(baseColor);
+            }
             
             this.splat(ambientX, ambientY, ambientDx, ambientDy, ambientColor);
         }
@@ -908,12 +919,23 @@ class FluidDynamicsVisualization {
                     const dx = (Math.random() - 0.5) * baseForce;
                     const dy = (Math.random() - 0.5) * baseForce;
                     
-                    // Zone-specific color with energy variation
-                    const color = [
-                        Math.min(zone.color[0] * (0.7 + zoneEnergy * 0.6), 255),
-                        Math.min(zone.color[1] * (0.7 + zoneEnergy * 0.6), 255),
-                        Math.min(zone.color[2] * (0.7 + zoneEnergy * 0.6), 255)
-                    ];
+                    // Use zone-specific colors for original schemes, palette colors for pure schemes
+                    const currentScheme = this.getCurrentColorScheme();
+                    const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+                    
+                    let color;
+                    if (pureSchemes.includes(currentScheme)) {
+                        // Pure schemes use only palette colors
+                        color = this.getSpectrumColor({ energy: zoneEnergy });
+                    } else {
+                        // Original schemes use zone-specific colors with energy variation
+                        const baseColor = [
+                            Math.min(zone.color[0] * (0.7 + zoneEnergy * 0.6), 255),
+                            Math.min(zone.color[1] * (0.7 + zoneEnergy * 0.6), 255),
+                            Math.min(zone.color[2] * (0.7 + zoneEnergy * 0.6), 255)
+                        ];
+                        color = this.applySaturation(baseColor);
+                    }
                     
                     this.splat(x, y, dx, dy, color);
                 }
@@ -983,12 +1005,23 @@ class FluidDynamicsVisualization {
             const dx = (Math.random() - 0.5) * baseForce;
             const dy = (Math.random() - 0.5) * baseForce;
             
-            // Beat-specific color with energy variation
-            const color = [
-                Math.min(effect.color[0] * (0.8 + freqEnergy * 0.4), 255),
-                Math.min(effect.color[1] * (0.8 + freqEnergy * 0.4), 255),
-                Math.min(effect.color[2] * (0.8 + freqEnergy * 0.4), 255)
-            ];
+            // Use beat-specific colors for original schemes, palette colors for pure schemes
+            const currentScheme = this.getCurrentColorScheme();
+            const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+            
+            let color;
+            if (pureSchemes.includes(currentScheme)) {
+                // Pure schemes use only palette colors
+                color = this.getSpectrumColor({ energy: freqEnergy });
+            } else {
+                // Original schemes use beat-specific colors with energy variation
+                const baseColor = [
+                    Math.min(effect.color[0] * (0.8 + freqEnergy * 0.4), 255),
+                    Math.min(effect.color[1] * (0.8 + freqEnergy * 0.4), 255),
+                    Math.min(effect.color[2] * (0.8 + freqEnergy * 0.4), 255)
+                ];
+                color = this.applySaturation(baseColor);
+            }
             
             this.splat(x, y, dx, dy, color);
         }
@@ -1110,6 +1143,33 @@ class FluidDynamicsVisualization {
                 [205, 133, 63],  // Peru
                 [244, 164, 96],  // Sandy Brown
                 [255, 248, 220]  // Cornsilk (bright/high energy)
+            ],
+            fire: [
+                [139, 0, 0],     // Dark Red (70% red colors)
+                [178, 34, 34],   // Fire Brick Red
+                [220, 20, 60],   // Crimson Red
+                [255, 0, 0],     // Pure Red
+                [255, 69, 0],    // Red-Orange
+                [255, 215, 0],   // Gold/Yellow (20% yellow colors)
+                [255, 140, 0]    // Dark Orange (10% orange colors)
+            ],
+            jerry: [
+                [75, 0, 130],    // Indigo Purple (dark/low energy)
+                [102, 51, 153],  // Dark Purple
+                [128, 0, 128],   // Purple
+                [138, 43, 226],  // Blue Violet Purple
+                [147, 112, 219], // Medium Purple
+                [186, 85, 211],  // Medium Orchid Purple
+                [221, 160, 221]  // Plum Purple (bright/high energy)
+            ],
+            waterCaustic: [
+                [0, 25, 51],     // Deep Ocean Blue (dark/low energy)
+                [0, 51, 102],    // Dark Blue
+                [0, 76, 153],    // Medium Dark Blue
+                [0, 102, 204],   // Medium Blue
+                [51, 127, 255],  // Light Blue
+                [102, 153, 255], // Lighter Blue
+                [153, 204, 255]  // Very Light Blue (bright/high energy)
             ]
         };
         
@@ -1151,6 +1211,10 @@ class FluidDynamicsVisualization {
         
         // Smoothed energy value for physics calculations
         this.smoothedEnergy = 0;
+        
+        // Visual controls
+        this.opacity = 1.0;
+        this.saturation = 1.0;
     }
     
     initializeBeatDetection() {
@@ -1208,39 +1272,68 @@ class FluidDynamicsVisualization {
         };
     }
     
-    // Get color based on full frequency spectrum analysis
+    // Get color based on selected palette - pure for some schemes, complex for others
     getSpectrumColor(audioFeatures) {
         const energy = audioFeatures.energy || 0;
+        const currentScheme = this.getCurrentColorScheme();
         
-        // Use the selected color palette with energy-based selection
-        const paletteSize = this.currentPalette.length;
+        // Pure color schemes (no frequency/beat injection)
+        const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
         
-        // Energy-based color selection within the chosen palette
-        let colorIndex;
-        if (energy > 0.7) {
-            // High energy - use colors from the end of the palette (typically brighter)
-            colorIndex = Math.floor((0.7 + Math.random() * 0.3) * paletteSize);
-        } else if (energy > 0.4) {
-            // Medium energy - use colors from the middle of the palette
-            colorIndex = Math.floor((0.3 + Math.random() * 0.4) * paletteSize);
+        if (pureSchemes.includes(currentScheme)) {
+            // Use ONLY the selected color palette - no other color injection
+            const paletteSize = this.currentPalette.length;
+            
+            // Energy-based color selection within the chosen palette
+            let colorIndex;
+            if (energy > 0.7) {
+                colorIndex = Math.floor((0.7 + Math.random() * 0.3) * paletteSize);
+            } else if (energy > 0.4) {
+                colorIndex = Math.floor((0.3 + Math.random() * 0.4) * paletteSize);
+            } else {
+                colorIndex = Math.floor(Math.random() * 0.4 * paletteSize);
+            }
+            
+            colorIndex = Math.min(colorIndex, paletteSize - 1);
+            const baseColor = this.currentPalette[colorIndex];
+            
+            // Very subtle energy-based brightness (keep colors pure)
+            const energyMultiplier = 0.9 + (energy * 0.2);
+            
+            const color = [
+                Math.min(Math.round(baseColor[0] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[1] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[2] * energyMultiplier), 255)
+            ];
+            
+            return this.applySaturation(color);
         } else {
-            // Low energy - use colors from the beginning of the palette (typically darker)
-            colorIndex = Math.floor(Math.random() * 0.4 * paletteSize);
+            // Original complex color system for vibrant, warm, cool, natural
+            const paletteSize = this.currentPalette.length;
+            
+            let colorIndex;
+            if (energy > 0.7) {
+                colorIndex = Math.floor((0.7 + Math.random() * 0.3) * paletteSize);
+            } else if (energy > 0.4) {
+                colorIndex = Math.floor((0.3 + Math.random() * 0.4) * paletteSize);
+            } else {
+                colorIndex = Math.floor(Math.random() * 0.4 * paletteSize);
+            }
+            
+            colorIndex = Math.min(colorIndex, paletteSize - 1);
+            const baseColor = this.currentPalette[colorIndex];
+            
+            // Original energy-based brightness/saturation adjustment
+            const energyMultiplier = 0.7 + (energy * 0.6); // 0.7 to 1.3 range
+            
+            const color = [
+                Math.min(Math.round(baseColor[0] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[1] * energyMultiplier), 255),
+                Math.min(Math.round(baseColor[2] * energyMultiplier), 255)
+            ];
+            
+            return this.applySaturation(color);
         }
-        
-        // Ensure index is within bounds
-        colorIndex = Math.min(colorIndex, paletteSize - 1);
-        
-        const baseColor = this.currentPalette[colorIndex];
-        
-        // Apply energy-based brightness/saturation adjustment
-        const energyMultiplier = 0.7 + (energy * 0.6); // 0.7 to 1.3 range
-        
-        return [
-            Math.min(Math.round(baseColor[0] * energyMultiplier), 255),
-            Math.min(Math.round(baseColor[1] * energyMultiplier), 255),
-            Math.min(Math.round(baseColor[2] * energyMultiplier), 255)
-        ];
     }
     
     analyzeFrequencySpectrum(frequencies) {
@@ -1675,6 +1768,43 @@ class FluidDynamicsVisualization {
         }
         
         console.log('🔧 Energy physics config updated:', this.energyPhysics.energySensitivity);
+    }
+    
+    // Update opacity
+    setOpacity(opacity) {
+        this.opacity = Math.max(0.1, Math.min(1.0, opacity));
+        if (this.canvas) {
+            this.canvas.style.opacity = this.opacity.toString();
+        }
+        console.log(`🎨 Fluid opacity set to: ${this.opacity}`);
+    }
+    
+    // Update saturation
+    setSaturation(saturation) {
+        this.saturation = Math.max(0.0, Math.min(2.0, saturation));
+        console.log(`🎨 Fluid saturation set to: ${this.saturation}`);
+    }
+    
+    // Apply saturation to color
+    applySaturation(color) {
+        if (this.saturation === 1.0) {
+            return color; // No change needed
+        }
+        
+        // Convert RGB to HSL
+        const hsl = this.rgbToHsl(color[0], color[1], color[2]);
+        
+        // Apply saturation multiplier
+        hsl[1] = Math.max(0, Math.min(1, hsl[1] * this.saturation));
+        
+        // Convert back to RGB
+        const rgb = this.hslToRgb(hsl[0], hsl[1], hsl[2]);
+        
+        return [
+            Math.round(rgb[0]),
+            Math.round(rgb[1]),
+            Math.round(rgb[2])
+        ];
     }
 }
 

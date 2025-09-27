@@ -16619,6 +16619,32 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Opacity Slider
+        const fluidDynamicsOpacitySlider = document.getElementById('headerFluidDynamicsOpacitySlider');
+        const fluidDynamicsOpacityValue = document.getElementById('headerFluidDynamicsOpacityValue');
+        if (fluidDynamicsOpacitySlider && fluidDynamicsOpacityValue) {
+            fluidDynamicsOpacitySlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                fluidDynamicsOpacityValue.textContent = value.toFixed(1);
+                if (this.fluidDynamics && this.fluidDynamics.setOpacity) {
+                    this.fluidDynamics.setOpacity(value);
+                }
+            });
+        }
+
+        // Saturation Slider
+        const fluidDynamicsSaturationSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
+        const fluidDynamicsSaturationValue = document.getElementById('headerFluidDynamicsSaturationValue');
+        if (fluidDynamicsSaturationSlider && fluidDynamicsSaturationValue) {
+            fluidDynamicsSaturationSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                fluidDynamicsSaturationValue.textContent = value.toFixed(1);
+                if (this.fluidDynamics && this.fluidDynamics.setSaturation) {
+                    this.fluidDynamics.setSaturation(value);
+                }
+            });
+        }
+
         // Beat rotation toggle
         const beatRotationBtn = document.getElementById('headerKaleidoscopeBeatRotationBtn');
         if (beatRotationBtn) {
