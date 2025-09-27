@@ -605,31 +605,62 @@ class SpectrumAnalyzer {
             // Always draw Infinite Zoom (needed for kaleidoscope to capture)
             window.visualizer.infiniteZoom.draw();
             
-            // Update and draw Fluid Dynamics if active and not captured via kaleidoscope
-            if (window.visualizer && window.visualizer.fluidDynamics && window.visualizer.fluidDynamics.isActive) {
-                // Check if Fluid Dynamics is being captured via kaleidoscope
-                const isCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
-                    (window.visualizer.kaleidoscopeApplyToViz || window.visualizer.kaleidoscopeApplyToFluidDynamics);
-                
-                // Update Fluid Dynamics (always needed for kaleidoscope to capture)
-                window.visualizer.fluidDynamics.update(audioFeatures);
-                
-                // Always draw Fluid Dynamics (needed for kaleidoscope to capture)
-                window.visualizer.fluidDynamics.draw();
-                
-                // Hide canvas when captured via kaleidoscope to prevent background layer
-                if (isCapturedViaKaleidoscope) {
-                    window.visualizer.fluidDynamics.canvas.style.display = 'none';
-                } else {
-                    window.visualizer.fluidDynamics.canvas.style.display = 'block';
-                }
-            }
-            
             // Hide canvas when captured via kaleidoscope to prevent background layer
             if (isCapturedViaKaleidoscope) {
                 window.visualizer.infiniteZoom.canvas.style.display = 'none';
             } else {
                 window.visualizer.infiniteZoom.canvas.style.display = 'block';
+            }
+        }
+        
+        // Update and draw Fluid Dynamics if active (independent of Infinite Zoom)
+        if (window.visualizer && window.visualizer.fluidDynamics && window.visualizer.fluidDynamics.isActive) {
+            // Check if Fluid Dynamics is being captured via kaleidoscope
+            const isFluidCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
+                (window.visualizer.kaleidoscopeApplyToViz || window.visualizer.kaleidoscopeApplyToFluidDynamics);
+            
+            let audioFeatures = null;
+            
+            // Try to get audio features from AI Autopilot first
+            if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+            }
+            
+            // Fallback: generate basic audio features from main audio analyzer
+            if (!audioFeatures && this.analyser && this.dataArray) {
+                audioFeatures = this.generateBasicAudioFeatures();
+                if (!isFluidCapturedViaKaleidoscope) {
+                    console.log('🌊 Generated basic audio features for Fluid:', audioFeatures);
+                }
+            } else if (!audioFeatures) {
+                if (!isFluidCapturedViaKaleidoscope) {
+                    console.log('🌊 No audio data available for Fluid - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                }
+            } else if (audioFeatures && audioFeatures.energy === 0) {
+                // Try to generate basic audio features if AI features have no energy
+                if (!isFluidCapturedViaKaleidoscope) {
+                    // console.log('🌊 AI features have no energy for Fluid, trying basic audio features...');
+                }
+                const basicFeatures = this.generateBasicAudioFeatures();
+                if (basicFeatures.energy > 0) {
+                    audioFeatures = basicFeatures;
+                    if (!isFluidCapturedViaKaleidoscope) {
+                        // console.log('🌊 Using basic audio features for Fluid instead:', audioFeatures);
+                    }
+                }
+            }
+            
+            // Update Fluid Dynamics (always needed for kaleidoscope to capture)
+            window.visualizer.fluidDynamics.update(audioFeatures);
+            
+            // Always draw Fluid Dynamics (needed for kaleidoscope to capture)
+            window.visualizer.fluidDynamics.draw();
+            
+            // Hide canvas when captured via kaleidoscope to prevent background layer
+            if (isFluidCapturedViaKaleidoscope) {
+                window.visualizer.fluidDynamics.canvas.style.display = 'none';
+            } else {
+                window.visualizer.fluidDynamics.canvas.style.display = 'block';
             }
         }
         
