@@ -1228,6 +1228,10 @@ class FluidDynamicsVisualization {
         this.beatReactEnabled = true;
         this.speed = 1.0;
         
+        // Custom colors for random presets
+        this.currentCustomColors = null;
+        this.usingCustomColors = false;
+        
         // Waiting animation system
         this.waitingAnimation = {
             timer: 0,
@@ -1860,6 +1864,16 @@ class FluidDynamicsVisualization {
     setSpeed(speed) {
         this.speed = speed;
         console.log(`🌊 Animation speed set to: ${speed.toFixed(1)}x`);
+    }
+    
+    // Set custom colors (for random presets)
+    setCustomColors(colors) {
+        this.currentCustomColors = colors;
+        // Update the current palette to use custom colors
+        this.currentPalette = colors;
+        // Mark that we're using custom colors
+        this.usingCustomColors = true;
+        console.log(`🎨 Applied ${colors.length} custom colors:`, colors);
     }
     
     addWaitingAnimation() {

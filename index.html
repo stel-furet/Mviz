@@ -473,9 +473,29 @@
                         <!-- Presets -->
                         <div class="control-group">
                             <div class="group-label">Presets</div>
+            <div class="preset-buttons">
+                <button id="headerFluidDynamicsDefaultPresetBtn" class="btn-preset">Default</button>
+                <button id="headerFluidDynamicsAmbientPresetBtn" class="btn-preset">Ambient</button>
+                <button id="headerFluidDynamicsMetalPresetBtn" class="btn-preset">Metal</button>
+                <button id="headerFluidDynamicsRandomPresetBtn" class="btn-preset">Random</button>
+            </div>
+                        </div>
+                        
+                        <!-- Preset Management -->
+                        <div class="control-group">
+                            <div class="group-label">Preset Management</div>
                             <div class="preset-buttons">
-                                <button id="headerFluidDynamicsAmbientPresetBtn" class="btn-preset">Ambient</button>
-                                <button id="headerFluidDynamicsMetalPresetBtn" class="btn-preset">Metal</button>
+                                <button id="headerFluidDynamicsSavePresetBtn" class="btn-preset">Save Current</button>
+                            </div>
+                            <div class="dropdown-wrapper">
+                                <select id="headerFluidDynamicsPresetSelector" class="dropdown-1">
+                                    <option value="">Load Preset...</option>
+                                </select>
+                            </div>
+                            <div class="preset-buttons">
+                                <button id="headerFluidDynamicsExportPresetsBtn" class="btn-preset">Export</button>
+                                <button id="headerFluidDynamicsImportPresetsBtn" class="btn-preset">Import</button>
+                                <input type="file" id="headerFluidDynamicsImportFile" accept=".json" style="display: none;">
                             </div>
                         </div>
                     </div>

@@ -6132,6 +6132,14 @@ class GitItUpVisualizer {
 
             this.loadBackgroundColor();
             this.updatePresetSelector();
+            
+            // Load fluid presets after all methods are available
+            setTimeout(() => {
+                if (this.loadFluidPresets) {
+                    this.savedFluidPresets = this.loadFluidPresets();
+                    this.updateFluidPresetSelector();
+                }
+            }, 100);
 
             await this.initAudioMotion();
 
@@ -6150,6 +6158,9 @@ class GitItUpVisualizer {
             this.fluidDynamics = new FluidDynamicsVisualization(this);
             this.blobsVisualization = new BlobsVisualization(this);
             this.webglVisualization = new WebGLVisualizationManager(this);
+            
+            // Initialize Fluid Dynamics Presets
+            this.savedFluidPresets = [];
             
             // Initialize WebGL visualization immediately
             if (this.webglVisualization) {
@@ -16518,10 +16529,19 @@ https://rogueamoeba.com/loopback/
         }
 
         // Preset Buttons
+        const fluidDynamicsDefaultPresetBtn = document.getElementById('headerFluidDynamicsDefaultPresetBtn');
+        if (fluidDynamicsDefaultPresetBtn) {
+            fluidDynamicsDefaultPresetBtn.addEventListener('click', () => {
+                if (this.fluidDynamics && this.applyFluidDynamicsDefaultPreset) {
+                    this.applyFluidDynamicsDefaultPreset();
+                }
+            });
+        }
+
         const fluidDynamicsAmbientPresetBtn = document.getElementById('headerFluidDynamicsAmbientPresetBtn');
         if (fluidDynamicsAmbientPresetBtn) {
             fluidDynamicsAmbientPresetBtn.addEventListener('click', () => {
-                if (this.fluidDynamics) {
+                if (this.fluidDynamics && this.applyFluidDynamicsAmbientPreset) {
                     this.applyFluidDynamicsAmbientPreset();
                 }
             });
@@ -16530,8 +16550,63 @@ https://rogueamoeba.com/loopback/
         const fluidDynamicsMetalPresetBtn = document.getElementById('headerFluidDynamicsMetalPresetBtn');
         if (fluidDynamicsMetalPresetBtn) {
             fluidDynamicsMetalPresetBtn.addEventListener('click', () => {
-                if (this.fluidDynamics) {
+                if (this.fluidDynamics && this.applyFluidDynamicsMetalPreset) {
                     this.applyFluidDynamicsMetalPreset();
+                }
+            });
+        }
+
+        const fluidDynamicsRandomPresetBtn = document.getElementById('headerFluidDynamicsRandomPresetBtn');
+        if (fluidDynamicsRandomPresetBtn) {
+            fluidDynamicsRandomPresetBtn.addEventListener('click', () => {
+                if (this.fluidDynamics && this.applyFluidDynamicsRandomPreset) {
+                    this.applyFluidDynamicsRandomPreset();
+                }
+            });
+        }
+
+        // Preset Management
+        const fluidDynamicsSavePresetBtn = document.getElementById('headerFluidDynamicsSavePresetBtn');
+        if (fluidDynamicsSavePresetBtn) {
+            fluidDynamicsSavePresetBtn.addEventListener('click', () => {
+                if (this.saveCurrentFluidPreset) {
+                    this.saveCurrentFluidPreset();
+                }
+            });
+        }
+
+        const fluidDynamicsPresetSelector = document.getElementById('headerFluidDynamicsPresetSelector');
+        if (fluidDynamicsPresetSelector) {
+            fluidDynamicsPresetSelector.addEventListener('change', (e) => {
+                if (e.target.value !== '' && this.loadFluidPreset) {
+                    this.loadFluidPreset(parseInt(e.target.value));
+                    e.target.value = ''; // Reset to "Load Preset..."
+                }
+            });
+        }
+
+        const fluidDynamicsExportPresetsBtn = document.getElementById('headerFluidDynamicsExportPresetsBtn');
+        if (fluidDynamicsExportPresetsBtn) {
+            fluidDynamicsExportPresetsBtn.addEventListener('click', () => {
+                if (this.exportFluidPresets) {
+                    this.exportFluidPresets();
+                }
+            });
+        }
+
+        const fluidDynamicsImportPresetsBtn = document.getElementById('headerFluidDynamicsImportPresetsBtn');
+        if (fluidDynamicsImportPresetsBtn) {
+            fluidDynamicsImportPresetsBtn.addEventListener('click', () => {
+                document.getElementById('headerFluidDynamicsImportFile').click();
+            });
+        }
+
+        const fluidDynamicsImportFile = document.getElementById('headerFluidDynamicsImportFile');
+        if (fluidDynamicsImportFile) {
+            fluidDynamicsImportFile.addEventListener('change', (e) => {
+                if (e.target.files.length > 0 && this.importFluidPresets) {
+                    this.importFluidPresets(e.target.files[0]);
+                    e.target.value = ''; // Reset file input
                 }
             });
         }
@@ -19147,6 +19222,90 @@ window.testLearningAnalytics = () => {
     }
 }
 
+// Apply Default Preset - restore initial app settings
+GitItUpVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
+    // Set color scheme to default (Vibrant)
+    const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
+    if (colorSchemeDropdown) {
+        colorSchemeDropdown.value = 'vibrant';
+        this.fluidDynamics.setColorScheme('vibrant');
+    }
+
+    // Clear any custom colors
+    if (this.fluidDynamics) {
+        this.fluidDynamics.usingCustomColors = false;
+        this.fluidDynamics.currentCustomColors = null;
+    }
+
+    // Reset Energy Physics to defaults
+    const energySensitivitySlider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
+    const energySensitivityValue = document.getElementById('headerFluidDynamicsEnergySensitivityValue');
+    if (energySensitivitySlider && energySensitivityValue) {
+        energySensitivitySlider.value = '1.0';
+        energySensitivityValue.textContent = '1.0';
+        this.fluidDynamics.updateEnergyPhysicsConfig({ energySensitivity: 1.0 });
+    }
+
+    const viscosityResponseSlider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
+    const viscosityResponseValue = document.getElementById('headerFluidDynamicsViscosityResponseValue');
+    if (viscosityResponseSlider && viscosityResponseValue) {
+        viscosityResponseSlider.value = '2.0';
+        viscosityResponseValue.textContent = '2.0';
+        this.fluidDynamics.updateEnergyPhysicsConfig({ viscosityResponse: 2.0 });
+    }
+
+    const curlResponseSlider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
+    const curlResponseValue = document.getElementById('headerFluidDynamicsCurlResponseValue');
+    if (curlResponseSlider && curlResponseValue) {
+        curlResponseSlider.value = '3.0';
+        curlResponseValue.textContent = '3.0';
+        this.fluidDynamics.updateEnergyPhysicsConfig({ curlResponse: 3.0 });
+    }
+
+    const pressureResponseSlider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
+    const pressureResponseValue = document.getElementById('headerFluidDynamicsPressureResponseValue');
+    if (pressureResponseSlider && pressureResponseValue) {
+        pressureResponseSlider.value = '0.5';
+        pressureResponseValue.textContent = '0.5';
+        this.fluidDynamics.updateEnergyPhysicsConfig({ pressureResponse: 0.5 });
+    }
+
+    // Reset Visual Controls to defaults
+    const opacitySlider = document.getElementById('headerFluidDynamicsOpacitySlider');
+    const opacityValue = document.getElementById('headerFluidDynamicsOpacityValue');
+    if (opacitySlider && opacityValue) {
+        opacitySlider.value = '1.0';
+        opacityValue.textContent = '1.0';
+        this.fluidDynamics.setOpacity(1.0);
+    }
+
+    const saturationSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
+    const saturationValue = document.getElementById('headerFluidDynamicsSaturationValue');
+    if (saturationSlider && saturationValue) {
+        saturationSlider.value = '1.0';
+        saturationValue.textContent = '1.0';
+        this.fluidDynamics.setSaturation(1.0);
+    }
+
+    const speedSlider = document.getElementById('headerFluidDynamicsSpeedSlider');
+    const speedValue = document.getElementById('headerFluidDynamicsSpeedValue');
+    if (speedSlider && speedValue) {
+        speedSlider.value = '1.0';
+        speedValue.textContent = '1.0';
+        this.fluidDynamics.setSpeed(1.0);
+    }
+
+    // Reset Beat React to default (On)
+    this.fluidDynamics.setBeatReact(true);
+    const beatReactBtn = document.getElementById('headerFluidDynamicsBeatReactBtn');
+    if (beatReactBtn) {
+        beatReactBtn.textContent = 'Beat React: On';
+        beatReactBtn.classList.add('active');
+    }
+
+    console.log('🔄 Applied Default preset - restored all settings to initial app values');
+};
+
 // Apply Ambient Preset - purple scheme, all sliders minimum
 GitItUpVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
         // Set color scheme to Jerry (purple)
@@ -19286,6 +19445,332 @@ GitItUpVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
 
         console.log('🔥 Applied Metal preset - intense fire fluid with maximum settings');
     };
+
+// Apply Random Preset - randomize all fluid settings
+GitItUpVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
+    // Generate random number of colors (3-7 slots)
+    const numColors = Math.floor(Math.random() * 5) + 3; // 3-7 colors
+    const randomColors = [];
+    
+    // Generate random RGB colors for each slot
+    for (let i = 0; i < numColors; i++) {
+        randomColors.push([
+            Math.floor(Math.random() * 256), // R: 0-255
+            Math.floor(Math.random() * 256), // G: 0-255
+            Math.floor(Math.random() * 256)  // B: 0-255
+        ]);
+    }
+    
+    // Apply custom color palette to fluid dynamics
+    if (this.fluidDynamics && this.fluidDynamics.setCustomColors) {
+        this.fluidDynamics.setCustomColors(randomColors);
+    }
+    
+    // Set dropdown to indicate custom colors are being used
+    const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
+    if (colorSchemeDropdown) {
+        colorSchemeDropdown.value = 'vibrant'; // Just use any value as placeholder
+    }
+
+    // Randomize physics sliders
+    const energySensitivity = (Math.random() * 2.9 + 0.1).toFixed(1); // 0.1-3.0
+    const energySensitivitySlider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
+    const energySensitivityValue = document.getElementById('headerFluidDynamicsEnergySensitivityValue');
+    if (energySensitivitySlider && energySensitivityValue) {
+        energySensitivitySlider.value = energySensitivity;
+        energySensitivityValue.textContent = energySensitivity;
+        this.fluidDynamics.updateEnergyPhysicsConfig({ energySensitivity: parseFloat(energySensitivity) });
+    }
+
+    const viscosityResponse = (Math.random() * 3.5 + 0.5).toFixed(1); // 0.5-4.0
+    const viscosityResponseSlider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
+    const viscosityResponseValue = document.getElementById('headerFluidDynamicsViscosityResponseValue');
+    if (viscosityResponseSlider && viscosityResponseValue) {
+        viscosityResponseSlider.value = viscosityResponse;
+        viscosityResponseValue.textContent = viscosityResponse;
+        this.fluidDynamics.updateEnergyPhysicsConfig({ viscosityResponse: parseFloat(viscosityResponse) });
+    }
+
+    const curlResponse = (Math.random() * 4.0 + 1.0).toFixed(1); // 1.0-5.0
+    const curlResponseSlider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
+    const curlResponseValue = document.getElementById('headerFluidDynamicsCurlResponseValue');
+    if (curlResponseSlider && curlResponseValue) {
+        curlResponseSlider.value = curlResponse;
+        curlResponseValue.textContent = curlResponse;
+        this.fluidDynamics.updateEnergyPhysicsConfig({ curlResponse: parseFloat(curlResponse) });
+    }
+
+    const pressureResponse = (Math.random() * 0.9 + 0.1).toFixed(1); // 0.1-1.0
+    const pressureResponseSlider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
+    const pressureResponseValue = document.getElementById('headerFluidDynamicsPressureResponseValue');
+    if (pressureResponseSlider && pressureResponseValue) {
+        pressureResponseSlider.value = pressureResponse;
+        pressureResponseValue.textContent = pressureResponse;
+        this.fluidDynamics.updateEnergyPhysicsConfig({ pressureResponse: parseFloat(pressureResponse) });
+    }
+
+    // Randomize visual controls
+    const saturation = (Math.random() * 2.0).toFixed(1); // 0.0-2.0
+    const saturationSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
+    const saturationValue = document.getElementById('headerFluidDynamicsSaturationValue');
+    if (saturationSlider && saturationValue) {
+        saturationSlider.value = saturation;
+        saturationValue.textContent = saturation;
+        this.fluidDynamics.setSaturation(parseFloat(saturation));
+    }
+
+    const speed = (Math.random() * 2.9 + 0.1).toFixed(1); // 0.1-3.0
+    const speedSlider = document.getElementById('headerFluidDynamicsSpeedSlider');
+    const speedValue = document.getElementById('headerFluidDynamicsSpeedValue');
+    if (speedSlider && speedValue) {
+        speedSlider.value = speed;
+        speedValue.textContent = speed;
+        this.fluidDynamics.setSpeed(parseFloat(speed));
+    }
+
+    console.log(`🎲 Applied Random preset - ${numColors} random colors with randomized settings`);
+};
+
+// Fluid Preset Management Methods
+GitItUpVisualizer.prototype.loadFluidPresets = function() {
+    try {
+        const saved = localStorage.getItem('MVpro_fluid_presets');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        console.error('Error loading fluid presets:', e);
+        return [];
+    }
+};
+
+GitItUpVisualizer.prototype.saveFluidPresets = function() {
+    try {
+        localStorage.setItem('MVpro_fluid_presets', JSON.stringify(this.savedFluidPresets));
+    } catch (e) {
+        console.error('Error saving fluid presets:', e);
+    }
+};
+
+GitItUpVisualizer.prototype.getCurrentFluidConfig = function() {
+    const config = {};
+    
+    // Get current color scheme
+    const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
+    config.colorScheme = colorSchemeDropdown ? colorSchemeDropdown.value : 'vibrant';
+    
+    // Get custom colors if available
+    if (this.fluidDynamics && this.fluidDynamics.currentCustomColors) {
+        config.customColors = this.fluidDynamics.currentCustomColors;
+    }
+    
+    // Get physics settings
+    const energySensitivitySlider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
+    config.energySensitivity = energySensitivitySlider ? parseFloat(energySensitivitySlider.value) : 1.0;
+    
+    const viscosityResponseSlider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
+    config.viscosityResponse = viscosityResponseSlider ? parseFloat(viscosityResponseSlider.value) : 2.0;
+    
+    const curlResponseSlider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
+    config.curlResponse = curlResponseSlider ? parseFloat(curlResponseSlider.value) : 3.0;
+    
+    const pressureResponseSlider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
+    config.pressureResponse = pressureResponseSlider ? parseFloat(pressureResponseSlider.value) : 0.5;
+    
+    // Get visual controls
+    const opacitySlider = document.getElementById('headerFluidDynamicsOpacitySlider');
+    config.opacity = opacitySlider ? parseFloat(opacitySlider.value) : 1.0;
+    
+    const saturationSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
+    config.saturation = saturationSlider ? parseFloat(saturationSlider.value) : 1.0;
+    
+    const speedSlider = document.getElementById('headerFluidDynamicsSpeedSlider');
+    config.speed = speedSlider ? parseFloat(speedSlider.value) : 1.0;
+    
+    // Get beat react state
+    config.beatReact = this.fluidDynamics ? this.fluidDynamics.beatReactEnabled : true;
+    
+    return config;
+};
+
+GitItUpVisualizer.prototype.saveCurrentFluidPreset = function() {
+    const name = prompt('Enter preset name:', `Fluid Preset ${this.savedFluidPresets.length + 1}`);
+    if (!name) return;
+    
+    const preset = {
+        name: name,
+        timestamp: Date.now(),
+        config: this.getCurrentFluidConfig()
+    };
+    
+    this.savedFluidPresets.push(preset);
+    if (this.savedFluidPresets.length > 20) {
+        this.savedFluidPresets.shift(); // Remove oldest
+    }
+    
+    this.saveFluidPresets();
+    this.updateFluidPresetSelector();
+    console.log(`💾 Saved fluid preset: ${name}`);
+};
+
+GitItUpVisualizer.prototype.loadFluidPreset = function(index) {
+    if (index < 0 || index >= this.savedFluidPresets.length) return;
+    
+    const preset = this.savedFluidPresets[index];
+    if (!preset || !preset.config) return;
+    
+    const config = preset.config;
+    
+    // Apply color scheme
+    const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
+    if (colorSchemeDropdown && config.colorScheme) {
+        colorSchemeDropdown.value = config.colorScheme;
+        this.fluidDynamics.setColorScheme(config.colorScheme);
+    }
+    
+    // Apply custom colors if available
+    if (config.customColors && this.fluidDynamics && this.fluidDynamics.setCustomColors) {
+        this.fluidDynamics.setCustomColors(config.customColors);
+    }
+    
+    // Apply physics settings
+    if (config.energySensitivity !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
+        const value = document.getElementById('headerFluidDynamicsEnergySensitivityValue');
+        if (slider && value) {
+            slider.value = config.energySensitivity;
+            value.textContent = config.energySensitivity.toFixed(1);
+            this.fluidDynamics.updateEnergyPhysicsConfig({ energySensitivity: config.energySensitivity });
+        }
+    }
+    
+    if (config.viscosityResponse !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
+        const value = document.getElementById('headerFluidDynamicsViscosityResponseValue');
+        if (slider && value) {
+            slider.value = config.viscosityResponse;
+            value.textContent = config.viscosityResponse.toFixed(1);
+            this.fluidDynamics.updateEnergyPhysicsConfig({ viscosityResponse: config.viscosityResponse });
+        }
+    }
+    
+    if (config.curlResponse !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
+        const value = document.getElementById('headerFluidDynamicsCurlResponseValue');
+        if (slider && value) {
+            slider.value = config.curlResponse;
+            value.textContent = config.curlResponse.toFixed(1);
+            this.fluidDynamics.updateEnergyPhysicsConfig({ curlResponse: config.curlResponse });
+        }
+    }
+    
+    if (config.pressureResponse !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
+        const value = document.getElementById('headerFluidDynamicsPressureResponseValue');
+        if (slider && value) {
+            slider.value = config.pressureResponse;
+            value.textContent = config.pressureResponse.toFixed(1);
+            this.fluidDynamics.updateEnergyPhysicsConfig({ pressureResponse: config.pressureResponse });
+        }
+    }
+    
+    // Apply visual controls
+    if (config.opacity !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsOpacitySlider');
+        const value = document.getElementById('headerFluidDynamicsOpacityValue');
+        if (slider && value) {
+            slider.value = config.opacity;
+            value.textContent = config.opacity.toFixed(1);
+            this.fluidDynamics.setOpacity(config.opacity);
+        }
+    }
+    
+    if (config.saturation !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsSaturationSlider');
+        const value = document.getElementById('headerFluidDynamicsSaturationValue');
+        if (slider && value) {
+            slider.value = config.saturation;
+            value.textContent = config.saturation.toFixed(1);
+            this.fluidDynamics.setSaturation(config.saturation);
+        }
+    }
+    
+    if (config.speed !== undefined) {
+        const slider = document.getElementById('headerFluidDynamicsSpeedSlider');
+        const value = document.getElementById('headerFluidDynamicsSpeedValue');
+        if (slider && value) {
+            slider.value = config.speed;
+            value.textContent = config.speed.toFixed(1);
+            this.fluidDynamics.setSpeed(config.speed);
+        }
+    }
+    
+    // Apply beat react
+    if (config.beatReact !== undefined) {
+        this.fluidDynamics.setBeatReact(config.beatReact);
+        const beatReactBtn = document.getElementById('headerFluidDynamicsBeatReactBtn');
+        if (beatReactBtn) {
+            beatReactBtn.textContent = `Beat React: ${config.beatReact ? 'On' : 'Off'}`;
+            beatReactBtn.classList.toggle('active', config.beatReact);
+        }
+    }
+    
+    console.log(`📂 Loaded fluid preset: ${preset.name}`);
+};
+
+GitItUpVisualizer.prototype.updateFluidPresetSelector = function() {
+    const selector = document.getElementById('headerFluidDynamicsPresetSelector');
+    if (!selector) return;
+    
+    selector.innerHTML = '<option value="">Load Preset...</option>';
+    this.savedFluidPresets.forEach((preset, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = preset.name;
+        selector.appendChild(option);
+    });
+};
+
+GitItUpVisualizer.prototype.exportFluidPresets = function() {
+    try {
+        const dataStr = JSON.stringify(this.savedFluidPresets, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `MVpro_fluid_presets_${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        console.log('📤 Fluid presets exported successfully');
+    } catch (e) {
+        console.error('Error exporting fluid presets:', e);
+        alert('Failed to export fluid presets');
+    }
+};
+
+GitItUpVisualizer.prototype.importFluidPresets = function(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (Array.isArray(imported)) {
+                const confirmed = confirm(`Import ${imported.length} fluid presets? This will replace your current presets.`);
+                if (confirmed) {
+                    this.savedFluidPresets = imported;
+                    this.saveFluidPresets();
+                    this.updateFluidPresetSelector();
+                    console.log(`📥 Imported ${imported.length} fluid presets`);
+                }
+            } else {
+                alert('Invalid fluid preset file format');
+            }
+        } catch (error) {
+            console.error('Error importing fluid presets:', error);
+            alert('Failed to import fluid presets: Invalid file');
+        }
+    };
+    reader.readAsText(file);
+};
 });
 
 
