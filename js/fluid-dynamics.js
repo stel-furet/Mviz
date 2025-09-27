@@ -27,9 +27,6 @@ class FluidDynamicsVisualization {
         this.energySmoothing = 0.7;
         this.currentEnergy = 0;
         
-        // Independent animation loop
-        this.independentAnimationFrame = null;
-        
         // Pavel's fluid system will be initialized here
         this.fluidSystem = null;
         
@@ -318,15 +315,15 @@ class FluidDynamicsVisualization {
         this.isActive = true;
         this.animationRunning = true;
         
-        // Show canvas
+        // Show canvas (mirror Infinite Zoom)
         this.canvas.style.display = 'block';
         this.canvas.style.visibility = 'visible';
         this.canvas.style.opacity = '1';
         
-        // Start independent animation loop
-        this.startIndependentAnimationLoop();
+        // Force initial resize and render to ensure proper initialization
+        this.forceInitialRender();
         
-        console.log('🌊 Fluid Dynamics started with independent animation loop');
+        console.log('🌊 Fluid Dynamics started');
     }
     
     forceInitialRender() {
@@ -364,103 +361,17 @@ class FluidDynamicsVisualization {
     }
     
     stop() {
-        console.log('🌊 STOP CALLED - isActive going from', this.isActive, 'to false');
         this.isActive = false;
         this.animationRunning = false;
         
-        // Stop independent animation loop
-        this.stopIndependentAnimationLoop();
-        
-        // Hide canvas
+        // Hide canvas (mirror Infinite Zoom)
         if (this.canvas) {
             this.canvas.style.display = 'none';
             this.canvas.style.visibility = 'hidden';
             this.canvas.style.opacity = '0';
         }
         
-        console.log('🌊 Fluid Dynamics stopped with independent animation loop');
-    }
-    
-    startIndependentAnimationLoop() {
-        if (this.independentAnimationFrame) {
-            cancelAnimationFrame(this.independentAnimationFrame);
-        }
-        
-        const animate = () => {
-            if (!this.isActive) return; // Stop loop if deactivated
-            
-            // Get audio features independently
-            this.updateIndependentAudioFeatures();
-            
-            // Update and draw
-            this.update(this.audioFeatures);
-            this.draw();
-            
-            // Continue loop
-            this.independentAnimationFrame = requestAnimationFrame(animate);
-        };
-        
-        animate();
-        console.log('🌊 Independent animation loop started');
-    }
-    
-    stopIndependentAnimationLoop() {
-        if (this.independentAnimationFrame) {
-            cancelAnimationFrame(this.independentAnimationFrame);
-            this.independentAnimationFrame = null;
-        }
-        console.log('🌊 Independent animation loop stopped');
-    }
-    
-    updateIndependentAudioFeatures() {
-        // Get audio features completely independently from any other system
-        let audioFeatures = null;
-        
-        // Try AI Autopilot first
-        if (this.visualizer.aiAutopilot && this.visualizer.aiAutopilot.audioAnalyzer) {
-            try {
-                audioFeatures = this.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
-            } catch (error) {
-                // Ignore errors, use fallback
-            }
-        }
-        
-        // Try AudioMotion fallback
-        if (!audioFeatures && this.visualizer.audioMotion && this.visualizer.audioMotion.analyser) {
-            try {
-                // Generate basic audio features from AudioMotion data
-                const dataArray = new Uint8Array(this.visualizer.audioMotion.analyser.frequencyBinCount);
-                this.visualizer.audioMotion.analyser.getByteFrequencyData(dataArray);
-                
-                // Calculate energy
-                let sum = 0;
-                for (let i = 0; i < dataArray.length; i++) {
-                    sum += dataArray[i];
-                }
-                const energy = sum / (dataArray.length * 255);
-                
-                audioFeatures = {
-                    energy: energy,
-                    beat: false, // Simple implementation
-                    tempo: 120,
-                    dominantFrequency: 1000
-                };
-            } catch (error) {
-                // Ignore errors, use test data
-            }
-        }
-        
-        // Final fallback: Generate test data
-        if (!audioFeatures) {
-            audioFeatures = {
-                energy: 0.5 + Math.sin(Date.now() / 1000) * 0.3,
-                beat: Math.random() > 0.95,
-                tempo: 120,
-                dominantFrequency: 1000
-            };
-        }
-        
-        this.audioFeatures = audioFeatures;
+        console.log('🌊 Fluid Dynamics stopped');
     }
     
     update(audioFeatures) {
@@ -488,10 +399,7 @@ class FluidDynamicsVisualization {
     }
     
     draw() {
-        // Only render if explicitly active (independent of all other components)
-        if (!this.isActive) return;
-        
-        if (!this.gl || !this.fluidSystem) return;
+        if (!this.isActive || !this.gl || !this.fluidSystem) return;
         
         // Frame rate limiting (mirror Infinite Zoom)
         const now = performance.now();

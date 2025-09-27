@@ -14167,7 +14167,6 @@ https://rogueamoeba.com/loopback/
         }
     }
 
-
     startKaleidoscopeAnimation() {
         const animate = () => {
             if (!this.kaleidoscopeEnabled) 
@@ -15887,15 +15886,12 @@ https://rogueamoeba.com/loopback/
             const infiniteZoomPanel = document.getElementById('headerInfiniteZoomPanel');
             const blobsPanel = document.getElementById('headerBlobsPanel');
             const webglPanel = document.getElementById('headerWebGLPanel');
-            const fluidDynamicsPanel = document.getElementById('headerFluidDynamicsPanel');
             const kaleidoscopeBtn = document.getElementById('headerKaleidoscopeBtn');
             const infiniteZoomBtn = document.getElementById('headerInfiniteZoomBtn');
             const infiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
             const blobsBtn = document.getElementById('headerBlobsBtn');
             const webglBtn = document.getElementById('headerWebGLBtn');
             const webglToggleBtn = document.getElementById('headerWebGLToggleBtn');
-            const fluidDynamicsBtn = document.getElementById('headerFluidDynamicsBtn');
-            const fluidDynamicsToggleBtn = document.getElementById('headerFluidDynamicsToggleBtn');
 
             // Close Kaleidoscope panel if clicking outside
             if (kaleidoscopePanel && kaleidoscopePanel.style.display !== 'none') {
@@ -15922,15 +15918,6 @@ https://rogueamoeba.com/loopback/
             if (webglPanel && webglPanel.style.display !== 'none') {
                 if (!webglPanel.contains(e.target) && !webglBtn.contains(e.target) && !webglToggleBtn.contains(e.target)) {
                     webglPanel.style.display = 'none';
-                }
-            }
-
-            // Close Fluid Dynamics panel if clicking outside
-            if (fluidDynamicsPanel && fluidDynamicsPanel.style.display !== 'none') {
-                if (!fluidDynamicsPanel.contains(e.target) && 
-                    !fluidDynamicsBtn.contains(e.target) && 
-                    !fluidDynamicsToggleBtn.contains(e.target)) {
-                    fluidDynamicsPanel.style.display = 'none';
                 }
             }
         });
@@ -16471,7 +16458,6 @@ https://rogueamoeba.com/loopback/
                 document.getElementById('headerFluidDynamicsBtn').classList.remove('active');
             });
         }
-
 
         // Fluid Dynamics Viscosity slider
         const fluidDynamicsViscositySlider = document.getElementById('headerFluidDynamicsViscositySlider');
@@ -17512,7 +17498,6 @@ https://rogueamoeba.com/loopback/
             footerVisualizerToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation(); // Additional protection
                 console.log('Footer Visualizer Toggle button clicked');
                 
                 // Toggle visualization ON/OFF

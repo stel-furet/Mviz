@@ -519,7 +519,11 @@ class SpectrumAnalyzer {
                 window.visualizer.infiniteZoom.draw();
             }
             
-            // Fluid Dynamics removed - now completely independent
+            // Still update Fluid Dynamics even when main visualization is off
+            if (window.visualizer.fluidDynamics && window.visualizer.fluidDynamics.isActive) {
+                window.visualizer.fluidDynamics.update(audioFeatures);
+                window.visualizer.fluidDynamics.draw();
+            }
             
             // Still update WebGL even when main visualization is off
             if (window.visualizer.webglVisualization && window.visualizer.webglVisualization.isActive) {
@@ -601,7 +605,25 @@ class SpectrumAnalyzer {
             // Always draw Infinite Zoom (needed for kaleidoscope to capture)
             window.visualizer.infiniteZoom.draw();
             
-            // Fluid Dynamics removed - now completely independent
+            // Update and draw Fluid Dynamics if active and not captured via kaleidoscope
+            if (window.visualizer && window.visualizer.fluidDynamics && window.visualizer.fluidDynamics.isActive) {
+                // Check if Fluid Dynamics is being captured via kaleidoscope
+                const isCapturedViaKaleidoscope = window.visualizer.kaleidoscopeEnabled && 
+                    (window.visualizer.kaleidoscopeApplyToViz || window.visualizer.kaleidoscopeApplyToFluidDynamics);
+                
+                // Update Fluid Dynamics (always needed for kaleidoscope to capture)
+                window.visualizer.fluidDynamics.update(audioFeatures);
+                
+                // Always draw Fluid Dynamics (needed for kaleidoscope to capture)
+                window.visualizer.fluidDynamics.draw();
+                
+                // Hide canvas when captured via kaleidoscope to prevent background layer
+                if (isCapturedViaKaleidoscope) {
+                    window.visualizer.fluidDynamics.canvas.style.display = 'none';
+                } else {
+                    window.visualizer.fluidDynamics.canvas.style.display = 'block';
+                }
+            }
             
             // Hide canvas when captured via kaleidoscope to prevent background layer
             if (isCapturedViaKaleidoscope) {
