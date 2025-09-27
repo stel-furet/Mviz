@@ -793,18 +793,28 @@ class FluidDynamicsVisualization {
         const energy = audioFeatures.energy || 0;
         const beat = audioFeatures.beat || false;
         
-        // Advanced beat detection and effects
-        this.processBeatDetection(audioFeatures);
+        // Advanced beat detection and effects (only if enabled)
+        if (this.beatReactEnabled) {
+            this.processBeatDetection(audioFeatures);
+        }
         
-        // Multi-frequency zone splats
+        // Multi-frequency zone splats (only if beat react is enabled for complex schemes)
         if (audioFeatures.frequencies && audioFeatures.frequencies !== 'none') {
-            this.addFrequencyZoneSplats(audioFeatures);
+            const currentScheme = this.getCurrentColorScheme();
+            const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+            
+            // Pure schemes always get frequency zones, complex schemes only if beat react is on
+            if (pureSchemes.includes(currentScheme) || this.beatReactEnabled) {
+                this.addFrequencyZoneSplats(audioFeatures);
+            }
         }
         
         // More frequent splats with lower energy threshold for richer visuals
-        if ((beat && energy > 0.05) || (energy > 0.2)) {
+        // Only use beat detection if beat react is enabled
+        const useBeat = this.beatReactEnabled && beat;
+        if ((useBeat && energy > 0.05) || (energy > 0.2)) {
             // Multiple splats for high energy
-            const splatCount = beat ? Math.ceil(energy * 3) : 1;
+            const splatCount = useBeat ? Math.ceil(energy * 3) : 1;
             
             for (let i = 0; i < splatCount; i++) {
                 // Enhanced positioning with some randomness
@@ -1145,13 +1155,13 @@ class FluidDynamicsVisualization {
                 [255, 248, 220]  // Cornsilk (bright/high energy)
             ],
             fire: [
-                [139, 0, 0],     // Dark Red (70% red colors)
-                [178, 34, 34],   // Fire Brick Red
-                [220, 20, 60],   // Crimson Red
-                [255, 0, 0],     // Pure Red
-                [255, 69, 0],    // Red-Orange
-                [255, 215, 0],   // Gold/Yellow (20% yellow colors)
-                [255, 140, 0]    // Dark Orange (10% orange colors)
+                [139, 0, 0],     // Dark Red (low energy)
+                [178, 34, 34],   // Fire Brick Red (low energy)
+                [220, 20, 60],   // Crimson Red (low energy)
+                [255, 69, 0],    // Red-Orange (low-medium energy)
+                [255, 140, 0],   // Dark Orange (medium energy)
+                [255, 0, 0],     // Pure Red (medium-high energy)
+                [255, 215, 0]    // Gold/Yellow (high energy)
             ],
             jerry: [
                 [75, 0, 130],    // Indigo Purple (dark/low energy)
@@ -1215,6 +1225,24 @@ class FluidDynamicsVisualization {
         // Visual controls
         this.opacity = 1.0;
         this.saturation = 1.0;
+        this.beatReactEnabled = true;
+        this.speed = 1.0;
+        
+        // Waiting animation system
+        this.waitingAnimation = {
+            timer: 0,
+            isActive: false,
+            originalPhysics: null, // Store original physics to restore later
+            colors: [
+                [15, 25, 45],    // Very dim deep blue
+                [20, 15, 40],    // Very dim dark purple
+                [18, 30, 50],    // Very dim medium blue
+                [25, 12, 35],    // Very dim purple
+                [12, 28, 42],    // Very dim ocean blue
+                [22, 20, 48],    // Very dim blue-purple
+                [16, 35, 55]     // Very dim lighter blue
+            ]
+        };
     }
     
     initializeBeatDetection() {
@@ -1559,13 +1587,25 @@ class FluidDynamicsVisualization {
     update(audioFeatures) {
         if (!this.isActive) return;
         
-        // Update energy-based physics
-        this.updateEnergyPhysics(audioFeatures);
+        // Check energy level to determine if we should use waiting animation
+        const energy = audioFeatures?.energy || 0;
+        const useWaitingAnimation = energy < 0.02; // Very low energy threshold
         
-        // Add audio-reactive splats
-        this.addAudioSplat(audioFeatures);
+        if (useWaitingAnimation) {
+            // Very low/no energy - use waiting animation
+            this.addWaitingAnimation();
+        } else {
+            // Sufficient energy - restore normal operation
+            this.restoreFromWaitingMode();
+            
+            // Update energy-based physics
+            this.updateEnergyPhysics(audioFeatures);
+            
+            // Add audio-reactive splats
+            this.addAudioSplat(audioFeatures);
+        }
         
-        // Pavel's fluid simulation step will go here
+        // Pavel's fluid simulation step
         const dt = this.calcDeltaTime();
         if (!this.config.PAUSED) {
             this.step(dt);
@@ -1576,6 +1616,10 @@ class FluidDynamicsVisualization {
         const now = Date.now();
         let dt = (now - this.lastUpdateTime) / 1000;
         dt = Math.min(dt, 0.016); // Cap at 60fps
+        
+        // Apply speed multiplier
+        dt *= this.speed;
+        
         this.lastUpdateTime = now;
         return dt;
     }
@@ -1805,6 +1849,101 @@ class FluidDynamicsVisualization {
             Math.round(rgb[1]),
             Math.round(rgb[2])
         ];
+    }
+    
+    // Toggle beat react functionality
+    setBeatReact(enabled) {
+        this.beatReactEnabled = enabled;
+        console.log(`🥁 Beat React ${enabled ? 'enabled' : 'disabled'}`);
+    }
+
+    setSpeed(speed) {
+        this.speed = speed;
+        console.log(`🌊 Animation speed set to: ${speed.toFixed(1)}x`);
+    }
+    
+    addWaitingAnimation() {
+        if (!this.waitingAnimation.isActive) {
+            this.enterWaitingMode();
+        }
+        
+        // Slow timer increment
+        this.waitingAnimation.timer += 0.008; // Gentle timing
+        
+        // Create multiple gentle swirls to fill screen - but inject slowly
+        const time = this.waitingAnimation.timer;
+        const numSwirls = 4; // 4 swirl centers
+        
+        // Only inject one swirl per frame to avoid bursts
+        const activeSwirl = Math.floor(time * 2) % numSwirls; // Cycle through swirls slowly
+        
+        for (let i = 0; i < numSwirls; i++) {
+            // Only inject for the active swirl this frame
+            if (i !== activeSwirl) continue;
+            
+            // Distribute swirl centers evenly across screen
+            const angle = (i / numSwirls) * Math.PI * 2;
+            const baseRadius = 0.3; // Distance from center
+            
+            const centerX = 0.5 + Math.cos(angle) * baseRadius;
+            const centerY = 0.5 + Math.sin(angle) * baseRadius;
+            
+            // Create gentle swirling motion
+            const swirlTime = time * 0.3 + i; // Different timing per swirl
+            const swirlRadius = 0.08; // Small radius for gentle swirls
+            
+            // Single injection point per swirl to avoid bursts
+            const injectAngle = swirlTime;
+            
+            const x = centerX + Math.cos(injectAngle) * swirlRadius;
+            const y = centerY + Math.sin(injectAngle) * swirlRadius;
+            
+            // Very gentle swirling velocity - tangential flow
+            const dx = Math.cos(injectAngle + Math.PI/2) * 8; // Gentle tangential force
+            const dy = Math.sin(injectAngle + Math.PI/2) * 8;
+            
+            // Pick dim color from waiting palette
+            const colorIndex = i % this.waitingAnimation.colors.length;
+            const color = this.waitingAnimation.colors[colorIndex];
+            
+            this.splat(x, y, dx, dy, color);
+        }
+    }
+    
+    enterWaitingMode() {
+        this.waitingAnimation.isActive = true;
+        
+        // Store original physics settings
+        this.waitingAnimation.originalPhysics = {
+            viscosity: this.config.VELOCITY_DISSIPATION,
+            pressure: this.config.PRESSURE,
+            curl: this.config.CURL,
+            density: this.config.DENSITY_DISSIPATION
+        };
+        
+        // Apply very gentle, slow physics - like default sliders
+        this.config.VELOCITY_DISSIPATION = 0.2; // Default viscosity - no fast movement
+        this.config.PRESSURE = 0.8; // Default pressure - no bursts
+        this.config.CURL = 5; // Very low curl - gentle mixing only
+        this.config.DENSITY_DISSIPATION = 0.95; // Slower fade for gentle presence
+        
+        console.log('🌊 Entering waiting animation mode - very slow, dim blue/purple mixing');
+    }
+    
+    restoreFromWaitingMode() {
+        if (this.waitingAnimation.isActive) {
+            this.waitingAnimation.isActive = false;
+            
+            // Restore original physics settings
+            if (this.waitingAnimation.originalPhysics) {
+                this.config.VELOCITY_DISSIPATION = this.waitingAnimation.originalPhysics.viscosity;
+                this.config.PRESSURE = this.waitingAnimation.originalPhysics.pressure;
+                this.config.CURL = this.waitingAnimation.originalPhysics.curl;
+                this.config.DENSITY_DISSIPATION = this.waitingAnimation.originalPhysics.density;
+            }
+            
+            console.log('🌊 Exiting waiting animation mode - restored audio-reactive operation');
+        }
     }
 }
 
