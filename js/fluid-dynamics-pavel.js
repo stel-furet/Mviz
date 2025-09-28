@@ -1084,6 +1084,9 @@ class FluidDynamicsVisualization {
         // Smooth energy changes for more natural physics transitions
         this.smoothedEnergy += (energy - this.smoothedEnergy) * this.energyPhysics.energySmoothing;
         
+        // Update effective speed based on audio energy
+        this.updateEffectiveSpeed();
+        
         // Only apply energy-based changes if above threshold
         if (this.smoothedEnergy > this.energyPhysics.energyThreshold) {
             const energyFactor = Math.min(this.smoothedEnergy * this.energyPhysics.maxEnergyMultiplier, this.energyPhysics.maxEnergyMultiplier);
@@ -1234,6 +1237,9 @@ class FluidDynamicsVisualization {
         this.saturation = 1.0;
         this.beatReactEnabled = true;
         this.speed = 1.0;
+        this.baseSpeed = 1.0;  // Base speed set by user slider
+        this.audioSpeedEnabled = true;  // Whether audio affects speed
+        this.audioSpeedSensitivity = 1.0;  // How much audio affects speed
         
         // Custom colors for random presets
         this.currentCustomColors = null;
@@ -1890,8 +1896,35 @@ class FluidDynamicsVisualization {
     }
 
     setSpeed(speed) {
-        this.speed = speed;
-        console.log(`🌊 Animation speed set to: ${speed.toFixed(1)}x`);
+        this.baseSpeed = speed;  // Store the user-set base speed
+        this.updateEffectiveSpeed();  // Calculate effective speed with audio
+        console.log(`🌊 Base animation speed set to: ${speed.toFixed(1)}x`);
+    }
+    
+    // Calculate effective speed combining base speed and audio energy
+    updateEffectiveSpeed() {
+        if (this.audioSpeedEnabled && this.smoothedEnergy > 0) {
+            // Audio energy range: 0.0 to 1.0+
+            // Speed multiplier: 0.3x (low energy) to 2.0x (high energy)
+            const energyMultiplier = 0.3 + (this.smoothedEnergy * this.audioSpeedSensitivity * 1.7);
+            this.speed = this.baseSpeed * Math.min(energyMultiplier, 2.0);
+        } else {
+            // No audio or audio speed disabled - use base speed
+            this.speed = this.baseSpeed;
+        }
+    }
+    
+    // Audio speed control methods
+    setAudioSpeedEnabled(enabled) {
+        this.audioSpeedEnabled = enabled;
+        this.updateEffectiveSpeed();
+        console.log(`🎵 Audio-driven speed ${enabled ? 'enabled' : 'disabled'}`);
+    }
+    
+    setAudioSpeedSensitivity(sensitivity) {
+        this.audioSpeedSensitivity = sensitivity;
+        this.updateEffectiveSpeed();
+        console.log(`🎵 Audio speed sensitivity set to: ${sensitivity.toFixed(1)}`);
     }
     
     // Set custom colors (for random presets)
