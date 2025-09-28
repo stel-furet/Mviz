@@ -1102,6 +1102,11 @@
                 </button>
                 <button class="btn-gear" id="footerAutopilotSettingsBtn" title="Autopilot Settings">⚙</button>
             </div>
+            <div class="btn-pair mixer-btn-container">
+                <button class="btn-toggle" id="mixerBtn" title="Open Mixer Panel">
+                    <span class="mixer-text">Mixer</span>
+                </button>
+            </div>
         </div>
         
         <!-- Footer Settings Panels -->
@@ -1409,6 +1414,7 @@
                     </div>
                     <div class="button-container">
                         <button class="btn-toggle" id="display1CaptureWebGLBtn">Capture WebGL: On</button>
+                        <button class="btn-toggle" id="display1CaptureFluidDynamicsBtn">Capture Fluid Dynamics: On</button>
                     </div>
                 </div>
                 
@@ -1499,6 +1505,7 @@
                     </div>
                     <div class="button-container">
                         <button class="btn-toggle" id="display2CaptureWebGLBtn">Capture WebGL: On</button>
+                        <button class="btn-toggle" id="display2CaptureFluidDynamicsBtn">Capture Fluid Dynamics: On</button>
                     </div>
                 </div>
                 
@@ -1589,6 +1596,7 @@
                     </div>
                     <div class="button-container">
                         <button class="btn-toggle" id="display3CaptureWebGLBtn">Capture WebGL: On</button>
+                        <button class="btn-toggle" id="display3CaptureFluidDynamicsBtn">Capture Fluid Dynamics: On</button>
                     </div>
                 </div>
                 
@@ -1781,6 +1789,108 @@
                         <button class="btn-primary">Nested Button 2</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mixer Panel -->
+<div class="mixer-panel-floating" id="mixerPanel" style="display: none;">
+    <div class="panel-header">
+        <span>MVPRO Mixer</span>
+        <button class="btn-toggle-peek" id="mixerPeekBtn" title="Peek Mode">Peek</button>
+    </div>
+    <div class="panel-content">
+        <!-- Mixer Channels Section -->
+        <div class="mixer-channels">
+            
+            <!-- Background Image Channel -->
+            <div class="channel-strip input-channel">
+                <div class="channel-header">Background Image</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Video Input Channel -->
+            <div class="channel-strip input-channel">
+                <div class="channel-header">Video Input</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Audio Input Channel -->
+            <div class="channel-strip input-channel">
+                <div class="channel-header">Audio Input</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Spacer -->
+            <div class="channel-spacer"></div>
+
+            <!-- AM Visualizer Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">AM Visualizer</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Infinite Zoom Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">Infinite Zoom</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Blobs Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">Blobs</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Starfall Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">Starfall</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Fluid Dynamics Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">Fluid Dynamics</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Kaleidoscope Channel -->
+            <div class="channel-strip viz-channel">
+                <div class="channel-header">Kaleidoscope</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Spacer -->
+            <div class="channel-spacer"></div>
+
+            <!-- Display 1 Channel -->
+            <div class="channel-strip display-channel">
+                <div class="channel-header">Display 1</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Display 2 Channel -->
+            <div class="channel-strip display-channel">
+                <div class="channel-header">Display 2</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+            <!-- Display 3 Channel -->
+            <div class="channel-strip display-channel">
+                <div class="channel-header">Display 3</div>
+                <!-- Empty channel strip - controls to be added later -->
+            </div>
+
+        </div>
+
+        <!-- Info Panel -->
+        <div class="mixer-info">
+            <div style="color: var(--text-secondary); font-size: 12px;">
+                <div style="margin-bottom: 8px; font-weight: 500;">Info Panel</div>
+                <div>240px wide</div>
+                <div>Right sidebar</div>
+                <div>Future use</div>
             </div>
         </div>
     </div>

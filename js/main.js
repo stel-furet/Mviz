@@ -3452,7 +3452,8 @@ class LiveDisplayManager {
             captureVisualization: true,
             captureKaleidoscope: true,
             captureInfiniteZoom: true,
-            captureWebGL: true
+            captureWebGL: true,
+            captureFluidDynamics: true
         };
         
         // Set up settings channel message handler
@@ -3461,6 +3462,7 @@ class LiveDisplayManager {
             if (event.data && event.data.type === 'display-settings' && event.data.data) {
                 const settings = event.data.data;
                 console.log(`DEBUG LiveDisplayManager ${this.displayId}: Updating settings from settings channel:`, settings);
+                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Current displaySettings before update:`, this.displaySettings);
                 
                 // Update display settings
                 if (settings.captureVideo !== undefined) this.displaySettings.captureVideo = settings.captureVideo;
@@ -3468,6 +3470,7 @@ class LiveDisplayManager {
                 if (settings.captureKaleidoscope !== undefined) this.displaySettings.captureKaleidoscope = settings.captureKaleidoscope;
                 if (settings.captureInfiniteZoom !== undefined) this.displaySettings.captureInfiniteZoom = settings.captureInfiniteZoom;
                 if (settings.captureWebGL !== undefined) this.displaySettings.captureWebGL = settings.captureWebGL;
+                if (settings.captureFluidDynamics !== undefined) this.displaySettings.captureFluidDynamics = settings.captureFluidDynamics;
                 
                 // Update presentation modes and other display settings
                 if (settings.presentationMode !== undefined) this.displaySettings.presentationMode = settings.presentationMode;
@@ -3938,6 +3941,16 @@ class LiveDisplayManager {
                 }
             }
             
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope (if capture fluid dynamics is enabled)
+            if (this.displaySettings && this.displaySettings.captureFluidDynamics && 
+                this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && 
+                this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization) {
@@ -3961,6 +3974,16 @@ class LiveDisplayManager {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
+                }
+            }
+            
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope (if capture fluid dynamics is enabled)
+            if (this.displaySettings && this.displaySettings.captureFluidDynamics && 
+                this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && 
+                this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
                 }
             }
         }
@@ -14111,6 +14134,62 @@ https://rogueamoeba.com/loopback/
         }
     }
 
+    toggleMixer() {
+        const panel = document.getElementById('mixerPanel');
+        const btn = document.getElementById('mixerBtn');
+        
+        // Toggle panel visibility using same positioning as Record panel
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            if (isVisible) {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+            } else {
+                // Position panel using same system as Record panel
+                this.positionFloatingPanel(panel, btn);
+                panel.style.display = 'block';
+                btn.classList.add('active');
+                
+                // Setup peek button functionality when mixer opens
+                this.setupPeekButton();
+            }
+        }
+    }
+
+    setupPeekButton() {
+        const peekBtn = document.getElementById('mixerPeekBtn');
+        const mixerChannels = document.querySelector('.mixer-channels');
+        const mixerPanel = document.getElementById('mixerPanel');
+        
+        if (peekBtn && mixerChannels && mixerPanel) {
+            // Remove any existing event listeners to prevent duplicates
+            peekBtn.removeEventListener('mousedown', this.startPeeking);
+            peekBtn.removeEventListener('mouseup', this.stopPeeking);
+            peekBtn.removeEventListener('mouseleave', this.stopPeeking);
+            document.removeEventListener('mouseup', this.stopPeeking);
+            
+            // Bind functions to maintain 'this' context
+            this.startPeeking = (e) => {
+                e.preventDefault();
+                mixerChannels.classList.add('peek-mode');
+                mixerPanel.classList.add('peek-mode');
+                peekBtn.classList.add('peeking');
+            };
+            
+            this.stopPeeking = () => {
+                mixerChannels.classList.remove('peek-mode');
+                mixerPanel.classList.remove('peek-mode');
+                peekBtn.classList.remove('peeking');
+            };
+            
+            // Add event listeners
+            peekBtn.addEventListener('mousedown', this.startPeeking);
+            peekBtn.addEventListener('mouseup', this.stopPeeking);
+            peekBtn.addEventListener('mouseleave', this.stopPeeking);
+            document.addEventListener('mouseup', this.stopPeeking);
+        }
+    }
+
     toggleHeaderFluidDynamics() {
         const panel = document.getElementById('headerFluidDynamicsPanel');
         const btn = document.getElementById('headerFluidDynamicsBtn');
@@ -15473,8 +15552,8 @@ https://rogueamoeba.com/loopback/
     positionFloatingPanel(panel, button) {
         const buttonRect = button.getBoundingClientRect();
         
-        // Special positioning for Autopilot panel (right-aligned)
-        if (button.id === 'footerAutopilotSettingsBtn') {
+        // Special positioning for right-aligned panels
+        if (button.id === 'footerAutopilotSettingsBtn' || button.id === 'mixerBtn') {
             panel.style.left = 'auto';
             panel.style.right = `${window.innerWidth - buttonRect.right}px`;
             panel.style.top = `${buttonRect.top - 4}px`;
@@ -15885,6 +15964,14 @@ https://rogueamoeba.com/loopback/
         if (headerInfiniteZoomBtn) {
             headerInfiniteZoomBtn.addEventListener('click', () => {
                 this.toggleHeaderInfiniteZoom();
+            });
+        }
+
+        // Mixer button
+        const mixerBtn = document.getElementById('mixerBtn');
+        if (mixerBtn) {
+            mixerBtn.addEventListener('click', () => {
+                this.toggleMixer();
             });
         }
 

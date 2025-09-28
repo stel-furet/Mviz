@@ -218,6 +218,16 @@ class MultiDisplayManager {
                 this.updateToggleButton(captureWebGLBtn, 'Capture WebGL', !currentState);
             });
         }
+        
+        // Capture Fluid Dynamics toggle
+        const captureFluidDynamicsBtn = document.getElementById(`display${displayId}CaptureFluidDynamicsBtn`);
+        if (captureFluidDynamicsBtn) {
+            captureFluidDynamicsBtn.addEventListener('click', () => {
+                const currentState = this.getDisplaySettings(displayId).captureFluidDynamics !== false;
+                this.updateDisplaySettings(displayId, { captureFluidDynamics: !currentState });
+                this.updateToggleButton(captureFluidDynamicsBtn, 'Capture Fluid Dynamics', !currentState);
+            });
+        }
     }
     
     // Toggle display window (create/close)
@@ -409,6 +419,11 @@ class MultiDisplayManager {
             this.updateToggleButton(captureWebGLBtn, 'Capture WebGL', settings.captureWebGL !== false);
         }
         
+        const captureFluidDynamicsBtn = document.getElementById(`display${displayId}CaptureFluidDynamicsBtn`);
+        if (captureFluidDynamicsBtn) {
+            this.updateToggleButton(captureFluidDynamicsBtn, 'Capture Fluid Dynamics', settings.captureFluidDynamics !== false);
+        }
+        
         // Update mirror background toggle
         const mirrorBackgroundBtn = document.getElementById(`display${displayId}MirrorBackgroundBtn`);
         if (mirrorBackgroundBtn) {
@@ -450,12 +465,13 @@ class DisplayInstance {
     // Load display-specific settings
     loadDisplaySettings() {
         const saved = localStorage.getItem(`mvpro_display_${this.displayId}_settings`);
-        return saved ? JSON.parse(saved) : {
+        const defaults = {
             captureVideo: true,
             captureVisualization: true,
             captureKaleidoscope: true,
             captureInfiniteZoom: true,
             captureWebGL: true,
+            captureFluidDynamics: true,
             presentationMode: 'fit',
             displaySharpness: 0,
             letterboxColor: '#000000',
@@ -465,6 +481,16 @@ class DisplayInstance {
             frameRate: 30,
             videoQuality: 'auto'
         };
+        
+        if (saved) {
+            const parsedSettings = JSON.parse(saved);
+            // Merge with defaults to ensure new properties are added
+            const mergedSettings = { ...defaults, ...parsedSettings };
+            console.log(`DEBUG DisplayInstance ${this.displayId}: Merged settings:`, mergedSettings);
+            return mergedSettings;
+        }
+        
+        return defaults;
     }
     
     // Save display-specific settings
