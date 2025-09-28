@@ -392,7 +392,48 @@
                     <button class="panel-close-btn" id="headerFluidDynamicsCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
-                    <div class="control-group">
+                    <!-- Presets -->
+                    <div class="control-group-major">
+                        <div class="group-label">Presets</div>
+                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                            <button id="headerFluidDynamicsDefaultPresetBtn" class="btn-preset">Default</button>
+                            <button id="headerFluidDynamicsAmbientPresetBtn" class="btn-preset">Ambient</button>
+                            <button id="headerFluidDynamicsMetalPresetBtn" class="btn-preset">Metal</button>
+                            <button id="headerFluidDynamicsRandomPresetBtn" class="btn-preset">Random</button>
+                        </div>
+                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                            <button id="headerFluidDynamicsSavePresetBtn" class="btn-preset">Save Current</button>
+                            <button id="headerFluidDynamicsExportPresetsBtn" class="btn-preset">Export</button>
+                            <button id="headerFluidDynamicsImportPresetsBtn" class="btn-preset">Import</button>
+                            <input type="file" id="headerFluidDynamicsImportFile" accept=".json" style="display: none;">
+                        </div>
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-label">User Presets</div>
+                            <select id="headerFluidDynamicsPresetSelector" class="dropdown-selector">
+                                <option value="">Load Preset...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Color Scheme -->
+                    <div class="control-group-no-border-minor">
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-label">Color Scheme</div>
+                            <select id="headerFluidDynamicsColorScheme" class="dropdown-selector">
+                                <option value="vibrant">Vibrant</option>
+                                <option value="warm">Warm</option>
+                                <option value="cool">Cool</option>
+                                <option value="natural">Natural</option>
+                                <option value="fire">Fire</option>
+                                <option value="jerry">Jerry</option>
+                                <option value="waterCaustic">Water Caustic</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Basic Physics Controls -->
+                    <div class="control-group-minor">
+                        <div class="group-label">Basic Physics</div>
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Viscosity</div>
                             <input type="range" id="headerFluidDynamicsViscositySlider" min="0.1" max="2.0" step="0.1" value="0.2" class="slider-1">
@@ -413,22 +454,14 @@
                             <input type="range" id="headerFluidDynamicsSplatForceSlider" min="1000" max="10000" step="500" value="6000" class="slider-1">
                             <span class="slider-1-value" id="headerFluidDynamicsSplatForceValue">6000</span>
                         </div>
-                        <!-- Color Scheme Selector -->
-                        <div class="dropdown-wrapper">
-                            <div class="dropdown-label">Color Scheme</div>
-                            <select id="headerFluidDynamicsColorScheme" class="dropdown-1">
-                                <option value="vibrant">Vibrant</option>
-                                <option value="warm">Warm</option>
-                                <option value="cool">Cool</option>
-                                <option value="natural">Natural</option>
-                                <option value="fire">Fire</option>
-                                <option value="jerry">Jerry</option>
-                                <option value="waterCaustic">Water Caustic</option>
-                            </select>
+                    </div>
+                    
+                    <!-- Energy-Based Physics -->
+                    <div class="control-group-major">
+                        <div class="group-label">Energy-Based Physics</div>
+                        <div class="button-container">
+                            <button id="headerFluidDynamicsBeatReactBtn" class="btn-toggle active">Beat React: On</button>
                         </div>
-                        
-                        <!-- Energy Physics Controls -->
-                        <div class="control-section-header">Energy-Based Physics</div>
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Energy Sensitivity</div>
                             <input type="range" id="headerFluidDynamicsEnergySensitivitySlider" min="0.1" max="3.0" step="0.1" value="1.0" class="slider-1">
@@ -449,55 +482,25 @@
                             <input type="range" id="headerFluidDynamicsPressureResponseSlider" min="0.1" max="1.0" step="0.1" value="0.5" class="slider-1">
                             <span class="slider-1-value" id="headerFluidDynamicsPressureResponseValue">0.5</span>
                         </div>
-                        
-                        <!-- Visual Controls -->
-                        <div class="control-section-header">Visual Controls</div>
+                    </div>
+                    
+                    <!-- Visual Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Visual Controls</div>
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Opacity</div>
                             <input type="range" id="headerFluidDynamicsOpacitySlider" min="0.1" max="1.0" step="0.1" value="1.0" class="slider-1">
                             <span class="slider-1-value" id="headerFluidDynamicsOpacityValue">1.0</span>
                         </div>
-                            <div class="slider-1-wrapper">
-                                <div class="slider-label">Saturation</div>
-                                <input type="range" id="headerFluidDynamicsSaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0" class="slider-1">
-                                <span class="slider-1-value" id="headerFluidDynamicsSaturationValue">1.0</span>
-                            </div>
-                            <div class="slider-1-wrapper">
-                                <div class="slider-label">Speed</div>
-                                <input type="range" id="headerFluidDynamicsSpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0" class="slider-1">
-                                <span class="slider-1-value" id="headerFluidDynamicsSpeedValue">1.0</span>
-                            </div>
-                            <div class="button-container">
-                                <button id="headerFluidDynamicsBeatReactBtn" class="btn-toggle active">Beat React: On</button>
-                            </div>
-                        
-                        <!-- Presets -->
-                        <div class="control-group">
-                            <div class="group-label">Presets</div>
-            <div class="preset-buttons">
-                <button id="headerFluidDynamicsDefaultPresetBtn" class="btn-preset">Default</button>
-                <button id="headerFluidDynamicsAmbientPresetBtn" class="btn-preset">Ambient</button>
-                <button id="headerFluidDynamicsMetalPresetBtn" class="btn-preset">Metal</button>
-                <button id="headerFluidDynamicsRandomPresetBtn" class="btn-preset">Random</button>
-            </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Saturation</div>
+                            <input type="range" id="headerFluidDynamicsSaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsSaturationValue">1.0</span>
                         </div>
-                        
-                        <!-- Preset Management -->
-                        <div class="control-group">
-                            <div class="group-label">Preset Management</div>
-                            <div class="preset-buttons">
-                                <button id="headerFluidDynamicsSavePresetBtn" class="btn-preset">Save Current</button>
-                            </div>
-                            <div class="dropdown-wrapper">
-                                <select id="headerFluidDynamicsPresetSelector" class="dropdown-1">
-                                    <option value="">Load Preset...</option>
-                                </select>
-                            </div>
-                            <div class="preset-buttons">
-                                <button id="headerFluidDynamicsExportPresetsBtn" class="btn-preset">Export</button>
-                                <button id="headerFluidDynamicsImportPresetsBtn" class="btn-preset">Import</button>
-                                <input type="file" id="headerFluidDynamicsImportFile" accept=".json" style="display: none;">
-                            </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Speed</div>
+                            <input type="range" id="headerFluidDynamicsSpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsSpeedValue">1.0</span>
                         </div>
                     </div>
                 </div>

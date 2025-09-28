@@ -442,6 +442,14 @@ body {
     margin-bottom: 2px;
 }
 
+/* Dropdown Label - Based on slider-label with additional margin */
+.dropdown-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: left;
+    margin-bottom: 6px;
+}
+
 /* ========================================
    SLIDER CONTAINERS - SELF-CONTAINED
    ======================================== */
@@ -732,9 +740,26 @@ html body .slider-2-wrapper .slider-2-value {
     border-color: var(--accent-color);
 }
 
+/* Dropdown Selector - Standardized dropdown for presets and selectors */
+.dropdown-selector {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.dropdown-selector:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
 /* Group Label - For section headers */
 .group-label {
-    margin-top: 10px;
     font-size: 12px;
     color: var(--text-secondary);
     font-weight: 500;
@@ -866,6 +891,28 @@ html body .slider-2-wrapper .slider-2-value {
 .control-group:last-child {
     border-bottom: none;
     margin-bottom: 0;
+}
+
+/* Control Group Variations */
+.control-group-major {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.control-group-minor {
+    margin-bottom: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.control-group-no-border {
+    border-bottom: none;
+}
+
+.control-group-no-border-minor {
+    border-bottom: none;
+    margin-bottom: 8px;
 }
 
 .control-group h4 {
