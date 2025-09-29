@@ -792,6 +792,20 @@
     <h3>GitItUp Music Visualizer</h3>
     <p>Created by Stel Furet</p>
     <p>Try selecting the Mirror Wave then Radial Spectrum for a cool effect!</p>
+    
+    <h4>Keyboard Shortcuts</h4>
+    <div class="keyboard-shortcuts">
+        <div class="shortcut-row"><span class="key">Space</span> - Play/Pause</div>
+        <div class="shortcut-row"><span class="key">F</span> - Toggle Fullscreen</div>
+        <div class="shortcut-row"><span class="key">R</span> - Random Visualization</div>
+        <div class="shortcut-row"><span class="key">M</span> - Toggle Morph</div>
+        <div class="shortcut-row"><span class="key">L</span> - Toggle Loop</div>
+        <div class="shortcut-row"><span class="key">X</span> - Toggle Mixer</div>
+        <div class="shortcut-row"><span class="key">C</span> - Peek Mode (Mixer Open)</div>
+        <div class="shortcut-row"><span class="key">Esc</span> - Exit Fullscreen/Close Panels</div>
+        <div class="shortcut-row"><span class="key">Ctrl+U</span> - Toggle Debug Panel</div>
+    </div>
+    
     <button onclick="closeInfoPopup()">Close</button>
 </div>
 
@@ -1807,19 +1821,127 @@
             <!-- Background Image Channel -->
             <div class="channel-strip input-channel">
                 <div class="channel-header">Background Image</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <button class="btn-toggle" id="mixerBackgroundToggle" title="Toggle Background Image">
+                        <span class="background-text">OFF</span>
+                    </button>
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerBackgroundOpacity" 
+                                 data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerBackgroundOpacityValue">100</div>
+                    </div>
+                </div>
+                
+                <div class="channel-input-section">
+                    <button class="control-btn" id="mixerBackgroundSelect">Select Image</button>
+                    <input type="file" id="mixerBackgroundImageFile" accept=".jpg,.jpeg,.png" style="display: none;">
+                    <div class="background-file-info" id="mixerBackgroundFileInfo" style="display: none;">
+                        <div class="file-preview-container">
+                            <div class="image-preview" id="mixerBackgroundImagePreview"></div>
+                        </div>
+                        <div class="file-name" id="mixerBackgroundFileName" style="margin-top: 4px;"></div>
+                        <div class="file-details">
+                            <div class="file-size" id="mixerBackgroundFileSize"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="channel-presets-section">
+                    <div class="control-mini-label">Sizing</div>
+                    <div class="preset-buttons">
+                        <button class="btn-preset" id="mixerBackgroundSizeFit" data-size="fit">Fit</button>
+                        <button class="btn-preset" id="mixerBackgroundSizeFill" data-size="fill">Fill</button>
+                        <button class="btn-preset" id="mixerBackgroundSizeStretch" data-size="stretch">Stretch</button>
+                        <button class="btn-preset active" id="mixerBackgroundSizeOriginal" data-size="original">Original</button>
+                    </div>
+                </div>
+                
+                <div class="channel-controls-section">
+                    <div class="control-mini-group">
+                        <div class="control-mini-header">
+                            <div class="control-mini-label">Saturation</div>
+                            <div class="control-mini-value" id="mixerBackgroundSaturationValue">100</div>
+                        </div>
+                        <input type="range" class="mini-slider" id="mixerBackgroundSaturation" 
+                               min="0" max="200" value="100">
+                    </div>
+                    <div class="control-mini-group">
+                        <div class="control-mini-header">
+                            <div class="control-mini-label">Posterization</div>
+                            <div class="control-mini-value" id="mixerBackgroundPosterizeValue">16</div>
+                        </div>
+                        <input type="range" class="mini-slider" id="mixerBackgroundPosterize" 
+                               min="0" max="16" value="16">
+                    </div>
+                    <div class="control-mini-group">
+                        <div class="control-mini-header">
+                            <div class="control-mini-label">Contrast</div>
+                            <div class="control-mini-value" id="mixerBackgroundContrastValue">100</div>
+                        </div>
+                        <input type="range" class="mini-slider" id="mixerBackgroundContrast" 
+                               min="0" max="200" value="100">
+                    </div>
+                </div>
             </div>
 
             <!-- Video Input Channel -->
             <div class="channel-strip input-channel">
                 <div class="channel-header">Video Input</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - file/camera selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Audio Input Channel -->
             <div class="channel-strip input-channel">
                 <div class="channel-header">Audio Input</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - volume slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - input source selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Spacer -->
@@ -1828,37 +1950,151 @@
             <!-- AM Visualizer Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">AM Visualizer</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - visualization type selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Infinite Zoom Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">Infinite Zoom</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - pattern selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Blobs Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">Blobs</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - blob type selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Starfall Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">Starfall</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - particle type selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Fluid Dynamics Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">Fluid Dynamics</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - color scheme selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Kaleidoscope Channel -->
             <div class="channel-strip viz-channel">
                 <div class="channel-header">Kaleidoscope</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <!-- Empty - opacity slider will go here -->
+                </div>
+                
+                <div class="channel-input-section">
+                    <!-- Empty - kaleidoscope type selection will go here -->
+                </div>
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - additional controls will go here -->
+                </div>
             </div>
 
             <!-- Spacer -->
@@ -1867,19 +2103,70 @@
             <!-- Display 1 Channel -->
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 1</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-input-section">
+                    <!-- Empty - resolution/window controls will go here -->
+                </div>
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <!-- Note: Display channels don't have vertical-slider-section -->
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - capture toggles and settings will go here -->
+                </div>
             </div>
 
             <!-- Display 2 Channel -->
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 2</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-input-section">
+                    <!-- Empty - resolution/window controls will go here -->
+                </div>
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <!-- Note: Display channels don't have vertical-slider-section -->
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - capture toggles and settings will go here -->
+                </div>
             </div>
 
             <!-- Display 3 Channel -->
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 3</div>
-                <!-- Empty channel strip - controls to be added later -->
+                
+                <div class="channel-input-section">
+                    <!-- Empty - resolution/window controls will go here -->
+                </div>
+                
+                <div class="channel-toggle-section">
+                    <!-- Empty - ON/OFF toggle will go here -->
+                </div>
+                
+                <!-- Note: Display channels don't have vertical-slider-section -->
+                
+                <div class="channel-presets-section">
+                    <!-- Empty - preset buttons will go here -->
+                </div>
+                
+                <div class="channel-controls-section">
+                    <!-- Empty - capture toggles and settings will go here -->
+                </div>
             </div>
 
         </div>

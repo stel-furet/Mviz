@@ -1815,6 +1815,16 @@ class RecordManager {
         // Load saved background image from visualizer
         if (this.visualizer) {
             this.visualizer.loadBackgroundImage();
+            // Update mixer UI if background image exists
+            setTimeout(() => {
+                this.updateMixerBackgroundImageUI();
+                this.updateMixerBackgroundToggleButton();
+                this.updateMixerBackgroundOpacitySlider();
+                this.updateMixerBackgroundSizingButtons();
+                this.updateMixerBackgroundSaturationSlider();
+                this.updateMixerBackgroundPosterizeSlider();
+                this.updateMixerBackgroundContrastSlider();
+            }, 100);
         }
 
         // Background image button - toggle ON/OFF only
@@ -1837,6 +1847,7 @@ class RecordManager {
                     this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
                     this.visualizer.saveBackgroundImage();
                     this.updateBackgroundToggleButton();
+                    this.updateMixerBackgroundToggleButton(); // Update mixer toggle too
                     
                     console.log('🔘 Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
                     
@@ -1853,6 +1864,250 @@ class RecordManager {
             backgroundSelectImageBtn.addEventListener('click', () => {
                 if (backgroundImageFile) {
                     backgroundImageFile.click();
+                }
+            });
+        }
+
+        // Mixer background select button
+        const mixerBackgroundSelect = document.getElementById('mixerBackgroundSelect');
+        const mixerBackgroundImageFile = document.getElementById('mixerBackgroundImageFile');
+        
+        if (mixerBackgroundSelect && mixerBackgroundImageFile) {
+            console.log('✅ Mixer background select button found, adding event listener');
+            mixerBackgroundSelect.addEventListener('click', () => {
+                console.log('🖱️ Mixer background select button clicked');
+                mixerBackgroundImageFile.click();
+            });
+        } else {
+            console.error('❌ Mixer background select elements not found:', {
+                button: !!mixerBackgroundSelect,
+                fileInput: !!mixerBackgroundImageFile
+            });
+        }
+
+        // Mixer background toggle button
+        const mixerBackgroundToggle = document.getElementById('mixerBackgroundToggle');
+        if (mixerBackgroundToggle) {
+            console.log('✅ Mixer background toggle button found, adding event listener');
+            mixerBackgroundToggle.addEventListener('click', () => {
+                console.log('🖱️ Mixer background toggle button clicked');
+                if (this.visualizer) {
+                    console.log('🔘 Mixer background toggle - current state:', {
+                        enabled: this.visualizer.backgroundImageEnabled,
+                        hasImage: !!this.visualizer.backgroundImage
+                    });
+                    
+                    // Toggle background image enabled state
+                    this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update all UIs
+                    this.updateMixerBackgroundToggleButton();
+                    this.updateBackgroundToggleButton(); // Update header toggle too
+                    this.visualizer.updateFooterBackgroundButton(); // Update footer button
+                    
+                    console.log('🔘 Mixer background toggle changed to:', this.visualizer.backgroundImageEnabled);
+                    
+                    // Force redraw of visualization
+                    if (this.visualizer.audioMotion) {
+                        console.log('🔄 Forcing visualization redraw after mixer background toggle');
+                        this.visualizer.audioMotion.draw();
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Mixer background toggle button not found');
+        }
+
+        // Mixer background opacity slider (custom JS slider)
+        const mixerBackgroundOpacity = document.getElementById('mixerBackgroundOpacity');
+        if (mixerBackgroundOpacity) {
+            console.log('✅ Mixer background opacity slider found, initializing custom slider');
+            this.mixerOpacitySlider = this.initializeVerticalSlider(mixerBackgroundOpacity, (value) => {
+                console.log('🎚️ Mixer background opacity changed to:', value);
+                if (this.visualizer) {
+                    this.visualizer.backgroundImageOpacity = value;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update value display
+                    const valueDisplay = document.getElementById('mixerBackgroundOpacityValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                    // Update header UI too
+                    this.updateBackgroundImageUI();
+                    
+                    console.log('💾 Mixer background opacity saved:', value);
+                    
+                    // Force redraw of visualization
+                    if (this.visualizer.audioMotion) {
+                        this.visualizer.audioMotion.draw();
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Mixer background opacity slider not found');
+        }
+
+        // Mixer background sizing buttons
+        const mixerSizingButtons = document.querySelectorAll('#mixerBackgroundSizeFit, #mixerBackgroundSizeFill, #mixerBackgroundSizeStretch, #mixerBackgroundSizeOriginal');
+        if (mixerSizingButtons.length > 0) {
+            console.log('✅ Mixer background sizing buttons found, adding event listeners');
+            mixerSizingButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const size = button.getAttribute('data-size');
+                    console.log('🎚️ Mixer background sizing button clicked:', size);
+                    
+                    if (this.visualizer && size) {
+                        this.visualizer.backgroundImageSize = size;
+                        this.visualizer.saveBackgroundImage();
+                        
+                        // Update all UIs
+                        this.updateMixerBackgroundSizingButtons();
+                        this.updateBackgroundImageUI(); // Update header UI too
+                        
+                        console.log('💾 Mixer background size saved:', size);
+                        
+                        // Force redraw of visualization
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.draw();
+                        }
+                    }
+                });
+            });
+        } else {
+            console.error('❌ Mixer background sizing buttons not found');
+        }
+
+        // Mixer background saturation slider
+        const mixerBackgroundSaturation = document.getElementById('mixerBackgroundSaturation');
+        if (mixerBackgroundSaturation) {
+            console.log('✅ Mixer background saturation slider found, adding event listener');
+            mixerBackgroundSaturation.addEventListener('input', () => {
+                const value = parseInt(mixerBackgroundSaturation.value);
+                console.log('🎚️ Mixer background saturation changed to:', value);
+                
+                if (this.visualizer) {
+                    this.visualizer.backgroundImageSaturation = value;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update value display
+                    this.updateMixerBackgroundSaturationSlider();
+                    
+                    console.log('💾 Mixer background saturation saved:', value);
+                }
+            });
+        } else {
+            console.error('❌ Mixer background saturation slider not found');
+        }
+
+        // Mixer background posterization slider
+        const mixerBackgroundPosterize = document.getElementById('mixerBackgroundPosterize');
+        if (mixerBackgroundPosterize) {
+            console.log('✅ Mixer background posterize slider found, adding event listener');
+            mixerBackgroundPosterize.addEventListener('input', () => {
+                const value = parseInt(mixerBackgroundPosterize.value);
+                console.log('🎚️ Mixer background posterize changed to:', value);
+                
+                if (this.visualizer) {
+                    this.visualizer.backgroundImagePosterize = value;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update value display
+                    this.updateMixerBackgroundPosterizeSlider();
+                    
+                    console.log('💾 Mixer background posterize saved:', value);
+                }
+            });
+        } else {
+            console.error('❌ Mixer background posterize slider not found');
+        }
+
+        // Mixer background contrast slider
+        const mixerBackgroundContrast = document.getElementById('mixerBackgroundContrast');
+        if (mixerBackgroundContrast) {
+            console.log('✅ Mixer background contrast slider found, adding event listener');
+            mixerBackgroundContrast.addEventListener('input', () => {
+                const value = parseInt(mixerBackgroundContrast.value);
+                console.log('🎚️ Mixer background contrast changed to:', value);
+                
+                if (this.visualizer) {
+                    this.visualizer.backgroundImageContrast = value;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update value display
+                    this.updateMixerBackgroundContrastSlider();
+                    
+                    console.log('💾 Mixer background contrast saved:', value);
+                }
+            });
+        } else {
+            console.error('❌ Mixer background contrast slider not found');
+        }
+
+        // Mixer file input handler
+        if (mixerBackgroundImageFile) {
+            mixerBackgroundImageFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                console.log('📁 Mixer background image file selected:', {
+                    name: file?.name,
+                    type: file?.type,
+                    size: file?.size,
+                    lastModified: file?.lastModified
+                });
+                
+                if (file) {
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please select a valid image file (JPG, JPEG, or PNG).');
+                        return;
+                    }
+                    
+                    // Validate file size (10MB limit)
+                    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+                    if (file.size > maxSize) {
+                        alert('File size must be less than 10MB.');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        console.log('📁 Mixer background image loaded successfully');
+                        if (this.visualizer) {
+                            this.visualizer.backgroundImage = e.target.result;
+                            this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
+                            this.visualizer.backgroundImageFileName = file.name;
+                            this.visualizer.backgroundImageFileSize = file.size;
+                            this.visualizer.cachedBackgroundImage = null; // Clear cached image
+                            this.visualizer.saveBackgroundImage();
+                            
+                            // Update all UIs
+                            this.updateMixerBackgroundImageUI();
+                            this.updateMixerBackgroundToggleButton(); // Update mixer toggle
+                            this.updateMixerBackgroundOpacitySlider(); // Update mixer opacity
+                            this.updateMixerBackgroundSizingButtons(); // Update mixer sizing
+                            this.updateMixerBackgroundSaturationSlider(); // Update mixer saturation
+                            this.updateMixerBackgroundPosterizeSlider(); // Update mixer posterize
+                            this.updateMixerBackgroundContrastSlider(); // Update mixer contrast
+                            this.updateBackgroundImageUI(); // Update header UI too
+                            this.visualizer.updateFooterBackgroundButton(); // Update footer button
+                            
+                            console.log('💾 Mixer Background image saved and enabled');
+                            console.log('🔄 Updating mixer UI with:', {
+                                fileName: file.name,
+                                fileSize: file.size,
+                                hasImage: !!this.visualizer.backgroundImage
+                            });
+                        }
+                    };
+                    reader.onerror = (e) => {
+                        console.error('❌ Error reading mixer background image file:', e);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    console.log('📁 No file selected');
                 }
             });
         }
@@ -1896,6 +2151,13 @@ class RecordManager {
                             this.visualizer.cachedBackgroundImage = null; // Clear cached image
                             this.visualizer.saveBackgroundImage();
                             this.updateBackgroundImageUI();
+                            this.updateMixerBackgroundImageUI(); // Update mixer UI too
+                            this.updateMixerBackgroundToggleButton(); // Update mixer toggle too
+                            this.updateMixerBackgroundOpacitySlider(); // Update mixer opacity too
+                            this.updateMixerBackgroundSizingButtons(); // Update mixer sizing too
+                            this.updateMixerBackgroundSaturationSlider(); // Update mixer saturation too
+                            this.updateMixerBackgroundPosterizeSlider(); // Update mixer posterize too
+                            this.updateMixerBackgroundContrastSlider(); // Update mixer contrast too
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             
                             // Update background image panel if it exists
@@ -2353,6 +2615,293 @@ class RecordManager {
         //         'Layer 5: Video Effects'
         //     ]
         // });
+    }
+
+    updateMixerBackgroundSizingButtons() {
+        console.log('🔄 updateMixerBackgroundSizingButtons called');
+        
+        const mixerSizingButtons = document.querySelectorAll('#mixerBackgroundSizeFit, #mixerBackgroundSizeFill, #mixerBackgroundSizeStretch, #mixerBackgroundSizeOriginal');
+        
+        if (mixerSizingButtons.length > 0 && this.visualizer) {
+            const currentSize = this.visualizer.backgroundImageSize || 'original';
+            
+            // Remove active class from all buttons
+            mixerSizingButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Add active class to current size button
+            const activeButton = document.querySelector(`#mixerBackgroundSize${currentSize.charAt(0).toUpperCase() + currentSize.slice(1)}`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            console.log('📝 Mixer sizing buttons updated:', currentSize);
+        } else {
+            console.error('❌ Mixer background sizing buttons not found for update');
+        }
+    }
+
+    // Initialize custom vertical slider
+    initializeVerticalSlider(sliderElement, onValueChange) {
+        const track = sliderElement.querySelector('.vertical-slider-track');
+        const thumb = sliderElement.querySelector('.vertical-slider-thumb');
+        const min = parseInt(sliderElement.dataset.min) || 0;
+        const max = parseInt(sliderElement.dataset.max) || 100;
+        let value = parseInt(sliderElement.dataset.value) || 0;
+        let isDragging = false;
+        
+        // Set thumb position based on value
+        const updateThumbPosition = (immediate = false) => {
+            const percentage = (value - min) / (max - min);
+            const trackHeight = track.offsetHeight;
+            const thumbHeight = thumb.offsetHeight;
+            const maxTop = trackHeight - thumbHeight;
+            // Top = 100%, Bottom = 0% (inverted for natural vertical feel)
+            const top = maxTop - (percentage * maxTop);
+            
+            // Disable transition during dragging for immediate response
+            if (immediate || isDragging) {
+                thumb.style.transition = 'none';
+            } else {
+                thumb.style.transition = '';
+            }
+            
+            thumb.style.top = `${Math.round(top)}px`;
+        };
+        
+        // Calculate value from mouse position (more precise)
+        const calculateValueFromPosition = (clientY) => {
+            const rect = track.getBoundingClientRect();
+            const trackHeight = rect.height;
+            const thumbHeight = thumb.offsetHeight;
+            
+            // Calculate relative position with thumb center offset
+            let relativeY = clientY - rect.top - (thumbHeight / 2);
+            const availableHeight = trackHeight - thumbHeight;
+            relativeY = Math.max(0, Math.min(availableHeight, relativeY));
+            
+            // Convert to percentage (invert: top = 100%, bottom = 0%)
+            const percentage = 1 - (relativeY / availableHeight);
+            
+            // Convert to value with better precision
+            const newValue = Math.round(min + (percentage * (max - min)));
+            return Math.max(min, Math.min(max, newValue));
+        };
+        
+        // Mouse down on thumb or track
+        const handleMouseDown = (e) => {
+            isDragging = true;
+            
+            // Immediate response - no lag
+            const newValue = calculateValueFromPosition(e.clientY);
+            value = newValue;
+            sliderElement.dataset.value = value;
+            updateThumbPosition(true);
+            onValueChange(value);
+            
+            document.addEventListener('mousemove', handleMouseMove, { passive: false });
+            document.addEventListener('mouseup', handleMouseUp);
+            e.preventDefault();
+        };
+        
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            
+            // Immediate response during drag
+            const newValue = calculateValueFromPosition(e.clientY);
+            if (newValue !== value) {
+                value = newValue;
+                sliderElement.dataset.value = value;
+                updateThumbPosition(true);
+                onValueChange(value);
+            }
+            e.preventDefault();
+        };
+        
+        const handleMouseUp = () => {
+            isDragging = false;
+            
+            // Re-enable transitions
+            thumb.style.transition = '';
+            
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        
+        // Add event listeners
+        sliderElement.addEventListener('mousedown', handleMouseDown);
+        
+        // Initial position after DOM is ready
+        setTimeout(() => updateThumbPosition(), 0);
+        
+        // Return API for external control
+        return {
+            setValue: (newValue) => {
+                value = Math.max(min, Math.min(max, newValue));
+                sliderElement.dataset.value = value;
+                updateThumbPosition();
+            },
+            getValue: () => value
+        };
+    }
+
+    updateMixerBackgroundOpacitySlider() {
+        console.log('🔄 updateMixerBackgroundOpacitySlider called');
+        
+        const mixerBackgroundOpacityValue = document.getElementById('mixerBackgroundOpacityValue');
+        
+        if (this.mixerOpacitySlider && this.visualizer) {
+            const opacity = this.visualizer.backgroundImageOpacity || 100;
+            
+            // Update custom slider
+            this.mixerOpacitySlider.setValue(opacity);
+            
+            // Update value display
+            if (mixerBackgroundOpacityValue) {
+                mixerBackgroundOpacityValue.textContent = opacity;
+            }
+            
+            console.log('📝 Mixer opacity slider updated:', opacity);
+        } else {
+            console.error('❌ Mixer background opacity slider not found for update');
+        }
+    }
+
+    updateMixerBackgroundToggleButton() {
+        console.log('🔄 updateMixerBackgroundToggleButton called');
+        
+        const mixerBackgroundToggle = document.getElementById('mixerBackgroundToggle');
+        if (mixerBackgroundToggle) {
+            const text = mixerBackgroundToggle.querySelector('.background-text');
+            if (text && this.visualizer) {
+                const isEnabled = this.visualizer.backgroundImageEnabled;
+                const hasImage = !!this.visualizer.backgroundImage;
+                
+                text.textContent = isEnabled ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isEnabled && hasImage) {
+                    mixerBackgroundToggle.classList.add('active');
+                } else {
+                    mixerBackgroundToggle.classList.remove('active');
+                }
+                
+                console.log('📝 Mixer toggle button updated:', { isEnabled, hasImage });
+            }
+        } else {
+            console.error('❌ Mixer background toggle button not found for update');
+        }
+    }
+
+    updateMixerBackgroundImageUI() {
+        console.log('🔄 updateMixerBackgroundImageUI called');
+        
+        const mixerBackgroundFileInfo = document.getElementById('mixerBackgroundFileInfo');
+        const mixerBackgroundFileName = document.getElementById('mixerBackgroundFileName');
+        const mixerBackgroundFileSize = document.getElementById('mixerBackgroundFileSize');
+        const mixerBackgroundImagePreview = document.getElementById('mixerBackgroundImagePreview');
+
+        console.log('🔍 Mixer UI elements found:', {
+            fileInfo: !!mixerBackgroundFileInfo,
+            fileName: !!mixerBackgroundFileName,
+            fileSize: !!mixerBackgroundFileSize,
+            imagePreview: !!mixerBackgroundImagePreview
+        });
+
+        if (mixerBackgroundFileInfo && mixerBackgroundFileName && mixerBackgroundFileSize && mixerBackgroundImagePreview) {
+            if (this.visualizer && this.visualizer.backgroundImage) {
+                console.log('✅ Showing mixer background file info');
+                mixerBackgroundFileInfo.style.display = 'block';
+                
+                // Display filename and file size
+                const filename = this.visualizer.backgroundImageFileName || 'Background Image';
+                const fileSize = this.visualizer.backgroundImageFileSize || 0;
+                const fileSizeText = fileSize > 0 ? this.formatFileSize(fileSize) : '';
+                
+                console.log('📝 Setting mixer UI text:', { filename, fileSizeText });
+                mixerBackgroundFileName.textContent = filename;
+                mixerBackgroundFileSize.textContent = fileSizeText;
+                
+                // Create preview image
+                const img = new Image();
+                img.onload = () => {
+                    console.log('🖼️ Mixer preview image loaded, setting background');
+                    mixerBackgroundImagePreview.style.backgroundImage = `url(${this.visualizer.backgroundImage})`;
+                    mixerBackgroundImagePreview.style.backgroundSize = 'cover';
+                    mixerBackgroundImagePreview.style.backgroundPosition = 'center';
+                };
+                img.onerror = (e) => {
+                    console.error('❌ Error loading mixer preview image:', e);
+                };
+                img.src = this.visualizer.backgroundImage;
+            } else {
+                console.log('❌ No background image data, hiding mixer file info');
+                mixerBackgroundFileInfo.style.display = 'none';
+            }
+        } else {
+            console.error('❌ Mixer UI elements not found');
+        }
+    }
+
+    updateMixerBackgroundSaturationSlider() {
+        console.log('🔄 updateMixerBackgroundSaturationSlider called');
+        
+        const mixerBackgroundSaturation = document.getElementById('mixerBackgroundSaturation');
+        const mixerBackgroundSaturationValue = document.getElementById('mixerBackgroundSaturationValue');
+        
+        if (mixerBackgroundSaturation && this.visualizer) {
+            const saturation = this.visualizer.backgroundImageSaturation || 100;
+            mixerBackgroundSaturation.value = saturation;
+            
+            if (mixerBackgroundSaturationValue) {
+                mixerBackgroundSaturationValue.textContent = saturation;
+            }
+            
+            console.log('📝 Mixer saturation slider updated:', saturation);
+        } else {
+            console.error('❌ Mixer background saturation slider not found for update');
+        }
+    }
+
+    updateMixerBackgroundPosterizeSlider() {
+        console.log('🔄 updateMixerBackgroundPosterizeSlider called');
+        
+        const mixerBackgroundPosterize = document.getElementById('mixerBackgroundPosterize');
+        const mixerBackgroundPosterizeValue = document.getElementById('mixerBackgroundPosterizeValue');
+        
+        if (mixerBackgroundPosterize && this.visualizer) {
+            const posterize = this.visualizer.backgroundImagePosterize || 16;
+            mixerBackgroundPosterize.value = posterize;
+            
+            if (mixerBackgroundPosterizeValue) {
+                mixerBackgroundPosterizeValue.textContent = posterize;
+            }
+            
+            console.log('📝 Mixer posterize slider updated:', posterize);
+        } else {
+            console.error('❌ Mixer background posterize slider not found for update');
+        }
+    }
+
+    updateMixerBackgroundContrastSlider() {
+        console.log('🔄 updateMixerBackgroundContrastSlider called');
+        
+        const mixerBackgroundContrast = document.getElementById('mixerBackgroundContrast');
+        const mixerBackgroundContrastValue = document.getElementById('mixerBackgroundContrastValue');
+        
+        if (mixerBackgroundContrast && this.visualizer) {
+            const contrast = this.visualizer.backgroundImageContrast || 100;
+            mixerBackgroundContrast.value = contrast;
+            
+            if (mixerBackgroundContrastValue) {
+                mixerBackgroundContrastValue.textContent = contrast;
+            }
+            
+            console.log('📝 Mixer contrast slider updated:', contrast);
+        } else {
+            console.error('❌ Mixer background contrast slider not found for update');
+        }
     }
 
     updateBackgroundImageUI() {
@@ -14144,6 +14693,9 @@ https://rogueamoeba.com/loopback/
             if (isVisible) {
                 panel.style.display = 'none';
                 btn.classList.remove('active');
+                
+                // Clean up peek button event listeners when mixer closes
+                this.cleanupPeekButton();
             } else {
                 // Position panel using same system as Record panel
                 this.positionFloatingPanel(panel, btn);
@@ -14153,6 +14705,15 @@ https://rogueamoeba.com/loopback/
                 // Setup peek button functionality when mixer opens
                 this.setupPeekButton();
             }
+        }
+    }
+
+    cleanupPeekButton() {
+        // Remove all peek-related event listeners
+        if (this.startPeeking) {
+            document.removeEventListener('mouseup', this.stopPeeking);
+            document.removeEventListener('keydown', this.handlePeekKeyDown);
+            document.removeEventListener('keyup', this.handlePeekKeyUp);
         }
     }
 
@@ -14167,6 +14728,8 @@ https://rogueamoeba.com/loopback/
             peekBtn.removeEventListener('mouseup', this.stopPeeking);
             peekBtn.removeEventListener('mouseleave', this.stopPeeking);
             document.removeEventListener('mouseup', this.stopPeeking);
+            document.removeEventListener('keydown', this.handlePeekKeyDown);
+            document.removeEventListener('keyup', this.handlePeekKeyUp);
             
             // Bind functions to maintain 'this' context
             this.startPeeking = (e) => {
@@ -14182,11 +14745,32 @@ https://rogueamoeba.com/loopback/
                 peekBtn.classList.remove('peeking');
             };
             
-            // Add event listeners
+            // Keyboard event handlers for 'C' key
+            this.handlePeekKeyDown = (e) => {
+                // Only respond to 'C' key when mixer is open and not already peeking
+                if (e.code === 'KeyC' && mixerPanel.style.display !== 'none' && !mixerChannels.classList.contains('peek-mode')) {
+                    e.preventDefault();
+                    this.startPeeking(e);
+                }
+            };
+            
+            this.handlePeekKeyUp = (e) => {
+                // Stop peeking when 'C' key is released
+                if (e.code === 'KeyC' && mixerPanel.style.display !== 'none') {
+                    e.preventDefault();
+                    this.stopPeeking();
+                }
+            };
+            
+            // Add mouse event listeners
             peekBtn.addEventListener('mousedown', this.startPeeking);
             peekBtn.addEventListener('mouseup', this.stopPeeking);
             peekBtn.addEventListener('mouseleave', this.stopPeeking);
             document.addEventListener('mouseup', this.stopPeeking);
+            
+            // Add keyboard event listeners
+            document.addEventListener('keydown', this.handlePeekKeyDown);
+            document.addEventListener('keyup', this.handlePeekKeyUp);
         }
     }
 
@@ -18340,6 +18924,10 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         case 'KeyL':
                             e.preventDefault();
                             this.toggleLoop();
+                            break;
+                        case 'KeyX':
+                            e.preventDefault();
+                            this.toggleMixer();
                             break;
                         case 'Escape':
                             e.preventDefault();

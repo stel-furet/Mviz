@@ -803,6 +803,38 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
+        .info-popup h4 {
+            color: var(--accent-color);
+            margin: 20px 0 12px 0;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .keyboard-shortcuts {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .shortcut-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .shortcut-row .key {
+            background: var(--hover-color);
+            color: var(--text-primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+            margin-right: 12px;
+            border: 1px solid var(--border-color);
+        }
+
         .popup-overlay {
             display: none;
             position: fixed;
