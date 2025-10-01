@@ -176,11 +176,24 @@ body {
     font-size: 12px !important;
     transition: all 0.2s ease;
     width: 28px !important;
+    min-width: 28px !important;
     height: 28px !important;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 1px;
+    margin-left: -3px;
+}
+
+.btn-toggle-32w:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-toggle-32w.active {
+    background: var(--info-color);
+    color: white;
 }
 
 /* Mixer Video File Info Container */
@@ -261,25 +274,10 @@ body {
     fill: rgba(255, 255, 255, 0.7) !important;
 }
 
-.btn-toggle-32w {
-    margin-right: 1px;
-    margin-left: -3px;
-}
-
 /* Align toggle button to top of its container */
 .visualizer-controls .btn-toggle-32w,
 .advanced-viz .btn-toggle-32w {
     align-self: flex-start;
-}
-
-.btn-toggle-32w:hover {
-    background: var(--accent-color);
-    color: white;
-}
-
-.btn-toggle-32w.active {
-    background: var(--info-color);
-    color: white;
 }
 
 .btn-toggle-32w .toggle-text {

@@ -1837,10 +1837,15 @@ class RecordManager {
                 this.updateMixerVideoBlurSlider();
                 this.updateMixerVideoVignetteSlider();
                 this.updateMixerVideoPosterizeSlider();
-            this.updateMixerVideoInvertToggle();
-            this.updateMixerVideoMirrorToggle();
-            this.updateMixerVideoPulseToggle();
-            this.updateMixerVideoPulseRateSlider();
+                this.updateMixerVideoInvertToggle();
+                this.updateMixerVideoMirrorToggle();
+                this.updateMixerVideoPulseToggle();
+                this.updateMixerVideoPulseRateSlider();
+                
+                // Audio controls initialization
+                this.updateMixerAudioToggle();
+                this.updateMixerAudioVolumeSlider();
+                this.updateMixerAudioDeviceSelect();
             
             // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -2606,6 +2611,71 @@ class RecordManager {
             });
         } else {
             console.error('❌ Mixer video file delete button not found');
+        }
+
+        // ========== AUDIO INPUT CHANNEL ==========
+
+        // Mixer audio toggle button
+        const mixerAudioToggle = document.getElementById('mixerAudioToggle');
+        if (mixerAudioToggle) {
+            console.log('✅ Mixer audio toggle button found, adding event listener');
+            mixerAudioToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer audio toggle clicked - current state:', this.visualizer.liveAudioEnabled);
+                    
+                    // Toggle live audio state
+                    this.visualizer.toggleLiveAudio();
+                    
+                    // Update mixer UI
+                    this.updateMixerAudioToggle();
+                    
+                    console.log('🔘 Mixer audio toggle changed to:', this.visualizer.liveAudioEnabled);
+                }
+            });
+        } else {
+            console.error('❌ Mixer audio toggle button not found');
+        }
+
+        // Mixer audio device select dropdown
+        const mixerAudioDeviceSelect = document.getElementById('mixerAudioDeviceSelect');
+        if (mixerAudioDeviceSelect) {
+            console.log('✅ Mixer audio device select found, adding event listener');
+            mixerAudioDeviceSelect.addEventListener('change', (e) => {
+                const deviceId = e.target.value;
+                console.log('🎤 Mixer audio device changed to:', deviceId);
+                
+                if (deviceId && this.visualizer) {
+                    // Select the audio device
+                    this.visualizer.selectAudioDevice(deviceId);
+                    
+                    console.log('🎤 Mixer audio device selected:', deviceId);
+                }
+            });
+        } else {
+            console.error('❌ Mixer audio device select not found');
+        }
+
+        // Mixer audio volume slider
+        const mixerAudioVolumeSlider = document.getElementById('mixerAudioVolumeSlider');
+        if (mixerAudioVolumeSlider) {
+            console.log('✅ Mixer audio volume slider found, initializing custom slider');
+            this.mixerAudioVolumeSlider = this.initializeVerticalSlider(mixerAudioVolumeSlider, (value) => {
+                if (this.visualizer) {
+                    // Convert 0-100 to 0.0-1.0
+                    const volumeValue = value / 100;
+                    this.visualizer.setVolume(volumeValue);
+                    
+                    // Update value display
+                    const valueDisplay = document.getElementById('mixerAudioVolumeValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                    console.log('🔊 Mixer audio volume changed to:', value, '% (', volumeValue, ')');
+                }
+            });
+        } else {
+            console.error('❌ Mixer audio volume slider not found');
         }
 
         // Mixer file input handler
@@ -3802,6 +3872,78 @@ class RecordManager {
             
         } else {
             console.error('❌ Mixer video pulse rate slider not found for update');
+        }
+    }
+
+    // ========== AUDIO UPDATE METHODS ==========
+
+    updateMixerAudioToggle() {
+        const mixerAudioToggle = document.getElementById('mixerAudioToggle');
+        if (mixerAudioToggle && this.visualizer) {
+            const text = mixerAudioToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.liveAudioEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerAudioToggle.classList.add('active');
+                } else {
+                    mixerAudioToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer audio toggle not found for update');
+        }
+    }
+
+    updateMixerAudioVolumeSlider() {
+        if (this.mixerAudioVolumeSlider && this.visualizer) {
+            // Convert 0.0-1.0 to 0-100
+            const volumePercent = Math.round(this.visualizer.volume * 100);
+            this.mixerAudioVolumeSlider.setValue(volumePercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerAudioVolumeValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = volumePercent;
+            }
+        } else {
+            console.error('❌ Mixer audio volume slider not found for update');
+        }
+    }
+
+    updateMixerAudioDeviceSelect() {
+        const mixerAudioDeviceSelect = document.getElementById('mixerAudioDeviceSelect');
+        if (mixerAudioDeviceSelect && this.visualizer) {
+            // Clear existing options
+            mixerAudioDeviceSelect.innerHTML = '<option value="">Select Audio Input...</option>';
+            
+            // Add available devices
+            if (this.visualizer.availableDevices && this.visualizer.availableDevices.length > 0) {
+                this.visualizer.availableDevices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    let displayName = device.label || `Input ${device.deviceId.substr(0, 5)}`;
+                    
+                    // Add special icons for virtual audio devices
+                    if (displayName.includes('BlackHole') || displayName.includes('Loopback') || 
+                        displayName.includes('Virtual') || displayName.includes('Soundflower')) {
+                        displayName = '🎵 ' + displayName;
+                    }
+                    
+                    option.textContent = displayName;
+                    mixerAudioDeviceSelect.appendChild(option);
+                });
+                
+                // Set current selection
+                if (this.visualizer.lastAudioDeviceId) {
+                    mixerAudioDeviceSelect.value = this.visualizer.lastAudioDeviceId;
+                }
+            }
+        } else {
+            console.error('❌ Mixer audio device select not found for update');
         }
     }
 
@@ -7038,8 +7180,8 @@ class GitItUpVisualizer {
         this.isPlaying = false;
         this.currentTrackIndex = 0;
         this.playlist = [];
-        this.volume = 0.7;
-        this.previousVolume = 0.7;
+        this.volume = 1.0;
+        this.previousVolume = 1.0;
         this.isMuted = false;
         this.currentMode = 4;
         this.loopMode = 'off';
@@ -10107,6 +10249,11 @@ class GitItUpVisualizer {
                 btn.style.background = 'var(--accent-color)';
                 btn.style.color = 'white';
             });
+        }
+        
+        // Update mixer audio toggle
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAudioToggle) {
+            window.multiDisplayManager.updateMixerAudioToggle();
         }
         
         // Update footer button state
@@ -14498,11 +14645,27 @@ class GitItUpVisualizer {
                 btn.style.background = 'var(--accent-color)';
                 btn.style.color = 'white';
             });
+            
+            // Update mixer audio controls
+            if (window.multiDisplayManager) {
+                if (window.multiDisplayManager.updateMixerAudioToggle) {
+                    window.multiDisplayManager.updateMixerAudioToggle();
+                }
+                if (window.multiDisplayManager.updateMixerAudioDeviceSelect) {
+                    window.multiDisplayManager.updateMixerAudioDeviceSelect();
+                }
+            }
 
         } catch (e) {
             console.error('Failed to start live input:', e);
             this.showError('Failed to start audio input');
         }
+    }
+
+    // Audio device selection method for mixer
+    async selectAudioDevice(deviceId) {
+        console.log('🎤 selectAudioDevice called with:', deviceId);
+        await this.startLiveInput(deviceId);
     }
 
     stopLiveInput() {
@@ -14994,11 +15157,12 @@ https://rogueamoeba.com/loopback/
         const headerBtnText = headerBtn ? headerBtn.querySelector('.webgl-btn-text') : null;
         
         if (headerBtn && headerBtnText) {
+            // Always keep the text as "WebGL" regardless of state
+            headerBtnText.textContent = 'WebGL';
+            
             if (this.webglEnabled) {
-                headerBtnText.textContent = 'WebGL On';
                 headerBtn.classList.add('active');
             } else {
-                headerBtnText.textContent = 'WebGL';
                 headerBtn.classList.remove('active');
             }
         }
@@ -20746,6 +20910,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 document.getElementById('volumeFill').style.width = `${
                     value * 100
                 }%`;
+
+                // Update mixer volume slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAudioVolumeSlider) {
+                    window.multiDisplayManager.updateMixerAudioVolumeSlider();
+                }
 
                 // Update mute state
                 if (value === 0 && !this.isMuted) {

@@ -2129,15 +2129,29 @@
                 <div class="channel-header">Audio Input</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerAudioToggle" title="Toggle Live Audio">
+                        <span class="toggle-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - volume slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Volume</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerAudioVolumeSlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerAudioVolumeValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - input source selection will go here -->
+                    <select class="dropdown-selector" id="mixerAudioDeviceSelect">
+                        <option value="">Select Audio Input...</option>
+                    </select>
                 </div>
                 
                 <div class="channel-presets-section">
