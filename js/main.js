@@ -2545,8 +2545,8 @@ class RecordManager {
                     
                     // Update audio gain node
                     if (this.visualizer.videoAudioGain) {
-                        this.visualizer.videoAudioGain.gain.value = this.visualizer.videoFileMuted ? 0 : 1;
-                        console.log('Video audio gain set to:', this.visualizer.videoFileMuted ? 0 : 1);
+                        this.visualizer.videoAudioGain.gain.value = this.visualizer.videoFileMuted ? 0 : this.visualizer.volume;
+                        console.log('Video audio gain set to:', this.visualizer.videoFileMuted ? 0 : this.visualizer.volume);
                     }
                     
                     // Update both mixer and header buttons
@@ -10006,7 +10006,7 @@ class GitItUpVisualizer {
                 
                 // Update the audio gain node to actually mute/unmute the video audio
                 if (window.visualizer.videoAudioGain) {
-                    window.visualizer.videoAudioGain.gain.value = window.visualizer.videoFileMuted ? 0 : 1;
+                    window.visualizer.videoAudioGain.gain.value = window.visualizer.videoFileMuted ? 0 : window.visualizer.volume;
                 }
             }
         };
@@ -12092,7 +12092,7 @@ class GitItUpVisualizer {
             this.videoAudioGain = audioCtx.createGain();
             
             // Set initial gain based on mute state
-            this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
+            this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : this.volume;
             
             // Connect: videoElement -> audioSource -> gainNode -> destination
             this.videoAudioSource.connect(this.videoAudioGain);
@@ -19307,8 +19307,8 @@ https://rogueamoeba.com/loopback/
                 
                 // Update gain node instead of video element muted property
                 if (this.videoAudioGain) {
-                    this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
-                    console.log('Video audio gain set to:', this.videoFileMuted ? 0 : 1);
+                    this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : this.volume;
+                    console.log('Video audio gain set to:', this.videoFileMuted ? 0 : this.volume);
                 }
             });
         }
@@ -19401,7 +19401,7 @@ https://rogueamoeba.com/loopback/
                 
                 // Ensure audio gain node matches mute state
                 if (this.videoAudioGain) {
-                    this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : 1;
+                    this.videoAudioGain.gain.value = this.videoFileMuted ? 0 : this.volume;
                 }
             }
             
@@ -20904,9 +20904,17 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
             setVolume(value) {
                 this.volume = value;
+                
+                // Control playlist audio volume
                 if (this.audio) {
                     this.audio.volume = value;
                 }
+                
+                // Control video file audio volume (if not muted)
+                if (this.videoAudioGain && !this.videoFileMuted) {
+                    this.videoAudioGain.gain.value = value;
+                }
+                
                 document.getElementById('volumeFill').style.width = `${
                     value * 100
                 }%`;
