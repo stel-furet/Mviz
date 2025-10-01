@@ -50,3 +50,10 @@
 ### 10. **Kaleidoscope Integration**
 - **Issue**: Fluid Dynamics integration with Kaleidoscope system needs verification
 - **Status**: Completed but needs testing
+
+## 📹 Video System Issues
+
+### 11. **Video Source Switching Black Screen**
+- **Issue**: When selecting file video, then selecting camera source with live video already active, camera video goes black when file video fade out completes. Then no video is viewable until app reloaded.
+- **Reproduction**: 1) Start live camera video 2) Switch to file video 3) Switch back to camera - camera goes black after fade
+- **Status**: Reported, needs investigation

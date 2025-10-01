@@ -171,7 +171,6 @@ body {
     background: var(--hover-color, #2a2a2a);
     border: 1px solid var(--border-color, #898989);
     color: var(--text-secondary);
-    padding: 8px 12px !important;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px !important;
@@ -182,8 +181,87 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
-    line-height: normal;
+}
+
+/* Mixer Video File Info Container */
+.mixer-video-file-info {
+    display: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 8px;
+    min-height: 96px;
+}
+
+/* Mixer Video File Name Display */
+.mixer-video-file-name {
+    color: var(--text-primary);
+    font-size: 11px;
+    display: block;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 24ch;
+}
+
+/* Video File Controls Inline Layout */
+.video-file-controls-inline {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+/* SVG styling for toggle buttons */
+.btn-toggle-32w svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: rgba(255, 255, 255, 0.7) !important;
+    transition: fill 0.2s ease;
+}
+
+.btn-toggle-32w:hover svg {
+    fill: rgba(255, 255, 255, 0.9) !important;
+}
+
+.btn-toggle-32w.active svg {
+    fill: white !important;
+}
+
+/* Delete Button Variant - Red trash can styling */
+.btn-toggle-32w-delete {
+    background: var(--hover-color, #2a2a2a);
+    border: 1px solid var(--border-color, #898989);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px !important;
+    transition: all 0.2s ease;
+    width: 28px !important;
+    height: 28px !important;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-toggle-32w-delete {
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+
+.btn-toggle-32w-delete:hover {
+    background-color: var(--error-color) !important;
+}
+
+.btn-toggle-32w-delete svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: rgba(255, 255, 255, 0.7) !important;
+}
+
+.btn-toggle-32w {
     margin-right: 1px;
     margin-left: -3px;
 }
@@ -543,6 +621,63 @@ body {
     margin-bottom: 6px;
 }
 
+/* Mixer Dropdown - Special padding for mixer dropdowns */
+.mixer-dropdown {
+    padding: 8px 8px;
+}
+
+/* Channel Input Section - Minimum height */
+.channel-input-section {
+    min-height: 142px;
+}
+
+/* Collapsible Preset Sections */
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: color 0.2s ease;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.collapsible-header:hover {
+    color: var(--text-primary);
+}
+
+.collapse-indicator {
+    width: 0;
+    height: 0;
+    border-left: 4px solid var(--text-secondary);
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    margin-left: 8px;
+}
+
+.collapsible-header:hover .collapse-indicator {
+    border-left-color: var(--text-primary);
+}
+
+.collapsible-header.expanded .collapse-indicator {
+    transform: rotate(90deg);
+}
+
+.collapsible-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+    max-height: 0;
+    opacity: 0;
+}
+
+.collapsible-content.expanded {
+    max-height: 500px; /* Generous max height for preset buttons */
+    opacity: 1;
+}
+
 /* ========================================
    SLIDER CONTAINERS - SELF-CONTAINED
    ======================================== */
@@ -837,13 +972,14 @@ html body .slider-2-wrapper .slider-2-value {
 .dropdown-selector {
     background: var(--hover-color);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 4px;
     color: var(--text-primary);
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 8px 8px;
+    font-size: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-selector:focus {
@@ -1196,7 +1332,6 @@ html body .slider-2-wrapper .slider-2-value {
 .channel-controls-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
     flex-shrink: 0;
 }
 
@@ -1236,6 +1371,7 @@ html body .slider-2-wrapper .slider-2-value {
 /* Background file info styling for mixer */
 .background-file-info {
     padding: 2px !important;
+    margin-top: 8px;
 }
 
 .file-preview-container {
@@ -1293,6 +1429,32 @@ html body .slider-2-wrapper .slider-2-value {
 .btn-toggle-peek.peeking {
     background: rgba(255, 255, 255, 0.8);
     color: var(--primary-bg);
+}
+
+/* Close Panel Button */
+.btn-close-panel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+}
+
+.btn-close-panel:hover {
+    background: var(--error-color);
+    color: white;
+    border-color: var(--error-color);
+}
+
+.btn-close-panel svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* Mixer Button Container - Pin to right edge */
@@ -1608,6 +1770,8 @@ html body .slider-2-wrapper .slider-2-value {
     border-radius: 2px;
     width: 0%;
     transition: width 0.1s ease;
+    opacity: 1;
+    filter: brightness(1.3);
 }
 
 /* Video Time Display - Shows current/total time */

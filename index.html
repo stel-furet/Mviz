@@ -1813,6 +1813,12 @@
     <div class="panel-header">
         <span>MVPRO Mixer</span>
         <button class="btn-toggle-peek" id="mixerPeekBtn" title="Peek Mode">Peek</button>
+        <button class="btn-close-panel" id="mixerCloseBtn" title="Close Mixer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
     <div class="panel-content">
         <!-- Mixer Channels Section -->
@@ -1857,8 +1863,11 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <div class="control-mini-label">Sizing</div>
-                    <div class="preset-buttons">
+                    <div class="control-mini-label collapsible-header" data-target="backgroundSizingPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="preset-buttons collapsible-content" id="backgroundSizingPresets">
                         <button class="btn-preset" id="mixerBackgroundSizeFit" data-size="fit">Fit</button>
                         <button class="btn-preset" id="mixerBackgroundSizeFill" data-size="fill">Fill</button>
                         <button class="btn-preset" id="mixerBackgroundSizeStretch" data-size="stretch">Stretch</button>
@@ -1867,29 +1876,35 @@
                 </div>
                 
                 <div class="channel-controls-section">
-                    <div class="control-mini-group">
-                        <div class="control-mini-header">
-                            <div class="control-mini-label">Saturation</div>
-                            <div class="control-mini-value" id="mixerBackgroundSaturationValue">100</div>
-                        </div>
-                        <input type="range" class="mini-slider" id="mixerBackgroundSaturation" 
-                               min="0" max="200" value="100">
+                    <div class="control-mini-label collapsible-header" data-target="backgroundControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
                     </div>
-                    <div class="control-mini-group">
-                        <div class="control-mini-header">
-                            <div class="control-mini-label">Posterization</div>
-                            <div class="control-mini-value" id="mixerBackgroundPosterizeValue">16</div>
+                    <div class="collapsible-content" id="backgroundControls">
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Saturation</div>
+                                <div class="control-mini-value" id="mixerBackgroundSaturationValue">100</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBackgroundSaturation" 
+                                   min="0" max="200" value="100">
                         </div>
-                        <input type="range" class="mini-slider" id="mixerBackgroundPosterize" 
-                               min="0" max="16" value="16">
-                    </div>
-                    <div class="control-mini-group">
-                        <div class="control-mini-header">
-                            <div class="control-mini-label">Contrast</div>
-                            <div class="control-mini-value" id="mixerBackgroundContrastValue">100</div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Posterization</div>
+                                <div class="control-mini-value" id="mixerBackgroundPosterizeValue">16</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBackgroundPosterize" 
+                                   min="0" max="16" value="16">
                         </div>
-                        <input type="range" class="mini-slider" id="mixerBackgroundContrast" 
-                               min="0" max="200" value="100">
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Contrast</div>
+                                <div class="control-mini-value" id="mixerBackgroundContrastValue">100</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBackgroundContrast" 
+                                   min="0" max="200" value="100">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1899,23 +1914,213 @@
                 <div class="channel-header">Video Input</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerVideoToggle" title="Toggle Video Input">
+                        <span class="video-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerVideoOpacity" 
+                                 data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerVideoOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - file/camera selection will go here -->
+                    <select class="dropdown-selector mixer-dropdown" id="mixerVideoCameraSelect">
+                        <option value="">Select Video Source</option>
+                    </select>
+                    
+                    <!-- Mixer Video File Info (conditional display based on header panel) -->
+                    <div id="mixerVideoFileInfo" class="mixer-video-file-info">
+                        <span id="mixerVideoFileName" class="mixer-video-file-name">No file selected</span>
+                        
+                        <div class="video-file-controls-inline">
+                            <button id="mixerVideoFileLoopBtn" class="btn-toggle-32w" title="Toggle Loop">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+                                </svg>
+                            </button>
+                            <button id="mixerVideoFileMuteBtn" class="btn-toggle-32w" title="Toggle Mute">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                            </button>
+                            <button id="mixerVideoFileDeleteBtn" class="btn-toggle-32w-delete" title="Clear Video File">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="video-progress-container">
+                            <div class="video-progress-bar">
+                                <div class="video-progress-fill" id="mixerVideoProgressFill"></div>
+                            </div>
+                            <div class="video-time-display">
+                                <span class="video-current-time" id="mixerVideoCurrentTime">0:00</span>
+                                <span class="video-total-time" id="mixerVideoTotalTime">0:00</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="videoPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="preset-buttons collapsible-content" id="videoPresets">
+                        <button class="btn-preset" id="mixerVideoPresetNormal" data-preset="normal">Normal</button>
+                        <button class="btn-preset" id="mixerVideoPresetDreamy" data-preset="dreamy">Dreamy</button>
+                        <button class="btn-preset" id="mixerVideoPresetNoir" data-preset="noir">Noir</button>
+                        <button class="btn-preset" id="mixerVideoPresetCyberpunk" data-preset="cyberpunk">Cyberpunk</button>
+                        <button class="btn-preset" id="mixerVideoPresetVintage" data-preset="vintage">Vintage</button>
+                        <button class="btn-preset" id="mixerVideoPresetRetroTv" data-preset="retro-tv">Retro TV</button>
+                        <button class="btn-preset" id="mixerVideoPresetUnderwater" data-preset="underwater">Underwater</button>
+                        <button class="btn-preset" id="mixerVideoPresetInfrared" data-preset="infrared">Infrared</button>
+                        <button class="btn-preset" id="mixerVideoPresetAcid" data-preset="acid">Acid</button>
+                        <button class="btn-preset" id="mixerVideoPresetThermal" data-preset="thermal">Thermal</button>
+                        <button class="btn-preset" id="mixerVideoPresetMatrix" data-preset="matrix">Matrix</button>
+                        <button class="btn-preset" id="mixerVideoPresetGlitch" data-preset="glitch">Glitch</button>
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="videoControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="videoControls">
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Brightness</div>
+                                <div class="control-mini-value" id="mixerVideoBrightnessValue">100</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoBrightness" 
+                                   min="0" max="200" value="100">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Contrast</div>
+                                <div class="control-mini-value" id="mixerVideoContrastValue">100</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoContrast" 
+                                   min="0" max="200" value="100">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Fade Time</div>
+                                <div class="control-mini-value" id="mixerVideoFadeTimeValue">3.0s</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoFadeTime" 
+                                   min="0" max="10" step="0.5" value="3">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Saturation</div>
+                                <div class="control-mini-value" id="mixerVideoSaturationValue">100</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoSaturation" 
+                                   min="0" max="200" value="100">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Hue Rotation</div>
+                                <div class="control-mini-value" id="mixerVideoHueRotateValue">0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoHueRotate" 
+                                   min="0" max="360" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Grayscale</div>
+                                <div class="control-mini-value" id="mixerVideoGrayscaleValue">0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoGrayscale" 
+                                   min="0" max="100" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Sepia</div>
+                                <div class="control-mini-value" id="mixerVideoSepiaValue">0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoSepia" 
+                                   min="0" max="100" value="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="channel-controls-section">
+                    <div class="control-mini-label collapsible-header" data-target="videoEffects">
+                        <span>Effects</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="videoEffects">
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Blur</div>
+                                <div class="control-mini-value" id="mixerVideoBlurValue">0px</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoBlur" 
+                                   min="0" max="20" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Vignette</div>
+                                <div class="control-mini-value" id="mixerVideoVignetteValue">0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoVignette" 
+                                   min="0" max="100" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Posterize</div>
+                                <div class="control-mini-value" id="mixerVideoPosterizeValue">16</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoPosterize" 
+                                   min="2" max="16" value="16">
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerVideoInvert" title="Toggle Video Invert">
+                                <span class="effect-text">Invert: OFF</span>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerVideoMirror" title="Cycle Video Mirror">
+                                <span class="effect-text">Mirror: Off</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="channel-controls-section">
+                    <div class="control-mini-label collapsible-header" data-target="videoAnimation">
+                        <span>Animation</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="videoAnimation">
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerVideoPulse" title="Toggle Video Pulse">
+                                <span class="effect-text">Pulse: Off</span>
+                            </button>
+                        </div>
+                        <div class="control-mini-group" id="mixerVideoPulseRateContainer" style="display: none;">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Pulse Rate</div>
+                                <div class="control-mini-value" id="mixerVideoPulseRateValue">2.0s</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerVideoPulseRate" 
+                                   min="0.5" max="4" step="0.1" value="2">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1936,11 +2141,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="audioPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="audioPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="audioControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="audioControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -1964,11 +2181,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="amPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="amPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="amControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="amControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -1989,11 +2218,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="infiniteZoomPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="infiniteZoomPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="infiniteZoomControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="infiniteZoomControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2014,11 +2255,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="blobsPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="blobsPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="blobsControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="blobsControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2039,11 +2292,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="starfallPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="starfallPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="starfallControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="starfallControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2064,11 +2329,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="fluidPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="fluidPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="fluidControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="fluidControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2089,11 +2366,23 @@
                 </div>
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="kaleidoscopePresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="kaleidoscopePresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - additional controls will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="kaleidoscopeControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="kaleidoscopeControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2115,11 +2404,23 @@
                 <!-- Note: Display channels don't have vertical-slider-section -->
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display1Presets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display1Presets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - capture toggles and settings will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display1Controls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display1Controls">
+                        <!-- Empty - capture toggles and settings will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2138,11 +2439,23 @@
                 <!-- Note: Display channels don't have vertical-slider-section -->
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display2Presets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display2Presets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - capture toggles and settings will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display2Controls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display2Controls">
+                        <!-- Empty - capture toggles and settings will go here -->
+                    </div>
                 </div>
             </div>
 
@@ -2161,11 +2474,23 @@
                 <!-- Note: Display channels don't have vertical-slider-section -->
                 
                 <div class="channel-presets-section">
-                    <!-- Empty - preset buttons will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display3Presets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display3Presets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
                 </div>
                 
                 <div class="channel-controls-section">
-                    <!-- Empty - capture toggles and settings will go here -->
+                    <div class="control-mini-label collapsible-header" data-target="display3Controls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="display3Controls">
+                        <!-- Empty - capture toggles and settings will go here -->
+                    </div>
                 </div>
             </div>
 

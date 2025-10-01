@@ -15,6 +15,44 @@ class MultiDisplayManager {
         console.log('🎯 MultiDisplayManager: Initializing with LiveDisplayManager integration');
         this.setupDisplayButtons();
         this.setupSettingsPanels();
+        
+        // Initialize mixer controls after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.initializeMixerControls();
+        }, 100);
+    }
+
+    // Initialize mixer control synchronization
+    initializeMixerControls() {
+        console.log('🔧 Initializing mixer controls...');
+        
+        // Initialize all mixer control synchronization
+        setTimeout(() => {
+            // Background controls
+            if (typeof this.updateMixerBackgroundImageUI === 'function') this.updateMixerBackgroundImageUI();
+            if (typeof this.updateMixerBackgroundToggleButton === 'function') this.updateMixerBackgroundToggleButton();
+            if (typeof this.updateMixerBackgroundOpacitySlider === 'function') this.updateMixerBackgroundOpacitySlider();
+            
+            // Video controls
+            if (typeof this.updateMixerVideoToggleButton === 'function') this.updateMixerVideoToggleButton();
+            if (typeof this.updateMixerVideoCameraSelect === 'function') this.updateMixerVideoCameraSelect();
+            if (typeof this.updateMixerVideoOpacitySlider === 'function') this.updateMixerVideoOpacitySlider();
+            if (typeof this.updateMixerVideoBrightnessSlider === 'function') this.updateMixerVideoBrightnessSlider();
+            if (typeof this.updateMixerVideoContrastSlider === 'function') this.updateMixerVideoContrastSlider();
+            if (typeof this.updateMixerVideoSaturationSlider === 'function') this.updateMixerVideoSaturationSlider();
+            if (typeof this.updateMixerVideoHueRotateSlider === 'function') this.updateMixerVideoHueRotateSlider();
+            if (typeof this.updateMixerVideoGrayscaleSlider === 'function') this.updateMixerVideoGrayscaleSlider();
+            if (typeof this.updateMixerVideoFadeTimeSlider === 'function') this.updateMixerVideoFadeTimeSlider();
+            if (typeof this.updateMixerVideoSepiaSlider === 'function') this.updateMixerVideoSepiaSlider();
+            if (typeof this.updateMixerVideoBlurSlider === 'function') this.updateMixerVideoBlurSlider();
+            if (typeof this.updateMixerVideoVignetteSlider === 'function') this.updateMixerVideoVignetteSlider();
+            if (typeof this.updateMixerVideoPosterizeSlider === 'function') this.updateMixerVideoPosterizeSlider();
+            if (typeof this.updateMixerVideoInvertToggle === 'function') this.updateMixerVideoInvertToggle();
+            if (typeof this.updateMixerVideoMirrorToggle === 'function') this.updateMixerVideoMirrorToggle();
+            if (typeof this.updateMixerVideoPulseToggle === 'function') this.updateMixerVideoPulseToggle();
+            if (typeof this.updateMixerVideoPulseRateSlider === 'function') this.updateMixerVideoPulseRateSlider();
+            if (typeof this.updateMixerVideoFileInfo === 'function') this.updateMixerVideoFileInfo();
+        }, 100);
     }
     
     // Load global capture settings (no longer used - each display has its own)
@@ -429,6 +467,85 @@ class MultiDisplayManager {
         if (mirrorBackgroundBtn) {
             this.updateToggleButton(mirrorBackgroundBtn, 'Mirror Background', settings.mirrorBackground || false);
         }
+    }
+
+    // ====== MIXER UI SYNCHRONIZATION METHODS ======
+    
+    updateMixerVideoFileInfo() {
+        
+        const mixerVideoFileInfo = document.getElementById('mixerVideoFileInfo');
+        const mixerVideoFileName = document.getElementById('mixerVideoFileName');
+        
+        if (mixerVideoFileInfo && mixerVideoFileName && this.visualizer) {
+            // Show mixer file info whenever a video file is loaded (regardless of header panel state)
+            const hasVideoFile = this.visualizer.videoFile && this.visualizer.videoMode === 'file';
+            
+            if (hasVideoFile) {
+                mixerVideoFileInfo.style.display = 'block';
+                mixerVideoFileName.textContent = this.visualizer.videoFile.name || 'Unknown file';
+                
+                // Update button states
+                this.updateMixerVideoFileButtons();
+            } else {
+                mixerVideoFileInfo.style.display = 'none';
+                mixerVideoFileName.textContent = 'No file selected';
+            }
+            
+        } else {
+            console.error('❌ Mixer video file info elements not found for update');
+        }
+    }
+
+    updateMixerVideoFileButtons() {
+        
+        const mixerLoopBtn = document.getElementById('mixerVideoFileLoopBtn');
+        const mixerMuteBtn = document.getElementById('mixerVideoFileMuteBtn');
+        
+        if (mixerLoopBtn && mixerMuteBtn && this.visualizer) {
+            // Update loop button - toggle active class
+            const loop = this.visualizer.videoFileLoop;
+            if (loop) {
+                mixerLoopBtn.classList.add('active');
+            } else {
+                mixerLoopBtn.classList.remove('active');
+            }
+            
+            // Update mute button - toggle active class
+            const muted = this.visualizer.videoFileMuted;
+            if (muted) {
+                mixerMuteBtn.classList.add('active');
+            } else {
+                mixerMuteBtn.classList.remove('active');
+            }
+            
+        } else {
+            console.error('❌ Mixer video file buttons not found for update');
+        }
+    }
+
+    updateMixerVideoProgress(currentTime, duration) {
+        
+        const mixerProgressFill = document.getElementById('mixerVideoProgressFill');
+        const mixerCurrentTimeEl = document.getElementById('mixerVideoCurrentTime');
+        const mixerTotalTimeEl = document.getElementById('mixerVideoTotalTime');
+        
+        
+        if (mixerProgressFill && mixerCurrentTimeEl && mixerTotalTimeEl && duration > 0) {
+            const progressPercent = (currentTime / duration) * 100;
+            mixerProgressFill.style.width = `${progressPercent}%`;
+            mixerCurrentTimeEl.textContent = this.formatTime(currentTime);
+            mixerTotalTimeEl.textContent = this.formatTime(duration);
+            
+        } else {
+        }
+    }
+
+    formatTime(seconds) {
+        if (isNaN(seconds) || seconds === Infinity) return '0:00';
+        
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 }
 
