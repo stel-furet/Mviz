@@ -59,6 +59,26 @@ body {
     box-sizing: border-box;
 }
 
+/* Primary Button Mixer - Compact version for mixer channels */
+.btn-primary-mixer {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    height: 26px !important;
+    box-sizing: border-box;
+}
+
 .btn-primary:hover {
     background: var(--hover-color);
     color: var(--text-primary);
@@ -66,7 +86,19 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+.btn-primary-mixer:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
 .btn-primary.active {
+    background: var(--highlight-color);
+    color: var(--primary-bg);
+}
+
+.btn-primary-mixer.active {
     background: var(--highlight-color);
     color: var(--primary-bg);
 }
@@ -329,7 +361,7 @@ body {
     transition: all 0.3s ease;
     white-space: nowrap;
     min-width: 80px;
-    height: 32px !important;
+    height: 26px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -980,7 +1012,26 @@ html body .slider-2-wrapper .slider-2-value {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
+/* Mixer Dropdown Selector - Tighter padding for mixer channel strips */
+.dropdown-selector-mixer {
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 3px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
 .dropdown-selector:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.dropdown-selector-mixer:focus {
     outline: none;
     border-color: var(--accent-color);
 }
@@ -1161,7 +1212,6 @@ html body .slider-2-wrapper .slider-2-value {
 
 /* Energy Bar */
 .energy-container {
-    margin: 8px 0;
 }
 
 .energy-label {

@@ -1846,6 +1846,14 @@ class RecordManager {
                 this.updateMixerAudioToggle();
                 this.updateMixerAudioVolumeSlider();
                 this.updateMixerAudioDeviceSelect();
+                
+                // AM Visualizer controls initialization
+                this.updateMixerAMToggle();
+                this.updateMixerAMOpacitySlider();
+                this.updateMixerAMVizModeSelect();
+                this.updateMixerAMMorphButton();
+                this.updateMixerAMMorphSpeedSelect();
+                this.updateMixerAMEnergyContainer();
             
             // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -2653,6 +2661,135 @@ class RecordManager {
             });
         } else {
             console.error('❌ Mixer audio device select not found');
+        }
+
+        // ========== AM VISUALIZER CHANNEL ==========
+
+        // Mixer AM toggle button
+        const mixerAMToggle = document.getElementById('mixerAMToggle');
+        if (mixerAMToggle) {
+            console.log('✅ Mixer AM toggle button found, adding event listener');
+            mixerAMToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer AM toggle clicked - current state:', this.visualizer.visualizationEnabled);
+                    
+                    // Toggle AM visualization state
+                    this.visualizer.toggleVisualization();
+                    
+                    // Update mixer UI
+                    this.updateMixerAMToggle();
+                    
+                    console.log('🔘 Mixer AM toggle changed to:', this.visualizer.visualizationEnabled);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM toggle button not found');
+        }
+
+        // Mixer AM opacity slider
+        const mixerAMOpacitySlider = document.getElementById('mixerAMOpacitySlider');
+        if (mixerAMOpacitySlider) {
+            console.log('✅ Mixer AM opacity slider found, initializing custom slider');
+            this.mixerAMOpacitySlider = this.initializeVerticalSlider(mixerAMOpacitySlider, (value) => {
+                if (this.visualizer) {
+                    // Convert 0-100 to 0.0-1.0
+                    const opacityValue = value / 100;
+                    this.visualizer.setVisualizationOpacity(opacityValue);
+                    
+                    // Update value display
+                    const valueDisplay = document.getElementById('mixerAMOpacityValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                    console.log('🎨 Mixer AM opacity changed to:', value, '% (', opacityValue, ')');
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM opacity slider not found');
+        }
+
+        // Mixer AM Visualization Mode dropdown
+        const mixerAMVizModeSelect = document.getElementById('mixerAMVizModeSelect');
+        if (mixerAMVizModeSelect) {
+            console.log('✅ Mixer AM viz mode select found, adding event listener');
+            mixerAMVizModeSelect.addEventListener('change', (e) => {
+                if (this.visualizer) {
+                    const modeId = parseInt(e.target.value);
+                    console.log('🎨 Mixer AM viz mode selected:', modeId);
+                    
+                    // Set visualization mode
+                    this.visualizer.setVisualizationMode(modeId);
+                    
+                    console.log('🎨 Mixer AM viz mode changed to:', modeId);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM viz mode select not found');
+        }
+
+        // Mixer AM Random button
+        const mixerAMRandomBtn = document.getElementById('mixerAMRandomBtn');
+        if (mixerAMRandomBtn) {
+            console.log('✅ Mixer AM random button found, adding event listener');
+            mixerAMRandomBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎲 Mixer AM random button clicked');
+                    
+                    // Set random visualization mode
+                    this.visualizer.setRandomVisualization();
+                    
+                    // Update mixer dropdown
+                    this.updateMixerAMVizModeSelect();
+                    
+                    console.log('🎲 Mixer AM random mode set to:', this.visualizer.currentMode);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM random button not found');
+        }
+
+        // Mixer AM Morph button
+        const mixerAMMorphBtn = document.getElementById('mixerAMMorphBtn');
+        if (mixerAMMorphBtn) {
+            console.log('✅ Mixer AM morph button found, adding event listener');
+            mixerAMMorphBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔄 Mixer AM morph button clicked - current state:', this.visualizer.isMorphing);
+                    
+                    // Toggle morph state
+                    this.visualizer.toggleMorph();
+                    
+                    // Update mixer UI
+                    this.updateMixerAMMorphButton();
+                    
+                    console.log('🔄 Mixer AM morph toggled to:', this.visualizer.isMorphing);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM morph button not found');
+        }
+
+        // Mixer AM Morph Speed dropdown
+        const mixerAMMorphSpeedSelect = document.getElementById('mixerAMMorphSpeedSelect');
+        if (mixerAMMorphSpeedSelect) {
+            console.log('✅ Mixer AM morph speed select found, adding event listener');
+            mixerAMMorphSpeedSelect.addEventListener('change', (e) => {
+                if (this.visualizer) {
+                    const speed = e.target.value;
+                    console.log('⚡ Mixer AM morph speed selected:', speed);
+                    
+                    // Set morph speed
+                    this.visualizer.setMorphSpeed(speed);
+                    
+                    // Update energy container visibility
+                    this.updateMixerAMEnergyContainer();
+                    
+                    console.log('⚡ Mixer AM morph speed changed to:', speed);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM morph speed select not found');
         }
 
         // Mixer audio volume slider
@@ -3944,6 +4081,95 @@ class RecordManager {
             }
         } else {
             console.error('❌ Mixer audio device select not found for update');
+        }
+    }
+
+    // ========== AM VISUALIZER UPDATE METHODS ==========
+
+    updateMixerAMToggle() {
+        const mixerAMToggle = document.getElementById('mixerAMToggle');
+        if (mixerAMToggle && this.visualizer) {
+            const text = mixerAMToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.visualizationEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerAMToggle.classList.add('active');
+                } else {
+                    mixerAMToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer AM toggle not found for update');
+        }
+    }
+
+    updateMixerAMOpacitySlider() {
+        if (this.mixerAMOpacitySlider && this.visualizer) {
+            // Convert 0.0-1.0 to 0-100
+            const opacityPercent = Math.round(this.visualizer.visualizationOpacity * 100);
+            this.mixerAMOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerAMOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer AM opacity slider not found for update');
+        }
+    }
+
+    updateMixerAMVizModeSelect() {
+        const mixerAMVizModeSelect = document.getElementById('mixerAMVizModeSelect');
+        if (mixerAMVizModeSelect && this.visualizer) {
+            mixerAMVizModeSelect.value = this.visualizer.currentMode.toString();
+        } else {
+            console.error('❌ Mixer AM viz mode select not found for update');
+        }
+    }
+
+    updateMixerAMMorphButton() {
+        const mixerAMMorphBtn = document.getElementById('mixerAMMorphBtn');
+        if (mixerAMMorphBtn && this.visualizer) {
+            const text = mixerAMMorphBtn.querySelector('.morph-btn-text');
+            if (text) {
+                const isMorphing = this.visualizer.isMorphing;
+                
+                text.textContent = isMorphing ? 'Stop Morph' : 'Start Morph';
+                
+                // Update button state
+                if (isMorphing) {
+                    mixerAMMorphBtn.classList.add('active');
+                } else {
+                    mixerAMMorphBtn.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer AM morph button not found for update');
+        }
+    }
+
+    updateMixerAMMorphSpeedSelect() {
+        const mixerAMMorphSpeedSelect = document.getElementById('mixerAMMorphSpeedSelect');
+        if (mixerAMMorphSpeedSelect && this.visualizer) {
+            mixerAMMorphSpeedSelect.value = this.visualizer.morphMode;
+        } else {
+            console.error('❌ Mixer AM morph speed select not found for update');
+        }
+    }
+
+    updateMixerAMEnergyContainer() {
+        const mixerAMEnergyContainer = document.getElementById('mixerAMEnergyContainer');
+        if (mixerAMEnergyContainer && this.visualizer) {
+            // Show energy container only when morph speed is 'energy'
+            const isEnergyMode = this.visualizer.morphMode === 'energy';
+            mixerAMEnergyContainer.style.display = isEnergyMode ? 'block' : 'none';
+        } else {
+            console.error('❌ Mixer AM energy container not found for update');
         }
     }
 
@@ -7219,6 +7445,7 @@ class GitItUpVisualizer {
 
         // Viz ON/OFF Toggle
         this.visualizationEnabled = true;
+        this.visualizationOpacity = 1.0; // AM Visualizer opacity (0.0-1.0)
 
         // Morph properties
         this.isMorphing = false;
@@ -7858,6 +8085,11 @@ class GitItUpVisualizer {
             // console.log('Creating SpectrumAnalyzer instance...');
 
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
+
+            // Set initial AM canvas opacity
+            if (this.audioMotion && this.audioMotion.canvas) {
+                this.audioMotion.canvas.style.opacity = this.visualizationOpacity.toString();
+            }
 
             // console.log('SpectrumAnalyzer initialized successfully');
 
@@ -14903,6 +15135,11 @@ https://rogueamoeba.com/loopback/
                 console.warn(`Could not set visualization mode ${modeIndex}:`, error);
             }
         }
+        
+        // Update mixer viz mode select
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMVizModeSelect) {
+            window.multiDisplayManager.updateMixerAMVizModeSelect();
+        }
     }
 
     setRandomVisualization() {
@@ -17051,6 +17288,28 @@ https://rogueamoeba.com/loopback/
                 }
             }
         }
+        
+        // Update mixer AM toggle
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMToggle) {
+            window.multiDisplayManager.updateMixerAMToggle();
+        }
+    }
+
+    // Set AM Visualizer opacity
+    setVisualizationOpacity(opacity) {
+        this.visualizationOpacity = Math.max(0.0, Math.min(1.0, opacity));
+        
+        // Apply opacity to AudioMotion canvas
+        if (this.audioMotion && this.audioMotion.canvas) {
+            this.audioMotion.canvas.style.opacity = this.visualizationOpacity.toString();
+        }
+        
+        // Update mixer opacity slider
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMOpacitySlider) {
+            window.multiDisplayManager.updateMixerAMOpacitySlider();
+        }
+        
+        console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
     }
 
     getCurrentConfig() {
@@ -20451,6 +20710,16 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 } else {
                     console.log('Footer energy fill not found');
                 }
+                
+                // Update mixer energy indicator
+                const mixerAMEnergyFill = document.getElementById('mixerAMEnergyFill');
+                if (mixerAMEnergyFill) {
+                    mixerAMEnergyFill.style.width = `${
+                        this.currentEnergy * 100
+                    }%`;
+                    const hue = 120 - (this.currentEnergy * 120);
+                    mixerAMEnergyFill.style.background = `hsl(${hue}, 100%, 50%)`;
+                }
             }
 
             updateMorphSpeedFromEnergy() {
@@ -20556,6 +20825,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 } else {
                     this.startMorphing();
                 }
+                
+                // Update mixer morph button
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMMorphButton) {
+                    window.multiDisplayManager.updateMixerAMMorphButton();
+                }
             }
 
             setMorphSpeed(speed) {
@@ -20599,6 +20873,16 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         ultra: 1000
                     };
                     this.morphDuration = speeds[speed] || 5000;
+                }
+                
+                // Update mixer morph speed select and energy container
+                if (window.multiDisplayManager) {
+                    if (window.multiDisplayManager.updateMixerAMMorphSpeedSelect) {
+                        window.multiDisplayManager.updateMixerAMMorphSpeedSelect();
+                    }
+                    if (window.multiDisplayManager.updateMixerAMEnergyContainer) {
+                        window.multiDisplayManager.updateMixerAMEnergyContainer();
+                    }
                 }
             }
 

@@ -1934,7 +1934,7 @@
                 </div>
                 
                 <div class="channel-input-section">
-                    <select class="dropdown-selector mixer-dropdown" id="mixerVideoCameraSelect">
+                    <select class="dropdown-selector-mixer" id="mixerVideoCameraSelect">
                         <option value="">Select Video Source</option>
                     </select>
                     
@@ -2149,7 +2149,7 @@
                 </div>
                 
                 <div class="channel-input-section">
-                    <select class="dropdown-selector" id="mixerAudioDeviceSelect">
+                    <select class="dropdown-selector-mixer" id="mixerAudioDeviceSelect">
                         <option value="">Select Audio Input...</option>
                     </select>
                 </div>
@@ -2183,15 +2183,71 @@
                 <div class="channel-header">AM Visualizer</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerAMToggle" title="Toggle AM Visualization">
+                        <span class="toggle-text">ON</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerAMOpacitySlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerAMOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - visualization type selection will go here -->
+                    <!-- Visualization Mode Dropdown -->
+                    <div class="control-mini-group">
+                        <select class="dropdown-selector-mixer" id="mixerAMVizModeSelect">
+                            <option value="0">Spectrum</option>
+                            <option value="1">Mirror Wave</option>
+                            <option value="2">Classic LED</option>
+                            <option value="3">Stereo</option>
+                            <option value="4" selected>Radial Spectrum</option>
+                            <option value="5">Energy</option>
+                            <option value="6">Mirror</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Random Button -->
+                    <div class="control-mini-group">
+                        <button class="btn-primary-mixer" id="mixerAMRandomBtn" title="Random Mode">
+                            <span class="random-text">Random</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Morph Button -->
+                    <div class="control-mini-group">
+                        <button class="btn-morph" id="mixerAMMorphBtn" title="Morph between visualizations">
+                            <span class="morph-btn-text">Start Morph</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Morph Speed Dropdown -->
+                    <div class="control-mini-group">
+                        <select class="dropdown-selector-mixer" id="mixerAMMorphSpeedSelect">
+                            <option value="slow">Slow</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="fast">Fast</option>
+                            <option value="ultra">Ultra</option>
+                            <option value="energy">Energy</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Energy Container (hidden by default) -->
+                    <div class="energy-container" id="mixerAMEnergyContainer" style="display: none;">
+                        <div class="energy-label">Energy</div>
+                        <div class="energy-bar">
+                            <div class="energy-fill" id="mixerAMEnergyFill"></div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="channel-presets-section">
