@@ -1854,6 +1854,8 @@ class RecordManager {
                 this.updateMixerAMMorphButton();
                 this.updateMixerAMMorphSpeedSelect();
                 this.updateMixerAMEnergyContainer();
+                this.updateMixerAMPresetSelector();
+                this.updateMixerAMColorSchemeSelect();
             
             // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -2790,6 +2792,115 @@ class RecordManager {
             });
         } else {
             console.error('❌ Mixer AM morph speed select not found');
+        }
+
+        // ========== AM PRESET CONTROLS ==========
+
+        // Mixer AM Preset Selector
+        const mixerAMPresetSelector = document.getElementById('mixerAMPresetSelector');
+        if (mixerAMPresetSelector) {
+            console.log('✅ Mixer AM preset selector found, adding event listener');
+            mixerAMPresetSelector.addEventListener('change', (e) => {
+                if (this.visualizer && e.target.value !== '') {
+                    const presetIndex = parseInt(e.target.value);
+                    console.log('📁 Mixer AM preset selected:', presetIndex);
+                    
+                    // Load preset
+                    this.visualizer.loadPreset(presetIndex);
+                    
+                    // Reset dropdown
+                    e.target.value = '';
+                    
+                    console.log('📁 Mixer AM preset loaded:', presetIndex);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM preset selector not found');
+        }
+
+        // Mixer AM Save Preset Button
+        const mixerAMSavePresetBtn = document.getElementById('mixerAMSavePresetBtn');
+        if (mixerAMSavePresetBtn) {
+            console.log('✅ Mixer AM save preset button found, adding event listener');
+            mixerAMSavePresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('💾 Mixer AM save preset clicked');
+                    
+                    // Save current preset
+                    this.visualizer.saveCurrentPreset();
+                    
+                    // Update both dropdowns
+                    this.updateMixerAMPresetSelector();
+                    
+                    console.log('💾 Mixer AM preset saved');
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM save preset button not found');
+        }
+
+        // Mixer AM Export Presets Button
+        const mixerAMExportPresetsBtn = document.getElementById('mixerAMExportPresetsBtn');
+        if (mixerAMExportPresetsBtn) {
+            console.log('✅ Mixer AM export presets button found, adding event listener');
+            mixerAMExportPresetsBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('📤 Mixer AM export presets clicked');
+                    
+                    // Export presets
+                    this.visualizer.exportPresets();
+                    
+                    console.log('📤 Mixer AM presets exported');
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM export presets button not found');
+        }
+
+        // Mixer AM Import Presets Button
+        const mixerAMImportPresetsBtn = document.getElementById('mixerAMImportPresetsBtn');
+        const mixerAMImportPresetsFile = document.getElementById('mixerAMImportPresetsFile');
+        if (mixerAMImportPresetsBtn && mixerAMImportPresetsFile) {
+            console.log('✅ Mixer AM import presets button found, adding event listener');
+            mixerAMImportPresetsBtn.addEventListener('click', () => {
+                console.log('📥 Mixer AM import presets clicked');
+                mixerAMImportPresetsFile.click();
+            });
+            
+            mixerAMImportPresetsFile.addEventListener('change', (e) => {
+                if (this.visualizer && e.target.files.length > 0) {
+                    console.log('📥 Mixer AM import file selected');
+                    
+                    // Import presets
+                    this.visualizer.importPresets(e.target.files[0]);
+                    
+                    // Update both dropdowns
+                    this.updateMixerAMPresetSelector();
+                    
+                    console.log('📥 Mixer AM presets imported');
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM import presets controls not found');
+        }
+
+        // Mixer AM Color Scheme Select
+        const mixerAMColorSchemeSelect = document.getElementById('mixerAMColorSchemeSelect');
+        if (mixerAMColorSchemeSelect) {
+            console.log('✅ Mixer AM color scheme select found, adding event listener');
+            mixerAMColorSchemeSelect.addEventListener('change', (e) => {
+                if (this.visualizer) {
+                    const scheme = e.target.value;
+                    console.log('🎨 Mixer AM color scheme selected:', scheme);
+                    
+                    // Set color scheme
+                    this.visualizer.setColorScheme(scheme);
+                    
+                    console.log('🎨 Mixer AM color scheme changed to:', scheme);
+                }
+            });
+        } else {
+            console.error('❌ Mixer AM color scheme select not found');
         }
 
         // Mixer audio volume slider
@@ -4170,6 +4281,44 @@ class RecordManager {
             mixerAMEnergyContainer.style.display = isEnergyMode ? 'block' : 'none';
         } else {
             console.error('❌ Mixer AM energy container not found for update');
+        }
+    }
+
+    updateMixerAMPresetSelector() {
+        const mixerAMPresetSelector = document.getElementById('mixerAMPresetSelector');
+        if (mixerAMPresetSelector && this.visualizer) {
+            // Clear existing options except default
+            const defaultOption = mixerAMPresetSelector.querySelector('option[value=""]');
+            mixerAMPresetSelector.innerHTML = '';
+            if (defaultOption) {
+                mixerAMPresetSelector.appendChild(defaultOption);
+            } else {
+                const newDefaultOption = document.createElement('option');
+                newDefaultOption.value = '';
+                newDefaultOption.textContent = 'Load Preset...';
+                mixerAMPresetSelector.appendChild(newDefaultOption);
+            }
+            
+            // Add saved presets
+            if (this.visualizer.savedPresets && this.visualizer.savedPresets.length > 0) {
+                this.visualizer.savedPresets.forEach((preset, index) => {
+                    const option = document.createElement('option');
+                    option.value = index.toString();
+                    option.textContent = preset.name || `Preset ${index + 1}`;
+                    mixerAMPresetSelector.appendChild(option);
+                });
+            }
+        } else {
+            console.error('❌ Mixer AM preset selector not found for update');
+        }
+    }
+
+    updateMixerAMColorSchemeSelect() {
+        const mixerAMColorSchemeSelect = document.getElementById('mixerAMColorSchemeSelect');
+        if (mixerAMColorSchemeSelect && this.visualizer) {
+            mixerAMColorSchemeSelect.value = this.visualizer.currentColorScheme || 'default';
+        } else {
+            console.error('❌ Mixer AM color scheme select not found for update');
         }
     }
 
@@ -16058,8 +16207,10 @@ https://rogueamoeba.com/loopback/
                 // Setup peek button functionality when mixer opens
                 this.setupPeekButton();
                 
-                // Setup collapsible preset sections
-                this.setupCollapsiblePresets();
+                // Setup collapsible preset sections with small delay to ensure DOM is ready
+                setTimeout(() => {
+                    this.setupCollapsiblePresets();
+                }, 50);
             }
         }
     }
@@ -16144,6 +16295,12 @@ https://rogueamoeba.com/loopback/
                 return;
             }
             
+            // Remove any existing click listeners to prevent duplicates
+            const existingHandler = header._collapsibleHandler;
+            if (existingHandler) {
+                header.removeEventListener('click', existingHandler);
+            }
+            
             // Load saved state (default: collapsed)
             const storageKey = `mixer_preset_${targetId}_expanded`;
             const isExpanded = localStorage.getItem(storageKey) === 'true';
@@ -16157,8 +16314,8 @@ https://rogueamoeba.com/loopback/
                 content.classList.remove('expanded');
             }
             
-            // Add click handler
-            header.addEventListener('click', () => {
+            // Create and store click handler
+            const clickHandler = () => {
                 const wasExpanded = header.classList.contains('expanded');
                 
                 // Toggle classes
@@ -16172,7 +16329,11 @@ https://rogueamoeba.com/loopback/
                     section: targetId,
                     expanded: !wasExpanded
                 });
-            });
+            };
+            
+            // Store handler reference and add listener
+            header._collapsibleHandler = clickHandler;
+            header.addEventListener('click', clickHandler);
             
             console.log('✅ Collapsible preset section initialized:', {
                 targetId: targetId,
@@ -17426,6 +17587,11 @@ https://rogueamoeba.com/loopback/
         if (this.isFullscreen) {
             updateSelector(fsSelector);
         }
+        
+        // Update mixer preset selector
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMPresetSelector) {
+            window.multiDisplayManager.updateMixerAMPresetSelector();
+        }
     }
 
     // Background Color Methods
@@ -17504,6 +17670,11 @@ https://rogueamoeba.com/loopback/
                 item.classList.remove('luigi-scheme');
             }
         });
+
+        // Update mixer color scheme select
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMColorSchemeSelect) {
+            window.multiDisplayManager.updateMixerAMColorSchemeSelect();
+        }
 
         switch (scheme) {
             case 'earthtones': root.style.setProperty('--accent-color', '#D2691E');

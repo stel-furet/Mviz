@@ -2255,8 +2255,21 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="amPresets">
-                        <!-- Empty - preset buttons will go here -->
+                    <div class="collapsible-content collapsed" id="amPresets">
+                        <!-- Preset Dropdown -->
+                        <div class="control-mini-group">
+                            <select class="dropdown-selector-mixer" id="mixerAMPresetSelector">
+                                <option value="">Load Preset...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Preset Action Buttons -->
+                        <div class="control-mini-group">
+                            <button class="btn-preset" id="mixerAMSavePresetBtn" title="Save Current as Preset">Save</button>
+                            <button class="btn-preset" id="mixerAMExportPresetsBtn" title="Export All Presets">Export</button>
+                            <button class="btn-preset" id="mixerAMImportPresetsBtn" title="Import Presets">Import</button>
+                            <input type="file" id="mixerAMImportPresetsFile" accept=".json" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 
@@ -2266,7 +2279,17 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="amControls">
-                        <!-- Empty - additional controls will go here -->
+                        <!-- Color Scheme Dropdown -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Color Scheme</div>
+                            <select class="dropdown-selector-mixer" id="mixerAMColorSchemeSelect">
+                                <option value="default" selected>Default</option>
+                                <option value="earthtones">Earthtones</option>
+                                <option value="luigi">Luigi</option>
+                                <option value="metal">Heavy Metal</option>
+                                <option value="psychedelic">Psychedelic</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
