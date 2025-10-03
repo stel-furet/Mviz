@@ -16661,6 +16661,20 @@ https://rogueamoeba.com/loopback/
             return;
         }
         
+        // Opacity slider
+        const opacitySlider = document.getElementById('webglOpacitySlider');
+        const opacityValue = document.getElementById('webglOpacityValue');
+        console.log('🎮 WebGL: Opacity slider found:', !!opacitySlider, 'Value element found:', !!opacityValue);
+        if (opacitySlider && opacityValue) {
+            opacitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                opacityValue.textContent = value + '%';
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ opacity: value });
+                }
+            });
+        }
+        
         // Particle Count slider
         const particleCountSlider = document.getElementById('webglParticleCountSlider');
         const particleCountValue = document.getElementById('webglParticleCountValue');
@@ -16722,6 +16736,61 @@ https://rogueamoeba.com/loopback/
                 gravityValue.textContent = value.toFixed(1);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ gravity: value });
+                }
+            });
+        }
+
+        // Saturation slider
+        const saturationSlider = document.getElementById('webglSaturationSlider');
+        const saturationValue = document.getElementById('webglSaturationValue');
+        console.log('🎮 WebGL: Saturation slider found:', !!saturationSlider, 'Value element found:', !!saturationValue);
+        if (saturationSlider && saturationValue) {
+            saturationSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                saturationValue.textContent = value + '%';
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ saturation: value });
+                }
+            });
+        }
+
+        // Color scheme dropdown
+        const colorSchemeSelect = document.getElementById('webglColorSchemeSelect');
+        console.log('🎮 WebGL: Color scheme dropdown found:', !!colorSchemeSelect);
+        if (colorSchemeSelect) {
+            colorSchemeSelect.addEventListener('change', (e) => {
+                const scheme = e.target.value;
+                console.log('🎮 WebGL: Color scheme changed to:', scheme);
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
+                }
+            });
+        }
+
+        // Twinkle intensity slider
+        const twinkleSlider = document.getElementById('webglTwinkleSlider');
+        const twinkleValue = document.getElementById('webglTwinkleValue');
+        console.log('🎮 WebGL: Twinkle slider found:', !!twinkleSlider, 'Value element found:', !!twinkleValue);
+        if (twinkleSlider && twinkleValue) {
+            twinkleSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                twinkleValue.textContent = value + '%';
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ twinkleIntensity: value });
+                }
+            });
+        }
+
+        // Star percentage slider
+        const starPercentageSlider = document.getElementById('webglStarPercentageSlider');
+        const starPercentageValue = document.getElementById('webglStarPercentageValue');
+        console.log('🎮 WebGL: Star percentage slider found:', !!starPercentageSlider, 'Value element found:', !!starPercentageValue);
+        if (starPercentageSlider && starPercentageValue) {
+            starPercentageSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                starPercentageValue.textContent = value + '%';
+                if (this.webglVisualization && this.webglVisualization.currentVisualization) {
+                    this.webglVisualization.currentVisualization.setSettings({ starPercentage: value });
                 }
             });
         }

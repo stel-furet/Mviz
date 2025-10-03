@@ -639,15 +639,26 @@ class WebGLParticleSystem {
         this.vertexBuffer = null;
         this.positionBuffer = null;
         this.colorBuffer = null;
+        this.sizeBuffer = null;
+        this.starShapeBuffer = null;
         
         // Uniforms
         this.uniforms = {};
         
         // Particle properties
-        this.particleSize = 5.0;
-        this.speed = 1.0;
+        this.particleSize = 10.0; // Changed from 5.0 to 10.0
+        this.speed = 1.0; // Reverted back to 1.0 - speed 0 caused particles to disappear
         this.gravity = 0.5;
+        this.saturation = 0.0; // Default to 0 (white particles), 1.0 = full color
         this.audioReactivity = 0.5;
+        this.opacity = 1.0; // Overall visualization opacity (0.0 = invisible, 1.0 = fully visible)
+        
+        // Twinkle effect properties
+        this.twinkleIntensity = 0.3; // 0.0 = no twinkle, 1.0 = maximum twinkle
+        this.twinkleSpeed = 0.05; // Base twinkle speed multiplier
+        
+        // Star shape properties
+        this.starPercentage = 0.0; // 0.0 = all circles, 1.0 = all stars
         this.beatReact = false;
         this.beatSize = false;
         this.beatSpeed = false;
@@ -666,15 +677,59 @@ class WebGLParticleSystem {
         this.midReact = false;
         this.trebleReact = false;
         
-        // Colors (plasma theme)
-        this.colors = [
-            [1.0, 0.0, 0.0], // Red
-            [1.0, 0.5, 0.0], // Orange
-            [1.0, 1.0, 0.0], // Yellow
-            [0.0, 1.0, 0.0], // Green
-            [0.0, 0.0, 1.0], // Blue
-            [0.5, 0.0, 1.0]  // Purple
-        ];
+        // Color schemes
+        this.currentColorScheme = 'plasma';
+        this.colorSchemes = {
+            'plasma': [
+                [1.0, 0.0, 0.0], // Red
+                [1.0, 0.5, 0.0], // Orange
+                [1.0, 1.0, 0.0], // Yellow
+                [0.0, 1.0, 0.0], // Green
+                [0.0, 0.0, 1.0], // Blue
+                [0.5, 0.0, 1.0]  // Purple
+            ],
+            'fire': [
+                [1.0, 0.0, 0.0], // Red
+                [1.0, 0.3, 0.0], // Red-Orange
+                [1.0, 0.6, 0.0], // Orange
+                [1.0, 1.0, 0.0], // Yellow
+                [1.0, 1.0, 0.5], // Light Yellow
+                [1.0, 0.8, 0.2]  // Golden
+            ],
+            'ocean': [
+                [0.0, 0.2, 0.4], // Deep Blue
+                [0.0, 0.4, 0.6], // Ocean Blue
+                [0.0, 0.6, 0.8], // Sky Blue
+                [0.2, 0.8, 1.0], // Light Blue
+                [0.4, 0.9, 1.0], // Cyan
+                [0.6, 1.0, 1.0]  // Light Cyan
+            ],
+            'aurora': [
+                [0.0, 1.0, 0.5], // Green-Cyan
+                [0.2, 1.0, 0.8], // Light Green-Cyan
+                [0.5, 0.8, 1.0], // Light Blue
+                [0.8, 0.5, 1.0], // Purple-Blue
+                [1.0, 0.2, 0.8], // Magenta
+                [1.0, 0.0, 0.5]  // Pink
+            ],
+            'sunset': [
+                [1.0, 0.4, 0.1], // Orange-Red
+                [1.0, 0.6, 0.2], // Orange
+                [1.0, 0.8, 0.4], // Golden
+                [0.9, 0.5, 0.8], // Pink
+                [0.7, 0.3, 0.9], // Purple
+                [0.5, 0.2, 0.6]  // Deep Purple
+            ],
+            'neon': [
+                [1.0, 0.0, 1.0], // Magenta
+                [0.0, 1.0, 1.0], // Cyan
+                [1.0, 1.0, 0.0], // Yellow
+                [0.0, 1.0, 0.0], // Green
+                [1.0, 0.0, 0.0], // Red
+                [0.0, 0.0, 1.0]  // Blue
+            ]
+        };
+        this.colors = this.colorSchemes[this.currentColorScheme];
         
         console.log('🎮 WebGL Particle System initialized');
     }
@@ -710,11 +765,13 @@ class WebGLParticleSystem {
             attribute vec2 a_position;
             attribute float a_size;
             attribute vec3 a_color;
+            attribute float a_starShape; // 0.0 = circle, 1.0 = star
             
             uniform vec2 u_resolution;
             uniform float u_time;
             
             varying vec3 v_color;
+            varying float v_starShape;
             
             void main() {
                 // Convert from pixels to clip space
@@ -724,6 +781,7 @@ class WebGLParticleSystem {
                 gl_PointSize = a_size;
                 
                 v_color = a_color;
+                v_starShape = a_starShape;
             }
         `;
         
@@ -732,18 +790,43 @@ class WebGLParticleSystem {
             precision mediump float;
             
             varying vec3 v_color;
+            varying float v_starShape;
+            uniform float u_opacity; // Overall visualization opacity
+            
+            // Function to create 4-point star shape
+            float starShape(vec2 coord) {
+                vec2 center = coord - vec2(0.5);
+                float angle = atan(center.y, center.x);
+                float radius = length(center);
+                
+                // Create 4-point star using sine waves
+                float starRadius = 0.5 * (1.0 + 0.4 * sin(4.0 * angle));
+                
+                return radius / starRadius;
+            }
             
             void main() {
-                // Create circular particles
                 vec2 center = gl_PointCoord - vec2(0.5);
-                float dist = length(center);
+                float dist;
                 
-                if (dist > 0.5) {
+                // Choose shape based on v_starShape
+                if (v_starShape > 0.5) {
+                    // Star shape
+                    dist = starShape(gl_PointCoord);
+                } else {
+                    // Circle shape
+                    dist = length(center) / 0.5;
+                }
+                
+                if (dist > 1.0) {
                     discard;
                 }
                 
-                // Add some glow effect
-                float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+                // Add glow effect
+                float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
+                
+                // Apply overall opacity
+                alpha *= u_opacity;
                 
                 gl_FragColor = vec4(v_color, alpha);
             }
@@ -771,11 +854,13 @@ class WebGLParticleSystem {
         // Get attribute and uniform locations
         this.uniforms.resolution = this.gl.getUniformLocation(this.program, 'u_resolution');
         this.uniforms.time = this.gl.getUniformLocation(this.program, 'u_time');
+        this.uniforms.opacity = this.gl.getUniformLocation(this.program, 'u_opacity');
         
         this.attributes = {
             position: this.gl.getAttribLocation(this.program, 'a_position'),
             size: this.gl.getAttribLocation(this.program, 'a_size'),
-            color: this.gl.getAttribLocation(this.program, 'a_color')
+            color: this.gl.getAttribLocation(this.program, 'a_color'),
+            starShape: this.gl.getAttribLocation(this.program, 'a_starShape')
         };
         
         console.log('🎮 Particle System: Shaders compiled successfully');
@@ -806,6 +891,9 @@ class WebGLParticleSystem {
         // Create size buffer for particle sizes
         this.sizeBuffer = this.gl.createBuffer();
         
+        // Create star shape buffer for particle shapes (0.0 = circle, 1.0 = star)
+        this.starShapeBuffer = this.gl.createBuffer();
+        
         console.log('🎮 Particle System: Buffers created successfully');
         return true;
     }
@@ -827,7 +915,7 @@ class WebGLParticleSystem {
             vx: (Math.random() - 0.5) * 2.0 * this.speed,
             vy: (Math.random() - 0.5) * 2.0 * this.speed,
             size: this.particleSize * (0.5 + Math.random() * 0.5),
-            color: this.colors[Math.floor(Math.random() * this.colors.length)],
+            color: this.getSaturatedColor(),
             life: 1.0,
             decay: 0.0001 + Math.random() * 0.0002, // Much slower decay - particles live 10x longer
             // Initialize beat multipliers
@@ -835,10 +923,29 @@ class WebGLParticleSystem {
             beatSpeedMultiplier: 1.0,
             targetBeatSizeMultiplier: undefined,
             targetBeatSpeedMultiplier: undefined,
-            beatDecayTimer: undefined
+            beatDecayTimer: undefined,
+            // Twinkle properties
+            twinkle: Math.random() < this.twinkleIntensity, // Random chance based on intensity
+            twinklePhase: Math.random() * Math.PI * 2, // Random starting phase
+            twinkleSpeed: this.twinkleSpeed * (0.5 + Math.random() * 1.5), // Varied speed (0.5x to 2x base)
+            twinkleMultiplier: 1.0, // Current brightness multiplier
+            // Star shape properties
+            starShape: Math.random() < this.starPercentage // Random chance based on star percentage
         };
         
         this.particles.push(particle);
+    }
+    
+    getSaturatedColor() {
+        // Get a random base color
+        const baseColor = this.colors[Math.floor(Math.random() * this.colors.length)];
+        
+        // Apply saturation: 0.0 = white, 1.0 = full color
+        const r = baseColor[0] * this.saturation + (1.0 - this.saturation);
+        const g = baseColor[1] * this.saturation + (1.0 - this.saturation);
+        const b = baseColor[2] * this.saturation + (1.0 - this.saturation);
+        
+        return [r, g, b];
     }
     
     update(audioFeatures = null, beatInfo = null) {
@@ -924,6 +1031,15 @@ class WebGLParticleSystem {
                 }
             }
             
+            // Update twinkle effect
+            if (particle.twinkle) {
+                particle.twinklePhase += particle.twinkleSpeed;
+                // Calculate brightness multiplier using sine wave (0.3 to 1.7 range for good effect)
+                particle.twinkleMultiplier = 1.0 + Math.sin(particle.twinklePhase) * 0.7;
+            } else {
+                particle.twinkleMultiplier = 1.0;
+            }
+            
             // Apply velocity with all speed multipliers
             const beatSpeedMultiplier = particle.beatSpeedMultiplier || 1.0;
             const energySpeedMultiplier = particle.energySpeedMultiplier || 1.0;
@@ -999,6 +1115,15 @@ class WebGLParticleSystem {
                 }
             }
             
+            // SPEED LIMITING - Prevent runaway acceleration (applied after all velocity modifications)
+            const maxSpeed = 5.0 * this.speed; // Maximum speed per frame (scaled by speed setting)
+            const currentSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+            if (currentSpeed > maxSpeed) {
+                const scale = maxSpeed / currentSpeed;
+                particle.vx *= scale;
+                particle.vy *= scale;
+            }
+            
             // Wrap around screen
             if (particle.x < 0) particle.x = this.canvas.width;
             if (particle.x > this.canvas.width) particle.x = 0;
@@ -1048,21 +1173,35 @@ class WebGLParticleSystem {
         // Set uniforms
         this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
         this.gl.uniform1f(this.uniforms.time, performance.now() * 0.001);
+        this.gl.uniform1f(this.uniforms.opacity, this.opacity);
         
         // Prepare particle data
         const positions = [];
         const colors = [];
         const sizes = [];
+        const starShapes = [];
         
         this.particles.forEach(particle => {
             positions.push(particle.x, particle.y);
-            colors.push(...particle.color);
+            
+            // Apply twinkle effect to color brightness
+            const twinkleMultiplier = particle.twinkleMultiplier || 1.0;
+            const twinkledColor = [
+                Math.min(1.0, particle.color[0] * twinkleMultiplier),
+                Math.min(1.0, particle.color[1] * twinkleMultiplier),
+                Math.min(1.0, particle.color[2] * twinkleMultiplier)
+            ];
+            colors.push(...twinkledColor);
+            
             // Apply all size multipliers
             const beatSizeMultiplier = particle.beatSizeMultiplier || 1.0;
             const energySizeMultiplier = particle.energySizeMultiplier || 1.0;
             const bassSizeMultiplier = particle.bassSizeMultiplier || 1.0;
             const totalSizeMultiplier = beatSizeMultiplier * energySizeMultiplier * bassSizeMultiplier;
             sizes.push(particle.size * particle.life * totalSizeMultiplier);
+            
+            // Add star shape data (0.0 = circle, 1.0 = star)
+            starShapes.push(particle.starShape ? 1.0 : 0.0);
         });
         
         // Upload position data
@@ -1082,6 +1221,12 @@ class WebGLParticleSystem {
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(sizes), this.gl.DYNAMIC_DRAW);
         this.gl.enableVertexAttribArray(this.attributes.size);
         this.gl.vertexAttribPointer(this.attributes.size, 1, this.gl.FLOAT, false, 0, 0);
+        
+        // Upload star shape data
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.starShapeBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(starShapes), this.gl.DYNAMIC_DRAW);
+        this.gl.enableVertexAttribArray(this.attributes.starShape);
+        this.gl.vertexAttribPointer(this.attributes.starShape, 1, this.gl.FLOAT, false, 0, 0);
         
         // Enable blending for transparency
         this.gl.enable(this.gl.BLEND);
@@ -1120,6 +1265,22 @@ class WebGLParticleSystem {
         console.log('🎮 Particle System: Resized to', width, 'x', height);
     }
     
+    setColorScheme(schemeName) {
+        if (this.colorSchemes[schemeName]) {
+            this.currentColorScheme = schemeName;
+            this.colors = this.colorSchemes[schemeName];
+            
+            // Update existing particles with new colors
+            this.particles.forEach(particle => {
+                particle.color = this.getSaturatedColor();
+            });
+            
+            console.log('🎮 WebGL: Color scheme changed to:', schemeName);
+        } else {
+            console.warn('🎮 WebGL: Unknown color scheme:', schemeName);
+        }
+    }
+
     setSettings(settings) {
         // Only log occasionally to avoid spam
         if (Math.random() < 0.1) { // 10% chance to log
@@ -1174,6 +1335,53 @@ class WebGLParticleSystem {
             this.gravity = Math.max(0, Math.min(2, settings.gravity));
             console.log('🎮 WebGL: Gravity changed from', oldGravity, 'to', this.gravity);
             // Gravity affects all particles in real-time during updateParticles
+        }
+        
+        if (settings.saturation !== undefined) {
+            const oldSaturation = this.saturation;
+            this.saturation = Math.max(0, Math.min(1, settings.saturation / 100)); // Convert 0-100 to 0.0-1.0
+            console.log('🎮 WebGL: Saturation changed from', oldSaturation, 'to', this.saturation);
+            
+            // Update existing particle colors
+            this.particles.forEach(particle => {
+                particle.color = this.getSaturatedColor();
+            });
+        }
+        
+        if (settings.colorScheme !== undefined) {
+            this.setColorScheme(settings.colorScheme);
+        }
+        
+        if (settings.twinkleIntensity !== undefined) {
+            const oldIntensity = this.twinkleIntensity;
+            this.twinkleIntensity = Math.max(0, Math.min(1, settings.twinkleIntensity / 100)); // Convert 0-100 to 0.0-1.0
+            console.log('🎮 WebGL: Twinkle intensity changed from', oldIntensity, 'to', this.twinkleIntensity);
+            
+            // Update existing particles - reassign twinkle status based on new intensity
+            this.particles.forEach(particle => {
+                particle.twinkle = Math.random() < this.twinkleIntensity;
+                if (!particle.twinkle) {
+                    particle.twinkleMultiplier = 1.0; // Reset non-twinkling particles
+                }
+            });
+        }
+        
+        if (settings.starPercentage !== undefined) {
+            const oldPercentage = this.starPercentage;
+            this.starPercentage = Math.max(0, Math.min(1, settings.starPercentage / 100)); // Convert 0-100 to 0.0-1.0
+            console.log('🎮 WebGL: Star percentage changed from', oldPercentage, 'to', this.starPercentage);
+            
+            // Update existing particles - reassign star shape based on new percentage
+            this.particles.forEach(particle => {
+                particle.starShape = Math.random() < this.starPercentage;
+            });
+        }
+        
+        if (settings.opacity !== undefined) {
+            const oldOpacity = this.opacity;
+            this.opacity = Math.max(0, Math.min(1, settings.opacity / 100)); // Convert 0-100 to 0.0-1.0
+            console.log('🎮 WebGL: Opacity changed from', oldOpacity, 'to', this.opacity);
+            // Opacity is applied in real-time during rendering via uniform
         }
         
         if (settings.audioReactivity !== undefined) {

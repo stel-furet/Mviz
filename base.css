@@ -334,7 +334,6 @@ body {
 /* WebGL Button Text */
 .webgl-btn-text {
     font-size: 12px;
-    font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     transition: color 0.3s ease;
 }
@@ -649,6 +648,11 @@ body {
     color: var(--text-secondary);
     text-align: left;
     margin-bottom: 6px;
+}
+
+/* Dropdown Wrapper - Container for dropdown elements */
+.dropdown-wrapper {
+    margin-bottom: 16px; /* 8px more than standard 8px for Color Scheme spacing */
 }
 
 /* Mixer Dropdown - Special padding for mixer dropdowns */
