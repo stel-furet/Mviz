@@ -2670,12 +2670,14 @@
         </div>
 
         <!-- Info Panel -->
-        <div class="mixer-info">
-            <div style="color: var(--text-secondary); font-size: 12px;">
-                <div style="margin-bottom: 8px; font-weight: 500;">Info Panel</div>
-                <div>240px wide</div>
-                <div>Right sidebar</div>
-                <div>Future use</div>
+        <div class="mixer-info" id="mixer-info-panel">
+            <div style="color: var(--text-secondary); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                Video Stream Statistics
+            </div>
+            <div id="mixerCameraStatsContainer" class="stats-container" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; min-height: 60px;">
+                <div class="stats-placeholder" style="color: var(--text-secondary); font-size: 11px; text-align: center; line-height: 1.4;">
+                    Camera stream info will appear here when video input is active
+                </div>
             </div>
         </div>
     </div>

@@ -1824,9 +1824,7 @@ class RecordManager {
                 this.updateMixerBackgroundSaturationSlider();
                 this.updateMixerBackgroundPosterizeSlider();
                 this.updateMixerBackgroundContrastSlider();
-                this.updateMixerVideoToggleButton();
                 this.updateMixerVideoOpacitySlider();
-                this.updateMixerVideoCameraSelect();
                 this.updateMixerVideoBrightnessSlider();
                 this.updateMixerVideoContrastSlider();
                 this.updateMixerVideoSaturationSlider();
@@ -2093,9 +2091,6 @@ class RecordManager {
                     
                     // Toggle video state
                     this.visualizer.toggleVideoPlayback();
-                    
-                    // Update all UIs
-                    this.updateMixerVideoToggleButton();
                     
                     console.log('🔘 Mixer video toggle changed to:', this.visualizer.videoMode);
                 }
@@ -4002,29 +3997,6 @@ class RecordManager {
         }
     }
 
-    updateMixerVideoToggleButton() {
-        
-        const mixerVideoToggle = document.getElementById('mixerVideoToggle');
-        if (mixerVideoToggle) {
-            const text = mixerVideoToggle.querySelector('.video-text');
-            if (text && this.visualizer) {
-                const isOn = this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file';
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerVideoToggle.classList.add('active');
-                } else {
-                    mixerVideoToggle.classList.remove('active');
-                }
-                
-            }
-        } else {
-            console.error('❌ Mixer video toggle button not found for update');
-        }
-    }
-
     updateMixerVideoOpacitySlider() {
         
         const mixerVideoOpacityValue = document.getElementById('mixerVideoOpacityValue');
@@ -4042,52 +4014,6 @@ class RecordManager {
             
         } else {
             console.error('❌ Mixer video opacity slider not found for update');
-        }
-    }
-
-    updateMixerVideoCameraSelect() {
-        
-        const mixerVideoCameraSelect = document.getElementById('mixerVideoCameraSelect');
-        if (mixerVideoCameraSelect && this.visualizer) {
-            // Clear existing options except the first one
-            while (mixerVideoCameraSelect.children.length > 1) {
-                mixerVideoCameraSelect.removeChild(mixerVideoCameraSelect.lastChild);
-            }
-            
-            // Add available video devices
-            if (this.visualizer.availableVideoDevices && this.visualizer.availableVideoDevices.length > 0) {
-                this.visualizer.availableVideoDevices.forEach(device => {
-                    const option = document.createElement('option');
-                    option.value = device.deviceId;
-                    option.textContent = device.label || `Camera ${device.deviceId.substring(0, 8)}`;
-                    mixerVideoCameraSelect.appendChild(option);
-                });
-                
-                // Add separator
-                const separator = document.createElement('option');
-                separator.disabled = true;
-                separator.textContent = '──────────────────────';
-                mixerVideoCameraSelect.appendChild(separator);
-            }
-            
-            // Add "Video from File" option
-            const fileOption = document.createElement('option');
-            fileOption.value = 'file';
-            fileOption.textContent = '📁 Video from File';
-            mixerVideoCameraSelect.appendChild(fileOption);
-            
-            // Set current selection
-            const currentDeviceId = this.visualizer.currentVideoDeviceId;
-            if (currentDeviceId) {
-                mixerVideoCameraSelect.value = currentDeviceId;
-            } else if (this.visualizer.videoMode === 'file') {
-                mixerVideoCameraSelect.value = 'file';
-            } else {
-                mixerVideoCameraSelect.value = '';
-            }
-            
-        } else {
-            console.error('❌ Mixer video source select not found for update');
         }
     }
 
@@ -14040,13 +13966,15 @@ class GitItUpVisualizer {
         // Defensive DOM queries - refresh each time to handle panel closure
         const sidebarContainer = document.getElementById('cameraStatsContainer');
         const headerContainer = document.getElementById('headerCameraStatsContainer');
+        const mixerContainer = document.getElementById('mixerCameraStatsContainer');
         
         console.log('Stats container check:', {
             sidebar: !!sidebarContainer,
-            header: !!headerContainer
+            header: !!headerContainer,
+            mixer: !!mixerContainer
         });
         
-        const statsContainers = [sidebarContainer, headerContainer].filter(Boolean);
+        const statsContainers = [sidebarContainer, headerContainer, mixerContainer].filter(Boolean);
         
         if (statsContainers.length === 0) {
             console.log('No camera stats containers found - video panel may be closed');
@@ -14270,6 +14198,7 @@ class GitItUpVisualizer {
                 }, 10000);
 
                 this.videoElement.onloadedmetadata = () => {
+                    console.log('🎬 Video file metadata loaded, calling detectVideoFileInfo');
                     if (!resolved) {
                         resolved = true;
                         clearTimeout(timeout);
@@ -14278,7 +14207,6 @@ class GitItUpVisualizer {
                             return this.captureVideoElement.play();
                         }).then(() => {
                             this.applyVideoFilters();
-                            this.detectVideoFileInfo();
                             
                             // Fade in after short delay
                             setTimeout(() => {
@@ -14316,6 +14244,9 @@ class GitItUpVisualizer {
             console.log('Video element opacity:', this.videoElement.style.opacity);
             console.log('Video element display:', this.videoElement.style.display);
             this.updateVideoToggleState();
+            
+            // Now detect video file info after mode is set
+            this.detectVideoFileInfo();
             
             // Save video source to localStorage
             this.saveVideoSource('file', file.name);
@@ -14408,7 +14339,13 @@ class GitItUpVisualizer {
     }
 
     detectVideoFileInfo() {
+        console.log('🎬 detectVideoFileInfo called');
+        console.log('🎬 videoElement exists:', !!this.videoElement);
+        console.log('🎬 videoMode:', this.videoMode);
+        console.log('🎬 condition check:', this.videoElement && this.videoMode === 'file');
+        
         if (this.videoElement && this.videoMode === 'file') {
+            console.log('🎬 Inside detectVideoFileInfo - creating videoInfo');
             const videoInfo = {
                 name: this.videoFile?.name || 'Unknown',
                 resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
@@ -14418,8 +14355,13 @@ class GitItUpVisualizer {
 
             console.log('📹 Video File Info:', videoInfo);
 
-            // Update stats if needed
-            this.updateVideoFileStats(videoInfo);
+            // Update stats if needed - with small delay to ensure DOM is ready
+            setTimeout(() => {
+                console.log('🎬 About to call updateVideoFileStats with:', videoInfo);
+                this.updateVideoFileStats(videoInfo);
+            }, 100);
+        } else {
+            console.log('🎬 detectVideoFileInfo condition failed');
         }
     }
 
@@ -14427,8 +14369,16 @@ class GitItUpVisualizer {
         // Defensive DOM queries - refresh each time to handle panel closure
         const statsContainers = [
             document.getElementById('cameraStatsContainer'),
-            document.getElementById('headerCameraStatsContainer')
+            document.getElementById('headerCameraStatsContainer'),
+            document.getElementById('mixerCameraStatsContainer')
         ].filter(Boolean);
+        
+        console.log('Video file stats containers found:', {
+            sidebar: !!document.getElementById('cameraStatsContainer'),
+            header: !!document.getElementById('headerCameraStatsContainer'),
+            mixer: !!document.getElementById('mixerCameraStatsContainer'),
+            total: statsContainers.length
+        });
         
         if (statsContainers.length === 0) {
             console.log('No video file stats containers found - video panel may be closed');
@@ -14471,6 +14421,23 @@ class GitItUpVisualizer {
                 </div>
             `;
         }
+        });
+    }
+
+    clearVideoStats() {
+        // Clear all video stats containers
+        const statsContainers = [
+            document.getElementById('cameraStatsContainer'),
+            document.getElementById('headerCameraStatsContainer'),
+            document.getElementById('mixerCameraStatsContainer')
+        ].filter(Boolean);
+        
+        statsContainers.forEach(statsContainer => {
+            statsContainer.innerHTML = `
+                <div class="stats-placeholder" style="color: var(--text-secondary); font-size: 11px; text-align: center; line-height: 1.4;">
+                    Camera stream info will appear here when video input is active
+                </div>
+            `;
         });
     }
 
@@ -20297,6 +20264,9 @@ https://rogueamoeba.com/loopback/
             if (window.multiDisplayManager) {
                 window.multiDisplayManager.updateMixerVideoFileInfo();
             }
+            
+            // Clear video stats displays
+            this.clearVideoStats();
             
             // Stop progress updates
             this.stopVideoProgressUpdates();

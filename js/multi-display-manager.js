@@ -523,6 +523,72 @@ class MultiDisplayManager {
         }
     }
 
+    updateMixerVideoToggleButton() {
+        const mixerVideoToggle = document.getElementById('mixerVideoToggle');
+        if (mixerVideoToggle) {
+            const text = mixerVideoToggle.querySelector('.video-text');
+            if (text && this.visualizer) {
+                const isOn = this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file';
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerVideoToggle.classList.add('active');
+                } else {
+                    mixerVideoToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer video toggle button not found for update');
+        }
+    }
+
+    updateMixerVideoCameraSelect() {
+        const mixerVideoCameraSelect = document.getElementById('mixerVideoCameraSelect');
+        if (mixerVideoCameraSelect && this.visualizer) {
+            // Clear existing options except the first one
+            while (mixerVideoCameraSelect.children.length > 1) {
+                mixerVideoCameraSelect.removeChild(mixerVideoCameraSelect.lastChild);
+            }
+            
+            // Add available video devices
+            if (this.visualizer.availableVideoDevices && this.visualizer.availableVideoDevices.length > 0) {
+                this.visualizer.availableVideoDevices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = device.label || `Camera ${device.deviceId.substring(0, 8)}`;
+                    mixerVideoCameraSelect.appendChild(option);
+                });
+                
+                // Add separator
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '──────────────────────';
+                mixerVideoCameraSelect.appendChild(separator);
+            }
+            
+            // Add "Video from File" option
+            const fileOption = document.createElement('option');
+            fileOption.value = 'file';
+            fileOption.textContent = '📁 Video from File';
+            mixerVideoCameraSelect.appendChild(fileOption);
+            
+            // Set current selection
+            const currentDeviceId = this.visualizer.currentVideoDeviceId;
+            if (currentDeviceId) {
+                mixerVideoCameraSelect.value = currentDeviceId;
+            } else if (this.visualizer.videoMode === 'file') {
+                mixerVideoCameraSelect.value = 'file';
+            } else {
+                mixerVideoCameraSelect.value = '';
+            }
+            
+        } else {
+            console.error('❌ Mixer video source select not found for update');
+        }
+    }
+
     updateMixerVideoProgress(currentTime, duration) {
         
         const mixerProgressFill = document.getElementById('mixerVideoProgressFill');
