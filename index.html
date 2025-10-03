@@ -2299,15 +2299,37 @@
                 <div class="channel-header">Infinite Zoom</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerInfiniteZoomToggle" title="Toggle Infinite Zoom">
+                        <span class="toggle-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerInfiniteZoomOpacitySlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerInfiniteZoomOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - pattern selection will go here -->
+                    <!-- Shape Selection Dropdown -->
+                    <div class="control-mini-group">
+                        <select class="dropdown-selector-mixer" id="mixerInfiniteZoomShapeSelect">
+                            <option value="circle" selected>Circle</option>
+                            <option value="square">Square</option>
+                            <option value="rectangle">Rectangle</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="star">Star</option>
+                            <option value="mushroom">Mushroom</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="channel-presets-section">
@@ -2326,7 +2348,65 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="infiniteZoomControls">
-                        <!-- Empty - additional controls will go here -->
+                        <!-- Color Randomness Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Color Randm</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomColorRandomValue">0.5</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomColorRandomSlider" 
+                                   min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                        
+                        <!-- Min Size Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Min Size</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomMinSizeValue">2</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomMinSizeSlider" 
+                                   min="1" max="10" step="1" value="2">
+                        </div>
+                        
+                        <!-- Max Size Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Max Size</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomMaxSizeValue">20</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomMaxSizeSlider" 
+                                   min="10" max="50" step="5" value="20">
+                        </div>
+                        
+                        <!-- Density Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Density</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomDensityValue">50</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomDensitySlider" 
+                                   min="1" max="100" step="1" value="50">
+                        </div>
+                        
+                        <!-- Speed Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Speed</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomSpeedValue">50</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomSpeedSlider" 
+                                   min="-100" max="100" step="1" value="50">
+                        </div>
+                        
+                        <!-- Rotation Slider -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Rotation</div>
+                                <div class="control-mini-value" id="mixerInfiniteZoomRotationValue">0.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerInfiniteZoomRotationSlider" 
+                                   min="-10" max="10" step="0.1" value="0">
+                        </div>
                     </div>
                 </div>
             </div>

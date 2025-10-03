@@ -547,6 +547,122 @@ class MultiDisplayManager {
         const remainingSeconds = Math.floor(seconds % 60);
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
+
+    // ========== INFINITE ZOOM MIXER UPDATE METHODS ==========
+
+    updateMixerInfiniteZoomToggle() {
+        const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
+        if (mixerInfiniteZoomToggle && this.visualizer) {
+            const isActive = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
+            const toggleText = mixerInfiniteZoomToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                toggleText.textContent = isActive ? 'ON' : 'OFF';
+            }
+            if (isActive) {
+                mixerInfiniteZoomToggle.classList.add('active');
+            } else {
+                mixerInfiniteZoomToggle.classList.remove('active');
+            }
+        }
+    }
+
+    updateMixerInfiniteZoomOpacitySlider() {
+        const mixerInfiniteZoomOpacitySlider = document.getElementById('mixerInfiniteZoomOpacitySlider');
+        const mixerInfiniteZoomOpacityValue = document.getElementById('mixerInfiniteZoomOpacityValue');
+        if (mixerInfiniteZoomOpacitySlider && mixerInfiniteZoomOpacityValue && this.visualizer) {
+            const opacity = this.visualizer.infiniteZoomOpacity || 100;
+            mixerInfiniteZoomOpacitySlider.setAttribute('data-value', opacity);
+            mixerInfiniteZoomOpacityValue.textContent = opacity;
+            
+            // Update visual elements
+            const fill = mixerInfiniteZoomOpacitySlider.querySelector('.vertical-slider-fill');
+            const thumb = mixerInfiniteZoomOpacitySlider.querySelector('.vertical-slider-thumb');
+            if (fill && thumb) {
+                const percentage = opacity / 100;
+                fill.style.height = `${percentage * 100}%`;
+                thumb.style.bottom = `${percentage * 100}%`;
+            }
+        }
+    }
+
+    updateMixerInfiniteZoomShapeSelect() {
+        const mixerInfiniteZoomShapeSelect = document.getElementById('mixerInfiniteZoomShapeSelect');
+        if (mixerInfiniteZoomShapeSelect && this.visualizer && this.visualizer.infiniteZoom) {
+            mixerInfiniteZoomShapeSelect.value = this.visualizer.infiniteZoom.shape || 'circle';
+        }
+    }
+
+    updateMixerInfiniteZoomColorRandomSlider() {
+        const mixerInfiniteZoomColorRandomSlider = document.getElementById('mixerInfiniteZoomColorRandomSlider');
+        const mixerInfiniteZoomColorRandomValue = document.getElementById('mixerInfiniteZoomColorRandomValue');
+        if (mixerInfiniteZoomColorRandomSlider && mixerInfiniteZoomColorRandomValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.colorRandomness || 0.5;
+            mixerInfiniteZoomColorRandomSlider.value = value;
+            mixerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerInfiniteZoomMinSizeSlider() {
+        const mixerInfiniteZoomMinSizeSlider = document.getElementById('mixerInfiniteZoomMinSizeSlider');
+        const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
+        if (mixerInfiniteZoomMinSizeSlider && mixerInfiniteZoomMinSizeValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.minSize || 2;
+            mixerInfiniteZoomMinSizeSlider.value = value;
+            mixerInfiniteZoomMinSizeValue.textContent = value;
+        }
+    }
+
+    updateMixerInfiniteZoomMaxSizeSlider() {
+        const mixerInfiniteZoomMaxSizeSlider = document.getElementById('mixerInfiniteZoomMaxSizeSlider');
+        const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
+        if (mixerInfiniteZoomMaxSizeSlider && mixerInfiniteZoomMaxSizeValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.maxSize || 20;
+            mixerInfiniteZoomMaxSizeSlider.value = value;
+            mixerInfiniteZoomMaxSizeValue.textContent = value;
+        }
+    }
+
+    updateMixerInfiniteZoomDensitySlider() {
+        const mixerInfiniteZoomDensitySlider = document.getElementById('mixerInfiniteZoomDensitySlider');
+        const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
+        if (mixerInfiniteZoomDensitySlider && mixerInfiniteZoomDensityValue && this.visualizer && this.visualizer.infiniteZoom) {
+            // Convert density back to percentage
+            const screenArea = this.visualizer.infiniteZoom.canvas ? 
+                this.visualizer.infiniteZoom.canvas.width * this.visualizer.infiniteZoom.canvas.height : 800 * 600;
+            const maxDensity = Math.floor(screenArea / 100);
+            const densityPercent = maxDensity > 0 ? Math.round((this.visualizer.infiniteZoom.density / maxDensity) * 100) : 50;
+            mixerInfiniteZoomDensitySlider.value = densityPercent;
+            mixerInfiniteZoomDensityValue.textContent = densityPercent;
+        }
+    }
+
+    updateMixerInfiniteZoomSpeedSlider() {
+        const mixerInfiniteZoomSpeedSlider = document.getElementById('mixerInfiniteZoomSpeedSlider');
+        const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
+        if (mixerInfiniteZoomSpeedSlider && mixerInfiniteZoomSpeedValue && this.visualizer && this.visualizer.infiniteZoom) {
+            // Convert speed back to -100 to 100 range
+            const baseSpeed = this.visualizer.infiniteZoom.baseZoomSpeed || 0;
+            let speedValue = 50; // default
+            if (baseSpeed === 0) {
+                speedValue = 0;
+            } else {
+                // Convert from actual speed to UI range: -0.1 to 0.1 becomes -100 to 100
+                speedValue = (baseSpeed / 0.1) * 100;
+            }
+            mixerInfiniteZoomSpeedSlider.value = speedValue;
+            mixerInfiniteZoomSpeedValue.textContent = speedValue;
+        }
+    }
+
+    updateMixerInfiniteZoomRotationSlider() {
+        const mixerInfiniteZoomRotationSlider = document.getElementById('mixerInfiniteZoomRotationSlider');
+        const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
+        if (mixerInfiniteZoomRotationSlider && mixerInfiniteZoomRotationValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.baseRotationSpeed || 0;
+            mixerInfiniteZoomRotationSlider.value = value;
+            mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+        }
+    }
 }
 
 /**

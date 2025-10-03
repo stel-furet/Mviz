@@ -1856,6 +1856,17 @@ class RecordManager {
                 this.updateMixerAMEnergyContainer();
                 this.updateMixerAMPresetSelector();
                 this.updateMixerAMColorSchemeSelect();
+                
+        // Infinite Zoom controls initialization
+        this.updateMixerInfiniteZoomToggle();
+        this.updateMixerInfiniteZoomOpacitySlider();
+        this.updateMixerInfiniteZoomShapeSelect();
+        this.updateMixerInfiniteZoomColorRandomSlider();
+        this.updateMixerInfiniteZoomMinSizeSlider();
+        this.updateMixerInfiniteZoomMaxSizeSlider();
+        this.updateMixerInfiniteZoomDensitySlider();
+        this.updateMixerInfiniteZoomSpeedSlider();
+        this.updateMixerInfiniteZoomRotationSlider();
             
             // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -2901,6 +2912,248 @@ class RecordManager {
             });
         } else {
             console.error('❌ Mixer AM color scheme select not found');
+        }
+
+        // ========== INFINITE ZOOM CHANNEL ==========
+
+        // Mixer Infinite Zoom toggle button
+        const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
+        if (mixerInfiniteZoomToggle) {
+            console.log('✅ Mixer Infinite Zoom toggle button found, adding event listener');
+            mixerInfiniteZoomToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer Infinite Zoom toggle clicked - current state:', this.visualizer.infiniteZoom ? this.visualizer.infiniteZoom.isActive : false);
+                    
+                    // Toggle Infinite Zoom state
+                    this.visualizer.toggleInfiniteZoom();
+                    
+                    // Update mixer UI
+                    this.updateMixerInfiniteZoomToggle();
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Infinite Zoom toggle button not found');
+        }
+
+        // Mixer Infinite Zoom opacity slider
+        const mixerInfiniteZoomOpacitySlider = document.getElementById('mixerInfiniteZoomOpacitySlider');
+        if (mixerInfiniteZoomOpacitySlider) {
+            console.log('✅ Mixer Infinite Zoom opacity slider found, initializing custom slider');
+            this.mixerInfiniteZoomOpacitySlider = this.initializeVerticalSlider(mixerInfiniteZoomOpacitySlider, (value) => {
+                if (this.visualizer) {
+                    // Convert 0-100 to 0.0-1.0
+                    const opacityValue = value / 100;
+                    this.visualizer.setInfiniteZoomOpacity(opacityValue);
+                    
+                    // Update value display
+                    const valueDisplay = document.getElementById('mixerInfiniteZoomOpacityValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Infinite Zoom opacity slider not found');
+        }
+
+        // Mixer Infinite Zoom Shape Select
+        const mixerInfiniteZoomShapeSelect = document.getElementById('mixerInfiniteZoomShapeSelect');
+        if (mixerInfiniteZoomShapeSelect) {
+            console.log('✅ Mixer Infinite Zoom shape select found, adding event listener');
+            mixerInfiniteZoomShapeSelect.addEventListener('change', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const shape = e.target.value;
+                    
+                    // Set shape and update objects
+                    this.visualizer.infiniteZoom.shape = shape;
+                    this.visualizer.infiniteZoom.updateObjectShapes();
+                    
+                    // Update header dropdown
+                    const headerInfiniteZoomShapeSelect = document.getElementById('headerInfiniteZoomShapeSelect');
+                    if (headerInfiniteZoomShapeSelect) {
+                        headerInfiniteZoomShapeSelect.value = shape;
+                    }
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Infinite Zoom shape select not found');
+        }
+
+        // ========== INFINITE ZOOM SLIDERS ==========
+
+        // Mixer Infinite Zoom Color Randomness Slider
+        const mixerInfiniteZoomColorRandomSlider = document.getElementById('mixerInfiniteZoomColorRandomSlider');
+        const mixerInfiniteZoomColorRandomValue = document.getElementById('mixerInfiniteZoomColorRandomValue');
+        if (mixerInfiniteZoomColorRandomSlider && mixerInfiniteZoomColorRandomValue) {
+            mixerInfiniteZoomColorRandomSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseFloat(e.target.value);
+                    mixerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
+                    
+                    this.visualizer.infiniteZoom.colorRandomness = value;
+                    // Update existing objects with new color randomness
+                    this.visualizer.infiniteZoom.objects.forEach(obj => {
+                        obj.color = this.visualizer.infiniteZoom.generateColor();
+                    });
+                    
+                    // Update header slider
+                    const headerInfiniteZoomColorRandomSlider = document.getElementById('headerInfiniteZoomColorRandomSlider');
+                    const headerInfiniteZoomColorRandomValue = document.getElementById('headerInfiniteZoomColorRandomValue');
+                    if (headerInfiniteZoomColorRandomSlider && headerInfiniteZoomColorRandomValue) {
+                        headerInfiniteZoomColorRandomSlider.value = value;
+                        headerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
+                    }
+                }
+            });
+        }
+
+        // Mixer Infinite Zoom Min Size Slider
+        const mixerInfiniteZoomMinSizeSlider = document.getElementById('mixerInfiniteZoomMinSizeSlider');
+        const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
+        if (mixerInfiniteZoomMinSizeSlider && mixerInfiniteZoomMinSizeValue) {
+            console.log('✅ Mixer Infinite Zoom min size slider found, adding event listener');
+            mixerInfiniteZoomMinSizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseInt(e.target.value);
+                    mixerInfiniteZoomMinSizeValue.textContent = value;
+                    
+                    this.visualizer.infiniteZoom.minSize = value;
+                    // Update existing objects with new size range
+                    this.visualizer.infiniteZoom.objects.forEach(obj => {
+                        obj.size = this.visualizer.infiniteZoom.minSize + Math.random() * (this.visualizer.infiniteZoom.maxSize - this.visualizer.infiniteZoom.minSize);
+                    });
+                    
+                    // Update header slider
+                    const headerInfiniteZoomMinSizeSlider = document.getElementById('headerInfiniteZoomMinSizeSlider');
+                    const headerInfiniteZoomMinSizeValue = document.getElementById('headerInfiniteZoomMinSizeValue');
+                    if (headerInfiniteZoomMinSizeSlider && headerInfiniteZoomMinSizeValue) {
+                        headerInfiniteZoomMinSizeSlider.value = value;
+                        headerInfiniteZoomMinSizeValue.textContent = value;
+                    }
+                    
+                }
+            });
+        }
+
+        // Mixer Infinite Zoom Max Size Slider
+        const mixerInfiniteZoomMaxSizeSlider = document.getElementById('mixerInfiniteZoomMaxSizeSlider');
+        const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
+        if (mixerInfiniteZoomMaxSizeSlider && mixerInfiniteZoomMaxSizeValue) {
+            console.log('✅ Mixer Infinite Zoom max size slider found, adding event listener');
+            mixerInfiniteZoomMaxSizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseInt(e.target.value);
+                    mixerInfiniteZoomMaxSizeValue.textContent = value;
+                    
+                    this.visualizer.infiniteZoom.maxSize = value;
+                    // Update existing objects with new size range
+                    this.visualizer.infiniteZoom.objects.forEach(obj => {
+                        obj.size = this.visualizer.infiniteZoom.minSize + Math.random() * (this.visualizer.infiniteZoom.maxSize - this.visualizer.infiniteZoom.minSize);
+                    });
+                    
+                    // Update header slider
+                    const headerInfiniteZoomMaxSizeSlider = document.getElementById('headerInfiniteZoomMaxSizeSlider');
+                    const headerInfiniteZoomMaxSizeValue = document.getElementById('headerInfiniteZoomMaxSizeValue');
+                    if (headerInfiniteZoomMaxSizeSlider && headerInfiniteZoomMaxSizeValue) {
+                        headerInfiniteZoomMaxSizeSlider.value = value;
+                        headerInfiniteZoomMaxSizeValue.textContent = value;
+                    }
+                    
+                }
+            });
+        }
+
+        // Mixer Infinite Zoom Density Slider
+        const mixerInfiniteZoomDensitySlider = document.getElementById('mixerInfiniteZoomDensitySlider');
+        const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
+        if (mixerInfiniteZoomDensitySlider && mixerInfiniteZoomDensityValue) {
+            console.log('✅ Mixer Infinite Zoom density slider found, adding event listener');
+            mixerInfiniteZoomDensitySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseInt(e.target.value);
+                    mixerInfiniteZoomDensityValue.textContent = value;
+                    
+                    // Calculate density based on screen area
+                    const screenArea = this.visualizer.infiniteZoom.canvas ? 
+                        this.visualizer.infiniteZoom.canvas.width * this.visualizer.infiniteZoom.canvas.height : 800 * 600;
+                    const maxDensity = Math.floor(screenArea / 100); // 1 object per 100 pixels for max density
+                    this.visualizer.infiniteZoom.density = Math.floor((value / 100) * maxDensity);
+                    // Regenerate objects if active
+                    if (this.visualizer.infiniteZoom.isActive) {
+                        this.visualizer.infiniteZoom.generateInitialObjects();
+                    }
+                    
+                    // Update header slider
+                    const headerInfiniteZoomDensitySlider = document.getElementById('headerInfiniteZoomDensitySlider');
+                    const headerInfiniteZoomDensityValue = document.getElementById('headerInfiniteZoomDensityValue');
+                    if (headerInfiniteZoomDensitySlider && headerInfiniteZoomDensityValue) {
+                        headerInfiniteZoomDensitySlider.value = value;
+                        headerInfiniteZoomDensityValue.textContent = value;
+                    }
+                    
+                }
+            });
+        }
+
+        // Mixer Infinite Zoom Speed Slider
+        const mixerInfiniteZoomSpeedSlider = document.getElementById('mixerInfiniteZoomSpeedSlider');
+        const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
+        if (mixerInfiniteZoomSpeedSlider && mixerInfiniteZoomSpeedValue) {
+            console.log('✅ Mixer Infinite Zoom speed slider found, adding event listener');
+            mixerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseInt(e.target.value);
+                    mixerInfiniteZoomSpeedValue.textContent = value;
+                    
+                    // Convert -100 to 100 range to zoom speed
+                    if (value === 0) {
+                        this.visualizer.infiniteZoom.zoomSpeed = 0;
+                        this.visualizer.infiniteZoom.baseZoomSpeed = 0;
+                    } else {
+                        // Convert to actual zoom speed: -100 to 100 becomes -0.1 to 0.1
+                        const newSpeed = (value / 100) * 0.1;
+                        this.visualizer.infiniteZoom.zoomSpeed = newSpeed;
+                        this.visualizer.infiniteZoom.baseZoomSpeed = newSpeed;
+                    }
+                    
+                    // Update header slider
+                    const headerInfiniteZoomSpeedSlider = document.getElementById('headerInfiniteZoomSpeedSlider');
+                    const headerInfiniteZoomSpeedValue = document.getElementById('headerInfiniteZoomSpeedValue');
+                    if (headerInfiniteZoomSpeedSlider && headerInfiniteZoomSpeedValue) {
+                        headerInfiniteZoomSpeedSlider.value = value;
+                        headerInfiniteZoomSpeedValue.textContent = value;
+                    }
+                    
+                }
+            });
+        }
+
+        // Mixer Infinite Zoom Rotation Slider
+        const mixerInfiniteZoomRotationSlider = document.getElementById('mixerInfiniteZoomRotationSlider');
+        const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
+        if (mixerInfiniteZoomRotationSlider && mixerInfiniteZoomRotationValue) {
+            console.log('✅ Mixer Infinite Zoom rotation slider found, adding event listener');
+            mixerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.infiniteZoom) {
+                    const value = parseFloat(e.target.value);
+                    mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+                    
+                    this.visualizer.infiniteZoom.rotationSpeed = value;
+                    this.visualizer.infiniteZoom.baseRotationSpeed = value;
+                    
+                    // Update header slider
+                    const headerInfiniteZoomRotationSlider = document.getElementById('headerInfiniteZoomRotationSlider');
+                    const headerInfiniteZoomRotationValue = document.getElementById('headerInfiniteZoomRotationValue');
+                    if (headerInfiniteZoomRotationSlider && headerInfiniteZoomRotationValue) {
+                        headerInfiniteZoomRotationSlider.value = value;
+                        headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+                    }
+                    
+                }
+            });
         }
 
         // Mixer audio volume slider
@@ -4319,6 +4572,126 @@ class RecordManager {
             mixerAMColorSchemeSelect.value = this.visualizer.currentColorScheme || 'default';
         } else {
             console.error('❌ Mixer AM color scheme select not found for update');
+        }
+    }
+
+    // ========== INFINITE ZOOM UPDATE METHODS ==========
+
+    updateMixerInfiniteZoomToggle() {
+        const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
+        if (mixerInfiniteZoomToggle && this.visualizer) {
+            const text = mixerInfiniteZoomToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerInfiniteZoomToggle.classList.add('active');
+                } else {
+                    mixerInfiniteZoomToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer Infinite Zoom toggle not found for update');
+        }
+    }
+
+    updateMixerInfiniteZoomOpacitySlider() {
+        if (this.mixerInfiniteZoomOpacitySlider && this.visualizer) {
+            // Convert 0.0-1.0 to 0-100
+            const opacityPercent = Math.round(this.visualizer.infiniteZoomOpacity * 100);
+            this.mixerInfiniteZoomOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerInfiniteZoomOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer Infinite Zoom opacity slider not found for update');
+        }
+    }
+
+    updateMixerInfiniteZoomShapeSelect() {
+        const mixerInfiniteZoomShapeSelect = document.getElementById('mixerInfiniteZoomShapeSelect');
+        if (mixerInfiniteZoomShapeSelect && this.visualizer && this.visualizer.infiniteZoom) {
+            mixerInfiniteZoomShapeSelect.value = this.visualizer.infiniteZoom.shape || 'circle';
+        } else {
+            console.error('❌ Mixer Infinite Zoom shape select not found for update');
+        }
+    }
+
+    updateMixerInfiniteZoomColorRandomSlider() {
+        const mixerInfiniteZoomColorRandomSlider = document.getElementById('mixerInfiniteZoomColorRandomSlider');
+        const mixerInfiniteZoomColorRandomValue = document.getElementById('mixerInfiniteZoomColorRandomValue');
+        if (mixerInfiniteZoomColorRandomSlider && mixerInfiniteZoomColorRandomValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.colorRandomness || 0.5;
+            mixerInfiniteZoomColorRandomSlider.value = value;
+            mixerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerInfiniteZoomMinSizeSlider() {
+        const mixerInfiniteZoomMinSizeSlider = document.getElementById('mixerInfiniteZoomMinSizeSlider');
+        const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
+        if (mixerInfiniteZoomMinSizeSlider && mixerInfiniteZoomMinSizeValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.minSize || 2;
+            mixerInfiniteZoomMinSizeSlider.value = value;
+            mixerInfiniteZoomMinSizeValue.textContent = value;
+        }
+    }
+
+    updateMixerInfiniteZoomMaxSizeSlider() {
+        const mixerInfiniteZoomMaxSizeSlider = document.getElementById('mixerInfiniteZoomMaxSizeSlider');
+        const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
+        if (mixerInfiniteZoomMaxSizeSlider && mixerInfiniteZoomMaxSizeValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.maxSize || 20;
+            mixerInfiniteZoomMaxSizeSlider.value = value;
+            mixerInfiniteZoomMaxSizeValue.textContent = value;
+        }
+    }
+
+    updateMixerInfiniteZoomDensitySlider() {
+        const mixerInfiniteZoomDensitySlider = document.getElementById('mixerInfiniteZoomDensitySlider');
+        const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
+        if (mixerInfiniteZoomDensitySlider && mixerInfiniteZoomDensityValue && this.visualizer && this.visualizer.infiniteZoom) {
+            // Convert density back to percentage
+            const screenArea = this.visualizer.infiniteZoom.canvas ? 
+                this.visualizer.infiniteZoom.canvas.width * this.visualizer.infiniteZoom.canvas.height : 800 * 600;
+            const maxDensity = Math.floor(screenArea / 100);
+            const densityPercent = maxDensity > 0 ? Math.round((this.visualizer.infiniteZoom.density / maxDensity) * 100) : 50;
+            mixerInfiniteZoomDensitySlider.value = densityPercent;
+            mixerInfiniteZoomDensityValue.textContent = densityPercent;
+        }
+    }
+
+    updateMixerInfiniteZoomSpeedSlider() {
+        const mixerInfiniteZoomSpeedSlider = document.getElementById('mixerInfiniteZoomSpeedSlider');
+        const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
+        if (mixerInfiniteZoomSpeedSlider && mixerInfiniteZoomSpeedValue && this.visualizer && this.visualizer.infiniteZoom) {
+            // Convert speed back to -100 to 100 range
+            const baseSpeed = this.visualizer.infiniteZoom.baseZoomSpeed || 0;
+            let speedValue = 50; // default
+            if (baseSpeed === 0) {
+                speedValue = 0;
+            } else {
+                // Convert from actual speed to UI range: -0.1 to 0.1 becomes -100 to 100
+                speedValue = (baseSpeed / 0.1) * 100;
+            }
+            mixerInfiniteZoomSpeedSlider.value = speedValue;
+            mixerInfiniteZoomSpeedValue.textContent = speedValue;
+        }
+    }
+
+    updateMixerInfiniteZoomRotationSlider() {
+        const mixerInfiniteZoomRotationSlider = document.getElementById('mixerInfiniteZoomRotationSlider');
+        const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
+        if (mixerInfiniteZoomRotationSlider && mixerInfiniteZoomRotationValue && this.visualizer && this.visualizer.infiniteZoom) {
+            const value = this.visualizer.infiniteZoom.baseRotationSpeed || 0;
+            mixerInfiniteZoomRotationSlider.value = value;
+            mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
         }
     }
 
@@ -7595,6 +7968,9 @@ class GitItUpVisualizer {
         // Viz ON/OFF Toggle
         this.visualizationEnabled = true;
         this.visualizationOpacity = 1.0; // AM Visualizer opacity (0.0-1.0)
+
+        // Infinite Zoom properties
+        this.infiniteZoomOpacity = 1.0; // Infinite Zoom opacity (0.0-1.0)
 
         // Morph properties
         this.isMorphing = false;
@@ -16376,6 +16752,11 @@ https://rogueamoeba.com/loopback/
 
         // Update toggle button state
         this.updateInfiniteZoomToggleButton();
+        
+        // Update mixer toggle
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomToggle) {
+            window.multiDisplayManager.updateMixerInfiniteZoomToggle();
+        }
     }
 
     updateInfiniteZoomToggleButton() {
@@ -17473,6 +17854,29 @@ https://rogueamoeba.com/loopback/
         console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
     }
 
+    // Set Infinite Zoom opacity
+    setInfiniteZoomOpacity(opacity) {
+        this.infiniteZoomOpacity = Math.max(0.0, Math.min(1.0, opacity));
+        
+        // Apply opacity to Infinite Zoom
+        if (this.infiniteZoom) {
+            this.infiniteZoom.opacity = this.infiniteZoomOpacity;
+            // Update existing objects with new opacity
+            if (this.infiniteZoom.objects) {
+                this.infiniteZoom.objects.forEach(obj => {
+                    obj.alpha = this.infiniteZoomOpacity;
+                });
+            }
+        }
+        
+        // Update mixer opacity slider
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomOpacitySlider) {
+            window.multiDisplayManager.updateMixerInfiniteZoomOpacitySlider();
+        }
+        
+        console.log('🎨 Infinite Zoom opacity set to:', this.infiniteZoomOpacity);
+    }
+
     getCurrentConfig() {
         if (!this.audioMotion) 
             return {};
@@ -18331,6 +18735,11 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.shape = e.target.value;
                     this.infiniteZoom.updateObjectShapes();
                     console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
+                    
+                    // Update mixer shape select
+                    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomShapeSelect) {
+                        window.multiDisplayManager.updateMixerInfiniteZoomShapeSelect();
+                    }
                 }
             });
         }
@@ -18365,6 +18774,11 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.objects.forEach(obj => {
                         obj.color = this.infiniteZoom.generateColor();
                     });
+                }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomColorRandomSlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomColorRandomSlider();
                 }
             });
         }
@@ -18608,6 +19022,11 @@ https://rogueamoeba.com/loopback/
                         obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
                     });
                 }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomMinSizeSlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomMinSizeSlider();
+                }
             });
         }
 
@@ -18623,6 +19042,11 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.objects.forEach(obj => {
                         obj.size = this.infiniteZoom.minSize + Math.random() * (this.infiniteZoom.maxSize - this.infiniteZoom.minSize);
                     });
+                }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomMaxSizeSlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomMaxSizeSlider();
                 }
             });
         }
@@ -18643,6 +19067,11 @@ https://rogueamoeba.com/loopback/
                     if (this.infiniteZoom.isActive) {
                         this.infiniteZoom.generateInitialObjects();
                     }
+                }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomDensitySlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomDensitySlider();
                 }
             });
         }
@@ -18671,6 +19100,11 @@ https://rogueamoeba.com/loopback/
                         this.infiniteZoom.baseZoomSpeed = newSpeed;
                     }
                 }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomSpeedSlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomSpeedSlider();
+                }
             });
             console.log('Speed slider event listener attached successfully');
         } else {
@@ -18691,6 +19125,11 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.rotationSpeed = value;
                     this.infiniteZoom.baseRotationSpeed = value;
+                }
+                
+                // Update mixer slider
+                if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomRotationSlider) {
+                    window.multiDisplayManager.updateMixerInfiniteZoomRotationSlider();
                 }
             });
             console.log('Rotation slider event listener attached successfully');
