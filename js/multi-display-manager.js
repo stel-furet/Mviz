@@ -52,6 +52,21 @@ class MultiDisplayManager {
             if (typeof this.updateMixerVideoPulseToggle === 'function') this.updateMixerVideoPulseToggle();
             if (typeof this.updateMixerVideoPulseRateSlider === 'function') this.updateMixerVideoPulseRateSlider();
             if (typeof this.updateMixerVideoFileInfo === 'function') this.updateMixerVideoFileInfo();
+            
+            // Blobs controls
+            if (typeof this.updateMixerBlobsToggle === 'function') this.updateMixerBlobsToggle();
+            if (typeof this.updateMixerBlobsOpacitySlider === 'function') this.updateMixerBlobsOpacitySlider();
+            if (typeof this.updateMixerBlobsSaturationSlider === 'function') this.updateMixerBlobsSaturationSlider();
+            if (typeof this.updateMixerBlobsPosterizeSlider === 'function') this.updateMixerBlobsPosterizeSlider();
+            if (typeof this.updateMixerBlobsContrastSlider === 'function') this.updateMixerBlobsContrastSlider();
+            if (typeof this.updateMixerBlobsBrightnessSlider === 'function') this.updateMixerBlobsBrightnessSlider();
+            if (typeof this.updateMixerBlobsIntensitySlider === 'function') this.updateMixerBlobsIntensitySlider();
+            if (typeof this.updateMixerBlobsMinSizeSlider === 'function') this.updateMixerBlobsMinSizeSlider();
+            if (typeof this.updateMixerBlobsMaxSizeSlider === 'function') this.updateMixerBlobsMaxSizeSlider();
+            if (typeof this.updateMixerBlobsAgitateSlider === 'function') this.updateMixerBlobsAgitateSlider();
+            if (typeof this.updateMixerBlobsDensitySlider === 'function') this.updateMixerBlobsDensitySlider();
+            if (typeof this.updateMixerBlobsDecaySlider === 'function') this.updateMixerBlobsDecaySlider();
+            if (typeof this.updateMixerBlobsBeatReactButton === 'function') this.updateMixerBlobsBeatReactButton();
         }, 100);
     }
     
@@ -586,6 +601,155 @@ class MultiDisplayManager {
             
         } else {
             console.error('❌ Mixer video source select not found for update');
+        }
+    }
+
+    updateMixerBlobsToggle() {
+        const mixerBlobsToggle = document.getElementById('mixerBlobsToggle');
+        if (mixerBlobsToggle && this.visualizer) {
+            const text = mixerBlobsToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.blobsEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerBlobsToggle.classList.add('active');
+                } else {
+                    mixerBlobsToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer Blobs toggle not found for update');
+        }
+    }
+
+    updateMixerBlobsOpacitySlider() {
+        // This method will be called by the main class when opacity changes
+        const mixerBlobsOpacityValue = document.getElementById('mixerBlobsOpacityValue');
+        
+        if (window.multiDisplayManager && window.multiDisplayManager.mixerBlobsOpacitySlider && this.visualizer) {
+            // Convert 0.0-1.0 to 0-100
+            const opacityPercent = Math.round(this.visualizer.blobsOpacity * 100);
+            window.multiDisplayManager.mixerBlobsOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            if (mixerBlobsOpacityValue) {
+                mixerBlobsOpacityValue.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer Blobs opacity slider not found for update');
+        }
+    }
+
+    updateMixerBlobsSaturationSlider() {
+        const mixerBlobsSaturationSlider = document.getElementById('mixerBlobsSaturationSlider');
+        const mixerBlobsSaturationValue = document.getElementById('mixerBlobsSaturationValue');
+        if (mixerBlobsSaturationSlider && mixerBlobsSaturationValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.saturation || 1) * 100);
+            mixerBlobsSaturationSlider.value = value;
+            mixerBlobsSaturationValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsPosterizeSlider() {
+        const mixerBlobsPosterizeSlider = document.getElementById('mixerBlobsPosterizeSlider');
+        const mixerBlobsPosterizeValue = document.getElementById('mixerBlobsPosterizeValue');
+        if (mixerBlobsPosterizeSlider && mixerBlobsPosterizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.posterize || 16;
+            mixerBlobsPosterizeSlider.value = value;
+            mixerBlobsPosterizeValue.textContent = value;
+        }
+    }
+
+    updateMixerBlobsContrastSlider() {
+        const mixerBlobsContrastSlider = document.getElementById('mixerBlobsContrastSlider');
+        const mixerBlobsContrastValue = document.getElementById('mixerBlobsContrastValue');
+        if (mixerBlobsContrastSlider && mixerBlobsContrastValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.contrast || 1) * 100);
+            mixerBlobsContrastSlider.value = value;
+            mixerBlobsContrastValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsBrightnessSlider() {
+        const mixerBlobsBrightnessSlider = document.getElementById('mixerBlobsBrightnessSlider');
+        const mixerBlobsBrightnessValue = document.getElementById('mixerBlobsBrightnessValue');
+        if (mixerBlobsBrightnessSlider && mixerBlobsBrightnessValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.brightness || 1) * 100);
+            mixerBlobsBrightnessSlider.value = value;
+            mixerBlobsBrightnessValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsIntensitySlider() {
+        const mixerBlobsIntensitySlider = document.getElementById('mixerBlobsIntensitySlider');
+        const mixerBlobsIntensityValue = document.getElementById('mixerBlobsIntensityValue');
+        if (mixerBlobsIntensitySlider && mixerBlobsIntensityValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.intensity || 1) * 100);
+            mixerBlobsIntensitySlider.value = value;
+            mixerBlobsIntensityValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsMinSizeSlider() {
+        const mixerBlobsMinSizeSlider = document.getElementById('mixerBlobsMinSizeSlider');
+        const mixerBlobsMinSizeValue = document.getElementById('mixerBlobsMinSizeValue');
+        if (mixerBlobsMinSizeSlider && mixerBlobsMinSizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.minSize || 2;
+            mixerBlobsMinSizeSlider.value = value;
+            mixerBlobsMinSizeValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerBlobsMaxSizeSlider() {
+        const mixerBlobsMaxSizeSlider = document.getElementById('mixerBlobsMaxSizeSlider');
+        const mixerBlobsMaxSizeValue = document.getElementById('mixerBlobsMaxSizeValue');
+        if (mixerBlobsMaxSizeSlider && mixerBlobsMaxSizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const sliderValue = this.visualizer.blobsVisualization.maxSize || 1;
+            // Convert slider value to pixel value (exactly like header)
+            const pixelValue = 8 + (sliderValue - 1) * (248 - 8) / (10 - 1);
+            mixerBlobsMaxSizeSlider.value = sliderValue;
+            mixerBlobsMaxSizeValue.textContent = Math.round(pixelValue) + 'px';
+        }
+    }
+
+    updateMixerBlobsAgitateSlider() {
+        const mixerBlobsAgitateSlider = document.getElementById('mixerBlobsAgitateSlider');
+        const mixerBlobsAgitateValue = document.getElementById('mixerBlobsAgitateValue');
+        if (mixerBlobsAgitateSlider && mixerBlobsAgitateValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.agitate || 1) * 100);
+            mixerBlobsAgitateSlider.value = value;
+            mixerBlobsAgitateValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsDensitySlider() {
+        const mixerBlobsDensitySlider = document.getElementById('mixerBlobsDensitySlider');
+        const mixerBlobsDensityValue = document.getElementById('mixerBlobsDensityValue');
+        if (mixerBlobsDensitySlider && mixerBlobsDensityValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.density || 200;
+            mixerBlobsDensitySlider.value = value;
+            mixerBlobsDensityValue.textContent = value;
+        }
+    }
+
+    updateMixerBlobsDecaySlider() {
+        const mixerBlobsDecaySlider = document.getElementById('mixerBlobsDecaySlider');
+        const mixerBlobsDecayValue = document.getElementById('mixerBlobsDecayValue');
+        if (mixerBlobsDecaySlider && mixerBlobsDecayValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.decayMultiplier || 10;
+            mixerBlobsDecaySlider.value = value;
+            mixerBlobsDecayValue.textContent = value + 'x';
+        }
+    }
+
+    updateMixerBlobsBeatReactButton() {
+        const mixerBlobsBeatReactBtn = document.getElementById('mixerBlobsBeatReactBtn');
+        if (mixerBlobsBeatReactBtn && this.visualizer && this.visualizer.blobsVisualization) {
+            const isOn = this.visualizer.blobsVisualization.beatReact;
+            mixerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
         }
     }
 

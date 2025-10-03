@@ -2416,15 +2416,27 @@
                 <div class="channel-header">Blobs</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerBlobsToggle" title="Toggle Blobs">
+                        <span class="toggle-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerBlobsOpacitySlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerBlobsOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - blob type selection will go here -->
+                    <!-- Future: Additional Blobs controls can go here -->
                 </div>
                 
                 <div class="channel-presets-section">
@@ -2443,7 +2455,90 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="blobsControls">
-                        <!-- Empty - additional controls will go here -->
+                        <!-- Blobs Controls -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Saturation</div>
+                                <div class="control-mini-value" id="mixerBlobsSaturationValue">100%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsSaturationSlider" min="0" max="200" step="1" value="100">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Posterize</div>
+                                <div class="control-mini-value" id="mixerBlobsPosterizeValue">16</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsPosterizeSlider" min="2" max="16" step="1" value="16">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Contrast</div>
+                                <div class="control-mini-value" id="mixerBlobsContrastValue">100%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsContrastSlider" min="10" max="300" step="1" value="100">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Brightness</div>
+                                <div class="control-mini-value" id="mixerBlobsBrightnessValue">100%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsBrightnessSlider" min="10" max="300" step="1" value="100">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Intensity</div>
+                                <div class="control-mini-value" id="mixerBlobsIntensityValue">100%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsIntensitySlider" min="10" max="200" step="1" value="100">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Min Size</div>
+                                <div class="control-mini-value" id="mixerBlobsMinSizeValue">2.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsMinSizeSlider" min="0.5" max="10" step="0.1" value="2">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Max Size</div>
+                                <div class="control-mini-value" id="mixerBlobsMaxSizeValue">8px</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsMaxSizeSlider" min="1" max="10" step="0.1" value="1">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Agitate</div>
+                                <div class="control-mini-value" id="mixerBlobsAgitateValue">100%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsAgitateSlider" min="10" max="500" step="1" value="100">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Density</div>
+                                <div class="control-mini-value" id="mixerBlobsDensityValue">200</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsDensitySlider" min="100" max="500" step="1" value="200">
+                        </div>
+                        
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Lifespan</div>
+                                <div class="control-mini-value" id="mixerBlobsDecayValue">10x</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerBlobsDecaySlider" min="1" max="10" step="0.1" value="10">
+                        </div>
+                        
+                        <div class="button-mini-wrapper">
+                            <button id="mixerBlobsBeatReactBtn" class="btn-primary-mixer">Beat React: On</button>
+                        </div>
                     </div>
                 </div>
             </div>

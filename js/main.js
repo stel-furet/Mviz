@@ -1865,6 +1865,21 @@ class RecordManager {
         this.updateMixerInfiniteZoomDensitySlider();
         this.updateMixerInfiniteZoomSpeedSlider();
         this.updateMixerInfiniteZoomRotationSlider();
+        
+        // Blobs controls initialization
+        this.updateMixerBlobsToggle();
+        this.updateMixerBlobsOpacitySlider();
+        this.updateMixerBlobsSaturationSlider();
+        this.updateMixerBlobsPosterizeSlider();
+        this.updateMixerBlobsContrastSlider();
+        this.updateMixerBlobsBrightnessSlider();
+        this.updateMixerBlobsIntensitySlider();
+        this.updateMixerBlobsMinSizeSlider();
+        this.updateMixerBlobsMaxSizeSlider();
+        this.updateMixerBlobsAgitateSlider();
+        this.updateMixerBlobsDensitySlider();
+        this.updateMixerBlobsDecaySlider();
+        this.updateMixerBlobsBeatReactButton();
             
             // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -2130,14 +2145,14 @@ class RecordManager {
                 if (value === 'file') {
                     // File selection - trigger file picker (allow replacement of current file)
                     console.log('📁 Mixer video file selection triggered');
-                    const videoFileInput = document.getElementById('videoFileInput');
-                    if (videoFileInput) {
+                const videoFileInput = document.getElementById('videoFileInput');
+                if (videoFileInput) {
                         // Reset the input value to allow selecting the same file again
                         videoFileInput.value = '';
-                        videoFileInput.click();
-                    } else {
-                        console.error('❌ Video file input not found');
-                    }
+                    videoFileInput.click();
+                } else {
+                    console.error('❌ Video file input not found');
+                }
                 } else if (value && this.visualizer) {
                     // Camera device ID - use existing camera selection logic
                     this.visualizer.startVideoInput(value);
@@ -3147,6 +3162,294 @@ class RecordManager {
                         headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
                     }
                     
+                }
+            });
+        }
+
+        // ========== BLOBS CHANNEL ==========
+
+        // Mixer Blobs toggle button
+        const mixerBlobsToggle = document.getElementById('mixerBlobsToggle');
+        if (mixerBlobsToggle) {
+            console.log('✅ Mixer Blobs toggle button found, adding event listener');
+            mixerBlobsToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer Blobs toggle clicked - current state:', this.visualizer.blobsEnabled);
+                    
+                    // Toggle Blobs state
+                    this.visualizer.toggleBlobs();
+                    
+                    // Update mixer UI
+                    this.updateMixerBlobsToggle();
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Blobs toggle button not found');
+        }
+
+        // Mixer Blobs opacity slider
+        const mixerBlobsOpacitySlider = document.getElementById('mixerBlobsOpacitySlider');
+        if (mixerBlobsOpacitySlider) {
+            console.log('✅ Mixer Blobs opacity slider found, initializing custom slider');
+            this.mixerBlobsOpacitySlider = this.initializeVerticalSlider(mixerBlobsOpacitySlider, (value) => {
+                if (this.visualizer) {
+                    // Convert 0-100 to 0.0-1.0
+                    const opacityValue = value / 100;
+                    this.visualizer.setBlobsOpacity(opacityValue);
+                    
+                    // Update value display
+                    const valueDisplay = document.getElementById('mixerBlobsOpacityValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Blobs opacity slider not found');
+        }
+
+        // ========== BLOBS CONTROL SLIDERS ==========
+
+        // Mixer Blobs Saturation Slider
+        const mixerBlobsSaturationSlider = document.getElementById('mixerBlobsSaturationSlider');
+        const mixerBlobsSaturationValue = document.getElementById('mixerBlobsSaturationValue');
+        if (mixerBlobsSaturationSlider && mixerBlobsSaturationValue) {
+            mixerBlobsSaturationSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsSaturationValue.textContent = value + '%';
+                    
+                    this.visualizer.blobsVisualization.saturation = value / 100;
+                    
+                    // Update header slider
+                    const headerBlobsSaturationSlider = document.getElementById('blobsSaturationSlider');
+                    const headerBlobsSaturationValue = document.getElementById('blobsSaturationValue');
+                    if (headerBlobsSaturationSlider && headerBlobsSaturationValue) {
+                        headerBlobsSaturationSlider.value = value;
+                        headerBlobsSaturationValue.textContent = value + '%';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Posterize Slider
+        const mixerBlobsPosterizeSlider = document.getElementById('mixerBlobsPosterizeSlider');
+        const mixerBlobsPosterizeValue = document.getElementById('mixerBlobsPosterizeValue');
+        if (mixerBlobsPosterizeSlider && mixerBlobsPosterizeValue) {
+            mixerBlobsPosterizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerBlobsPosterizeValue.textContent = value;
+                    
+                    this.visualizer.blobsVisualization.posterize = value;
+                    
+                    // Update header slider
+                    const headerBlobsPosterizeSlider = document.getElementById('blobsPosterizeSlider');
+                    const headerBlobsPosterizeValue = document.getElementById('blobsPosterizeValue');
+                    if (headerBlobsPosterizeSlider && headerBlobsPosterizeValue) {
+                        headerBlobsPosterizeSlider.value = value;
+                        headerBlobsPosterizeValue.textContent = value;
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Contrast Slider
+        const mixerBlobsContrastSlider = document.getElementById('mixerBlobsContrastSlider');
+        const mixerBlobsContrastValue = document.getElementById('mixerBlobsContrastValue');
+        if (mixerBlobsContrastSlider && mixerBlobsContrastValue) {
+            mixerBlobsContrastSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsContrastValue.textContent = value + '%';
+                    
+                    this.visualizer.blobsVisualization.contrast = value / 100;
+                    
+                    // Update header slider
+                    const headerBlobsContrastSlider = document.getElementById('blobsContrastSlider');
+                    const headerBlobsContrastValue = document.getElementById('blobsContrastValue');
+                    if (headerBlobsContrastSlider && headerBlobsContrastValue) {
+                        headerBlobsContrastSlider.value = value;
+                        headerBlobsContrastValue.textContent = value + '%';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Brightness Slider
+        const mixerBlobsBrightnessSlider = document.getElementById('mixerBlobsBrightnessSlider');
+        const mixerBlobsBrightnessValue = document.getElementById('mixerBlobsBrightnessValue');
+        if (mixerBlobsBrightnessSlider && mixerBlobsBrightnessValue) {
+            mixerBlobsBrightnessSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsBrightnessValue.textContent = value + '%';
+                    
+                    this.visualizer.blobsVisualization.brightness = value / 100;
+                    
+                    // Update header slider
+                    const headerBlobsBrightnessSlider = document.getElementById('blobsBrightnessSlider');
+                    const headerBlobsBrightnessValue = document.getElementById('blobsBrightnessValue');
+                    if (headerBlobsBrightnessSlider && headerBlobsBrightnessValue) {
+                        headerBlobsBrightnessSlider.value = value;
+                        headerBlobsBrightnessValue.textContent = value + '%';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Intensity Slider
+        const mixerBlobsIntensitySlider = document.getElementById('mixerBlobsIntensitySlider');
+        const mixerBlobsIntensityValue = document.getElementById('mixerBlobsIntensityValue');
+        if (mixerBlobsIntensitySlider && mixerBlobsIntensityValue) {
+            mixerBlobsIntensitySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsIntensityValue.textContent = value + '%';
+                    
+                    this.visualizer.blobsVisualization.intensity = value / 100;
+                    
+                    // Update header slider
+                    const headerBlobsIntensitySlider = document.getElementById('blobsIntensitySlider');
+                    const headerBlobsIntensityValue = document.getElementById('blobsIntensityValue');
+                    if (headerBlobsIntensitySlider && headerBlobsIntensityValue) {
+                        headerBlobsIntensitySlider.value = value;
+                        headerBlobsIntensityValue.textContent = value + '%';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Min Size Slider
+        const mixerBlobsMinSizeSlider = document.getElementById('mixerBlobsMinSizeSlider');
+        const mixerBlobsMinSizeValue = document.getElementById('mixerBlobsMinSizeValue');
+        if (mixerBlobsMinSizeSlider && mixerBlobsMinSizeValue) {
+            mixerBlobsMinSizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsMinSizeValue.textContent = value.toFixed(1);
+                    
+                    this.visualizer.blobsVisualization.setMinSize(value);
+                    
+                    // Update header slider
+                    const headerBlobsMinSizeSlider = document.getElementById('blobsMinSizeSlider');
+                    const headerBlobsMinSizeValue = document.getElementById('blobsMinSizeValue');
+                    if (headerBlobsMinSizeSlider && headerBlobsMinSizeValue) {
+                        headerBlobsMinSizeSlider.value = value;
+                        headerBlobsMinSizeValue.textContent = value.toFixed(1);
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Max Size Slider
+        const mixerBlobsMaxSizeSlider = document.getElementById('mixerBlobsMaxSizeSlider');
+        const mixerBlobsMaxSizeValue = document.getElementById('mixerBlobsMaxSizeValue');
+        if (mixerBlobsMaxSizeSlider && mixerBlobsMaxSizeValue) {
+            mixerBlobsMaxSizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const sliderValue = parseFloat(e.target.value);
+                    // Convert slider value to pixel value (exactly like header)
+                    const pixelValue = 8 + (sliderValue - 1) * (248 - 8) / (10 - 1);
+                    mixerBlobsMaxSizeValue.textContent = Math.round(pixelValue) + 'px';
+                    
+                    this.visualizer.blobsVisualization.setMaxSize(sliderValue);
+                    
+                    // Update header slider
+                    const headerBlobsMaxSizeSlider = document.getElementById('blobsMaxSizeSlider');
+                    const headerBlobsMaxSizeValue = document.getElementById('blobsMaxSizeValue');
+                    if (headerBlobsMaxSizeSlider && headerBlobsMaxSizeValue) {
+                        headerBlobsMaxSizeSlider.value = sliderValue;
+                        headerBlobsMaxSizeValue.textContent = Math.round(pixelValue) + 'px';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Agitate Slider
+        const mixerBlobsAgitateSlider = document.getElementById('mixerBlobsAgitateSlider');
+        const mixerBlobsAgitateValue = document.getElementById('mixerBlobsAgitateValue');
+        if (mixerBlobsAgitateSlider && mixerBlobsAgitateValue) {
+            mixerBlobsAgitateSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsAgitateValue.textContent = value + '%';
+                    
+                    this.visualizer.blobsVisualization.agitate = value / 100;
+                    
+                    // Update header slider
+                    const headerBlobsAgitateSlider = document.getElementById('blobsAgitateSlider');
+                    const headerBlobsAgitateValue = document.getElementById('blobsAgitateValue');
+                    if (headerBlobsAgitateSlider && headerBlobsAgitateValue) {
+                        headerBlobsAgitateSlider.value = value;
+                        headerBlobsAgitateValue.textContent = value + '%';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Density Slider
+        const mixerBlobsDensitySlider = document.getElementById('mixerBlobsDensitySlider');
+        const mixerBlobsDensityValue = document.getElementById('mixerBlobsDensityValue');
+        if (mixerBlobsDensitySlider && mixerBlobsDensityValue) {
+            mixerBlobsDensitySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerBlobsDensityValue.textContent = value;
+                    
+                    this.visualizer.blobsVisualization.density = value;
+                    this.visualizer.blobsVisualization.particleCount = value;
+                    
+                    // Update header slider
+                    const headerBlobsDensitySlider = document.getElementById('blobsDensitySlider');
+                    const headerBlobsDensityValue = document.getElementById('blobsDensityValue');
+                    if (headerBlobsDensitySlider && headerBlobsDensityValue) {
+                        headerBlobsDensitySlider.value = value;
+                        headerBlobsDensityValue.textContent = value;
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Lifespan (Decay) Slider
+        const mixerBlobsDecaySlider = document.getElementById('mixerBlobsDecaySlider');
+        const mixerBlobsDecayValue = document.getElementById('mixerBlobsDecayValue');
+        if (mixerBlobsDecaySlider && mixerBlobsDecayValue) {
+            mixerBlobsDecaySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerBlobsDecayValue.textContent = value + 'x';
+                    
+                    this.visualizer.blobsVisualization.decayMultiplier = value;
+                    
+                    // Update header slider
+                    const headerBlobsDecaySlider = document.getElementById('blobsDecaySlider');
+                    const headerBlobsDecayValue = document.getElementById('blobsDecayValue');
+                    if (headerBlobsDecaySlider && headerBlobsDecayValue) {
+                        headerBlobsDecaySlider.value = value;
+                        headerBlobsDecayValue.textContent = value + 'x';
+                    }
+                }
+            });
+        }
+
+        // Mixer Blobs Beat React Button
+        const mixerBlobsBeatReactBtn = document.getElementById('mixerBlobsBeatReactBtn');
+        if (mixerBlobsBeatReactBtn) {
+            mixerBlobsBeatReactBtn.addEventListener('click', () => {
+                if (this.visualizer && this.visualizer.blobsVisualization) {
+                    this.visualizer.blobsVisualization.beatReact = !this.visualizer.blobsVisualization.beatReact;
+                    
+                    const isOn = this.visualizer.blobsVisualization.beatReact;
+                    mixerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
+                    
+                    // Update header button
+                    const headerBlobsBeatReactBtn = document.getElementById('blobsBeatReactBtn');
+                    if (headerBlobsBeatReactBtn) {
+                        headerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
+                    }
                 }
             });
         }
@@ -4458,7 +4761,7 @@ class RecordManager {
             // Show energy container only when morph speed is 'energy'
             const isEnergyMode = this.visualizer.morphMode === 'energy';
             mixerAMEnergyContainer.style.display = isEnergyMode ? 'block' : 'none';
-        } else {
+            } else {
             console.error('❌ Mixer AM energy container not found for update');
         }
     }
@@ -4496,7 +4799,7 @@ class RecordManager {
         const mixerAMColorSchemeSelect = document.getElementById('mixerAMColorSchemeSelect');
         if (mixerAMColorSchemeSelect && this.visualizer) {
             mixerAMColorSchemeSelect.value = this.visualizer.currentColorScheme || 'default';
-        } else {
+            } else {
             console.error('❌ Mixer AM color scheme select not found for update');
         }
     }
@@ -4515,7 +4818,7 @@ class RecordManager {
                 // Update button state
                 if (isOn) {
                     mixerInfiniteZoomToggle.classList.add('active');
-                } else {
+        } else {
                     mixerInfiniteZoomToggle.classList.remove('active');
                 }
             }
@@ -4602,7 +4905,7 @@ class RecordManager {
             let speedValue = 50; // default
             if (baseSpeed === 0) {
                 speedValue = 0;
-            } else {
+        } else {
                 // Convert from actual speed to UI range: -0.1 to 0.1 becomes -100 to 100
                 speedValue = (baseSpeed / 0.1) * 100;
             }
@@ -4618,6 +4921,155 @@ class RecordManager {
             const value = this.visualizer.infiniteZoom.baseRotationSpeed || 0;
             mixerInfiniteZoomRotationSlider.value = value;
             mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+        }
+    }
+
+    // ========== BLOBS UPDATE METHODS ==========
+
+    updateMixerBlobsToggle() {
+        const mixerBlobsToggle = document.getElementById('mixerBlobsToggle');
+        if (mixerBlobsToggle && this.visualizer) {
+            const text = mixerBlobsToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.blobsEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerBlobsToggle.classList.add('active');
+                } else {
+                    mixerBlobsToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer Blobs toggle not found for update');
+        }
+    }
+
+    updateMixerBlobsOpacitySlider() {
+        if (this.mixerBlobsOpacitySlider && this.visualizer) {
+            // Convert 0.0-1.0 to 0-100
+            const opacityPercent = Math.round(this.visualizer.blobsOpacity * 100);
+            this.mixerBlobsOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerBlobsOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer Blobs opacity slider not found for update');
+        }
+    }
+
+    updateMixerBlobsSaturationSlider() {
+        const mixerBlobsSaturationSlider = document.getElementById('mixerBlobsSaturationSlider');
+        const mixerBlobsSaturationValue = document.getElementById('mixerBlobsSaturationValue');
+        if (mixerBlobsSaturationSlider && mixerBlobsSaturationValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.saturation || 1) * 100);
+            mixerBlobsSaturationSlider.value = value;
+            mixerBlobsSaturationValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsPosterizeSlider() {
+        const mixerBlobsPosterizeSlider = document.getElementById('mixerBlobsPosterizeSlider');
+        const mixerBlobsPosterizeValue = document.getElementById('mixerBlobsPosterizeValue');
+        if (mixerBlobsPosterizeSlider && mixerBlobsPosterizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.posterize || 16;
+            mixerBlobsPosterizeSlider.value = value;
+            mixerBlobsPosterizeValue.textContent = value;
+        }
+    }
+
+    updateMixerBlobsContrastSlider() {
+        const mixerBlobsContrastSlider = document.getElementById('mixerBlobsContrastSlider');
+        const mixerBlobsContrastValue = document.getElementById('mixerBlobsContrastValue');
+        if (mixerBlobsContrastSlider && mixerBlobsContrastValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.contrast || 1) * 100);
+            mixerBlobsContrastSlider.value = value;
+            mixerBlobsContrastValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsBrightnessSlider() {
+        const mixerBlobsBrightnessSlider = document.getElementById('mixerBlobsBrightnessSlider');
+        const mixerBlobsBrightnessValue = document.getElementById('mixerBlobsBrightnessValue');
+        if (mixerBlobsBrightnessSlider && mixerBlobsBrightnessValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.brightness || 1) * 100);
+            mixerBlobsBrightnessSlider.value = value;
+            mixerBlobsBrightnessValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsIntensitySlider() {
+        const mixerBlobsIntensitySlider = document.getElementById('mixerBlobsIntensitySlider');
+        const mixerBlobsIntensityValue = document.getElementById('mixerBlobsIntensityValue');
+        if (mixerBlobsIntensitySlider && mixerBlobsIntensityValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.intensity || 1) * 100);
+            mixerBlobsIntensitySlider.value = value;
+            mixerBlobsIntensityValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsMinSizeSlider() {
+        const mixerBlobsMinSizeSlider = document.getElementById('mixerBlobsMinSizeSlider');
+        const mixerBlobsMinSizeValue = document.getElementById('mixerBlobsMinSizeValue');
+        if (mixerBlobsMinSizeSlider && mixerBlobsMinSizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.minSize || 2;
+            mixerBlobsMinSizeSlider.value = value;
+            mixerBlobsMinSizeValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerBlobsMaxSizeSlider() {
+        const mixerBlobsMaxSizeSlider = document.getElementById('mixerBlobsMaxSizeSlider');
+        const mixerBlobsMaxSizeValue = document.getElementById('mixerBlobsMaxSizeValue');
+        if (mixerBlobsMaxSizeSlider && mixerBlobsMaxSizeValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const sliderValue = this.visualizer.blobsVisualization.maxSize || 1;
+            // Convert slider value to pixel value (exactly like header)
+            const pixelValue = 8 + (sliderValue - 1) * (248 - 8) / (10 - 1);
+            mixerBlobsMaxSizeSlider.value = sliderValue;
+            mixerBlobsMaxSizeValue.textContent = Math.round(pixelValue) + 'px';
+        }
+    }
+
+    updateMixerBlobsAgitateSlider() {
+        const mixerBlobsAgitateSlider = document.getElementById('mixerBlobsAgitateSlider');
+        const mixerBlobsAgitateValue = document.getElementById('mixerBlobsAgitateValue');
+        if (mixerBlobsAgitateSlider && mixerBlobsAgitateValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = Math.round((this.visualizer.blobsVisualization.agitate || 1) * 100);
+            mixerBlobsAgitateSlider.value = value;
+            mixerBlobsAgitateValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerBlobsDensitySlider() {
+        const mixerBlobsDensitySlider = document.getElementById('mixerBlobsDensitySlider');
+        const mixerBlobsDensityValue = document.getElementById('mixerBlobsDensityValue');
+        if (mixerBlobsDensitySlider && mixerBlobsDensityValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.density || 200;
+            mixerBlobsDensitySlider.value = value;
+            mixerBlobsDensityValue.textContent = value;
+        }
+    }
+
+    updateMixerBlobsDecaySlider() {
+        const mixerBlobsDecaySlider = document.getElementById('mixerBlobsDecaySlider');
+        const mixerBlobsDecayValue = document.getElementById('mixerBlobsDecayValue');
+        if (mixerBlobsDecaySlider && mixerBlobsDecayValue && this.visualizer && this.visualizer.blobsVisualization) {
+            const value = this.visualizer.blobsVisualization.decayMultiplier || 10;
+            mixerBlobsDecaySlider.value = value;
+            mixerBlobsDecayValue.textContent = value + 'x';
+        }
+    }
+
+    updateMixerBlobsBeatReactButton() {
+        const mixerBlobsBeatReactBtn = document.getElementById('mixerBlobsBeatReactBtn');
+        if (mixerBlobsBeatReactBtn && this.visualizer && this.visualizer.blobsVisualization) {
+            const isOn = this.visualizer.blobsVisualization.beatReact;
+            mixerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
         }
     }
 
@@ -7952,6 +8404,7 @@ class GitItUpVisualizer {
         // Blobs properties
         this.blobsEnabled = false;
         this.blobsVisualization = null;
+        this.blobsOpacity = 1.0; // Blobs opacity (0.0-1.0)
         
         // WebGL properties
         this.webglEnabled = false;
@@ -14358,7 +14811,7 @@ class GitItUpVisualizer {
             // Update stats if needed - with small delay to ensure DOM is ready
             setTimeout(() => {
                 console.log('🎬 About to call updateVideoFileStats with:', videoInfo);
-                this.updateVideoFileStats(videoInfo);
+            this.updateVideoFileStats(videoInfo);
             }, 100);
         } else {
             console.log('🎬 detectVideoFileInfo condition failed');
@@ -15850,6 +16303,11 @@ https://rogueamoeba.com/loopback/
         }
         
         this.updateBlobsButton();
+        
+        // Update mixer UI
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerBlobsToggle) {
+            window.multiDisplayManager.updateMixerBlobsToggle();
+        }
     }
 
     // WebGL toggle methods
@@ -16552,7 +17010,7 @@ https://rogueamoeba.com/loopback/
                 
                 // Setup collapsible preset sections with small delay to ensure DOM is ready
                 setTimeout(() => {
-                    this.setupCollapsiblePresets();
+                this.setupCollapsiblePresets();
                 }, 50);
             }
         }
@@ -17819,6 +18277,21 @@ https://rogueamoeba.com/loopback/
         }
         
         console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
+    }
+
+    // Set Blobs opacity
+    setBlobsOpacity(opacity) {
+        this.blobsOpacity = Math.max(0.0, Math.min(1.0, opacity));
+        
+        // Apply opacity to Blobs visualization
+        if (this.blobsVisualization) {
+            this.blobsVisualization.opacity = this.blobsOpacity;
+        }
+        
+        // Update mixer UI
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerBlobsOpacitySlider) {
+            window.multiDisplayManager.updateMixerBlobsOpacitySlider();
+        }
     }
 
     // Set Infinite Zoom opacity
