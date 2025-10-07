@@ -1,4 +1,4 @@
-Starfall updatedclass ParameterController {
+class ParameterController {
     constructor(autopilot) {
         this.autopilot = autopilot;
         this.visualizer = autopilot.visualizer;
