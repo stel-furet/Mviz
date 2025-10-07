@@ -1,4 +1,4 @@
-class ParameterController {
+Starfall updatedclass ParameterController {
     constructor(autopilot) {
         this.autopilot = autopilot;
         this.visualizer = autopilot.visualizer;
@@ -16344,8 +16344,8 @@ https://rogueamoeba.com/loopback/
         const headerBtnText = headerBtn ? headerBtn.querySelector('.webgl-btn-text') : null;
         
         if (headerBtn && headerBtnText) {
-            // Always keep the text as "WebGL" regardless of state
-            headerBtnText.textContent = 'WebGL';
+            // Always keep the text as "Starfall" regardless of state
+            headerBtnText.textContent = 'Starfall';
             
             if (this.webglEnabled) {
                 headerBtn.classList.add('active');
