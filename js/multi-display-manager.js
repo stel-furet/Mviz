@@ -67,6 +67,12 @@ class MultiDisplayManager {
             if (typeof this.updateMixerBlobsDensitySlider === 'function') this.updateMixerBlobsDensitySlider();
             if (typeof this.updateMixerBlobsDecaySlider === 'function') this.updateMixerBlobsDecaySlider();
             if (typeof this.updateMixerBlobsBeatReactButton === 'function') this.updateMixerBlobsBeatReactButton();
+            
+            // Fluidity controls
+            if (typeof this.updateMixerFluidityToggle === 'function') this.updateMixerFluidityToggle();
+            if (typeof this.updateMixerFluidityOpacitySlider === 'function') this.updateMixerFluidityOpacitySlider();
+            if (typeof this.updateMixerFluidityPresetSelector === 'function') this.updateMixerFluidityPresetSelector();
+            if (typeof this.updateMixerFluidityColorSchemeSelect === 'function') this.updateMixerFluidityColorSchemeSelect();
         }, 100);
     }
     
@@ -750,6 +756,59 @@ class MultiDisplayManager {
         if (mixerBlobsBeatReactBtn && this.visualizer && this.visualizer.blobsVisualization) {
             const isOn = this.visualizer.blobsVisualization.beatReact;
             mixerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
+        }
+    }
+
+    // ========== FLUIDITY CHANNEL UPDATE METHODS ==========
+
+    updateMixerFluidityToggle() {
+        const mixerFluidityToggle = document.getElementById('mixerFluidityToggle');
+        if (mixerFluidityToggle && this.visualizer) {
+            // Check the actual fluid dynamics state, not fluidDynamicsEnabled
+            const isActive = this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive;
+            const toggleText = mixerFluidityToggle.querySelector('.toggle-text');
+            
+            if (isActive) {
+                mixerFluidityToggle.classList.add('active');
+                if (toggleText) toggleText.textContent = 'ON';
+            } else {
+                mixerFluidityToggle.classList.remove('active');
+                if (toggleText) toggleText.textContent = 'OFF';
+            }
+        } else {
+            console.error('❌ Mixer Fluidity toggle not found for update');
+        }
+    }
+
+    updateMixerFluidityOpacitySlider() {
+        const mixerFluidityOpacitySlider = document.getElementById('mixerFluidityOpacitySlider');
+        const mixerFluidityOpacityValue = document.getElementById('mixerFluidityOpacityValue');
+        if (mixerFluidityOpacitySlider && mixerFluidityOpacityValue && this.visualizer && this.visualizer.fluidDynamics) {
+            // Get current opacity from Fluid Dynamics (0.0-1.0) and convert to 0-100
+            const opacityPercent = Math.round(this.visualizer.fluidDynamics.opacity * 100);
+            mixerFluidityOpacitySlider.value = opacityPercent;
+            mixerFluidityOpacityValue.textContent = opacityPercent;
+        }
+    }
+
+    updateMixerFluidityPresetSelector() {
+        const mixerFluidityPresetSelector = document.getElementById('mixerFluidityPresetSelector');
+        const headerFluidDynamicsPresetSelector = document.getElementById('headerFluidDynamicsPresetSelector');
+        
+        if (mixerFluidityPresetSelector && headerFluidDynamicsPresetSelector) {
+            // Sync mixer dropdown with header dropdown
+            mixerFluidityPresetSelector.innerHTML = headerFluidDynamicsPresetSelector.innerHTML;
+            mixerFluidityPresetSelector.value = headerFluidDynamicsPresetSelector.value;
+        }
+    }
+
+    updateMixerFluidityColorSchemeSelect() {
+        const mixerFluidityColorSchemeSelect = document.getElementById('mixerFluidityColorSchemeSelect');
+        const headerFluidDynamicsColorScheme = document.getElementById('headerFluidDynamicsColorScheme');
+        
+        if (mixerFluidityColorSchemeSelect && headerFluidDynamicsColorScheme) {
+            // Sync mixer dropdown with header dropdown
+            mixerFluidityColorSchemeSelect.value = headerFluidDynamicsColorScheme.value;
         }
     }
 

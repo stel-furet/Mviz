@@ -124,8 +124,8 @@
             <button class="btn-toggle-32w" id="headerWebGLToggleBtn" title="Toggle WebGL">
                 <span class="toggle-text">OFF</span>
             </button>
-            <button class="btn-toggle" id="headerFluidDynamicsBtn" title="Fluid Dynamics">
-                <span class="fluid-dynamics-btn-text">Fluid Dynamics</span>
+            <button class="btn-toggle" id="headerFluidDynamicsBtn" title="Fluidity">
+                <span class="fluid-dynamics-btn-text">Fluidity</span>
             </button>
             <button class="btn-toggle-32w" id="headerFluidDynamicsToggleBtn" title="Toggle Fluid Dynamics">
                 <span class="toggle-text">OFF</span>
@@ -224,11 +224,11 @@
                 <div class="control-group">
                     <div class="group-label">Presets</div>
                     <div class="preset-buttons">
-                        <button class="kaleidoscope-preset-btn" data-preset="0">Classic</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="1">Flower</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="2">Crystal</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="3">Mandala</button>
-                        <button class="kaleidoscope-preset-btn" data-preset="4">Star</button>
+                        <button class="btn-preset" data-preset="0">Classic</button>
+                        <button class="btn-preset" data-preset="1">Flower</button>
+                        <button class="btn-preset" data-preset="2">Crystal</button>
+                        <button class="btn-preset" data-preset="3">Mandala</button>
+                        <button class="btn-preset" data-preset="4">Star</button>
                     </div>
                 </div>
                 </div>
@@ -401,17 +401,17 @@
                             <button id="headerFluidDynamicsMetalPresetBtn" class="btn-preset">Metal</button>
                             <button id="headerFluidDynamicsRandomPresetBtn" class="btn-preset">Random</button>
                         </div>
-                        <div class="preset-buttons" style="margin-bottom: 8px;">
-                            <button id="headerFluidDynamicsSavePresetBtn" class="btn-preset">Save Current</button>
-                            <button id="headerFluidDynamicsExportPresetsBtn" class="btn-preset">Export</button>
-                            <button id="headerFluidDynamicsImportPresetsBtn" class="btn-preset">Import</button>
-                            <input type="file" id="headerFluidDynamicsImportFile" accept=".json" style="display: none;">
-                        </div>
                         <div class="dropdown-wrapper">
                             <div class="dropdown-label">User Presets</div>
                             <select id="headerFluidDynamicsPresetSelector" class="dropdown-selector">
                                 <option value="">Load Preset...</option>
                             </select>
+                        </div>
+                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                            <button id="headerFluidDynamicsSavePresetBtn" class="btn-preset">Save Current</button>
+                            <button id="headerFluidDynamicsExportPresetsBtn" class="btn-preset">Export</button>
+                            <button id="headerFluidDynamicsImportPresetsBtn" class="btn-preset">Import</button>
+                            <input type="file" id="headerFluidDynamicsImportFile" accept=".json" style="display: none;">
                         </div>
                     </div>
                     
@@ -431,9 +431,24 @@
                         </div>
                     </div>
                     
-                    <!-- Basic Physics Controls -->
-                    <div class="control-group-minor">
-                        <div class="group-label">Basic Physics</div>
+                    <!-- Visual Controls -->
+                    <div class="control-group">
+                        <div class="group-label">Visual Controls</div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Opacity</div>
+                            <input type="range" id="headerFluidDynamicsOpacitySlider" min="0.1" max="1.0" step="0.1" value="1.0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsOpacityValue">1.0</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Saturation</div>
+                            <input type="range" id="headerFluidDynamicsSaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsSaturationValue">1.0</span>
+                        </div>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Speed</div>
+                            <input type="range" id="headerFluidDynamicsSpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsSpeedValue">1.0</span>
+                        </div>
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Viscosity</div>
                             <input type="range" id="headerFluidDynamicsViscositySlider" min="0.1" max="2.0" step="0.1" value="0.2" class="slider-1">
@@ -481,26 +496,6 @@
                             <div class="slider-label">Pressure Response</div>
                             <input type="range" id="headerFluidDynamicsPressureResponseSlider" min="0.1" max="1.0" step="0.1" value="0.5" class="slider-1">
                             <span class="slider-1-value" id="headerFluidDynamicsPressureResponseValue">0.5</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Visual Controls -->
-                    <div class="control-group">
-                        <div class="group-label">Visual Controls</div>
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Opacity</div>
-                            <input type="range" id="headerFluidDynamicsOpacitySlider" min="0.1" max="1.0" step="0.1" value="1.0" class="slider-1">
-                            <span class="slider-1-value" id="headerFluidDynamicsOpacityValue">1.0</span>
-                        </div>
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Saturation</div>
-                            <input type="range" id="headerFluidDynamicsSaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0" class="slider-1">
-                            <span class="slider-1-value" id="headerFluidDynamicsSaturationValue">1.0</span>
-                        </div>
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Speed</div>
-                            <input type="range" id="headerFluidDynamicsSpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0" class="slider-1">
-                            <span class="slider-1-value" id="headerFluidDynamicsSpeedValue">1.0</span>
                         </div>
                     </div>
                 </div>
@@ -2708,20 +2703,43 @@
                 </div>
             </div>
 
-            <!-- Fluid Dynamics Channel -->
+            <!-- Fluidity Channel -->
             <div class="channel-strip viz-channel">
-                <div class="channel-header">Fluid Dynamics</div>
+                <div class="channel-header">Fluidity</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerFluidityToggle" title="Toggle Fluidity">
+                        <span class="toggle-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerFluidityOpacitySlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerFluidityOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - color scheme selection will go here -->
+                    <!-- Color Scheme Dropdown -->
+                    <div class="control-mini-group">
+                        <select id="mixerFluidityColorSchemeSelect" class="dropdown-selector-mixer">
+                            <option value="vibrant" selected>Vibrant</option>
+                            <option value="warm">Warm</option>
+                            <option value="cool">Cool</option>
+                            <option value="natural">Natural</option>
+                            <option value="fire">Fire</option>
+                            <option value="jerry">Jerry</option>
+                            <option value="waterCaustic">Water Caustic</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="channel-presets-section">
@@ -2730,7 +2748,29 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="fluidPresets">
-                        <!-- Empty - preset buttons will go here -->
+                        <!-- Built-in Presets -->
+                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                            <button id="mixerFluidityDefaultPresetBtn" class="btn-preset">Default</button>
+                            <button id="mixerFluidityAmbientPresetBtn" class="btn-preset">Ambient</button>
+                            <button id="mixerFluidityMetalPresetBtn" class="btn-preset">Metal</button>
+                            <button id="mixerFluidityRandomPresetBtn" class="btn-preset">Random</button>
+                        </div>
+                        
+                        <!-- User Presets Dropdown -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">User Presets</div>
+                            <select id="mixerFluidityPresetSelector" class="dropdown-selector-mixer">
+                                <option value="">Load Preset...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="control-mini-group">
+                            <button id="mixerFluditySavePresetBtn" class="btn-preset" title="Save Current as Preset">Save</button>
+                            <button id="mixerFluidityExportPresetsBtn" class="btn-preset" title="Export All Presets">Export</button>
+                            <button id="mixerFluidityImportPresetsBtn" class="btn-preset" title="Import Presets">Import</button>
+                            <input type="file" id="mixerFluidityImportFile" accept=".json" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 
@@ -2740,7 +2780,105 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="fluidControls">
-                        <!-- Empty - additional controls will go here -->
+                        <!-- Visual Controls Sliders (Note: Opacity is already in vertical slider section) -->
+                        
+                        <!-- Saturation -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Saturation</div>
+                                <div class="control-mini-value" id="mixerFluditySaturationValue">1.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluditySaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0">
+                        </div>
+                        
+                        <!-- Speed -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Speed</div>
+                                <div class="control-mini-value" id="mixerFluiditySpeedValue">1.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluiditySpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+                        
+                        <!-- Viscosity -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Viscosity</div>
+                                <div class="control-mini-value" id="mixerFluidityViscosityValue">0.2</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluidityViscositySlider" min="0.1" max="2.0" step="0.1" value="0.2">
+                        </div>
+                        
+                        <!-- Pressure -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Pressure</div>
+                                <div class="control-mini-value" id="mixerFluidityPressureValue">0.8</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluidityPressureSlider" min="0.1" max="2.0" step="0.1" value="0.8">
+                        </div>
+                        
+                        <!-- Curl -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Curl</div>
+                                <div class="control-mini-value" id="mixerFludityCurlValue">30</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFludityCurlSlider" min="0" max="50" step="1" value="30">
+                        </div>
+                        
+                        <!-- Splat Force -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Splat Force</div>
+                                <div class="control-mini-value" id="mixerFluditySplatForceValue">6000</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluditySplatForceSlider" min="1000" max="10000" step="500" value="6000">
+                        </div>
+                        
+                        <!-- Beat React Button -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Beat React</div>
+                            </div>
+                            <button id="mixerFluidityBeatReactBtn" class="btn-preset">Beat React: On</button>
+                        </div>
+                        
+                        <!-- Energy Sensitivity -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Energy Sensitivity</div>
+                                <div class="control-mini-value" id="mixerFluidityEnergySensitivityValue">1.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluidityEnergySensitivitySlider" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+                        
+                        <!-- Viscosity Response -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Viscosity Response</div>
+                                <div class="control-mini-value" id="mixerFluidityViscosityResponseValue">2.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluidityViscosityResponseSlider" min="0.5" max="4.0" step="0.1" value="2.0">
+                        </div>
+                        
+                        <!-- Curl Response -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Curl Response</div>
+                                <div class="control-mini-value" id="mixerFludityCurlResponseValue">3.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFludityCurlResponseSlider" min="1.0" max="5.0" step="0.1" value="3.0">
+                        </div>
+                        
+                        <!-- Pressure Response -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Pressure Response</div>
+                                <div class="control-mini-value" id="mixerFluidityPressureResponseValue">0.5</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerFluidityPressureResponseSlider" min="0.1" max="1.0" step="0.1" value="0.5">
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1893,6 +1893,12 @@ class RecordManager {
         this.updateMixerStarfallTwinkleSlider();
         this.updateMixerStarfallStarPercentageSlider();
         this.updateMixerStarfallAudioReactivitySlider();
+
+        // Fluidity controls initialization
+        this.updateMixerFluidityToggle();
+        this.updateMixerFluidityOpacitySlider();
+        this.updateMixerFluidityPresetSelector();
+        this.updateMixerFluidityColorSchemeSelect();
             
         // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -3619,6 +3625,378 @@ class RecordManager {
                     const value = parseInt(e.target.value);
                     mixerStarfallAudioReactivityValue.textContent = value + '%';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
+                }
+            });
+        }
+
+        // ========== FLUIDITY CHANNEL ==========
+
+        // Mixer Fluidity toggle button
+        const mixerFluidityToggle = document.getElementById('mixerFluidityToggle');
+        if (mixerFluidityToggle) {
+            console.log('✅ Mixer Fluidity toggle button found, adding event listener');
+            mixerFluidityToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer Fluidity toggle clicked - current state:', this.visualizer.fluidDynamicsEnabled);
+                    
+                    // Toggle Fluidity state
+                    this.visualizer.toggleFluidDynamics();
+                    
+                    // Update mixer UI
+                    this.updateMixerFluidityToggle();
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Fluidity toggle button not found');
+        }
+
+        // Mixer Fluidity opacity slider
+        const mixerFluidityOpacitySlider = document.getElementById('mixerFluidityOpacitySlider');
+        if (mixerFluidityOpacitySlider) {
+            console.log('✅ Mixer Fluidity opacity slider found, initializing');
+            this.mixerFluidityOpacitySlider = this.initializeVerticalSlider(mixerFluidityOpacitySlider, (value) => {
+                if (this.visualizer && this.visualizer.fluidDynamics) {
+                    console.log('🎚️ Mixer Fluidity opacity changed to:', value);
+                    // Convert 0-100 to 0.0-1.0 for fluid dynamics opacity
+                    const opacityValue = value / 100;
+                    this.visualizer.fluidDynamics.setOpacity(opacityValue);
+                }
+            });
+        } else {
+            console.error('❌ Mixer Fluidity opacity slider not found');
+        }
+
+        // ========== FLUIDITY PRESET CONTROLS ==========
+
+        // Built-in Preset Buttons
+        const mixerFluidityDefaultPresetBtn = document.getElementById('mixerFluidityDefaultPresetBtn');
+        if (mixerFluidityDefaultPresetBtn) {
+            mixerFluidityDefaultPresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎨 Mixer Fluidity Default preset clicked');
+                    // Call the same function as header button
+                    const headerBtn = document.getElementById('headerFluidDynamicsDefaultPresetBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        const mixerFluidityAmbientPresetBtn = document.getElementById('mixerFluidityAmbientPresetBtn');
+        if (mixerFluidityAmbientPresetBtn) {
+            mixerFluidityAmbientPresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎨 Mixer Fluidity Ambient preset clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsAmbientPresetBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        const mixerFluidityMetalPresetBtn = document.getElementById('mixerFluidityMetalPresetBtn');
+        if (mixerFluidityMetalPresetBtn) {
+            mixerFluidityMetalPresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎨 Mixer Fluidity Metal preset clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsMetalPresetBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        const mixerFluidityRandomPresetBtn = document.getElementById('mixerFluidityRandomPresetBtn');
+        if (mixerFluidityRandomPresetBtn) {
+            mixerFluidityRandomPresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎨 Mixer Fluidity Random preset clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsRandomPresetBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        // User Presets Dropdown
+        const mixerFluidityPresetSelector = document.getElementById('mixerFluidityPresetSelector');
+        if (mixerFluidityPresetSelector) {
+            mixerFluidityPresetSelector.addEventListener('change', (e) => {
+                if (this.visualizer && e.target.value) {
+                    console.log('🎨 Mixer Fluidity user preset selected:', e.target.value);
+                    // Sync with header dropdown
+                    const headerSelector = document.getElementById('headerFluidDynamicsPresetSelector');
+                    if (headerSelector) {
+                        headerSelector.value = e.target.value;
+                        headerSelector.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        }
+
+        // Action Buttons
+        const mixerFluditySavePresetBtn = document.getElementById('mixerFluditySavePresetBtn');
+        if (mixerFluditySavePresetBtn) {
+            mixerFluditySavePresetBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('💾 Mixer Fluidity Save preset clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsSavePresetBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        const mixerFluidityExportPresetsBtn = document.getElementById('mixerFluidityExportPresetsBtn');
+        if (mixerFluidityExportPresetsBtn) {
+            mixerFluidityExportPresetsBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('📤 Mixer Fluidity Export presets clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsExportPresetsBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        const mixerFluidityImportPresetsBtn = document.getElementById('mixerFluidityImportPresetsBtn');
+        if (mixerFluidityImportPresetsBtn) {
+            mixerFluidityImportPresetsBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('📥 Mixer Fluidity Import presets clicked');
+                    const headerBtn = document.getElementById('headerFluidDynamicsImportPresetsBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        // ========== FLUIDITY COLOR SCHEME ==========
+
+        // Color Scheme Dropdown
+        const mixerFluidityColorSchemeSelect = document.getElementById('mixerFluidityColorSchemeSelect');
+        if (mixerFluidityColorSchemeSelect) {
+            mixerFluidityColorSchemeSelect.addEventListener('change', (e) => {
+                if (this.visualizer) {
+                    const scheme = e.target.value;
+                    console.log('🎨 Mixer Fluidity color scheme changed to:', scheme);
+                    // Sync with header dropdown
+                    const headerColorScheme = document.getElementById('headerFluidDynamicsColorScheme');
+                    if (headerColorScheme) {
+                        headerColorScheme.value = scheme;
+                        headerColorScheme.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Mixer Fluidity color scheme dropdown not found');
+        }
+
+        // ========== FLUIDITY CONTROL SLIDERS ==========
+
+        // Saturation Slider
+        const mixerFluditySaturationSlider = document.getElementById('mixerFluditySaturationSlider');
+        const mixerFluditySaturationValue = document.getElementById('mixerFluditySaturationValue');
+        if (mixerFluditySaturationSlider && mixerFluditySaturationValue) {
+            mixerFluditySaturationSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluditySaturationValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsSaturationValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Speed Slider
+        const mixerFluiditySpeedSlider = document.getElementById('mixerFluiditySpeedSlider');
+        const mixerFluiditySpeedValue = document.getElementById('mixerFluiditySpeedValue');
+        if (mixerFluiditySpeedSlider && mixerFluiditySpeedValue) {
+            mixerFluiditySpeedSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluiditySpeedValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsSpeedSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsSpeedValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Viscosity Slider
+        const mixerFluidityViscositySlider = document.getElementById('mixerFluidityViscositySlider');
+        const mixerFluidityViscosityValue = document.getElementById('mixerFluidityViscosityValue');
+        if (mixerFluidityViscositySlider && mixerFluidityViscosityValue) {
+            mixerFluidityViscositySlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluidityViscosityValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsViscositySlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsViscosityValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Pressure Slider
+        const mixerFluidityPressureSlider = document.getElementById('mixerFluidityPressureSlider');
+        const mixerFluidityPressureValue = document.getElementById('mixerFluidityPressureValue');
+        if (mixerFluidityPressureSlider && mixerFluidityPressureValue) {
+            mixerFluidityPressureSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluidityPressureValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsPressureSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsPressureValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Curl Slider
+        const mixerFludityCurlSlider = document.getElementById('mixerFludityCurlSlider');
+        const mixerFludityCurlValue = document.getElementById('mixerFludityCurlValue');
+        if (mixerFludityCurlSlider && mixerFludityCurlValue) {
+            mixerFludityCurlSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseInt(e.target.value);
+                    mixerFludityCurlValue.textContent = value;
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsCurlSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsCurlValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value;
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Splat Force Slider
+        const mixerFluditySplatForceSlider = document.getElementById('mixerFluditySplatForceSlider');
+        const mixerFluditySplatForceValue = document.getElementById('mixerFluditySplatForceValue');
+        if (mixerFluditySplatForceSlider && mixerFluditySplatForceValue) {
+            mixerFluditySplatForceSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseInt(e.target.value);
+                    mixerFluditySplatForceValue.textContent = value;
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsSplatForceSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsSplatForceValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value;
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Beat React Button
+        const mixerFluidityBeatReactBtn = document.getElementById('mixerFluidityBeatReactBtn');
+        if (mixerFluidityBeatReactBtn) {
+            mixerFluidityBeatReactBtn.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🎵 Mixer Fluidity Beat React clicked');
+                    // Sync with header button
+                    const headerBtn = document.getElementById('headerFluidDynamicsBeatReactBtn');
+                    if (headerBtn) headerBtn.click();
+                }
+            });
+        }
+
+        // Energy Sensitivity Slider
+        const mixerFluidityEnergySensitivitySlider = document.getElementById('mixerFluidityEnergySensitivitySlider');
+        const mixerFluidityEnergySensitivityValue = document.getElementById('mixerFluidityEnergySensitivityValue');
+        if (mixerFluidityEnergySensitivitySlider && mixerFluidityEnergySensitivityValue) {
+            mixerFluidityEnergySensitivitySlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluidityEnergySensitivityValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsEnergySensitivityValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Viscosity Response Slider
+        const mixerFluidityViscosityResponseSlider = document.getElementById('mixerFluidityViscosityResponseSlider');
+        const mixerFluidityViscosityResponseValue = document.getElementById('mixerFluidityViscosityResponseValue');
+        if (mixerFluidityViscosityResponseSlider && mixerFluidityViscosityResponseValue) {
+            mixerFluidityViscosityResponseSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluidityViscosityResponseValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsViscosityResponseValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Curl Response Slider
+        const mixerFludityCurlResponseSlider = document.getElementById('mixerFludityCurlResponseSlider');
+        const mixerFludityCurlResponseValue = document.getElementById('mixerFludityCurlResponseValue');
+        if (mixerFludityCurlResponseSlider && mixerFludityCurlResponseValue) {
+            mixerFludityCurlResponseSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFludityCurlResponseValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsCurlResponseValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
+        }
+
+        // Pressure Response Slider
+        const mixerFluidityPressureResponseSlider = document.getElementById('mixerFluidityPressureResponseSlider');
+        const mixerFluidityPressureResponseValue = document.getElementById('mixerFluidityPressureResponseValue');
+        if (mixerFluidityPressureResponseSlider && mixerFluidityPressureResponseValue) {
+            mixerFluidityPressureResponseSlider.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseFloat(e.target.value);
+                    mixerFluidityPressureResponseValue.textContent = value.toFixed(1);
+                    // Sync with header slider
+                    const headerSlider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
+                    const headerValue = document.getElementById('headerFluidDynamicsPressureResponseValue');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = value;
+                        headerValue.textContent = value.toFixed(1);
+                        headerSlider.dispatchEvent(new Event('input'));
+                    }
                 }
             });
         }
@@ -5366,6 +5744,64 @@ class RecordManager {
             const value = Math.round(this.visualizer.webglVisualization.currentVisualization.audioReactivity * 100);
             mixerStarfallAudioReactivitySlider.value = value;
             mixerStarfallAudioReactivityValue.textContent = value + '%';
+        }
+    }
+
+    // ========== FLUIDITY CHANNEL UPDATE METHODS ==========
+
+    updateMixerFluidityToggle() {
+        const mixerFluidityToggle = document.getElementById('mixerFluidityToggle');
+        if (mixerFluidityToggle && this.visualizer) {
+            // Check the actual fluid dynamics state, not fluidDynamicsEnabled
+            const isActive = this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive;
+            const toggleText = mixerFluidityToggle.querySelector('.toggle-text');
+            
+            if (isActive) {
+                mixerFluidityToggle.classList.add('active');
+                if (toggleText) toggleText.textContent = 'ON';
+            } else {
+                mixerFluidityToggle.classList.remove('active');
+                if (toggleText) toggleText.textContent = 'OFF';
+            }
+        } else {
+            console.error('❌ Mixer Fluidity toggle not found for update');
+        }
+    }
+
+    updateMixerFluidityOpacitySlider() {
+        if (this.mixerFluidityOpacitySlider && this.visualizer && this.visualizer.fluidDynamics) {
+            // Get current opacity from Fluid Dynamics (0.0-1.0) and convert to 0-100
+            const opacityPercent = Math.round(this.visualizer.fluidDynamics.opacity * 100);
+            this.mixerFluidityOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerFluidityOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer Fluidity opacity slider not found for update');
+        }
+    }
+
+    updateMixerFluidityPresetSelector() {
+        const mixerFluidityPresetSelector = document.getElementById('mixerFluidityPresetSelector');
+        const headerFluidDynamicsPresetSelector = document.getElementById('headerFluidDynamicsPresetSelector');
+        
+        if (mixerFluidityPresetSelector && headerFluidDynamicsPresetSelector) {
+            // Sync mixer dropdown with header dropdown
+            mixerFluidityPresetSelector.innerHTML = headerFluidDynamicsPresetSelector.innerHTML;
+            mixerFluidityPresetSelector.value = headerFluidDynamicsPresetSelector.value;
+        }
+    }
+
+    updateMixerFluidityColorSchemeSelect() {
+        const mixerFluidityColorSchemeSelect = document.getElementById('mixerFluidityColorSchemeSelect');
+        const headerFluidDynamicsColorScheme = document.getElementById('headerFluidDynamicsColorScheme');
+        
+        if (mixerFluidityColorSchemeSelect && headerFluidDynamicsColorScheme) {
+            // Sync mixer dropdown with header dropdown
+            mixerFluidityColorSchemeSelect.value = headerFluidDynamicsColorScheme.value;
         }
     }
 
@@ -17600,6 +18036,11 @@ https://rogueamoeba.com/loopback/
         }
 
         this.updateFluidDynamicsToggleButton();
+        
+        // Update mixer UI
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerFluidityToggle) {
+            window.multiDisplayManager.updateMixerFluidityToggle();
+        }
     }
 
     updateFluidDynamicsToggleButton() {
@@ -20200,6 +20641,11 @@ https://rogueamoeba.com/loopback/
                 if (e.target.value !== '' && this.loadFluidPreset) {
                     this.loadFluidPreset(parseInt(e.target.value));
                     e.target.value = ''; // Reset to "Load Preset..."
+                    
+                    // Update mixer UI
+                    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerFluidityPresetSelector) {
+                        window.multiDisplayManager.updateMixerFluidityPresetSelector();
+                    }
                 }
             });
         }
@@ -20237,6 +20683,11 @@ https://rogueamoeba.com/loopback/
                 const scheme = e.target.value;
                 if (this.fluidDynamics && this.fluidDynamics.setColorScheme) {
                     this.fluidDynamics.setColorScheme(scheme);
+                    
+                    // Update mixer UI
+                    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerFluidityColorSchemeSelect) {
+                        window.multiDisplayManager.updateMixerFluidityColorSchemeSelect();
+                    }
                 }
             });
         }
@@ -20302,6 +20753,10 @@ https://rogueamoeba.com/loopback/
                 fluidDynamicsOpacityValue.textContent = value.toFixed(1);
                 if (this.fluidDynamics && this.fluidDynamics.setOpacity) {
                     this.fluidDynamics.setOpacity(value);
+                    // Update mixer UI
+                    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerFluidityOpacitySlider) {
+                        window.multiDisplayManager.updateMixerFluidityOpacitySlider();
+                    }
                 }
             });
         }
@@ -20494,7 +20949,7 @@ https://rogueamoeba.com/loopback/
 
 
         // Kaleidoscope preset buttons
-        document.querySelectorAll('.kaleidoscope-preset-btn').forEach(btn => {
+        document.querySelectorAll('.btn-preset[data-preset]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const presetIndex = parseInt(e.target.dataset.preset);
                 this.applyKaleidoscopePreset(this.kaleidoscopePresets[presetIndex]);
@@ -23456,6 +23911,11 @@ GitItUpVisualizer.prototype.updateFluidPresetSelector = function() {
         option.textContent = preset.name;
         selector.appendChild(option);
     });
+    
+    // Update mixer preset selector
+    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerFluidityPresetSelector) {
+        window.multiDisplayManager.updateMixerFluidityPresetSelector();
+    }
 };
 
 GitItUpVisualizer.prototype.exportFluidPresets = function() {
