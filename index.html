@@ -2583,15 +2583,27 @@
                 <div class="channel-header">Starfall</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <button class="btn-toggle" id="mixerStarfallToggle" title="Toggle Starfall">
+                        <span class="toggle-text">OFF</span>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
-                    <!-- Empty - opacity slider will go here -->
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Opacity</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerStarfallOpacitySlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerStarfallOpacityValue">100</div>
+                    </div>
                 </div>
                 
                 <div class="channel-input-section">
-                    <!-- Empty - particle type selection will go here -->
+                    <!-- Input section can be used for primary controls if needed -->
                 </div>
                 
                 <div class="channel-presets-section">
@@ -2600,7 +2612,18 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="starfallPresets">
-                        <!-- Empty - preset buttons will go here -->
+                        <!-- Color Scheme Dropdown -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Color Scheme</div>
+                            <select class="dropdown-selector-mixer" id="mixerStarfallColorSchemeSelect">
+                                <option value="plasma" selected>Plasma</option>
+                                <option value="fire">Fire</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="aurora">Aurora</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="neon">Neon</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
@@ -2610,7 +2633,77 @@
                         <span class="collapse-indicator"></span>
                     </div>
                     <div class="collapsible-content" id="starfallControls">
-                        <!-- Empty - additional controls will go here -->
+                        <!-- Particle Count -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Particle Count</div>
+                                <div class="control-mini-value" id="mixerStarfallParticleCountValue">500</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallParticleCountSlider" min="100" max="2000" step="50" value="500">
+                        </div>
+                        
+                        <!-- Particle Size -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Particle Size</div>
+                                <div class="control-mini-value" id="mixerStarfallParticleSizeValue">10px</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallParticleSizeSlider" min="1" max="20" step="0.5" value="10">
+                        </div>
+                        
+                        <!-- Speed -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Speed</div>
+                                <div class="control-mini-value" id="mixerStarfallSpeedValue">1.0</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallSpeedSlider" min="0" max="5" step="0.1" value="1">
+                        </div>
+                        
+                        <!-- Gravity -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Gravity</div>
+                                <div class="control-mini-value" id="mixerStarfallGravityValue">0.5</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallGravitySlider" min="0" max="2" step="0.1" value="0.5">
+                        </div>
+                        
+                        <!-- Saturation -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Saturation</div>
+                                <div class="control-mini-value" id="mixerStarfallSaturationValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallSaturationSlider" min="0" max="100" step="1" value="0">
+                        </div>
+                        
+                        <!-- Twinkle Intensity -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Twinkle Intensity</div>
+                                <div class="control-mini-value" id="mixerStarfallTwinkleValue">30%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallTwinkleSlider" min="0" max="100" step="1" value="30">
+                        </div>
+                        
+                        <!-- Star Percentage -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Star Percentage</div>
+                                <div class="control-mini-value" id="mixerStarfallStarPercentageValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallStarPercentageSlider" min="0" max="100" step="1" value="0">
+                        </div>
+                        
+                        <!-- Audio Reactivity -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Audio Reactivity</div>
+                                <div class="control-mini-value" id="mixerStarfallAudioReactivityValue">50%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerStarfallAudioReactivitySlider" min="0" max="100" step="1" value="50">
+                        </div>
                     </div>
                 </div>
             </div>

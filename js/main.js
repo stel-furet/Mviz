@@ -1881,7 +1881,20 @@ class RecordManager {
         this.updateMixerBlobsDecaySlider();
         this.updateMixerBlobsBeatReactButton();
             
-            // Call mixer file info update on the MultiDisplayManager
+        // Starfall controls initialization
+        this.updateMixerStarfallToggle();
+        this.updateMixerStarfallOpacitySlider();
+        this.updateMixerStarfallColorSchemeSelect();
+        this.updateMixerStarfallParticleCountSlider();
+        this.updateMixerStarfallParticleSizeSlider();
+        this.updateMixerStarfallSpeedSlider();
+        this.updateMixerStarfallGravitySlider();
+        this.updateMixerStarfallSaturationSlider();
+        this.updateMixerStarfallTwinkleSlider();
+        this.updateMixerStarfallStarPercentageSlider();
+        this.updateMixerStarfallAudioReactivitySlider();
+            
+        // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
                 window.multiDisplayManager.updateMixerVideoFileInfo();
             }
@@ -3450,6 +3463,162 @@ class RecordManager {
                     if (headerBlobsBeatReactBtn) {
                         headerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
                     }
+                }
+            });
+        }
+
+        // ========== STARFALL CHANNEL ==========
+
+        // Mixer Starfall toggle button
+        const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
+        if (mixerStarfallToggle) {
+            console.log('✅ Mixer Starfall toggle button found, adding event listener');
+            mixerStarfallToggle.addEventListener('click', () => {
+                if (this.visualizer) {
+                    console.log('🔘 Mixer Starfall toggle clicked - current state:', this.visualizer.webglEnabled);
+                    
+                    // Toggle Starfall state
+                    this.visualizer.toggleWebGL();
+                    
+                    // Update mixer UI
+                    this.updateMixerStarfallToggle();
+                    
+                }
+            });
+        } else {
+            console.error('❌ Mixer Starfall toggle button not found');
+        }
+
+        // Mixer Starfall opacity slider
+        const mixerStarfallOpacitySlider = document.getElementById('mixerStarfallOpacitySlider');
+        if (mixerStarfallOpacitySlider) {
+            console.log('✅ Mixer Starfall opacity slider found, initializing');
+            this.mixerStarfallOpacitySlider = this.initializeVerticalSlider(mixerStarfallOpacitySlider, (value) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    console.log('🎚️ Mixer Starfall opacity changed to:', value);
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ opacity: value });
+                }
+            });
+        } else {
+            console.error('❌ Mixer Starfall opacity slider not found');
+        }
+
+        // ========== STARFALL CONTROL SLIDERS ==========
+
+        // Color Scheme Dropdown
+        const mixerStarfallColorSchemeSelect = document.getElementById('mixerStarfallColorSchemeSelect');
+        if (mixerStarfallColorSchemeSelect) {
+            mixerStarfallColorSchemeSelect.addEventListener('change', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const scheme = e.target.value;
+                    console.log('🎨 Mixer Starfall color scheme changed to:', scheme);
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
+                }
+            });
+        } else {
+            console.error('❌ Mixer Starfall color scheme dropdown not found');
+        }
+
+        // Particle Count Slider
+        const mixerStarfallParticleCountSlider = document.getElementById('mixerStarfallParticleCountSlider');
+        const mixerStarfallParticleCountValue = document.getElementById('mixerStarfallParticleCountValue');
+        if (mixerStarfallParticleCountSlider && mixerStarfallParticleCountValue) {
+            mixerStarfallParticleCountSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerStarfallParticleCountValue.textContent = value;
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ particleCount: value });
+                }
+            });
+        }
+
+        // Particle Size Slider
+        const mixerStarfallParticleSizeSlider = document.getElementById('mixerStarfallParticleSizeSlider');
+        const mixerStarfallParticleSizeValue = document.getElementById('mixerStarfallParticleSizeValue');
+        if (mixerStarfallParticleSizeSlider && mixerStarfallParticleSizeValue) {
+            mixerStarfallParticleSizeSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerStarfallParticleSizeValue.textContent = value + 'px';
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ particleSize: value });
+                }
+            });
+        }
+
+        // Speed Slider
+        const mixerStarfallSpeedSlider = document.getElementById('mixerStarfallSpeedSlider');
+        const mixerStarfallSpeedValue = document.getElementById('mixerStarfallSpeedValue');
+        if (mixerStarfallSpeedSlider && mixerStarfallSpeedValue) {
+            mixerStarfallSpeedSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerStarfallSpeedValue.textContent = value.toFixed(1);
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ speed: value });
+                }
+            });
+        }
+
+        // Gravity Slider
+        const mixerStarfallGravitySlider = document.getElementById('mixerStarfallGravitySlider');
+        const mixerStarfallGravityValue = document.getElementById('mixerStarfallGravityValue');
+        if (mixerStarfallGravitySlider && mixerStarfallGravityValue) {
+            mixerStarfallGravitySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseFloat(e.target.value);
+                    mixerStarfallGravityValue.textContent = value.toFixed(1);
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ gravity: value });
+                }
+            });
+        }
+
+        // Saturation Slider
+        const mixerStarfallSaturationSlider = document.getElementById('mixerStarfallSaturationSlider');
+        const mixerStarfallSaturationValue = document.getElementById('mixerStarfallSaturationValue');
+        if (mixerStarfallSaturationSlider && mixerStarfallSaturationValue) {
+            mixerStarfallSaturationSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerStarfallSaturationValue.textContent = value + '%';
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ saturation: value });
+                }
+            });
+        }
+
+        // Twinkle Intensity Slider
+        const mixerStarfallTwinkleSlider = document.getElementById('mixerStarfallTwinkleSlider');
+        const mixerStarfallTwinkleValue = document.getElementById('mixerStarfallTwinkleValue');
+        if (mixerStarfallTwinkleSlider && mixerStarfallTwinkleValue) {
+            mixerStarfallTwinkleSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerStarfallTwinkleValue.textContent = value + '%';
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ twinkleIntensity: value });
+                }
+            });
+        }
+
+        // Star Percentage Slider
+        const mixerStarfallStarPercentageSlider = document.getElementById('mixerStarfallStarPercentageSlider');
+        const mixerStarfallStarPercentageValue = document.getElementById('mixerStarfallStarPercentageValue');
+        if (mixerStarfallStarPercentageSlider && mixerStarfallStarPercentageValue) {
+            mixerStarfallStarPercentageSlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerStarfallStarPercentageValue.textContent = value + '%';
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ starPercentage: value });
+                }
+            });
+        }
+
+        // Audio Reactivity Slider
+        const mixerStarfallAudioReactivitySlider = document.getElementById('mixerStarfallAudioReactivitySlider');
+        const mixerStarfallAudioReactivityValue = document.getElementById('mixerStarfallAudioReactivityValue');
+        if (mixerStarfallAudioReactivitySlider && mixerStarfallAudioReactivityValue) {
+            mixerStarfallAudioReactivitySlider.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+                    const value = parseInt(e.target.value);
+                    mixerStarfallAudioReactivityValue.textContent = value + '%';
+                    this.visualizer.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
                 }
             });
         }
@@ -5070,6 +5239,133 @@ class RecordManager {
         if (mixerBlobsBeatReactBtn && this.visualizer && this.visualizer.blobsVisualization) {
             const isOn = this.visualizer.blobsVisualization.beatReact;
             mixerBlobsBeatReactBtn.textContent = `Beat React: ${isOn ? 'On' : 'Off'}`;
+        }
+    }
+
+    // ========== STARFALL UPDATE METHODS ==========
+
+    updateMixerStarfallToggle() {
+        const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
+        if (mixerStarfallToggle && this.visualizer) {
+            const text = mixerStarfallToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.webglEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerStarfallToggle.classList.add('active');
+                } else {
+                    mixerStarfallToggle.classList.remove('active');
+                }
+            }
+        } else {
+            console.error('❌ Mixer Starfall toggle not found for update');
+        }
+    }
+
+    updateMixerStarfallOpacitySlider() {
+        if (this.mixerStarfallOpacitySlider && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            // Get current opacity from WebGL visualization (0.0-1.0) and convert to 0-100
+            const opacityPercent = Math.round(this.visualizer.webglVisualization.currentVisualization.opacity * 100);
+            this.mixerStarfallOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerStarfallOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        } else {
+            console.error('❌ Mixer Starfall opacity slider not found for update');
+        }
+    }
+
+    updateMixerStarfallColorSchemeSelect() {
+        const mixerStarfallColorSchemeSelect = document.getElementById('mixerStarfallColorSchemeSelect');
+        if (mixerStarfallColorSchemeSelect && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const currentScheme = this.visualizer.webglVisualization.currentVisualization.currentColorScheme;
+            mixerStarfallColorSchemeSelect.value = currentScheme;
+        }
+    }
+
+    updateMixerStarfallParticleCountSlider() {
+        const mixerStarfallParticleCountSlider = document.getElementById('mixerStarfallParticleCountSlider');
+        const mixerStarfallParticleCountValue = document.getElementById('mixerStarfallParticleCountValue');
+        if (mixerStarfallParticleCountSlider && mixerStarfallParticleCountValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = this.visualizer.webglVisualization.currentVisualization.particleCount;
+            mixerStarfallParticleCountSlider.value = value;
+            mixerStarfallParticleCountValue.textContent = value;
+        }
+    }
+
+    updateMixerStarfallParticleSizeSlider() {
+        const mixerStarfallParticleSizeSlider = document.getElementById('mixerStarfallParticleSizeSlider');
+        const mixerStarfallParticleSizeValue = document.getElementById('mixerStarfallParticleSizeValue');
+        if (mixerStarfallParticleSizeSlider && mixerStarfallParticleSizeValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = this.visualizer.webglVisualization.currentVisualization.particleSize;
+            mixerStarfallParticleSizeSlider.value = value;
+            mixerStarfallParticleSizeValue.textContent = value + 'px';
+        }
+    }
+
+    updateMixerStarfallSpeedSlider() {
+        const mixerStarfallSpeedSlider = document.getElementById('mixerStarfallSpeedSlider');
+        const mixerStarfallSpeedValue = document.getElementById('mixerStarfallSpeedValue');
+        if (mixerStarfallSpeedSlider && mixerStarfallSpeedValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = this.visualizer.webglVisualization.currentVisualization.speed;
+            mixerStarfallSpeedSlider.value = value;
+            mixerStarfallSpeedValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerStarfallGravitySlider() {
+        const mixerStarfallGravitySlider = document.getElementById('mixerStarfallGravitySlider');
+        const mixerStarfallGravityValue = document.getElementById('mixerStarfallGravityValue');
+        if (mixerStarfallGravitySlider && mixerStarfallGravityValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = this.visualizer.webglVisualization.currentVisualization.gravity;
+            mixerStarfallGravitySlider.value = value;
+            mixerStarfallGravityValue.textContent = value.toFixed(1);
+        }
+    }
+
+    updateMixerStarfallSaturationSlider() {
+        const mixerStarfallSaturationSlider = document.getElementById('mixerStarfallSaturationSlider');
+        const mixerStarfallSaturationValue = document.getElementById('mixerStarfallSaturationValue');
+        if (mixerStarfallSaturationSlider && mixerStarfallSaturationValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = Math.round(this.visualizer.webglVisualization.currentVisualization.saturation * 100);
+            mixerStarfallSaturationSlider.value = value;
+            mixerStarfallSaturationValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerStarfallTwinkleSlider() {
+        const mixerStarfallTwinkleSlider = document.getElementById('mixerStarfallTwinkleSlider');
+        const mixerStarfallTwinkleValue = document.getElementById('mixerStarfallTwinkleValue');
+        if (mixerStarfallTwinkleSlider && mixerStarfallTwinkleValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = Math.round(this.visualizer.webglVisualization.currentVisualization.twinkleIntensity * 100);
+            mixerStarfallTwinkleSlider.value = value;
+            mixerStarfallTwinkleValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerStarfallStarPercentageSlider() {
+        const mixerStarfallStarPercentageSlider = document.getElementById('mixerStarfallStarPercentageSlider');
+        const mixerStarfallStarPercentageValue = document.getElementById('mixerStarfallStarPercentageValue');
+        if (mixerStarfallStarPercentageSlider && mixerStarfallStarPercentageValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = Math.round(this.visualizer.webglVisualization.currentVisualization.starPercentage * 100);
+            mixerStarfallStarPercentageSlider.value = value;
+            mixerStarfallStarPercentageValue.textContent = value + '%';
+        }
+    }
+
+    updateMixerStarfallAudioReactivitySlider() {
+        const mixerStarfallAudioReactivitySlider = document.getElementById('mixerStarfallAudioReactivitySlider');
+        const mixerStarfallAudioReactivityValue = document.getElementById('mixerStarfallAudioReactivityValue');
+        if (mixerStarfallAudioReactivitySlider && mixerStarfallAudioReactivityValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const value = Math.round(this.visualizer.webglVisualization.currentVisualization.audioReactivity * 100);
+            mixerStarfallAudioReactivitySlider.value = value;
+            mixerStarfallAudioReactivityValue.textContent = value + '%';
         }
     }
 
@@ -16336,6 +16632,10 @@ https://rogueamoeba.com/loopback/
         }
         
         this.updateWebGLButton();
+        
+        // Update mixer UI
+        this.updateMixerStarfallToggle();
+        this.updateMixerStarfallOpacitySlider();
     }
 
     updateWebGLButton() {
@@ -16687,6 +16987,8 @@ https://rogueamoeba.com/loopback/
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleCount: value });
                     console.log('🎮 WebGL: Settings updated for particle count:', value);
+                    // Update mixer UI
+                    this.updateMixerStarfallParticleCountSlider();
                 } else {
                     console.warn('🎮 WebGL: Visualization not available for settings update');
                 }
@@ -16706,6 +17008,8 @@ https://rogueamoeba.com/loopback/
                 console.log('🎮 WebGL: Particle size slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleSize: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallParticleSizeSlider();
                 }
             });
         } else {
@@ -16722,6 +17026,8 @@ https://rogueamoeba.com/loopback/
                 speedValue.textContent = value.toFixed(1);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ speed: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallSpeedSlider();
                 }
             });
         }
@@ -16736,6 +17042,8 @@ https://rogueamoeba.com/loopback/
                 gravityValue.textContent = value.toFixed(1);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ gravity: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallGravitySlider();
                 }
             });
         }
@@ -16750,6 +17058,8 @@ https://rogueamoeba.com/loopback/
                 saturationValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ saturation: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallSaturationSlider();
                 }
             });
         }
@@ -16763,6 +17073,8 @@ https://rogueamoeba.com/loopback/
                 console.log('🎮 WebGL: Color scheme changed to:', scheme);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
+                    // Update mixer UI
+                    this.updateMixerStarfallColorSchemeSelect();
                 }
             });
         }
@@ -16777,6 +17089,8 @@ https://rogueamoeba.com/loopback/
                 twinkleValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ twinkleIntensity: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallTwinkleSlider();
                 }
             });
         }
@@ -16791,6 +17105,8 @@ https://rogueamoeba.com/loopback/
                 starPercentageValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ starPercentage: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallStarPercentageSlider();
                 }
             });
         }
@@ -16804,6 +17120,8 @@ https://rogueamoeba.com/loopback/
                 audioReactivityValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
+                    // Update mixer UI
+                    this.updateMixerStarfallAudioReactivitySlider();
                 }
             });
         } else {
