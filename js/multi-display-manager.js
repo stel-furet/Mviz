@@ -16,22 +16,19 @@ class MultiDisplayManager {
         this.setupDisplayButtons();
         this.setupSettingsPanels();
         
-        // Initialize mixer controls after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            this.initializeMixerControls();
-        }, 100);
+        // Initialize mixer controls immediately - no delay needed
+        this.initializeMixerControls();
     }
 
     // Initialize mixer control synchronization
     initializeMixerControls() {
         console.log('🔧 Initializing mixer controls...');
         
-        // Initialize all mixer control synchronization
-        setTimeout(() => {
-            // Background controls
-            if (typeof this.updateMixerBackgroundImageUI === 'function') this.updateMixerBackgroundImageUI();
-            if (typeof this.updateMixerBackgroundToggleButton === 'function') this.updateMixerBackgroundToggleButton();
-            if (typeof this.updateMixerBackgroundOpacitySlider === 'function') this.updateMixerBackgroundOpacitySlider();
+        // Initialize all mixer control synchronization immediately
+        // Background controls
+        if (typeof this.updateMixerBackgroundImageUI === 'function') this.updateMixerBackgroundImageUI();
+        if (typeof this.updateMixerBackgroundToggleButton === 'function') this.updateMixerBackgroundToggleButton();
+        if (typeof this.updateMixerBackgroundOpacitySlider === 'function') this.updateMixerBackgroundOpacitySlider();
             
             // Video controls
             if (typeof this.updateMixerVideoToggleButton === 'function') this.updateMixerVideoToggleButton();
@@ -73,7 +70,6 @@ class MultiDisplayManager {
             if (typeof this.updateMixerFluidityOpacitySlider === 'function') this.updateMixerFluidityOpacitySlider();
             if (typeof this.updateMixerFluidityPresetSelector === 'function') this.updateMixerFluidityPresetSelector();
             if (typeof this.updateMixerFluidityColorSchemeSelect === 'function') this.updateMixerFluidityColorSchemeSelect();
-        }, 100);
     }
     
     // Load global capture settings (no longer used - each display has its own)

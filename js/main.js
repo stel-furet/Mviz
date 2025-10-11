@@ -23225,7 +23225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new GitItUpVisualizer();
 
 // Initialize Multi-Display Manager (isolated system)
-this.multiDisplayManager = new MultiDisplayManager(window.visualizer);
+window.multiDisplayManager = new MultiDisplayManager(window.visualizer);
 
 // Initialize footer Live Audio button state
 if (window.visualizer && window.visualizer.updateFooterLiveAudioButton) {
