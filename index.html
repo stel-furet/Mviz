@@ -2749,7 +2749,7 @@
                     </div>
                     <div class="collapsible-content" id="fluidPresets">
                         <!-- Built-in Presets -->
-                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                        <div class="preset-buttons">
                             <button id="mixerFluidityDefaultPresetBtn" class="btn-preset">Default</button>
                             <button id="mixerFluidityAmbientPresetBtn" class="btn-preset">Ambient</button>
                             <button id="mixerFluidityMetalPresetBtn" class="btn-preset">Metal</button>
@@ -2888,15 +2888,31 @@
                 <div class="channel-header">Kaleidoscope</div>
                 
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <!-- 5 Kaleidoscope ON/OFF toggles -->
+                    <button class="btn-toggle" id="mixerKaleidoscopeVideoToggle" title="Apply to Video">
+                        <span class="toggle-text">OFF</span>
+                        <div class="toggle-label">Video</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerKaleidoscopeVizToggle" title="Apply to Viz">
+                        <span class="toggle-text">OFF</span>
+                        <div class="toggle-label">Viz</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerKaleidoscopeInfiniteZoomToggle" title="Infinite Zoom">
+                        <span class="toggle-text">OFF</span>
+                        <div class="toggle-label">IZ</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerKaleidoscopeWebGLToggle" title="WebGL">
+                        <span class="toggle-text">OFF</span>
+                        <div class="toggle-label">WebGL</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerKaleidoscopeFluidToggle" title="Fluid">
+                        <span class="toggle-text">OFF</span>
+                        <div class="toggle-label">Fluid</div>
+                    </button>
                 </div>
                 
                 <div class="vertical-slider-section">
                     <!-- Empty - opacity slider will go here -->
-                </div>
-                
-                <div class="channel-input-section">
-                    <!-- Empty - kaleidoscope type selection will go here -->
                 </div>
                 
                 <div class="channel-presets-section">
@@ -2904,8 +2920,13 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="kaleidoscopePresets">
-                        <!-- Empty - preset buttons will go here -->
+                    <div class="preset-buttons collapsible-content collapsed" id="kaleidoscopePresets">
+                        <!-- Kaleidoscope preset buttons -->
+                        <button class="btn-preset" id="mixerKaleidoscopePresetClassic" data-preset="0">Classic</button>
+                        <button class="btn-preset" id="mixerKaleidoscopePresetFlower" data-preset="1">Flower</button>
+                        <button class="btn-preset" id="mixerKaleidoscopePresetCrystal" data-preset="2">Crystal</button>
+                        <button class="btn-preset" id="mixerKaleidoscopePresetMandala" data-preset="3">Mandala</button>
+                        <button class="btn-preset" id="mixerKaleidoscopePresetStar" data-preset="4">Star</button>
                     </div>
                 </div>
                 
@@ -2914,8 +2935,123 @@
                         <span>Controls</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="kaleidoscopeControls">
-                        <!-- Empty - additional controls will go here -->
+                    <div class="collapsible-content collapsed" id="kaleidoscopeControls">
+                        <!-- Basic Controls -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Segments</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeSegmentsValue">6</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeSegmentsSlider" min="2" max="24" value="6" step="1" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Rings</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeRingsValue">1</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeRingsSlider" min="1" max="5" value="1" step="1" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Ring Spacing</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeRingSpacingValue">20%</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeRingSpacingSlider" min="5" max="30" value="20" step="5" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Rotation</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeSpeedValue">0</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeSpeedSlider" min="0" max="6" value="0" step="0.25" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Scale</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeScaleValue">100%</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeScaleSlider" min="50" max="300" value="100" step="10" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Center X</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeCenterXValue">50%</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeCenterXSlider" min="0" max="100" value="50" step="1" class="mini-slider">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Center Y</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeCenterYValue">50%</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeCenterYSlider" min="0" max="100" value="50" step="1" class="mini-slider">
+                        </div>
+                        
+                        <!-- Spacer -->
+                        <div class="control-group"></div>
+                        
+                        <!-- Beat Reaction -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Beat Reaction</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeBeatBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Beat React</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeBeatRotationBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Rotation</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeBeatShapeBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Shape</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Sensitivity</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeBeatSensitivityValue">50%</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeBeatSensitivitySlider" min="10" max="100" value="50" step="10" class="mini-slider">
+                        </div>
+                        
+                        <!-- Spacer -->
+                        <div class="control-group"></div>
+                        
+                        <!-- Animation Controls -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Animation</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeAnimateBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Animate</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeFloatBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Float</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerKaleidoscopeCircleBtn">
+                                <span class="toggle-text">OFF</span>
+                                <div class="toggle-label">Circle</div>
+                            </button>
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Speed</div>
+                                <div class="control-mini-value" id="mixerKaleidoscopeAnimSpeedValue">25</div>
+                            </div>
+                            <input type="range" id="mixerKaleidoscopeAnimSpeedSlider" min="-100" max="100" value="25" step="1" class="mini-slider">
+                        </div>
                     </div>
                 </div>
             </div>

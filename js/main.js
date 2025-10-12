@@ -1899,6 +1899,13 @@ class RecordManager {
         this.updateMixerFluidityOpacitySlider();
         this.updateMixerFluidityPresetSelector();
         this.updateMixerFluidityColorSchemeSelect();
+
+        // Kaleidoscope controls initialization
+        this.updateMixerKaleidoscopeVideoToggle();
+        this.updateMixerKaleidoscopeVizToggle();
+        this.updateMixerKaleidoscopeInfiniteZoomToggle();
+        this.updateMixerKaleidoscopeWebGLToggle();
+        this.updateMixerKaleidoscopeFluidToggle();
             
         // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -5802,6 +5809,68 @@ class RecordManager {
         if (mixerFluidityColorSchemeSelect && headerFluidDynamicsColorScheme) {
             // Sync mixer dropdown with header dropdown
             mixerFluidityColorSchemeSelect.value = headerFluidDynamicsColorScheme.value;
+        }
+    }
+
+    // ========== KALEIDOSCOPE CHANNEL UPDATE METHODS ==========
+
+    updateMixerKaleidoscopeVideoToggle() {
+        const mixerKaleidoscopeVideoToggle = document.getElementById('mixerKaleidoscopeVideoToggle');
+        if (mixerKaleidoscopeVideoToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeVideoToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToVideo;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeVideoToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeVizToggle() {
+        const mixerKaleidoscopeVizToggle = document.getElementById('mixerKaleidoscopeVizToggle');
+        if (mixerKaleidoscopeVizToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeVizToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToViz;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeVizToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeInfiniteZoomToggle() {
+        const mixerKaleidoscopeInfiniteZoomToggle = document.getElementById('mixerKaleidoscopeInfiniteZoomToggle');
+        if (mixerKaleidoscopeInfiniteZoomToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeInfiniteZoomToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeInfiniteZoomToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeWebGLToggle() {
+        const mixerKaleidoscopeWebGLToggle = document.getElementById('mixerKaleidoscopeWebGLToggle');
+        if (mixerKaleidoscopeWebGLToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeWebGLToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToWebGL;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeWebGLToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeFluidToggle() {
+        const mixerKaleidoscopeFluidToggle = document.getElementById('mixerKaleidoscopeFluidToggle');
+        if (mixerKaleidoscopeFluidToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeFluidToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeFluidToggle.classList.toggle('active', isOn);
+            }
         }
     }
 
@@ -23960,6 +24029,164 @@ GitItUpVisualizer.prototype.importFluidPresets = function(file) {
     };
     reader.readAsText(file);
 };
+});
+
+// ========== KALEIDOSCOPE MIXER EVENT HANDLERS ==========
+// Add Kaleidoscope mixer event handlers after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for MultiDisplayManager to be ready
+    setTimeout(() => {
+        if (window.multiDisplayManager && window.visualizer) {
+            // Mixer Kaleidoscope Video Toggle
+            const mixerKaleidoscopeVideoToggle = document.getElementById('mixerKaleidoscopeVideoToggle');
+            if (mixerKaleidoscopeVideoToggle) {
+                mixerKaleidoscopeVideoToggle.addEventListener('click', () => {
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToVideo = !window.visualizer.kaleidoscopeApplyToVideo;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeVideoToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeVideoBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `Apply to Video: ${window.visualizer.kaleidoscopeApplyToVideo ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToVideo);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToVideo && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+
+            // Mixer Kaleidoscope Viz Toggle
+            const mixerKaleidoscopeVizToggle = document.getElementById('mixerKaleidoscopeVizToggle');
+            if (mixerKaleidoscopeVizToggle) {
+                mixerKaleidoscopeVizToggle.addEventListener('click', () => {
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToViz = !window.visualizer.kaleidoscopeApplyToViz;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeVizToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeVizBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `Apply to Viz: ${window.visualizer.kaleidoscopeApplyToViz ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToViz);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToViz && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+
+            // Mixer Kaleidoscope Infinite Zoom Toggle
+            const mixerKaleidoscopeInfiniteZoomToggle = document.getElementById('mixerKaleidoscopeInfiniteZoomToggle');
+            if (mixerKaleidoscopeInfiniteZoomToggle) {
+                mixerKaleidoscopeInfiniteZoomToggle.addEventListener('click', () => {
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToInfiniteZoom = !window.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeInfiniteZoomToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeInfiniteZoomBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `Infinite Zoom: ${window.visualizer.kaleidoscopeApplyToInfiniteZoom ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToInfiniteZoom);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToInfiniteZoom && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+
+            // Mixer Kaleidoscope WebGL Toggle
+            const mixerKaleidoscopeWebGLToggle = document.getElementById('mixerKaleidoscopeWebGLToggle');
+            if (mixerKaleidoscopeWebGLToggle) {
+                mixerKaleidoscopeWebGLToggle.addEventListener('click', () => {
+                    // Check WebGL support
+                    if (window.visualizer.webglVisualization && !window.visualizer.webglVisualization.webglSupported) {
+                        console.warn('🎮 Kaleidoscope: WebGL not supported');
+                        alert('WebGL not supported. Check Browser settings.');
+                        return;
+                    }
+                    
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToWebGL = !window.visualizer.kaleidoscopeApplyToWebGL;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeWebGLToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeWebGLBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `WebGL: ${window.visualizer.kaleidoscopeApplyToWebGL ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToWebGL);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToWebGL && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+
+            // Mixer Kaleidoscope Fluid Toggle
+            const mixerKaleidoscopeFluidToggle = document.getElementById('mixerKaleidoscopeFluidToggle');
+            if (mixerKaleidoscopeFluidToggle) {
+                mixerKaleidoscopeFluidToggle.addEventListener('click', () => {
+                    // Check Fluid Dynamics support
+                    if (!window.visualizer.fluidDynamics || !window.visualizer.fluidDynamics.canvas) {
+                        console.warn('🔮 Kaleidoscope: Fluid Dynamics not available');
+                        alert('Fluid Dynamics not available. Please ensure Fluid Dynamics is enabled.');
+                        return;
+                    }
+                    
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToFluidDynamics = !window.visualizer.kaleidoscopeApplyToFluidDynamics;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeFluidToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeFluidBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `Fluid: ${window.visualizer.kaleidoscopeApplyToFluidDynamics ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToFluidDynamics);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToFluidDynamics && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+        }
+    }, 200);
 });
 
 

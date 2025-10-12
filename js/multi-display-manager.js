@@ -70,6 +70,13 @@ class MultiDisplayManager {
             if (typeof this.updateMixerFluidityOpacitySlider === 'function') this.updateMixerFluidityOpacitySlider();
             if (typeof this.updateMixerFluidityPresetSelector === 'function') this.updateMixerFluidityPresetSelector();
             if (typeof this.updateMixerFluidityColorSchemeSelect === 'function') this.updateMixerFluidityColorSchemeSelect();
+
+            // Kaleidoscope controls
+            if (typeof this.updateMixerKaleidoscopeVideoToggle === 'function') this.updateMixerKaleidoscopeVideoToggle();
+            if (typeof this.updateMixerKaleidoscopeVizToggle === 'function') this.updateMixerKaleidoscopeVizToggle();
+            if (typeof this.updateMixerKaleidoscopeInfiniteZoomToggle === 'function') this.updateMixerKaleidoscopeInfiniteZoomToggle();
+            if (typeof this.updateMixerKaleidoscopeWebGLToggle === 'function') this.updateMixerKaleidoscopeWebGLToggle();
+            if (typeof this.updateMixerKaleidoscopeFluidToggle === 'function') this.updateMixerKaleidoscopeFluidToggle();
     }
     
     // Load global capture settings (no longer used - each display has its own)
@@ -805,6 +812,68 @@ class MultiDisplayManager {
         if (mixerFluidityColorSchemeSelect && headerFluidDynamicsColorScheme) {
             // Sync mixer dropdown with header dropdown
             mixerFluidityColorSchemeSelect.value = headerFluidDynamicsColorScheme.value;
+        }
+    }
+
+    // ========== KALEIDOSCOPE CHANNEL UPDATE METHODS ==========
+
+    updateMixerKaleidoscopeVideoToggle() {
+        const mixerKaleidoscopeVideoToggle = document.getElementById('mixerKaleidoscopeVideoToggle');
+        if (mixerKaleidoscopeVideoToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeVideoToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToVideo;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeVideoToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeVizToggle() {
+        const mixerKaleidoscopeVizToggle = document.getElementById('mixerKaleidoscopeVizToggle');
+        if (mixerKaleidoscopeVizToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeVizToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToViz;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeVizToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeInfiniteZoomToggle() {
+        const mixerKaleidoscopeInfiniteZoomToggle = document.getElementById('mixerKaleidoscopeInfiniteZoomToggle');
+        if (mixerKaleidoscopeInfiniteZoomToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeInfiniteZoomToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeInfiniteZoomToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeWebGLToggle() {
+        const mixerKaleidoscopeWebGLToggle = document.getElementById('mixerKaleidoscopeWebGLToggle');
+        if (mixerKaleidoscopeWebGLToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeWebGLToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToWebGL;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeWebGLToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
+    updateMixerKaleidoscopeFluidToggle() {
+        const mixerKaleidoscopeFluidToggle = document.getElementById('mixerKaleidoscopeFluidToggle');
+        if (mixerKaleidoscopeFluidToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeFluidToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeFluidToggle.classList.toggle('active', isOn);
+            }
         }
     }
 

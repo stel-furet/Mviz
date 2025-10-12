@@ -458,6 +458,7 @@ body {
     gap: 4px;
     justify-content: flex-start;
     align-items: stretch;
+    margin: 8px 0;
 }
 
 .preset-buttons .btn-preset {
