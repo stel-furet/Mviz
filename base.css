@@ -713,6 +713,11 @@ body {
     opacity: 1;
 }
 
+/* Add padding to top of channel controls section content */
+.channel-controls-section .collapsible-content {
+    padding-top: 8px;
+}
+
 /* ========================================
    SLIDER CONTAINERS - SELF-CONTAINED
    ======================================== */

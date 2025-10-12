@@ -3063,12 +3063,32 @@
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 1</div>
                 
-                <div class="channel-input-section">
-                    <!-- Empty - resolution/window controls will go here -->
-                </div>
-                
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <!-- Capture Settings Toggles -->
+                    <button class="btn-toggle" id="mixerDisplay1CaptureVideoToggle" title="Capture Video">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Video</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay1CaptureVizToggle" title="Capture Visualization">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Viz</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay1CaptureKaleidoscopeToggle" title="Capture Kaleidoscope">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Kaleid</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay1CaptureInfiniteZoomToggle" title="Capture Infinite Zoom">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">IZ</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay1CaptureWebGLToggle" title="Capture WebGL">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">WebGL</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay1CaptureFluidDynamicsToggle" title="Capture Fluid Dynamics">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Fluid</div>
+                    </button>
                 </div>
                 
                 <!-- Note: Display channels don't have vertical-slider-section -->
@@ -3078,8 +3098,26 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display1Presets">
-                        <!-- Empty - preset buttons will go here -->
+                    <div class="preset-buttons collapsible-content collapsed" id="display1Presets">
+                        <!-- Display Preset Buttons -->
+                        <button class="btn-preset" id="mixerDisplay1PresetCinema" data-preset="cinema">Cinema</button>
+                        <button class="btn-preset" id="mixerDisplay1PresetSocial" data-preset="social">Social</button>
+                        <button class="btn-preset" id="mixerDisplay1PresetPerformance" data-preset="performance">Performance</button>
+                        <button class="btn-preset" id="mixerDisplay1PresetProjector" data-preset="projector">Projector</button>
+                        
+                        <!-- Separator -->
+                        <div class="control-group"></div>
+                        
+                        <!-- Display Mode Buttons -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Display Mode</div>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="btn-preset active" id="mixerDisplay1ModeFit" data-mode="fit">Fit</button>
+                            <button class="btn-preset" id="mixerDisplay1ModeFill" data-mode="fill">Fill</button>
+                            <button class="btn-preset" id="mixerDisplay1ModeStretch" data-mode="stretch">Stretch</button>
+                            <button class="btn-preset" id="mixerDisplay1ModeOriginal" data-mode="original">Original</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -3088,8 +3126,59 @@
                         <span>Controls</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display1Controls">
-                        <!-- Empty - capture toggles and settings will go here -->
+                    <div class="collapsible-content collapsed" id="display1Controls">
+                        <!-- Stream Settings -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Stream Settings</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay1ResolutionSelect" class="dropdown-selector-mixer">
+                                <option value="canvas">Canvas Size</option>
+                                <option value="720p">720p (1280×720)</option>
+                                <option value="1080p" selected>1080p (1920×1080)</option>
+                                <option value="4k">4K (3840×2160)</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay1FrameRateSelect" class="dropdown-selector-mixer">
+                                <option value="30" selected>30 FPS</option>
+                                <option value="60">60 FPS</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay1VideoQualitySelect" class="dropdown-selector-mixer">
+                                <option value="auto" selected>Auto</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                                <option value="4k">4K</option>
+                                <option value="4k-ultra">4K Ultra</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Enhancement -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Enhancement</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Sharpness</div>
+                                <div class="control-mini-value" id="mixerDisplay1SharpnessValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerDisplay1SharpnessSlider" min="0" max="100" step="1" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Letterbox Color</div>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="mixerDisplay1LetterboxColorPicker" value="#000000" style="width: 50px; height: 30px;">
+                                <span class="color-value" id="mixerDisplay1LetterboxColorValue">#000000</span>
+                            </div>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerDisplay1MirrorBackgroundToggle" title="Mirror Background">
+                                <span class="toggle-text">Mirror Background: Off</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3098,12 +3187,32 @@
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 2</div>
                 
-                <div class="channel-input-section">
-                    <!-- Empty - resolution/window controls will go here -->
-                </div>
-                
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <!-- Capture Settings Toggles -->
+                    <button class="btn-toggle" id="mixerDisplay2CaptureVideoToggle" title="Capture Video">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Video</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay2CaptureVizToggle" title="Capture Visualization">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Viz</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay2CaptureKaleidoscopeToggle" title="Capture Kaleidoscope">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Kaleid</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay2CaptureInfiniteZoomToggle" title="Capture Infinite Zoom">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">IZ</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay2CaptureWebGLToggle" title="Capture WebGL">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">WebGL</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay2CaptureFluidDynamicsToggle" title="Capture Fluid Dynamics">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Fluid</div>
+                    </button>
                 </div>
                 
                 <!-- Note: Display channels don't have vertical-slider-section -->
@@ -3113,8 +3222,26 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display2Presets">
-                        <!-- Empty - preset buttons will go here -->
+                    <div class="preset-buttons collapsible-content collapsed" id="display2Presets">
+                        <!-- Display Preset Buttons -->
+                        <button class="btn-preset" id="mixerDisplay2PresetCinema" data-preset="cinema">Cinema</button>
+                        <button class="btn-preset" id="mixerDisplay2PresetSocial" data-preset="social">Social</button>
+                        <button class="btn-preset" id="mixerDisplay2PresetPerformance" data-preset="performance">Performance</button>
+                        <button class="btn-preset" id="mixerDisplay2PresetProjector" data-preset="projector">Projector</button>
+                        
+                        <!-- Separator -->
+                        <div class="control-group"></div>
+                        
+                        <!-- Display Mode Buttons -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Display Mode</div>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="btn-preset active" id="mixerDisplay2ModeFit" data-mode="fit">Fit</button>
+                            <button class="btn-preset" id="mixerDisplay2ModeFill" data-mode="fill">Fill</button>
+                            <button class="btn-preset" id="mixerDisplay2ModeStretch" data-mode="stretch">Stretch</button>
+                            <button class="btn-preset" id="mixerDisplay2ModeOriginal" data-mode="original">Original</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -3123,8 +3250,59 @@
                         <span>Controls</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display2Controls">
-                        <!-- Empty - capture toggles and settings will go here -->
+                    <div class="collapsible-content collapsed" id="display2Controls">
+                        <!-- Stream Settings -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Stream Settings</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay2ResolutionSelect" class="dropdown-selector-mixer">
+                                <option value="canvas">Canvas Size</option>
+                                <option value="720p">720p (1280×720)</option>
+                                <option value="1080p" selected>1080p (1920×1080)</option>
+                                <option value="4k">4K (3840×2160)</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay2FrameRateSelect" class="dropdown-selector-mixer">
+                                <option value="30" selected>30 FPS</option>
+                                <option value="60">60 FPS</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay2VideoQualitySelect" class="dropdown-selector-mixer">
+                                <option value="auto" selected>Auto</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                                <option value="4k">4K</option>
+                                <option value="4k-ultra">4K Ultra</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Enhancement -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Enhancement</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Sharpness</div>
+                                <div class="control-mini-value" id="mixerDisplay2SharpnessValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerDisplay2SharpnessSlider" min="0" max="100" step="1" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Letterbox Color</div>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="mixerDisplay2LetterboxColorPicker" value="#000000" style="width: 50px; height: 30px;">
+                                <span class="color-value" id="mixerDisplay2LetterboxColorValue">#000000</span>
+                            </div>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerDisplay2MirrorBackgroundToggle" title="Mirror Background">
+                                <span class="toggle-text">Mirror Background: Off</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3133,12 +3311,32 @@
             <div class="channel-strip display-channel">
                 <div class="channel-header">Display 3</div>
                 
-                <div class="channel-input-section">
-                    <!-- Empty - resolution/window controls will go here -->
-                </div>
-                
                 <div class="channel-toggle-section">
-                    <!-- Empty - ON/OFF toggle will go here -->
+                    <!-- Capture Settings Toggles -->
+                    <button class="btn-toggle" id="mixerDisplay3CaptureVideoToggle" title="Capture Video">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Video</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay3CaptureVizToggle" title="Capture Visualization">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Viz</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay3CaptureKaleidoscopeToggle" title="Capture Kaleidoscope">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Kaleid</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay3CaptureInfiniteZoomToggle" title="Capture Infinite Zoom">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">IZ</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay3CaptureWebGLToggle" title="Capture WebGL">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">WebGL</div>
+                    </button>
+                    <button class="btn-toggle" id="mixerDisplay3CaptureFluidDynamicsToggle" title="Capture Fluid Dynamics">
+                        <span class="toggle-text">ON</span>
+                        <div class="toggle-label">Fluid</div>
+                    </button>
                 </div>
                 
                 <!-- Note: Display channels don't have vertical-slider-section -->
@@ -3148,8 +3346,26 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display3Presets">
-                        <!-- Empty - preset buttons will go here -->
+                    <div class="preset-buttons collapsible-content collapsed" id="display3Presets">
+                        <!-- Display Preset Buttons -->
+                        <button class="btn-preset" id="mixerDisplay3PresetCinema" data-preset="cinema">Cinema</button>
+                        <button class="btn-preset" id="mixerDisplay3PresetSocial" data-preset="social">Social</button>
+                        <button class="btn-preset" id="mixerDisplay3PresetPerformance" data-preset="performance">Performance</button>
+                        <button class="btn-preset" id="mixerDisplay3PresetProjector" data-preset="projector">Projector</button>
+                        
+                        <!-- Separator -->
+                        <div class="control-group"></div>
+                        
+                        <!-- Display Mode Buttons -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Display Mode</div>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="btn-preset active" id="mixerDisplay3ModeFit" data-mode="fit">Fit</button>
+                            <button class="btn-preset" id="mixerDisplay3ModeFill" data-mode="fill">Fill</button>
+                            <button class="btn-preset" id="mixerDisplay3ModeStretch" data-mode="stretch">Stretch</button>
+                            <button class="btn-preset" id="mixerDisplay3ModeOriginal" data-mode="original">Original</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -3158,8 +3374,59 @@
                         <span>Controls</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content" id="display3Controls">
-                        <!-- Empty - capture toggles and settings will go here -->
+                    <div class="collapsible-content collapsed" id="display3Controls">
+                        <!-- Stream Settings -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Stream Settings</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay3ResolutionSelect" class="dropdown-selector-mixer">
+                                <option value="canvas">Canvas Size</option>
+                                <option value="720p">720p (1280×720)</option>
+                                <option value="1080p" selected>1080p (1920×1080)</option>
+                                <option value="4k">4K (3840×2160)</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay3FrameRateSelect" class="dropdown-selector-mixer">
+                                <option value="30" selected>30 FPS</option>
+                                <option value="60">60 FPS</option>
+                            </select>
+                        </div>
+                        <div class="control-mini-group">
+                            <select id="mixerDisplay3VideoQualitySelect" class="dropdown-selector-mixer">
+                                <option value="auto" selected>Auto</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                                <option value="4k">4K</option>
+                                <option value="4k-ultra">4K Ultra</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Enhancement -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Enhancement</div>
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Sharpness</div>
+                                <div class="control-mini-value" id="mixerDisplay3SharpnessValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerDisplay3SharpnessSlider" min="0" max="100" step="1" value="0">
+                        </div>
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Letterbox Color</div>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="mixerDisplay3LetterboxColorPicker" value="#000000" style="width: 50px; height: 30px;">
+                                <span class="color-value" id="mixerDisplay3LetterboxColorValue">#000000</span>
+                            </div>
+                        </div>
+                        <div class="control-mini-group">
+                            <button class="btn-toggle" id="mixerDisplay3MirrorBackgroundToggle" title="Mirror Background">
+                                <span class="toggle-text">Mirror Background: Off</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

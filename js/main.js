@@ -24185,8 +24185,601 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
+
+            // ========================================
+            // MIXER DISPLAY CONTROLS
+            // ========================================
+
+            // Display 1 Capture Toggles
+            const display1CaptureVideoToggle = document.getElementById('mixerDisplay1CaptureVideoToggle');
+            if (display1CaptureVideoToggle) {
+                display1CaptureVideoToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureVideoBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1CaptureVizToggle = document.getElementById('mixerDisplay1CaptureVizToggle');
+            if (display1CaptureVizToggle) {
+                display1CaptureVizToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureVizBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1CaptureKaleidoscopeToggle = document.getElementById('mixerDisplay1CaptureKaleidoscopeToggle');
+            if (display1CaptureKaleidoscopeToggle) {
+                display1CaptureKaleidoscopeToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureKaleidoscopeBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1CaptureInfiniteZoomToggle = document.getElementById('mixerDisplay1CaptureInfiniteZoomToggle');
+            if (display1CaptureInfiniteZoomToggle) {
+                display1CaptureInfiniteZoomToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureInfiniteZoomBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1CaptureWebGLToggle = document.getElementById('mixerDisplay1CaptureWebGLToggle');
+            if (display1CaptureWebGLToggle) {
+                display1CaptureWebGLToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureWebGLBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1CaptureFluidDynamicsToggle = document.getElementById('mixerDisplay1CaptureFluidDynamicsToggle');
+            if (display1CaptureFluidDynamicsToggle) {
+                display1CaptureFluidDynamicsToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1CaptureFluidDynamicsBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // Display 1 Preset Buttons
+            const display1PresetCinema = document.getElementById('mixerDisplay1PresetCinema');
+            if (display1PresetCinema) {
+                display1PresetCinema.addEventListener('click', () => {
+                    const footerBtn = document.querySelector('[data-preset="cinema"]');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1PresetSocial = document.getElementById('mixerDisplay1PresetSocial');
+            if (display1PresetSocial) {
+                display1PresetSocial.addEventListener('click', () => {
+                    const footerBtn = document.querySelector('[data-preset="social"]');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1PresetPerformance = document.getElementById('mixerDisplay1PresetPerformance');
+            if (display1PresetPerformance) {
+                display1PresetPerformance.addEventListener('click', () => {
+                    const footerBtn = document.querySelector('[data-preset="performance"]');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display1PresetProjector = document.getElementById('mixerDisplay1PresetProjector');
+            if (display1PresetProjector) {
+                display1PresetProjector.addEventListener('click', () => {
+                    const footerBtn = document.querySelector('[data-preset="projector"]');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // Display 1 Mode Buttons
+            const display1ModeFit = document.getElementById('mixerDisplay1ModeFit');
+            if (display1ModeFit) {
+                display1ModeFit.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display1', 'fit');
+                    window.visualizer.updateMixerDisplay1ModeButtons('fit');
+                });
+            }
+
+            const display1ModeFill = document.getElementById('mixerDisplay1ModeFill');
+            if (display1ModeFill) {
+                display1ModeFill.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display1', 'fill');
+                    window.visualizer.updateMixerDisplay1ModeButtons('fill');
+                });
+            }
+
+            const display1ModeStretch = document.getElementById('mixerDisplay1ModeStretch');
+            if (display1ModeStretch) {
+                display1ModeStretch.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display1', 'stretch');
+                    window.visualizer.updateMixerDisplay1ModeButtons('stretch');
+                });
+            }
+
+            const display1ModeOriginal = document.getElementById('mixerDisplay1ModeOriginal');
+            if (display1ModeOriginal) {
+                display1ModeOriginal.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display1', 'original');
+                    window.visualizer.updateMixerDisplay1ModeButtons('original');
+                });
+            }
+
+            // Display 1 Stream Settings
+            const display1ResolutionSelect = document.getElementById('mixerDisplay1ResolutionSelect');
+            if (display1ResolutionSelect) {
+                display1ResolutionSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display1ResolutionSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display1FrameRateSelect = document.getElementById('mixerDisplay1FrameRateSelect');
+            if (display1FrameRateSelect) {
+                display1FrameRateSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display1FrameRateSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display1VideoQualitySelect = document.getElementById('mixerDisplay1VideoQualitySelect');
+            if (display1VideoQualitySelect) {
+                display1VideoQualitySelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display1VideoQualitySelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            // Display 1 Enhancement Controls
+            const display1SharpnessSlider = document.getElementById('mixerDisplay1SharpnessSlider');
+            if (display1SharpnessSlider) {
+                display1SharpnessSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    window.visualizer.setDisplaySharpness('display1', value);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay1SharpnessValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = `${value}%`;
+                    }
+                    
+                    // Sync with footer
+                    const footerSlider = document.getElementById('display1Sharpness');
+                    if (footerSlider) {
+                        footerSlider.value = value;
+                        footerSlider.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+
+            const display1LetterboxColorPicker = document.getElementById('mixerDisplay1LetterboxColorPicker');
+            if (display1LetterboxColorPicker) {
+                display1LetterboxColorPicker.addEventListener('change', (e) => {
+                    const color = e.target.value;
+                    window.visualizer.setDisplayLetterboxColor('display1', color);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay1LetterboxColorValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = color;
+                    }
+                    
+                    // Sync with footer
+                    const footerPicker = document.getElementById('display1LetterboxColor');
+                    if (footerPicker) {
+                        footerPicker.value = color;
+                        footerPicker.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display1MirrorBackgroundToggle = document.getElementById('mixerDisplay1MirrorBackgroundToggle');
+            if (display1MirrorBackgroundToggle) {
+                display1MirrorBackgroundToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display1MirrorBackgroundBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // ========================================
+            // DISPLAY 2 MIXER CONTROLS
+            // ========================================
+
+            // Display 2 Capture Toggles
+            const display2CaptureVideoToggle = document.getElementById('mixerDisplay2CaptureVideoToggle');
+            if (display2CaptureVideoToggle) {
+                display2CaptureVideoToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureVideoBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display2CaptureVizToggle = document.getElementById('mixerDisplay2CaptureVizToggle');
+            if (display2CaptureVizToggle) {
+                display2CaptureVizToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureVizBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display2CaptureKaleidoscopeToggle = document.getElementById('mixerDisplay2CaptureKaleidoscopeToggle');
+            if (display2CaptureKaleidoscopeToggle) {
+                display2CaptureKaleidoscopeToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureKaleidoscopeBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display2CaptureInfiniteZoomToggle = document.getElementById('mixerDisplay2CaptureInfiniteZoomToggle');
+            if (display2CaptureInfiniteZoomToggle) {
+                display2CaptureInfiniteZoomToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureInfiniteZoomBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display2CaptureWebGLToggle = document.getElementById('mixerDisplay2CaptureWebGLToggle');
+            if (display2CaptureWebGLToggle) {
+                display2CaptureWebGLToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureWebGLBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display2CaptureFluidDynamicsToggle = document.getElementById('mixerDisplay2CaptureFluidDynamicsToggle');
+            if (display2CaptureFluidDynamicsToggle) {
+                display2CaptureFluidDynamicsToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2CaptureFluidDynamicsBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // Display 2 Mode Buttons
+            const display2ModeFit = document.getElementById('mixerDisplay2ModeFit');
+            if (display2ModeFit) {
+                display2ModeFit.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display2', 'fit');
+                    window.visualizer.updateMixerDisplay2ModeButtons('fit');
+                });
+            }
+
+            const display2ModeFill = document.getElementById('mixerDisplay2ModeFill');
+            if (display2ModeFill) {
+                display2ModeFill.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display2', 'fill');
+                    window.visualizer.updateMixerDisplay2ModeButtons('fill');
+                });
+            }
+
+            const display2ModeStretch = document.getElementById('mixerDisplay2ModeStretch');
+            if (display2ModeStretch) {
+                display2ModeStretch.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display2', 'stretch');
+                    window.visualizer.updateMixerDisplay2ModeButtons('stretch');
+                });
+            }
+
+            const display2ModeOriginal = document.getElementById('mixerDisplay2ModeOriginal');
+            if (display2ModeOriginal) {
+                display2ModeOriginal.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display2', 'original');
+                    window.visualizer.updateMixerDisplay2ModeButtons('original');
+                });
+            }
+
+            // Display 2 Stream Settings
+            const display2ResolutionSelect = document.getElementById('mixerDisplay2ResolutionSelect');
+            if (display2ResolutionSelect) {
+                display2ResolutionSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display2ResolutionSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display2FrameRateSelect = document.getElementById('mixerDisplay2FrameRateSelect');
+            if (display2FrameRateSelect) {
+                display2FrameRateSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display2FrameRateSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display2VideoQualitySelect = document.getElementById('mixerDisplay2VideoQualitySelect');
+            if (display2VideoQualitySelect) {
+                display2VideoQualitySelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display2VideoQualitySelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            // Display 2 Enhancement Controls
+            const display2SharpnessSlider = document.getElementById('mixerDisplay2SharpnessSlider');
+            if (display2SharpnessSlider) {
+                display2SharpnessSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    window.visualizer.setDisplaySharpness('display2', value);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay2SharpnessValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = `${value}%`;
+                    }
+                    
+                    // Sync with footer
+                    const footerSlider = document.getElementById('display2Sharpness');
+                    if (footerSlider) {
+                        footerSlider.value = value;
+                        footerSlider.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+
+            const display2LetterboxColorPicker = document.getElementById('mixerDisplay2LetterboxColorPicker');
+            if (display2LetterboxColorPicker) {
+                display2LetterboxColorPicker.addEventListener('change', (e) => {
+                    const color = e.target.value;
+                    window.visualizer.setDisplayLetterboxColor('display2', color);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay2LetterboxColorValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = color;
+                    }
+                    
+                    // Sync with footer
+                    const footerPicker = document.getElementById('display2LetterboxColor');
+                    if (footerPicker) {
+                        footerPicker.value = color;
+                        footerPicker.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display2MirrorBackgroundToggle = document.getElementById('mixerDisplay2MirrorBackgroundToggle');
+            if (display2MirrorBackgroundToggle) {
+                display2MirrorBackgroundToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display2MirrorBackgroundBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // ========================================
+            // DISPLAY 3 MIXER CONTROLS
+            // ========================================
+
+            // Display 3 Capture Toggles
+            const display3CaptureVideoToggle = document.getElementById('mixerDisplay3CaptureVideoToggle');
+            if (display3CaptureVideoToggle) {
+                display3CaptureVideoToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureVideoBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display3CaptureVizToggle = document.getElementById('mixerDisplay3CaptureVizToggle');
+            if (display3CaptureVizToggle) {
+                display3CaptureVizToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureVizBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display3CaptureKaleidoscopeToggle = document.getElementById('mixerDisplay3CaptureKaleidoscopeToggle');
+            if (display3CaptureKaleidoscopeToggle) {
+                display3CaptureKaleidoscopeToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureKaleidoscopeBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display3CaptureInfiniteZoomToggle = document.getElementById('mixerDisplay3CaptureInfiniteZoomToggle');
+            if (display3CaptureInfiniteZoomToggle) {
+                display3CaptureInfiniteZoomToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureInfiniteZoomBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display3CaptureWebGLToggle = document.getElementById('mixerDisplay3CaptureWebGLToggle');
+            if (display3CaptureWebGLToggle) {
+                display3CaptureWebGLToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureWebGLBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            const display3CaptureFluidDynamicsToggle = document.getElementById('mixerDisplay3CaptureFluidDynamicsToggle');
+            if (display3CaptureFluidDynamicsToggle) {
+                display3CaptureFluidDynamicsToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3CaptureFluidDynamicsBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
+
+            // Display 3 Mode Buttons
+            const display3ModeFit = document.getElementById('mixerDisplay3ModeFit');
+            if (display3ModeFit) {
+                display3ModeFit.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display3', 'fit');
+                    window.visualizer.updateMixerDisplay3ModeButtons('fit');
+                });
+            }
+
+            const display3ModeFill = document.getElementById('mixerDisplay3ModeFill');
+            if (display3ModeFill) {
+                display3ModeFill.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display3', 'fill');
+                    window.visualizer.updateMixerDisplay3ModeButtons('fill');
+                });
+            }
+
+            const display3ModeStretch = document.getElementById('mixerDisplay3ModeStretch');
+            if (display3ModeStretch) {
+                display3ModeStretch.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display3', 'stretch');
+                    window.visualizer.updateMixerDisplay3ModeButtons('stretch');
+                });
+            }
+
+            const display3ModeOriginal = document.getElementById('mixerDisplay3ModeOriginal');
+            if (display3ModeOriginal) {
+                display3ModeOriginal.addEventListener('click', () => {
+                    window.visualizer.setDisplayMode('display3', 'original');
+                    window.visualizer.updateMixerDisplay3ModeButtons('original');
+                });
+            }
+
+            // Display 3 Stream Settings
+            const display3ResolutionSelect = document.getElementById('mixerDisplay3ResolutionSelect');
+            if (display3ResolutionSelect) {
+                display3ResolutionSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display3ResolutionSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display3FrameRateSelect = document.getElementById('mixerDisplay3FrameRateSelect');
+            if (display3FrameRateSelect) {
+                display3FrameRateSelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display3FrameRateSelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display3VideoQualitySelect = document.getElementById('mixerDisplay3VideoQualitySelect');
+            if (display3VideoQualitySelect) {
+                display3VideoQualitySelect.addEventListener('change', (e) => {
+                    const footerSelect = document.getElementById('display3VideoQualitySelect');
+                    if (footerSelect) {
+                        footerSelect.value = e.target.value;
+                        footerSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            // Display 3 Enhancement Controls
+            const display3SharpnessSlider = document.getElementById('mixerDisplay3SharpnessSlider');
+            if (display3SharpnessSlider) {
+                display3SharpnessSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    window.visualizer.setDisplaySharpness('display3', value);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay3SharpnessValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = `${value}%`;
+                    }
+                    
+                    // Sync with footer
+                    const footerSlider = document.getElementById('display3Sharpness');
+                    if (footerSlider) {
+                        footerSlider.value = value;
+                        footerSlider.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+
+            const display3LetterboxColorPicker = document.getElementById('mixerDisplay3LetterboxColorPicker');
+            if (display3LetterboxColorPicker) {
+                display3LetterboxColorPicker.addEventListener('change', (e) => {
+                    const color = e.target.value;
+                    window.visualizer.setDisplayLetterboxColor('display3', color);
+                    
+                    // Update mixer value display
+                    const valueDisplay = document.getElementById('mixerDisplay3LetterboxColorValue');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = color;
+                    }
+                    
+                    // Sync with footer
+                    const footerPicker = document.getElementById('display3LetterboxColor');
+                    if (footerPicker) {
+                        footerPicker.value = color;
+                        footerPicker.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            const display3MirrorBackgroundToggle = document.getElementById('mixerDisplay3MirrorBackgroundToggle');
+            if (display3MirrorBackgroundToggle) {
+                display3MirrorBackgroundToggle.addEventListener('click', () => {
+                    const footerBtn = document.getElementById('display3MirrorBackgroundBtn');
+                    if (footerBtn) footerBtn.click();
+                });
+            }
         }
     }, 200);
 });
+
+// ========================================
+// MIXER DISPLAY UPDATE METHODS
+// ========================================
+
+// Update mixer display mode buttons
+GitItUpVisualizer.prototype.updateMixerDisplay1ModeButtons = function(activeMode) {
+    const modes = ['fit', 'fill', 'stretch', 'original'];
+    modes.forEach(mode => {
+        const btn = document.getElementById(`mixerDisplay1Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+        if (btn) {
+            if (mode === activeMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+};
+
+GitItUpVisualizer.prototype.updateMixerDisplay2ModeButtons = function(activeMode) {
+    const modes = ['fit', 'fill', 'stretch', 'original'];
+    modes.forEach(mode => {
+        const btn = document.getElementById(`mixerDisplay2Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+        if (btn) {
+            if (mode === activeMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+};
+
+GitItUpVisualizer.prototype.updateMixerDisplay3ModeButtons = function(activeMode) {
+    const modes = ['fit', 'fill', 'stretch', 'original'];
+    modes.forEach(mode => {
+        const btn = document.getElementById(`mixerDisplay3Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+        if (btn) {
+            if (mode === activeMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+};
 
 
