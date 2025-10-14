@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supernova Remnant - Crab Nebula</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        
+        #controls::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #controls::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        #controls::-webkit-scrollbar-thumb {
+            background: rgba(74, 158, 255, 0.5);
+            border-radius: 4px;
+        }
+        
+        #controls h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #4a9eff;
+            border-bottom: 2px solid #4a9eff;
+            padding-bottom: 8px;
+        }
+        
+        #controls h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #80c0ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .control-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            background: #4a9eff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 5px;
+        }
+        
+        .control-group button:hover {
+            background: #3a7ed8;
+        }
+        
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #4a9eff;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4a9eff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="supernovaCanvas"></canvas>
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Initializing Supernova Remnant...</p>
+        </div>
+        
+        <div id="controls" class="hidden">
+            <h2>💥 Supernova Remnant</h2>
+            
+            <h3>🎬 Camera</h3>
+            <div class="control-group">
+                <label>Distance <span class="value-display" id="distanceValue">180</span></label>
+                <input type="range" id="cameraDistance" min="-180" max="180" step="1" value="180">
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="cameraOrbit" checked>
+                    <span>Auto Orbit</span>
+                </div>
+            </div>
+            
+            <h3>💥 Remnant Structure</h3>
+            <div class="control-group">
+                <label>Filament Density <span class="value-display" id="densityValue">1.4</span></label>
+<input type="range" id="filamentDensity" min="0.3" max="5" step="0.1" value="1.4">
+            </div>
+            <div class="control-group">
+                <label>Expansion <span class="value-display" id="expansionValue">36</span></label>
+<input type="range" id="expansion" min="8" max="50" step="0.5" value="36">
+            </div>
+            <div class="control-group">
+                <label>Chaos <span class="value-display" id="chaosValue">2.8</span></label>
+<input type="range" id="chaos" min="0" max="5" step="0.1" value="2.8">
+            </div>
+
+            <div class="control-group">
+    <label>Asymmetry <span class="value-display" id="asymmetryValue">1.1</span></label>
+    <input type="range" id="asymmetry" min="0" max="2" step="0.1" value="1.1">
+</div>
+<div class="control-group">
+    <label>Thread Variation <span class="value-display" id="variationValue">1.1</span></label>
+    <input type="range" id="threadVariation" min="0" max="2" step="0.1" value="1.1">
+</div>
+            
+            <h3>Central Pulsar</h3>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="showPulsar" checked>
+                    <span>Show Pulsar</span>
+                </div>
+            </div>
+            <div class="control-group">
+    <label>Pulsar Size <span class="value-display" id="pulsarSizeValue">5</span></label>
+    <input type="range" id="pulsarSize" min="1" max="40" step="1" value="5">
+</div>
+            <div class="control-group">
+                <label>Pulse Rate <span class="value-display" id="pulseRateValue">2.0</span></label>
+                <input type="range" id="pulseRate" min="0.5" max="5" step="0.1" value="2.0">
+            </div>
+            
+            <h3>Stars</h3>
+            <div class="control-group">
+                <label>Star Count <span class="value-display" id="starCountValue">5000</span></label>
+                <input type="range" id="starCount" min="1000" max="15000" step="500" value="5000">
+            </div>
+            
+            <h3>Effects</h3>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="bloom" checked>
+                    <span>HDR Bloom</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Bloom Strength <span class="value-display" id="bloomStrengthValue">1.0</span></label>
+                <input type="range" id="bloomStrength" min="0" max="2" step="0.1" value="1.0">
+            </div>
+            
+            <h3>⚙️ Performance</h3>
+            <div class="control-group">
+                <label>Render Quality <span class="value-display" id="qualityValue">1.0</span></label>
+                <input type="range" id="renderQuality" min="0.5" max="2" step="0.1" value="1.0">
+            </div>
+            
+            <div class="control-group">
+                <button onclick="renderer.resetSettings()">Reset All</button>
+                <button onclick="renderer.toggleControls()" style="background: #555;">Hide Controls</button>
+            </div>
+        </div>
+        
+        <div id="info">
+            <strong>Supernova Remnant Visualization</strong><br>
+            Drag to rotate • Scroll to zoom • C to toggle UI<br>
+            <span id="fps">FPS: --</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let renderer;
+        
+        class SupernovaRemnantRenderer {
+            constructor() {
+                this.canvas = document.getElementById('supernovaCanvas');
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.filaments = [];
+                this.innerCore = null;
+                this.shockWave = null;
+                this.pulsar = null;
+                this.stars = null;
+                
+                this.settings = {
+                    cameraDistance: 180,
+                    cameraOrbit: false,
+                    filamentDensity: 1.4,
+                    expansion: 36,
+                    chaos: 2.8,
+                    asymmetry: 1.1, 
+                    threadVariation: 1.1,
+                    showPulsar: true,
+                    pulsarSize: 5,
+                    pulseRate: 2.0,
+                    starCount: 5000,
+                    bloom: true,
+                    bloomStrength: 1.0,
+                    renderQuality: 1.0
+                };
+                
+                this.mouse = { x: 0, y: 0, down: false };
+                this.rotation = { x: 0, y: 0 };
+                this.targetRotation = { x: 0, y: 0 };
+                
+                this.time = 0;
+                this.frameCount = 0;
+                this.lastTime = performance.now();
+                
+                this.init();
+            }
+            
+            init() {
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x000000);
+                
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(
+                    50,
+                    window.innerWidth / window.innerHeight,
+                    0.1,
+                    500
+                );
+                this.camera.position.z = this.settings.cameraDistance;
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: this.canvas,
+                    antialias: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.settings.renderQuality, 2));
+                
+                // Create elements
+                this.createStarField();
+                this.createFilaments();
+                this.createInnerCore();
+                //this.createShockWave();
+                this.createPulsar();
+                
+                // Event listeners
+                this.setupEventListeners();
+                this.setupControls();
+                
+                // Start
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('controls').classList.remove('hidden');
+                
+                this.animate();
+            }
+            
+            createStarTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                
+                const centerX = 32, centerY = 32;
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 32);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.6)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 64, 64);
+                
+                return new THREE.CanvasTexture(canvas);
+            }
+            
+            createStarField() {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const colors = [];
+                const sizes = [];
+                
+                for (let i = 0; i < this.settings.starCount; i++) {
+                    const x = (Math.random() - 0.5) * 200;
+                    const y = (Math.random() - 0.5) * 200;
+                    const z = (Math.random() - 0.5) * 200;
+                    
+                    vertices.push(x, y, z);
+                    
+                    const temp = Math.random();
+                    if (temp < 0.6) {
+                        colors.push(0.9, 0.95, 1.0);
+                    } else if (temp < 0.9) {
+                        colors.push(1.0, 0.95, 0.8);
+                    } else {
+                        colors.push(1.0, 0.7, 0.5);
+                    }
+                    
+                    const size = Math.random() > 0.95 ? 2 + Math.random() * 2 : 0.3 + Math.random() * 1.5;
+                    sizes.push(size);
+                }
+                
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 2,
+                    map: this.createStarTexture(),
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    sizeAttenuation: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                
+                this.stars = new THREE.Points(geometry, material);
+                this.scene.add(this.stars);
+            }
+            
+createFilaments() {
+    // Create DENSE radial filamentary structure
+    const filamentCount = Math.floor(200 * this.settings.filamentDensity);
+    
+    for (let i = 0; i < filamentCount; i++) {
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const colors = [];
+        const sizes = [];
+        const alphas = [];
+        
+        // Random starting direction with ASYMMETRY
+        const baseTheta = Math.random() * Math.PI * 2;
+        const basePhi = Math.acos(2 * Math.random() - 1);
+        
+        // Asymmetric distribution - favor certain directions
+        const asymmetryFactor = this.settings.asymmetry;
+        const favoredTheta = baseTheta + Math.sin(baseTheta * 3) * asymmetryFactor;
+        const favoredPhi = basePhi + Math.cos(basePhi * 2) * asymmetryFactor * 0.5;
+        
+        // Base direction vector with asymmetry
+        const baseDir = new THREE.Vector3(
+            Math.sin(favoredPhi) * Math.cos(favoredTheta),
+            Math.sin(favoredPhi) * Math.sin(favoredTheta),
+            Math.cos(favoredPhi)
+        );
+        
+        // VARIABLE particles per thread based on variation setting
+        const baseParticles = 120;
+        const variationAmount = Math.floor(Math.random() * 100 * this.settings.threadVariation);
+        const particleCount = baseParticles + variationAmount;
+        
+        // Variable starting position
+        const startRadius = 1.5 + (Math.random() - 0.5) * this.settings.threadVariation;
+        let currentPos = baseDir.clone().multiplyScalar(startRadius);
+        
+        for (let j = 0; j < particleCount; j++) {
+            const t = j / particleCount;
+            
+            // Variable step size per thread
+            const threadLengthVariation = 0.8 + Math.random() * 0.4 * this.settings.threadVariation;
+            const stepSize = (this.settings.expansion / particleCount) * threadLengthVariation;
+            
+            // Chaos with variation
+            const chaosAmount = this.settings.chaos * (0.7 + Math.random() * 0.6 * this.settings.threadVariation);
+            const randomOffset = new THREE.Vector3(
+                (Math.random() - 0.5) * chaosAmount * 0.5,
+                (Math.random() - 0.5) * chaosAmount * 0.5,
+                (Math.random() - 0.5) * chaosAmount * 0.5
+            );
+            
+            // Move along base direction + chaos
+            const moveDir = baseDir.clone()
+                .multiplyScalar(stepSize)
+                .add(randomOffset);
+            
+            currentPos.add(moveDir);
+            
+            positions.push(currentPos.x, currentPos.y, currentPos.z);
+            
+            // Color gradient: blue/white → green → red/orange
+            if (t < 0.25) {
+                const mix = t / 0.25;
+                colors.push(
+                    0.7 + mix * 0.3,
+                    0.8 + mix * 0.2,
+                    1.0
+                );
+            } else if (t < 0.6) {
+                const mix = (t - 0.25) / 0.35;
+                colors.push(
+                    0.4 + mix * 0.4,
+                    0.9,
+                    0.5 - mix * 0.3
+                );
+            } else {
+                const mix = (t - 0.6) / 0.4;
+                colors.push(
+                    1.0,
+                    0.5 - mix * 0.2,
+                    0.2 - mix * 0.1
+                );
+            }
+            
+            // Variable size per thread
+            const baseThickness = 0.8 + Math.random() * 0.4 * this.settings.threadVariation;
+            const thickness = Math.sin(t * Math.PI);
+            sizes.push(baseThickness + thickness * 1.5);
+            
+            const fadeFactor = 1.0 - Math.pow(t, 1.5);
+            alphas.push(fadeFactor * (0.7 + Math.random() * 0.3));
+        }
+        
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+        geometry.setAttribute('alpha', new THREE.Float32BufferAttribute(alphas, 1));
+        
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                pointTexture: { value: this.createStarTexture() }
+            },
+            vertexShader: `
+                attribute float size;
+                attribute float alpha;
+                attribute vec3 color;
+                
+                varying vec3 vColor;
+                varying float vAlpha;
+                
+                void main() {
+                    vColor = color;
+                    vAlpha = alpha;
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    gl_PointSize = size * 200.0 / -mvPosition.z;
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D pointTexture;
+                
+                varying vec3 vColor;
+                varying float vAlpha;
+                
+                void main() {
+                    vec4 texColor = texture2D(pointTexture, gl_PointCoord);
+                    vec3 finalColor = vColor;
+                    float finalAlpha = texColor.a * vAlpha;
+                    
+                    gl_FragColor = vec4(finalColor, finalAlpha);
+                }
+            `,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const filament = new THREE.Points(geometry, material);
+        filament.userData.baseDir = baseDir.clone(); // Store for animation
+        this.filaments.push(filament);
+        this.scene.add(filament);
+    }
+    
+    console.log('Created', this.filaments.length, 'filament threads');
+}
+            
+            createInnerCore() {
+                // Bright inner core glow
+                const geometry = new THREE.SphereGeometry(3, 32, 32);
+                const material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 }
+                    },
+                    vertexShader: `
+                        varying vec3 vNormal;
+                        varying vec3 vPosition;
+                        
+                        void main() {
+                            vNormal = normalize(normalMatrix * normal);
+                            vPosition = position;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float time;
+                        varying vec3 vNormal;
+                        varying vec3 vPosition;
+                        
+                        void main() {
+                            float dist = length(vPosition) / 3.0;
+                            float intensity = 1.0 - smoothstep(0.0, 1.0, dist);
+                            intensity = pow(intensity, 2.0);
+                            
+                            // Pulsing
+                            float pulse = 0.8 + sin(time * 2.0) * 0.2;
+                            
+                            // Blue-white core
+                            vec3 color = vec3(0.7, 0.9, 1.0) * pulse;
+                            float alpha = intensity * 0.6;
+                            
+                            gl_FragColor = vec4(color, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    side: THREE.BackSide,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                
+                this.innerCore = new THREE.Mesh(geometry, material);
+                this.scene.add(this.innerCore);
+            }
+            
+            createShockWave() {
+                // Outer expanding shock wave
+                const geometry = new THREE.SphereGeometry(18, 64, 64);
+                const material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 }
+                    },
+                    vertexShader: `
+                        varying vec3 vNormal;
+                        varying vec3 vPosition;
+                        
+                        void main() {
+                            vNormal = normalize(normalMatrix * normal);
+                            vPosition = position;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float time;
+                        varying vec3 vNormal;
+                        varying vec3 vPosition;
+                        
+                        void main() {
+                            // Edge glow only
+                            float edge = abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
+                            edge = 1.0 - edge;
+                            edge = pow(edge, 3.0);
+                            
+                            // Pulsing wave
+                            float wave = sin(time * 1.5) * 0.3 + 0.7;
+                            
+                            // Red-orange shock wave
+                            vec3 color = vec3(1.0, 0.4, 0.2);
+                            float alpha = edge * 0.3 * wave;
+                            
+                            gl_FragColor = vec4(color, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    side: THREE.BackSide,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                
+                this.shockWave = new THREE.Mesh(geometry, material);
+                this.scene.add(this.shockWave);
+            }
+            
+createPulsar() {
+    // Create glow texture with TRANSPARENT background
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    // IMPORTANT: Don't fill background - leave transparent
+    const centerX = 64, centerY = 64;
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 64);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+    gradient.addColorStop(0.2, 'rgba(220, 230, 255, 0.9)');
+    gradient.addColorStop(0.4, 'rgba(180, 200, 255, 0.6)');
+    gradient.addColorStop(0.6, 'rgba(140, 170, 255, 0.3)');
+    gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    
+    // Central pulsar sprite
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false  // ADD THIS
+    });
+    
+    this.pulsar = new THREE.Sprite(material);
+    this.pulsar.scale.set(5, 5, 1);
+    
+    // Point light
+    const light = new THREE.PointLight(0xaaccff, 5, 50);
+    this.pulsar.add(light);
+    this.pulsar.userData.light = light;
+    this.pulsar.userData.baseScale = 5; // Store base scale
+    
+    this.scene.add(this.pulsar);
+}
+            
+            setupEventListeners() {
+                // Mouse controls
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.mouse.down = true;
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                
+                window.addEventListener('mouseup', () => {
+                    this.mouse.down = false;
+                });
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (this.mouse.down && !this.settings.cameraOrbit) {
+                        const deltaX = e.clientX - this.mouse.x;
+                        const deltaY = e.clientY - this.mouse.y;
+                        
+                        this.targetRotation.y += deltaX * 0.005;
+                        this.targetRotation.x += deltaY * 0.005;
+                        this.targetRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.targetRotation.x));
+                        
+                        this.mouse.x = e.clientX;
+                        this.mouse.y = e.clientY;
+                    }
+                });
+                
+                // Wheel zoom
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY * 0.05;
+                    this.settings.cameraDistance = Math.max(20, Math.min(80, this.settings.cameraDistance + delta));
+                    document.getElementById('cameraDistance').value = this.settings.cameraDistance;
+                    document.getElementById('distanceValue').textContent = this.settings.cameraDistance.toFixed(0);
+                }, { passive: false });
+                
+                // Keyboard
+                window.addEventListener('keydown', (e) => {
+                    if (e.key.toLowerCase() === 'c') {
+                        this.toggleControls();
+                    }
+                });
+                
+                // Resize
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+            
+            setupControls() {
+                document.getElementById('cameraDistance').addEventListener('input', (e) => {
+                    this.settings.cameraDistance = parseFloat(e.target.value);
+                    document.getElementById('distanceValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('cameraOrbit').addEventListener('change', (e) => {
+                    this.settings.cameraOrbit = e.target.checked;
+                });
+                
+                document.getElementById('filamentDensity').addEventListener('input', (e) => {
+                    this.settings.filamentDensity = parseFloat(e.target.value);
+                    document.getElementById('densityValue').textContent = e.target.value;
+                    this.recreateFilaments();
+                });
+
+                document.getElementById('asymmetry').addEventListener('input', (e) => {
+    this.settings.asymmetry = parseFloat(e.target.value);
+    document.getElementById('asymmetryValue').textContent = e.target.value;
+    this.recreateFilaments();
+});
+
+document.getElementById('threadVariation').addEventListener('input', (e) => {
+    this.settings.threadVariation = parseFloat(e.target.value);
+    document.getElementById('variationValue').textContent = e.target.value;
+    this.recreateFilaments();
+});
+
+document.getElementById('pulsarSize').addEventListener('input', (e) => {
+    this.settings.pulsarSize = parseFloat(e.target.value);
+    document.getElementById('pulsarSizeValue').textContent = e.target.value;
+    
+    if (this.pulsar) {
+        this.pulsar.userData.baseScale = this.settings.pulsarSize;
+    }
+});
+                
+                document.getElementById('expansion').addEventListener('input', (e) => {
+                    this.settings.expansion = parseFloat(e.target.value);
+                    document.getElementById('expansionValue').textContent = e.target.value;
+                    this.recreateFilaments();
+                });
+                
+                document.getElementById('chaos').addEventListener('input', (e) => {
+                    this.settings.chaos = parseFloat(e.target.value);
+                    document.getElementById('chaosValue').textContent = e.target.value;
+                    this.recreateFilaments();
+                });
+                
+                document.getElementById('showPulsar').addEventListener('change', (e) => {
+                    this.settings.showPulsar = e.target.checked;
+                    this.pulsar.visible = e.target.checked;
+                });
+                
+                document.getElementById('pulseRate').addEventListener('input', (e) => {
+                    this.settings.pulseRate = parseFloat(e.target.value);
+                    document.getElementById('pulseRateValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('starCount').addEventListener('input', (e) => {
+                    this.settings.starCount = parseInt(e.target.value);
+                    document.getElementById('starCountValue').textContent = e.target.value;
+                    this.scene.remove(this.stars);
+                    this.createStarField();
+                });
+                
+                document.getElementById('bloom').addEventListener('change', (e) => {
+                    this.settings.bloom = e.target.checked;
+                });
+                
+                document.getElementById('bloomStrength').addEventListener('input', (e) => {
+                    this.settings.bloomStrength = parseFloat(e.target.value);
+                    document.getElementById('bloomStrengthValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('renderQuality').addEventListener('input', (e) => {
+                    this.settings.renderQuality = parseFloat(e.target.value);
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.settings.renderQuality, 2));
+                    document.getElementById('qualityValue').textContent = e.target.value;
+                });
+            }
+            
+            recreateFilaments() {
+                this.filaments.forEach(f => this.scene.remove(f));
+                this.filaments = [];
+                this.createFilaments();
+            }
+            
+            resetSettings() {
+                this.settings = {
+                    cameraDistance: 40,
+                    cameraOrbit: true,
+                    filamentDensity: 1.0,
+                    expansion: 15,
+                    chaos: 0.8,
+                    showPulsar: true,
+                    pulsarSize: 5,
+                    pulseRate: 2.0,
+                    asymmetry: 0.5,
+                    threadVariation: 0.5,
+                    starCount: 5000,
+                    bloom: true,
+                    bloomStrength: 1.0,
+                    renderQuality: 1.0
+                };
+                
+                // Update UI
+                document.getElementById('cameraDistance').value = 40;
+                document.getElementById('distanceValue').textContent = '40';
+                document.getElementById('cameraOrbit').checked = true;
+                document.getElementById('filamentDensity').value = 1.0;
+                document.getElementById('densityValue').textContent = '1.0';
+                document.getElementById('expansion').value = 15;
+                document.getElementById('expansionValue').textContent = '15';
+                document.getElementById('chaos').value = 0.8;
+                document.getElementById('chaosValue').textContent = '0.8';
+                document.getElementById('showPulsar').checked = true;
+                document.getElementById('pulsarSize').value = 5;
+                Displacement maps - 3D surface modification
+
+document.getElementById('pulsarSizeValue').textContent = '5';
+                document.getElementById('pulseRate').value = 2.0;
+                document.getElementById('pulseRateValue').textContent = '2.0';
+                document.getElementById('starCount').value = 5000;
+                document.getElementById('starCountValue').textContent = '5000';
+                document.getElementById('bloom').checked = true;
+                document.getElementById('bloomStrength').value = 1.0;
+                document.getElementById('bloomStrengthValue').textContent = '1.0';
+                document.getElementById('renderQuality').value = 1.0;
+                document.getElementById('qualityValue').textContent = '1.0';
+                document.getElementById('asymmetry').value = 0.5;
+                document.getElementById('asymmetryValue').textContent = '0.5';
+                document.getElementById('threadVariation').value = 0.5;
+                document.getElementById('variationValue').textContent = '0.5';
+                
+                this.recreateFilaments();
+            }
+            
+            toggleControls() {
+                document.getElementById('controls').classList.toggle('hidden');
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                
+                this.time += 0.016;
+                
+                // Camera movement
+                if (this.settings.cameraOrbit) {
+                    const angle = this.time * 0.1;
+                    const dist = this.settings.cameraDistance;
+                    this.camera.position.x = Math.sin(angle) * dist;
+                    this.camera.position.z = Math.cos(angle) * dist;
+                    this.camera.position.y = Math.sin(angle * 0.5) * 10;
+                    this.camera.lookAt(0, 0, 0);
+                } else {
+                    // Manual rotation
+                    this.rotation.x += (this.targetRotation.x - this.rotation.x) * 0.1;
+                    this.rotation.y += (this.targetRotation.y - this.rotation.y) * 0.1;
+                    
+                    const dist = this.settings.cameraDistance;
+                    this.camera.position.x = Math.sin(this.rotation.y) * Math.cos(this.rotation.x) * dist;
+                    this.camera.position.y = Math.sin(this.rotation.x) * dist;
+                    this.camera.position.z = Math.cos(this.rotation.y) * Math.cos(this.rotation.x) * dist;
+                    this.camera.lookAt(0, 0, 0);
+                }
+                
+                // Animate filaments - subtle expansion breathing
+                this.filaments.forEach((filament, i) => {
+                    filament.material.uniforms.time.value = this.time;
+                    
+                    const breathe = 1.0 + Math.sin(this.time * 0.3 + i * 0.1) * 0.02;
+                    filament.scale.setScalar(breathe);
+                    
+                    // Slow rotation
+                    filament.rotation.y = this.time * 0.05 + i * 0.1;
+                    filament.rotation.x = Math.sin(this.time * 0.03 + i) * 0.1;
+                });
+                
+                // Animate inner core
+                if (this.innerCore) {
+                    this.innerCore.material.uniforms.time.value = this.time;
+                    const pulse = 1.0 + Math.sin(this.time * 1.5) * 0.05;
+                    this.innerCore.scale.setScalar(pulse);
+                }
+                
+                // Animate shock wave
+                if (this.shockWave) {
+                    this.shockWave.material.uniforms.time.value = this.time;
+                    const expand = 1.0 + Math.sin(this.time * 0.5) * 0.03;
+                    this.shockWave.scale.setScalar(expand);
+                }
+                
+// Animate pulsar
+if (this.settings.showPulsar && this.pulsar) {
+    const pulseFast = Math.sin(this.time * this.settings.pulseRate * Math.PI * 2);
+    const intensity = 0.3 + (pulseFast + 1) * 0.35;
+    
+    this.pulsar.material.opacity = intensity;
+    this.pulsar.userData.light.intensity = intensity * 3;
+    
+    // Use baseScale from settings
+    const baseScale = this.pulsar.userData.baseScale || 5;
+    const scale = baseScale * (0.8 + intensity * 0.4);
+    this.pulsar.scale.set(scale, scale, 1);
+}
+                
+                // FPS counter
+                this.frameCount++;
+                const currentTime = performance.now();
+                if (currentTime - this.lastTime >= 1000) {
+                    const fps = Math.round(this.frameCount * 1000 / (currentTime - this.lastTime));
+                    document.getElementById('fps').textContent = `FPS: ${fps}`;
+                    this.frameCount = 0;
+                    this.lastTime = currentTime;
+                }
+                
+                // Render
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            renderer = new SupernovaRemnantRenderer();
+        });
+    </script>
+</body>
+</html>

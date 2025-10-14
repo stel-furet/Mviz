@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Test - Browser Compatible</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #nebula-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        #controls button {
+            margin: 2px;
+            padding: 5px 10px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #controls button:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="debug">Loading Nebula...</div>
+    <div id="controls">
+        <button onclick="changeStarCount(100)">100 Stars</button>
+        <button onclick="changeStarCount(300)">300 Stars</button>
+        <button onclick="changeStarCount(500)">500 Stars</button>
+        <br>
+        <button onclick="changeRotationSpeed(1)">Slow</button>
+        <button onclick="changeRotationSpeed(3)">Normal</button>
+        <button onclick="changeRotationSpeed(6)">Fast</button>
+        <br>
+        <button onclick="changeColor('#ffffff')">White</button>
+        <button onclick="changeColor('#ffff00')">Yellow</button>
+        <button onclick="changeColor('#00ffff')">Cyan</button>
+    </div>
+    <div id="nebula-container"></div>
+    
+    <script src="nebula-browser.js"></script>
+    <script>
+        let nebula = null;
+        
+        function initNebula() {
+            console.log('Initializing Nebula...');
+            document.getElementById('debug').textContent = 'Creating Nebula instance...';
+            
+            const container = document.getElementById('nebula-container');
+            
+            try {
+                nebula = createNebula(container, {
+                    starsCount: 300,
+                    starsRotationSpeed: 3,
+                    nebulasIntensity: 8,
+                    starsColor: '#ffffff',
+                    cometFrequence: 0, // Disable comets for now
+                    sunScale: 0,       // Disable sun for now
+                    planetsScale: 0,   // Disable planets for now
+                    bgColor: 'rgb(8,8,8)'
+                });
+                
+                document.getElementById('debug').textContent = 'Nebula created successfully! Stars should be rotating.';
+                console.log('Nebula instance created:', nebula);
+                
+            } catch (error) {
+                console.error('Failed to create Nebula:', error);
+                document.getElementById('debug').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        function changeStarCount(count) {
+            if (nebula) {
+                nebula.setConfig({
+                    starsCount: count,
+                    starsRotationSpeed: 3,
+                    nebulasIntensity: 8,
+                    starsColor: '#ffffff',
+                    cometFrequence: 0,
+                    sunScale: 0,
+                    planetsScale: 0
+                });
+                document.getElementById('debug').textContent = `Changed to ${count} stars`;
+            }
+        }
+        
+        function changeRotationSpeed(speed) {
+            if (nebula) {
+                nebula.setConfig({
+                    starsCount: 300,
+                    starsRotationSpeed: speed,
+                    nebulasIntensity: 8,
+                    starsColor: '#ffffff',
+                    cometFrequence: 0,
+                    sunScale: 0,
+                    planetsScale: 0
+                });
+                document.getElementById('debug').textContent = `Changed rotation speed to ${speed}`;
+            }
+        }
+        
+        function changeColor(color) {
+            if (nebula) {
+                nebula.setConfig({
+                    starsCount: 300,
+                    starsRotationSpeed: 3,
+                    nebulasIntensity: 8,
+                    starsColor: color,
+                    cometFrequence: 0,
+                    sunScale: 0,
+                    planetsScale: 0
+                });
+                document.getElementById('debug').textContent = `Changed star color to ${color}`;
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', initNebula);
+        
+        console.log('Nebula test script loaded');
+    </script>
+</body>
+</html>

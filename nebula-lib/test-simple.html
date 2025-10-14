@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Test - Simple</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #nebula-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="debug">Loading Nebula...</div>
+    <div id="nebula-container"></div>
+    
+    <!-- Try loading as a regular script first -->
+    <script>
+        // Let's check if we can access the library
+        console.log('Starting Nebula test...');
+        
+        // Create a simple manual star field first to test canvas
+        function createTestCanvas() {
+            const container = document.getElementById('nebula-container');
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Draw some test stars
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 2 + 1;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            container.appendChild(canvas);
+            document.getElementById('debug').textContent = 'Test canvas created with 100 stars';
+            
+            console.log('Test canvas created');
+        }
+        
+        // Start with basic test
+        createTestCanvas();
+        
+        // Try to load the actual Nebula library
+        setTimeout(() => {
+            try {
+                // We'll try to dynamically import the ES module
+                import('./nebula.js').then(({ createNebula }) => {
+                    console.log('Nebula library loaded successfully');
+                    document.getElementById('debug').textContent = 'Nebula library loaded - creating instance...';
+                    
+                    const container = document.getElementById('nebula-container');
+                    // Clear test canvas
+                    container.innerHTML = '';
+                    
+                    const nebula = createNebula(container, {
+                        starsCount: 150,
+                        starsRotationSpeed: 2,
+                        nebulasIntensity: 5,
+                        starsColor: '#ffffff',
+                        cometFrequence: 10,
+                        sunScale: 0.8,
+                        planetsScale: 0.8
+                    });
+                    
+                    document.getElementById('debug').textContent = 'Nebula instance created!';
+                    console.log('Nebula instance:', nebula);
+                    
+                }).catch(error => {
+                    console.error('Failed to load Nebula ES module:', error);
+                    document.getElementById('debug').textContent = 'Failed to load Nebula: ' + error.message;
+                });
+            } catch (error) {
+                console.error('Error importing Nebula:', error);
+                document.getElementById('debug').textContent = 'Import error: ' + error.message;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

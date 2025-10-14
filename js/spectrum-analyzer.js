@@ -554,6 +554,30 @@ class SpectrumAnalyzer {
                 window.visualizer.webglVisualization.draw();
             }
             
+            // Still update Nebula even when main visualization is off
+            if (window.visualizer.nebulaVisualization && window.visualizer.nebulaEnabled) {
+                let nebulaAudioFeatures = null;
+                
+                // Try to get audio features from AI Autopilot first
+                if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                    nebulaAudioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                }
+                
+                // Fallback: generate basic audio features from main audio analyzer
+                if (!nebulaAudioFeatures && this.analyser && this.dataArray) {
+                    nebulaAudioFeatures = this.generateBasicAudioFeatures();
+                } else if (nebulaAudioFeatures && nebulaAudioFeatures.energy === 0) {
+                    // Try to generate basic audio features if AI features have no energy
+                    const basicFeatures = this.generateBasicAudioFeatures();
+                    if (basicFeatures.energy > 0) {
+                        nebulaAudioFeatures = basicFeatures;
+                    }
+                }
+                
+                window.visualizer.nebulaVisualization.update(nebulaAudioFeatures);
+                window.visualizer.nebulaVisualization.render();
+            }
+            
             
             this.animationFrame = requestAnimationFrame(() => this.animate());
             return; // Skip main drawing but keep loop running for quick resume
@@ -714,6 +738,30 @@ class SpectrumAnalyzer {
             } else {
                 window.visualizer.webglVisualization.canvas.style.display = 'block';
             }
+        }
+        
+        // Update Nebula visualization when main visualization is enabled
+        if (window.visualizer.nebulaVisualization && window.visualizer.nebulaEnabled) {
+            let audioFeatures = null;
+            
+            // Try to get audio features from AI Autopilot first
+            if (window.visualizer.aiAutopilot && window.visualizer.aiAutopilot.audioAnalyzer) {
+                audioFeatures = window.visualizer.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+            }
+            
+            // Fallback: generate basic audio features from main audio analyzer
+            if (!audioFeatures && this.analyser && this.dataArray) {
+                audioFeatures = this.generateBasicAudioFeatures();
+            } else if (audioFeatures && audioFeatures.energy === 0) {
+                // Try to generate basic audio features if AI features have no energy
+                const basicFeatures = this.generateBasicAudioFeatures();
+                if (basicFeatures.energy > 0) {
+                    audioFeatures = basicFeatures;
+                }
+            }
+            
+            window.visualizer.nebulaVisualization.update(audioFeatures);
+            window.visualizer.nebulaVisualization.render();
         }
         
         this.draw();

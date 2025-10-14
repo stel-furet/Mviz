@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            overflow: hidden;
+        }
+        #nebula-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div id="nebula-container"></div>
+    
+    <script type="module">
+        // Import the ES module version
+        import { createNebula } from './nebula.js';
+        
+        const element = document.getElementById('nebula-container');
+        
+        const nebula = createNebula(element, {
+            starsCount: 250,
+            starsRotationSpeed: 3,
+            nebulasIntensity: 8,
+            starsColor: '#ffffff',
+            cometFrequence: 15,
+            sunScale: 1,
+            planetsScale: 1,
+            solarSystemOrbite: 65,
+            solarSystemSpeedOrbit: 100
+        });
+        
+        console.log('Nebula initialized:', nebula);
+    </script>
+</body>
+</html>

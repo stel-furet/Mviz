@@ -9746,6 +9746,12 @@ class GitItUpVisualizer {
             this.blobsVisualization = new BlobsVisualization(this);
             this.webglVisualization = new WebGLVisualizationManager(this);
             
+            // Initialize Nebula visualization
+            this.nebulaVisualization = null;
+            this.nebulaEnabled = false;
+            this.nebulaAnimationFrame = null;
+            console.log('🌌 Nebula visualization prepared for initialization');
+            
             // Initialize Fluid Dynamics Presets
             this.savedFluidPresets = [];
             
@@ -9787,13 +9793,27 @@ class GitItUpVisualizer {
 
     async initAudioMotion() {
         try {
-            // console.log('Creating SpectrumAnalyzer instance...');
-
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
 
             // Set initial AM canvas opacity
             if (this.audioMotion && this.audioMotion.canvas) {
                 this.audioMotion.canvas.style.opacity = this.visualizationOpacity.toString();
+            }
+
+            // Initialize Nebula visualization after audioMotion is ready
+            if (window.NebulaVisualization) {
+                this.nebulaVisualization = new NebulaVisualization(this.audioMotion.canvas, null);
+                // Append nebula canvas to visualizer container
+                const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
+                if (visualizerContainer && this.nebulaVisualization.canvas) {
+                    visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                    this.nebulaVisualization.canvas.style.display = 'none'; // Start hidden
+                    // Auto-resize to match container
+                    this.nebulaVisualization.autoResize();
+                }
+                console.log('🌌 Nebula visualization initialized');
+            } else {
+                console.warn('🌌 NebulaVisualization class not available');
             }
 
             // console.log('SpectrumAnalyzer initialized successfully');
@@ -18056,6 +18076,137 @@ https://rogueamoeba.com/loopback/
         }
     }
 
+    toggleHeaderNebula() {
+        const panel = document.getElementById('headerNebulaPanel');
+        const btn = document.getElementById('headerNebulaBtn');
+        
+        // Toggle panel visibility only
+        if (panel) {
+            const isVisible = panel.style.display !== 'none';
+            if (isVisible) {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+            } else {
+                // Position panel using new system
+                const buttonRect = btn.getBoundingClientRect();
+                panel.style.left = `${buttonRect.left}px`;
+                panel.style.top = `${buttonRect.bottom + 5}px`;
+                panel.style.display = 'block';
+                btn.classList.add('active');
+            }
+        }
+    }
+
+    initializeNebulaVisualization() {
+        if (!window.NebulaVisualization || !window.THREE) {
+            console.error('🌌 NebulaVisualization or THREE.js not available');
+            return false;
+        }
+        
+        if (this.nebulaVisualization) {
+            return true;
+        }
+        
+        try {
+            this.nebulaVisualization = new NebulaVisualization(this.audioMotion?.canvas, null);
+            
+            const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
+            if (visualizerContainer && this.nebulaVisualization.canvas) {
+                visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                this.nebulaVisualization.canvas.style.display = 'none';
+                this.nebulaVisualization.autoResize();
+                return true;
+            } else {
+                console.error('🌌 Container or canvas not found');
+                return false;
+            }
+        } catch (error) {
+            console.error('🌌 Error initializing nebula:', error);
+            return false;
+        }
+    }
+
+    toggleNebula() {
+        // Initialize nebula on first toggle if not already initialized
+        if (!this.nebulaVisualization) {
+            const initialized = this.initializeNebulaVisualization();
+            if (!initialized) {
+                console.error('🌌 Failed to initialize nebula visualization');
+                return;
+            }
+        }
+        
+        this.nebulaEnabled = !this.nebulaEnabled;
+        
+        if (this.nebulaVisualization) {
+            this.nebulaVisualization.toggle(this.nebulaEnabled);
+        }
+        
+        this.updateNebulaButtons();
+        console.log('🌌 Nebula toggled:', this.nebulaEnabled);
+    }
+
+    initNebulaControlHandlers() {
+        // Range sliders
+        const controls = [
+            { id: 'nebulaCameraDistance', property: 'cameraDistance' },
+            { id: 'nebulaFilamentDensity', property: 'filamentDensity' },
+            { id: 'nebulaExpansion', property: 'expansion' },
+            { id: 'nebulaChaos', property: 'chaos' },
+            { id: 'nebulaAsymmetry', property: 'asymmetry' },
+            { id: 'nebulaPulsarSize', property: 'pulsarSize' },
+            { id: 'nebulaPulseRate', property: 'pulseRate' },
+            { id: 'nebulaStarCount', property: 'starCount' }
+        ];
+        
+        controls.forEach(control => {
+            const element = document.getElementById(control.id);
+            const valueDisplay = element?.parentElement.querySelector('.value-display');
+            
+            if (element) {
+                element.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                    if (this.nebulaVisualization) {
+                        this.nebulaVisualization.updateSetting(control.property, value);
+                    }
+                });
+            }
+        });
+        
+        // Checkboxes
+        const checkboxControls = [
+            { id: 'nebulaCameraOrbit', property: 'cameraOrbit' },
+            { id: 'nebulaShowPulsar', property: 'showPulsar' },
+            { id: 'nebulaBloom', property: 'bloom' }
+        ];
+        
+        checkboxControls.forEach(control => {
+            const element = document.getElementById(control.id);
+            if (element) {
+                element.addEventListener('change', (e) => {
+                    if (this.nebulaVisualization) {
+                        this.nebulaVisualization.updateSetting(control.property, e.target.checked);
+                    }
+                });
+            }
+        });
+    }
+
+    updateNebulaButtons() {
+        const toggleBtn = document.getElementById('headerNebulaToggleBtn');
+        if (toggleBtn) {
+            const textSpan = toggleBtn.querySelector('.toggle-text');
+            if (textSpan) {
+                textSpan.textContent = this.nebulaEnabled ? 'ON' : 'OFF';
+            }
+            toggleBtn.classList.toggle('active', this.nebulaEnabled);
+        }
+    }
+
     toggleInfiniteZoom() {
         if (!this.infiniteZoom) return;
 
@@ -19915,6 +20066,35 @@ https://rogueamoeba.com/loopback/
                 this.toggleHeaderFluidDynamics();
             });
         }
+
+        // Header Nebula button
+        const headerNebulaBtn = document.getElementById('headerNebulaBtn');
+        if (headerNebulaBtn) {
+            headerNebulaBtn.addEventListener('click', () => {
+                this.toggleHeaderNebula();
+            });
+        }
+
+        // Header Nebula Toggle button
+        const headerNebulaToggleBtn = document.getElementById('headerNebulaToggleBtn');
+        if (headerNebulaToggleBtn) {
+            headerNebulaToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleNebula();
+            });
+        }
+        
+        // Nebula panel close button
+        const headerNebulaCloseBtn = document.getElementById('headerNebulaCloseBtn');
+        if (headerNebulaCloseBtn) {
+            headerNebulaCloseBtn.addEventListener('click', () => {
+                this.toggleHeaderNebula(); // Close the panel
+            });
+        }
+        
+        // Nebula control event handlers
+        this.initNebulaControlHandlers();
 
         // Header Infinite Zoom Toggle button
         const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');

@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photorealistic Nebula - NASA Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        
+        #controls::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #controls::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        #controls::-webkit-scrollbar-thumb {
+            background: rgba(74, 158, 255, 0.5);
+            border-radius: 4px;
+        }
+        
+        #controls h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #4a9eff;
+            border-bottom: 2px solid #4a9eff;
+            padding-bottom: 8px;
+        }
+        
+        #controls h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #80c0ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 36px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            background: #4a9eff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 5px;
+        }
+        
+        .control-group button:hover {
+            background: #3a7ed8;
+        }
+        
+        .control-group button.secondary {
+            background: #555;
+        }
+        
+        .control-group button.secondary:hover {
+            background: #666;
+        }
+        
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #4a9eff;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .preset-buttons button {
+            padding: 8px;
+            font-size: 11px;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4a9eff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="nebulaCanvas"></canvas>
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Initializing Nebula Renderer...</p>
+        </div>
+        
+        <div id="controls" class="hidden">
+            <h2>🌌 NASA-Style Nebula</h2>
+            
+            <h3>📦 Presets</h3>
+            <div class="preset-buttons">
+                <button onclick="renderer.applyPreset('pillars')">Pillars</button>
+                <button onclick="renderer.applyPreset('helix')">Helix</button>
+                <button onclick="renderer.applyPreset('carina')">Carina</button>
+                <button onclick="renderer.applyPreset('orion')">Orion</button>
+            </div>
+            
+            <h3>🎬 Camera</h3>
+            <div class="control-group">
+                <label>Distance <span class="value-display" id="distanceValue">50</span></label>
+                <input type="range" id="cameraDistance" min="20" max="100" step="1" value="50">
+            </div>
+            <div class="control-group">
+                <label>Tilt Angle <span class="value-display" id="tiltValue">15</span></label>
+                <input type="range" id="cameraTilt" min="-45" max="45" step="1" value="15">
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="cameraOrbit">
+                    <span>Auto Rotate</span>
+                </div>
+            </div>
+            
+            <h3>☁️ Nebula Structure</h3>
+            <div class="control-group">
+                <label>Density <span class="value-display" id="densityValue">1.0</span></label>
+                <input type="range" id="density" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="control-group">
+                <label>Turbulence <span class="value-display" id="turbulenceValue">1.5</span></label>
+                <input type="range" id="turbulence" min="0" max="5" step="0.1" value="1.5">
+            </div>
+            <div class="control-group">
+                <label>Emission <span class="value-display" id="emissionValue">1.5</span></label>
+                <input type="range" id="emission" min="0" max="3" step="0.1" value="1.5">
+            </div>
+            <div class="control-group">
+                <label>Detail Level <span class="value-display" id="detailValue">6</span></label>
+                <input type="range" id="detailLevel" min="2" max="8" step="1" value="6">
+            </div>
+            <div class="control-group">
+                <label>Scale <span class="value-display" id="scaleValue">20</span></label>
+                <input type="range" id="nebulaScale" min="5" max="50" step="1" value="20">
+            </div>
+            
+            <h3>🎨 Colors</h3>
+            <div class="control-group">
+                <label>Temperature <span class="value-display" id="tempValue">0.5</span></label>
+                <input type="range" id="temperature" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            <div class="control-group">
+                <label>Hot Color (Center)</label>
+                <input type="color" id="colorHot" value="#ff6633">
+            </div>
+            <div class="control-group">
+                <label>Cool Color (Edges)</label>
+                <input type="color" id="colorCool" value="#3366ff">
+            </div>
+            <div class="control-group">
+                <label>Accent Color</label>
+                <input type="color" id="colorAccent" value="#ff33ff">
+            </div>
+            
+            <h3>⭐ Stars & Background</h3>
+            <div class="control-group">
+                <label>Star Count <span class="value-display" id="starCountValue">8000</span></label>
+                <input type="range" id="starCount" min="1000" max="20000" step="500" value="8000">
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="dustLanes" checked>
+                    <span>Dust Lanes</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="showPillars" checked>
+                    <span>Gas Pillars</span>
+                </div>
+            </div>
+            
+            <h3>Lighting</h3>
+            <div class="control-group">
+                 <label>Star Size <span class="value-display" id="starSizeValue">12</span></label>
+                 <input type="range" id="starSize" min="3" max="20" step="0.5" value="12">
+            </div>
+            <div class="control-group">
+                <label>Star Brightness <span class="value-display" id="starBrightnessValue">2.0</span></label>
+                <input type="range" id="starBrightness" min="0" max="5" step="0.1" value="2.0">
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="centralStar" checked>
+                    <span>Central Star</span>
+                </div>
+            </div>
+            
+            <h3>✨ Effects</h3>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="bloom" checked>
+                    <span>HDR Bloom</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Bloom Strength <span class="value-display" id="bloomStrengthValue">1.2</span></label>
+                <input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.2">
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="filmGrain">
+                    <span>Film Grain</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Grain Amount <span class="value-display" id="grainValue">0.15</span></label>
+                <input type="range" id="grainAmount" min="0" max="0.5" step="0.02" value="0.15">
+            </div>
+            
+            <h3>🌀 Advanced</h3>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="shockwave">
+                    <span>Shock Wave</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="jets">
+                    <span>Polar Jets</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="checkbox-label">
+                    <input type="checkbox" id="accretionDisk">
+                    <span>Accretion Disk</span>
+                </div>
+            </div>
+            
+            <h3>⚙️ Performance</h3>
+            <div class="control-group">
+                <label>Render Quality <span class="value-display" id="qualityValue">1.0</span></label>
+                <input type="range" id="renderQuality" min="0.5" max="2" step="0.1" value="1.0">
+            </div>
+            
+            <div class="control-group">
+                <button onclick="renderer.resetSettings()">Reset All</button>
+                <button class="secondary" onclick="renderer.toggleControls()">Hide Controls</button>
+            </div>
+        </div>
+        
+        <div id="info">
+            <strong>Controls:</strong> Mouse drag to rotate • Scroll to zoom • C to toggle UI<br>
+            <span id="fps">FPS: --</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let renderer;
+        
+        class NASANebulaRenderer {
+            constructor() {
+                this.canvas = document.getElementById('nebulaCanvas');
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.nebulaDisk = null;
+                this.stars = null;
+                this.centralStar = null;
+                this.pillars = [];
+                this.dustClouds = [];
+                this.shockwave = null;
+                this.jets = [];
+                this.accretionDisk = null;
+                
+                this.settings = {
+                    cameraDistance: 50,
+                    cameraTilt: 15,
+                    cameraOrbit: false,
+                    density: 1.0,
+                    turbulence: 1.5,
+                    emission: 1.5,
+                    detailLevel: 6,
+                    nebulaScale: 20,
+                    temperature: 0.5,
+                    colorHot: new THREE.Color(0xff6633),
+                    colorCool: new THREE.Color(0x3366ff),
+                    colorAccent: new THREE.Color(0xff33ff),
+                    starCount: 8000,
+                    dustLanes: true,
+                    showPillars: true,
+                    starBrightness: 2.0,
+                    centralStar: true,
+                    bloom: true,
+                    bloomStrength: 1.2,
+                    filmGrain: false,
+                    grainAmount: 0.15,
+                    shockwave: false,
+                    jets: false,
+                    accretionDisk: false,
+                    renderQuality: 1.0
+                };
+                
+                this.mouse = { x: 0, y: 0, down: false };
+                this.rotation = { x: 0, y: 0 };
+                this.targetRotation = { x: 0, y: 0 };
+                
+                this.time = 0;
+                this.frameCount = 0;
+                this.lastTime = performance.now();
+                this.shockwaveTime = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x000000);
+                
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(
+                    45,
+                    window.innerWidth / window.innerHeight,
+                    0.1,
+                    500
+                );
+                this.camera.position.set(0, this.settings.cameraTilt, this.settings.cameraDistance);
+                this.camera.lookAt(0, 0, 0);
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: this.canvas,
+                    antialias: true,
+                    alpha: false
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.settings.renderQuality, 2));
+                
+                // Create nebula elements
+                this.createStarField();
+                this.createNebulaDisk();
+                this.createPillars();
+                this.createCentralStar();
+                this.createShockwave();
+                this.createJets();
+                this.createAccretionDisk();
+                
+                // Event listeners
+                this.setupEventListeners();
+                this.setupControls();
+                
+                // Start
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('controls').classList.remove('hidden');
+                
+                this.animate();
+            }
+            
+            createStarTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                
+                const centerX = 32, centerY = 32;
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 32);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.6)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 64, 64);
+                
+                // Star flares
+                ctx.globalCompositeOperation = 'lighter';
+                const hGrad = ctx.createLinearGradient(0, centerY, 64, centerY);
+                hGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                hGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                hGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = hGrad;
+                ctx.fillRect(0, centerY - 1, 64, 2);
+                
+                const vGrad = ctx.createLinearGradient(centerX, 0, centerX, 64);
+                vGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                vGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                vGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = vGrad;
+                ctx.fillRect(centerX - 1, 0, 2, 64);
+                
+                return new THREE.CanvasTexture(canvas);
+            }
+            
+            createStarField() {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const colors = [];
+                const sizes = [];
+                
+                for (let i = 0; i < this.settings.starCount; i++) {
+                    const x = (Math.random() - 0.5) * 200;
+                    const y = (Math.random() - 0.5) * 200;
+                    const z = (Math.random() - 0.5) * 200;
+                    
+                    vertices.push(x, y, z);
+                    
+                    // Star colors
+                    const temp = Math.random();
+                    if (temp < 0.6) {
+                        colors.push(0.9, 0.95, 1.0); // Blue-white
+                    } else if (temp < 0.9) {
+                        colors.push(1.0, 0.95, 0.8); // Yellow-white
+                    } else {
+                        colors.push(1.0, 0.7, 0.5); // Orange-red
+                    }
+                    
+                    const size = Math.random() > 0.95 ? 2 + Math.random() * 2 : 0.3 + Math.random() * 1.5;
+                    sizes.push(size);
+                }
+                
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 2,
+                    map: this.createStarTexture(),
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    sizeAttenuation: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                
+                this.stars = new THREE.Points(geometry, material);
+                this.scene.add(this.stars);
+            }
+            
+createNebulaDisk() {
+    // Create flat disk geometry
+    const geometry = new THREE.PlaneGeometry(
+        this.settings.nebulaScale * 2,
+        this.settings.nebulaScale * 2,
+        256,
+        256
+    );
+    
+    const vertexShader = `
+        varying vec2 vUv;
+        varying vec3 vPosition;
+        uniform float time;
+        uniform float turbulence;
+        
+        void main() {
+            vUv = uv;
+            vPosition = position;
+            
+            vec3 pos = position;
+            
+            float dist = length(pos.xy);
+            pos.z += sin(dist * 0.5 - time * 0.5) * turbulence * 0.3;
+            
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+    `;
+                
+const fragmentShader = `
+    uniform vec3 colorHot;
+    uniform vec3 colorCool;
+    uniform vec3 colorAccent;
+    uniform float time;
+    uniform float density;
+    uniform float turbulence;
+    uniform float emission;
+    uniform float detailLevel;
+    uniform float temperature;
+    uniform float dustLanes;
+    
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+    
+    float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy));
+        vec2 x0 = v - i + dot(i, C.xx);
+        vec2 i1;
+        i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod(i, 289.0);
+        vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+            + i.x + vec3(0.0, i1.x, 1.0));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+            dot(x12.zw,x12.zw)), 0.0);
+        m = m*m;
+        m = m*m;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+        vec3 g;
+        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+    }
+    
+    void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        
+        if(dist > 0.5) {
+            discard;
+        }
+        
+        float edgeSoftness = 0.08;
+        float circleMask = smoothstep(0.5, 0.5 - edgeSoftness, dist);
+        
+        float radialFalloff = 1.0 - smoothstep(0.0, 0.5, dist);
+        
+        vec2 pos = uv * density * 5.0;
+        pos += vec2(sin(time * 0.1), cos(time * 0.15)) * turbulence;
+        
+        float noise = 0.0;
+        float amplitude = 1.0;
+        float frequency = 1.0;
+        int octaves = int(detailLevel);
+        
+        for(int i = 0; i < 8; i++) {
+            if(i >= octaves) break;
+            noise += amplitude * snoise(pos * frequency + time * 0.05);
+            amplitude *= 0.5;
+            frequency *= 2.0;
+        }
+        
+        noise = (noise + 1.0) * 0.5;
+        
+        float dustPattern = 1.0;
+        if(dustLanes > 0.5) {
+            dustPattern = snoise(uv * 8.0 + vec2(time * 0.02, 0.0));
+            dustPattern = smoothstep(0.2, 0.6, dustPattern);
+            noise *= mix(0.3, 1.0, dustPattern);
+        }
+        
+        float angle = atan(uv.y, uv.x);
+        float spiral = sin(angle * 3.0 + dist * 10.0 - time * 0.3 * turbulence);
+        noise += spiral * 0.2 * turbulence;
+        noise = clamp(noise, 0.0, 1.0);
+        
+        vec3 color;
+        
+        if(dist < 0.15) {
+            color = mix(colorHot, vec3(1.0, 1.0, 0.9), noise);
+        } 
+        else if(dist < 0.35) {
+            color = mix(colorHot, colorAccent, (dist - 0.15) / 0.2);
+            color = mix(color, colorCool, noise * 0.3);
+        }
+        else {
+            color = mix(colorAccent, colorCool, (dist - 0.35) / 0.15);
+        }
+        
+        float hotspots = pow(noise, 3.0);
+        color += colorHot * hotspots * emission * 0.5;
+        
+        color *= emission;
+        
+        float alpha = circleMask * radialFalloff * noise * 0.9;
+        
+        alpha = clamp(alpha, 0.0, 1.0);
+        
+        gl_FragColor = vec4(color, alpha);
+    }
+`;
+                
+                const material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        colorHot: { value: this.settings.colorHot },
+                        colorCool: { value: this.settings.colorCool },
+                        colorAccent: { value: this.settings.colorAccent },
+                        time: { value: 0 },
+                        density: { value: this.settings.density },
+                        turbulence: { value: this.settings.turbulence },
+                        emission: { value: this.settings.emission },
+                        detailLevel: { value: this.settings.detailLevel },
+                        temperature: { value: this.settings.temperature },
+                        dustLanes: { value: this.settings.dustLanes ? 1.0 : 0.0 }
+                    },
+                    vertexShader: vertexShader,
+                    fragmentShader: fragmentShader,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                
+                this.nebulaDisk = new THREE.Mesh(geometry, material);
+                this.scene.add(this.nebulaDisk);
+            }
+            
+createPillars() {
+    // Create 5 pillar structures scattered in the nebula
+    for (let i = 0; i < 5; i++) {
+        const height = 4 + Math.random() * 10;
+        const radius = 0.4 + Math.random() * 0.8;
+        
+        // Use cone geometry for tapered pillars
+        const geometry = new THREE.ConeGeometry(radius, height, 8, 4);
+        
+        // Create shader material for pillars with transparency
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                color: { value: new THREE.Color(0x6633aa) },
+                opacity: { value: 0.6 }
+            },
+            vertexShader: `
+                varying vec3 vPosition;
+                varying float vHeight;
+                
+                void main() {
+                    vPosition = position;
+                    vHeight = position.y;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 color;
+                uniform float opacity;
+                varying vec3 vPosition;
+                varying float vHeight;
+                
+                void main() {
+                    // Fade out at top and bottom
+                    float heightFade = smoothstep(-1.0, 0.0, vHeight) * smoothstep(1.0, 0.5, vHeight);
+                    
+                    // Distance from center axis for edge fade
+                    float dist = length(vPosition.xz);
+                    float edgeFade = 1.0 - smoothstep(0.0, 0.5, dist);
+                    
+                    float alpha = opacity * heightFade * edgeFade * 0.4;
+                    
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        const pillar = new THREE.Mesh(geometry, material);
+        
+        // Position pillars within the nebula disk area
+        const angle = (i / 5) * Math.PI * 2 + Math.random() * 1.0;
+        const dist = 3 + Math.random() * 6;
+        
+        pillar.position.x = Math.cos(angle) * dist;
+        pillar.position.z = Math.sin(angle) * dist;
+        pillar.position.y = 0; // Center at disk level
+        
+        // Slight random tilt
+        pillar.rotation.x = (Math.random() - 0.5) * 0.4;
+        pillar.rotation.z = (Math.random() - 0.5) * 0.4;
+        
+        // Store reference
+        pillar.userData.baseOpacity = 0.6;
+        pillar.visible = true;
+        
+        this.pillars.push(pillar);
+        this.scene.add(pillar);
+    }
+
+    if (this.settings.showPillars) {
+    this.pillars.forEach(pillar => {
+        pillar.material.uniforms.opacity.value = 0.6;
+    });
+}
+}
+
+            
+createCentralStar() {
+    // Create glow texture for star
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    const centerX = 64, centerY = 64;
+    
+    // Outer glow
+    const outerGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 64);
+    outerGlow.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+    outerGlow.addColorStop(0.1, 'rgba(255, 255, 240, 0.9)');
+    outerGlow.addColorStop(0.2, 'rgba(255, 240, 200, 0.7)');
+    outerGlow.addColorStop(0.4, 'rgba(255, 200, 100, 0.4)');
+    outerGlow.addColorStop(0.6, 'rgba(255, 150, 50, 0.2)');
+    outerGlow.addColorStop(0.8, 'rgba(255, 100, 0, 0.1)');
+    outerGlow.addColorStop(1, 'rgba(255, 50, 0, 0)');
+    
+    ctx.fillStyle = outerGlow;
+    ctx.fillRect(0, 0, 128, 128);
+    
+    // Bright core
+    const coreGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+    coreGlow.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+    coreGlow.addColorStop(0.5, 'rgba(255, 255, 240, 0.8)');
+    coreGlow.addColorStop(1, 'rgba(255, 255, 200, 0)');
+    
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = coreGlow;
+    ctx.fillRect(0, 0, 128, 128);
+    
+    // Create texture
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    
+    // Create sprite material (not mesh)
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    
+    // Create sprite (not mesh)
+    this.centralStar = new THREE.Sprite(material);
+    this.centralStar.scale.set(this.settings.starSize, this.settings.starSize, 1); // Size of the star glow
+    
+    // Add point light
+    const light = new THREE.PointLight(0xffffee, 0, 100);
+    this.centralStar.add(light);
+    this.centralStar.userData.light = light;
+    
+    this.scene.add(this.centralStar);
+}
+            
+createShockwave() {
+    const geometry = new THREE.RingGeometry(0.5, 1.5, 64, 1);
+    
+    // Create shader material for animated shockwave
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            color: { value: new THREE.Color(0x00ffff) },
+            opacity: { value: 0.0 },
+            waveProgress: { value: 0.0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            
+            void main() {
+                vUv = uv;
+                vPosition = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 color;
+            uniform float opacity;
+            uniform float waveProgress;
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            
+            void main() {
+                // Distance from center of ring
+                float dist = length(vPosition.xy);
+                
+                // Ring boundaries (will expand with waveProgress)
+                float innerRadius = 0.5 + waveProgress * 10.0;
+                float outerRadius = 1.5 + waveProgress * 10.0;
+                float ringWidth = outerRadius - innerRadius;
+                
+                // Distance within the ring (0 at inner edge, 1 at outer edge)
+                float ringPos = (dist - innerRadius) / ringWidth;
+                
+                // Fade at both inner and outer edges for smooth ring
+                float innerFade = smoothstep(0.0, 0.2, ringPos);
+                float outerFade = 1.0 - smoothstep(0.8, 1.0, ringPos);
+                float edgeFade = innerFade * outerFade;
+                
+                // Bright core in the middle of the ring
+                float coreBrightness = 1.0 - abs(ringPos - 0.5) * 2.0;
+                coreBrightness = pow(coreBrightness, 2.0);
+                
+                // Angular variation for energy ripples
+                float angle = atan(vPosition.y, vPosition.x);
+                float ripple = sin(angle * 8.0 + waveProgress * 20.0) * 0.3 + 0.7;
+                
+                // Combine effects
+                float intensity = edgeFade * (0.6 + coreBrightness * 0.4) * ripple;
+                
+                // Color variation - cyan core to blue edges
+                vec3 coreColor = vec3(0.8, 1.0, 1.0);
+                vec3 edgeColor = color;
+                vec3 finalColor = mix(edgeColor, coreColor, coreBrightness);
+                
+                float alpha = opacity * intensity;
+                alpha = clamp(alpha, 0.0, 1.0);
+                
+                gl_FragColor = vec4(finalColor, alpha);
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    
+    this.shockwave = new THREE.Mesh(geometry, material);
+    this.shockwave.rotation.x = Math.PI / 2; // Lay flat
+    this.scene.add(this.shockwave);
+}
+            
+           createJets() {
+    // Create 2 polar jets (top and bottom)
+    for (let i = 0; i < 2; i++) {
+        const jetLength = 25;
+        const baseRadius = 0.8;
+        const tipRadius = 0.2;
+        
+        // Create cone geometry for jet beam
+        const geometry = new THREE.ConeGeometry(baseRadius, jetLength, 16, 8, true);
+        
+        // Create shader material for glowing jet beam
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                color: { value: new THREE.Color(0x4488ff) },
+                opacity: { value: 0.0 },
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vPosition;
+                varying float vHeight;
+                
+                void main() {
+                    vPosition = position;
+                    vHeight = position.y / 25.0; // Normalize height
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 color;
+                uniform float opacity;
+                uniform float time;
+                varying vec3 vPosition;
+                varying float vHeight;
+                
+                void main() {
+                    // Distance from center axis
+                    float dist = length(vPosition.xz) / 2.0;
+                    
+                    // Core beam (bright center)
+                    float core = 1.0 - smoothstep(0.0, 0.3, dist);
+                    
+                    // Outer glow
+                    float glow = 1.0 - smoothstep(0.0, 1.0, dist);
+                    
+                    // Fade at tip (far end)
+                    float heightFade = 1.0 - smoothstep(0.6, 1.0, abs(vHeight));
+                    
+                    // Pulsing energy
+                    float pulse = 0.8 + sin(time * 3.0 + vHeight * 10.0) * 0.2;
+                    
+                    // Combine effects
+                    float intensity = (core * 1.5 + glow * 0.5) * heightFade * pulse;
+                    
+                    // Bright blue-white core fading to blue edges
+                    vec3 coreColor = mix(vec3(0.6, 0.8, 1.0), vec3(1.0, 1.0, 1.0), core);
+                    vec3 finalColor = mix(color, coreColor, intensity);
+                    
+                    float alpha = opacity * intensity;
+                    alpha = clamp(alpha, 0.0, 1.0);
+                    
+                    gl_FragColor = vec4(finalColor, alpha);
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        const jet = new THREE.Mesh(geometry, material);
+        
+        // Position: top jet points up, bottom jet points down
+        if (i === 0) {
+            // Top jet
+            jet.position.y = jetLength / 2;
+            jet.rotation.x = 0; // Points upward
+        } else {
+            // Bottom jet
+            jet.position.y = -jetLength / 2;
+            jet.rotation.x = Math.PI; // Points downward
+        }
+        
+        jet.userData.baseOpacity = 0.7;
+        jet.userData.jetIndex = i;
+        
+        this.jets.push(jet);
+        this.scene.add(jet);
+    }
+    
+    console.log('Created', this.jets.length, 'polar jets');
+}
+            
+createAccretionDisk() {
+    const geometry = new THREE.RingGeometry(2, 6, 64, 8);
+    
+    // Create shader material for spiral accretion disk
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            color: { value: new THREE.Color(0xff8800) },
+            opacity: { value: 0.0 },
+            time: { value: 0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            
+            void main() {
+                vUv = uv;
+                vPosition = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 color;
+            uniform float opacity;
+            uniform float time;
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            
+            void main() {
+                // Distance from center
+                float dist = length(vPosition.xy);
+                float normalizedDist = (dist - 2.0) / 4.0; // Normalize to 0-1 across ring
+                
+                // Angle for spiral pattern
+                float angle = atan(vPosition.y, vPosition.x);
+                
+                // Spiral arms (3 arms)
+                float spiral = sin(angle * 3.0 - dist * 2.0 + time * 0.5) * 0.5 + 0.5;
+                spiral = pow(spiral, 2.0);
+                
+                // Radial gradient - brighter in middle, fade at edges
+                float radialGradient = 1.0 - abs(normalizedDist - 0.5) * 2.0;
+                radialGradient = pow(radialGradient, 1.5);
+                
+                // Inner edge fade
+                float innerFade = smoothstep(2.0, 2.5, dist);
+                
+                // Outer edge fade
+                float outerFade = 1.0 - smoothstep(5.5, 6.0, dist);
+                
+                // Combine effects
+                float intensity = spiral * radialGradient * innerFade * outerFade;
+                
+                // Color variation - hotter (white-yellow) in center, cooler (orange-red) at edges
+                vec3 hotColor = vec3(1.0, 0.9, 0.6);
+                vec3 coolColor = vec3(1.0, 0.4, 0.1);
+                vec3 finalColor = mix(coolColor, hotColor, radialGradient);
+                finalColor = mix(finalColor, color, 0.3);
+                
+                float alpha = opacity * intensity;
+                alpha = clamp(alpha, 0.0, 1.0);
+                
+                gl_FragColor = vec4(finalColor, alpha);
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    
+    this.accretionDisk = new THREE.Mesh(geometry, material);
+    this.accretionDisk.rotation.x = Math.PI / 2; // Lay flat
+    this.accretionDisk.userData.baseOpacity = 0.6;
+    this.scene.add(this.accretionDisk);
+}
+            
+            setupEventListeners() {
+                // Mouse controls
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.mouse.down = true;
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                
+                window.addEventListener('mouseup', () => {
+                    this.mouse.down = false;
+                });
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (this.mouse.down && !this.settings.cameraOrbit) {
+                        const deltaX = e.clientX - this.mouse.x;
+                        const deltaY = e.clientY - this.mouse.y;
+                        
+                        this.targetRotation.y += deltaX * 0.005;
+                        this.targetRotation.x += deltaY * 0.005;
+                        this.targetRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.targetRotation.x));
+                        
+                        this.mouse.x = e.clientX;
+                        this.mouse.y = e.clientY;
+                    }
+                });
+                
+                // Wheel zoom
+                window.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY * 0.05;
+                    this.settings.cameraDistance = Math.max(20, Math.min(100, this.settings.cameraDistance + delta));
+                    document.getElementById('cameraDistance').value = this.settings.cameraDistance;
+                    document.getElementById('distanceValue').textContent = this.settings.cameraDistance.toFixed(0);
+                }, { passive: false });
+                
+                // Keyboard
+                window.addEventListener('keydown', (e) => {
+                    if (e.key.toLowerCase() === 'c') {
+                        this.toggleControls();
+                    }
+                });
+                
+                // Resize
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+            
+            setupControls() {
+                // Camera
+                document.getElementById('cameraDistance').addEventListener('input', (e) => {
+                    this.settings.cameraDistance = parseFloat(e.target.value);
+                    document.getElementById('distanceValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('cameraTilt').addEventListener('input', (e) => {
+                    this.settings.cameraTilt = parseFloat(e.target.value);
+                    document.getElementById('tiltValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('cameraOrbit').addEventListener('change', (e) => {
+                    this.settings.cameraOrbit = e.target.checked;
+                });
+                
+                // Nebula
+                document.getElementById('density').addEventListener('input', (e) => {
+                    this.settings.density = parseFloat(e.target.value);
+                    this.nebulaDisk.material.uniforms.density.value = this.settings.density;
+                    document.getElementById('densityValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('turbulence').addEventListener('input', (e) => {
+                    this.settings.turbulence = parseFloat(e.target.value);
+                    this.nebulaDisk.material.uniforms.turbulence.value = this.settings.turbulence;
+                    document.getElementById('turbulenceValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('emission').addEventListener('input', (e) => {
+                    this.settings.emission = parseFloat(e.target.value);
+                    this.nebulaDisk.material.uniforms.emission.value = this.settings.emission;
+                    document.getElementById('emissionValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('detailLevel').addEventListener('input', (e) => {
+                    this.settings.detailLevel = parseInt(e.target.value);
+                    this.nebulaDisk.material.uniforms.detailLevel.value = this.settings.detailLevel;
+                    document.getElementById('detailValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('nebulaScale').addEventListener('input', (e) => {
+                    this.settings.nebulaScale = parseFloat(e.target.value);
+                    const scale = this.settings.nebulaScale;
+                    this.nebulaDisk.scale.set(scale / 20, scale / 20, 1);
+                    document.getElementById('scaleValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('temperature').addEventListener('input', (e) => {
+                    this.settings.temperature = parseFloat(e.target.value);
+                    this.nebulaDisk.material.uniforms.temperature.value = this.settings.temperature;
+                    document.getElementById('tempValue').textContent = e.target.value;
+                });
+                
+                // Colors
+                document.getElementById('colorHot').addEventListener('input', (e) => {
+                    this.settings.colorHot.set(e.target.value);
+                });
+                
+                document.getElementById('colorCool').addEventListener('input', (e) => {
+                    this.settings.colorCool.set(e.target.value);
+                });
+                
+                document.getElementById('colorAccent').addEventListener('input', (e) => {
+                    this.settings.colorAccent.set(e.target.value);
+                });
+                
+                // Stars
+                document.getElementById('starCount').addEventListener('input', (e) => {
+                    this.settings.starCount = parseInt(e.target.value);
+                    document.getElementById('starCountValue').textContent = e.target.value;
+                    this.scene.remove(this.stars);
+                    this.createStarField();
+                });
+                
+                document.getElementById('dustLanes').addEventListener('change', (e) => {
+                    this.settings.dustLanes = e.target.checked;
+                    this.nebulaDisk.material.uniforms.dustLanes.value = e.target.checked ? 1.0 : 0.0;
+                });
+                
+document.getElementById('showPillars').addEventListener('change', (e) => {
+    this.settings.showPillars = e.target.checked;
+    const targetOpacity = e.target.checked ? 0.6 : 0.0;
+    
+    this.pillars.forEach(pillar => {
+        if (pillar && pillar.material && pillar.material.uniforms) {
+            pillar.material.uniforms.opacity.value = targetOpacity;
+            pillar.userData.baseOpacity = targetOpacity;
+        }
+    });
+    
+    console.log('Pillars toggled:', e.target.checked, 'Opacity:', targetOpacity); // Debug
+});
+                
+                // Lighting
+                document.getElementById('starBrightness').addEventListener('input', (e) => {
+                    this.settings.starBrightness = parseFloat(e.target.value);
+                    document.getElementById('starBrightnessValue').textContent = e.target.value;
+                });
+                // Star size control
+document.getElementById('starSize').addEventListener('input', (e) => {
+    this.settings.starSize = parseFloat(e.target.value);
+    document.getElementById('starSizeValue').textContent = e.target.value;
+    
+    // Update star scale immediately
+    if (this.centralStar) {
+        this.centralStar.scale.set(this.settings.starSize, this.settings.starSize, 1);
+    }
+});
+                
+                document.getElementById('centralStar').addEventListener('change', (e) => {
+                    this.settings.centralStar = e.target.checked;
+                    this.centralStar.material.opacity = e.target.checked ? 1.0 : 0.0;
+                    this.centralStar.userData.light.intensity = e.target.checked ? this.settings.starBrightness : 0;
+                });
+                
+                // Effects
+                document.getElementById('bloom').addEventListener('change', (e) => {
+                    this.settings.bloom = e.target.checked;
+                });
+                
+                document.getElementById('bloomStrength').addEventListener('input', (e) => {
+                    this.settings.bloomStrength = parseFloat(e.target.value);
+                    document.getElementById('bloomStrengthValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('filmGrain').addEventListener('change', (e) => {
+                    this.settings.filmGrain = e.target.checked;
+                });
+                
+                document.getElementById('grainAmount').addEventListener('input', (e) => {
+                    this.settings.grainAmount = parseFloat(e.target.value);
+                    document.getElementById('grainValue').textContent = e.target.value;
+                });
+                
+document.getElementById('shockwave').addEventListener('change', (e) => {
+    this.settings.shockwave = e.target.checked;
+    if (e.target.checked) {
+        this.shockwaveTime = 0; // Reset wave
+    } else {
+        if (this.shockwave && this.shockwave.material.uniforms) {
+            this.shockwave.material.uniforms.opacity.value = 0;
+        }
+    }
+});
+                
+               document.getElementById('jets').addEventListener('change', (e) => {
+    this.settings.jets = e.target.checked;
+    this.jets.forEach(jet => {
+        jet.material.uniforms.opacity.value = e.target.checked ? jet.userData.baseOpacity : 0.0;
+    });
+});
+                
+document.getElementById('accretionDisk').addEventListener('change', (e) => {
+    this.settings.accretionDisk = e.target.checked;
+    if (this.accretionDisk && this.accretionDisk.material.uniforms) {
+        this.accretionDisk.material.uniforms.opacity.value = e.target.checked ? this.accretionDisk.userData.baseOpacity : 0.0;
+    }
+});
+                
+                // Performance
+                document.getElementById('renderQuality').addEventListener('input', (e) => {
+                    this.settings.renderQuality = parseFloat(e.target.value);
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.settings.renderQuality, 2));
+                    document.getElementById('qualityValue').textContent = e.target.value;
+                });
+            }
+            
+            applyPreset(name) {
+                switch(name) {
+                    case 'pillars':
+                        // Pillars of Creation style
+                        this.settings.colorHot.set(0xffaa44);
+                        this.settings.colorCool.set(0x2244aa);
+                        this.settings.colorAccent.set(0xff4488);
+                        this.settings.turbulence = 2.0;
+                        this.settings.emission = 2.0;
+                        this.settings.showPillars = true;
+                        this.settings.dustLanes = true;
+                        document.getElementById('colorHot').value = '#ffaa44';
+                        document.getElementById('colorCool').value = '#2244aa';
+                        document.getElementById('colorAccent').value = '#ff4488';
+                        document.getElementById('showPillars').checked = true;
+                        break;
+                        this.settings.showPillars = true;
+    this.pillars.forEach(pillar => {
+        pillar.material.uniforms.opacity.value = pillar.userData.baseOpacity;
+    });
+    document.getElementById('showPillars').checked = true;
+    break;
+                        
+                    case 'helix':
+                        // Helix Nebula style
+                        this.settings.colorHot.set(0xff3366);
+                        this.settings.colorCool.set(0x3388ff);
+                        this.settings.colorAccent.set(0x33ff88);
+                        this.settings.turbulence = 3.0;
+                        this.settings.centralStar = true;
+                        this.settings.accretionDisk = true;
+                        document.getElementById('colorHot').value = '#ff3366';
+                        document.getElementById('colorCool').value = '#3388ff';
+                        document.getElementById('colorAccent').value = '#33ff88';
+                        document.getElementById('centralStar').checked = true;
+                        document.getElementById('accretionDisk').checked = true;
+                        this.accretionDisk.material.opacity = 0.4;
+                        break;
+                        
+                    case 'carina':
+                        // Carina Nebula style
+                        this.settings.colorHot.set(0xffcc33);
+                        this.settings.colorCool.set(0x3355aa);
+                        this.settings.colorAccent.set(0xff6699);
+                        this.settings.turbulence = 2.5;
+                        this.settings.emission = 2.5;
+                        this.settings.showPillars = true;
+                        this.settings.jets = true;
+                        document.getElementById('colorHot').value = '#ffcc33';
+                        document.getElementById('colorCool').value = '#3355aa';
+                        document.getElementById('colorAccent').value = '#ff6699';
+                        document.getElementById('jets').checked = true;
+                        this.jets.forEach(jet => jet.material.opacity = 0.5);
+                        break;
+                        
+                    case 'orion':
+                        // Orion Nebula style
+                        this.settings.colorHot.set(0xff6633);
+                        this.settings.colorCool.set(0x3366ff);
+                        this.settings.colorAccent.set(0xff33ff);
+                        this.settings.turbulence = 1.8;
+                        this.settings.density = 1.5;
+                        this.settings.emission = 1.8;
+                        this.settings.centralStar = true;
+                        document.getElementById('colorHot').value = '#ff6633';
+                        document.getElementById('colorCool').value = '#3366ff';
+                        document.getElementById('colorAccent').value = '#ff33ff';
+                        document.getElementById('centralStar').checked = true;
+                        break;
+                }
+                
+                // Update UI
+                this.updateAllUI();
+            }
+            
+            updateAllUI() {
+                document.getElementById('turbulenceValue').textContent = this.settings.turbulence.toFixed(1);
+                document.getElementById('turbulence').value = this.settings.turbulence;
+                document.getElementById('emissionValue').textContent = this.settings.emission.toFixed(1);
+                document.getElementById('emission').value = this.settings.emission;
+                document.getElementById('densityValue').textContent = this.settings.density.toFixed(1);
+                document.getElementById('density').value = this.settings.density;
+                
+                this.nebulaDisk.material.uniforms.turbulence.value = this.settings.turbulence;
+                this.nebulaDisk.material.uniforms.emission.value = this.settings.emission;
+                this.nebulaDisk.material.uniforms.density.value = this.settings.density;
+                
+                if (this.settings.centralStar) {
+                    this.centralStar.material.opacity = 1.0;
+                    this.centralStar.userData.light.intensity = this.settings.starBrightness;
+                }
+                
+                if (this.settings.showPillars) {
+                    this.pillars.forEach(pillar => pillar.material.opacity = 0.6);
+                }
+            }
+            
+            resetSettings() {
+                this.settings = {
+                    cameraDistance: 50,
+                    cameraTilt: 15,
+                    cameraOrbit: false,
+                    density: 1.0,
+                    turbulence: 1.5,
+                    emission: 1.5,
+                    detailLevel: 6,
+                    nebulaScale: 20,
+                    temperature: 0.5,
+                    colorHot: new THREE.Color(0xff6633),
+                    colorCool: new THREE.Color(0x3366ff),
+                    colorAccent: new THREE.Color(0xff33ff),
+                    starCount: 8000,
+                    dustLanes: true,
+                    showPillars: true,
+                    starBrightness: 2.0,
+                    starSize: 12, 
+                    centralStar: true,
+                    bloom: true,
+                    bloomStrength: 1.2,
+                    filmGrain: false,
+                    grainAmount: 0.15,
+                    shockwave: false,
+                    jets: false,
+                    accretionDisk: false,
+                    renderQuality: 1.0
+                };
+                
+                // Reset all controls
+                document.getElementById('cameraDistance').value = 50;
+                document.getElementById('cameraTilt').value = 15;
+                document.getElementById('cameraOrbit').checked = false;
+                document.getElementById('density').value = 1.0;
+                document.getElementById('turbulence').value = 1.5;
+                document.getElementById('emission').value = 1.5;
+                document.getElementById('detailLevel').value = 6;
+                document.getElementById('nebulaScale').value = 20;
+                document.getElementById('temperature').value = 0.5;
+                document.getElementById('colorHot').value = '#ff6633';
+                document.getElementById('colorCool').value = '#3366ff';
+                document.getElementById('colorAccent').value = '#ff33ff';
+                document.getElementById('starCount').value = 8000;
+                document.getElementById('dustLanes').checked = true;
+                document.getElementById('showPillars').checked = true;
+                document.getElementById('starBrightness').value = 2.0;
+                document.getElementById('centralStar').checked = true;
+                document.getElementById('bloom').checked = true;
+                document.getElementById('bloomStrength').value = 1.2;
+                document.getElementById('filmGrain').checked = false;
+                document.getElementById('grainAmount').value = 0.15;
+                document.getElementById('shockwave').checked = false;
+                document.getElementById('jets').checked = false;
+                document.getElementById('accretionDisk').checked = false;
+                document.getElementById('renderQuality').value = 1.0;
+                document.getElementById('starSize').value = 12;
+    document.getElementById('starSizeValue').textContent = '12';
+                
+                this.updateAllUI();
+            }
+            
+            toggleControls() {
+                document.getElementById('controls').classList.toggle('hidden');
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                
+                this.time += 0.016;
+                
+                // Update nebula shader time
+                this.nebulaDisk.material.uniforms.time.value = this.time;
+                
+                // Camera movement
+                if (this.settings.cameraOrbit) {
+                    const angle = this.time * 0.1;
+                    const dist = this.settings.cameraDistance;
+                    this.camera.position.x = Math.sin(angle) * dist;
+                    this.camera.position.z = Math.cos(angle) * dist;
+                    this.camera.position.y = this.settings.cameraTilt;
+                    this.camera.lookAt(0, 0, 0);
+                } else {
+                    // Smooth rotation
+                    this.rotation.x += (this.targetRotation.x - this.rotation.x) * 0.1;
+                    this.rotation.y += (this.targetRotation.y - this.rotation.y) * 0.1;
+                    
+                    const dist = this.settings.cameraDistance;
+                    this.camera.position.x = Math.sin(this.rotation.y) * Math.cos(this.rotation.x) * dist;
+                    this.camera.position.y = Math.sin(this.rotation.x) * dist + this.settings.cameraTilt;
+                    this.camera.position.z = Math.cos(this.rotation.y) * Math.cos(this.rotation.x) * dist;
+                    this.camera.lookAt(0, 0, 0);
+                }
+                
+                // Rotate nebula slightly
+                this.nebulaDisk.rotation.z += 0.0002;
+                
+// Pillars subtle movement
+if (this.settings.showPillars) {
+    this.pillars.forEach((pillar, i) => {
+        // Subtle sway
+        pillar.rotation.x = Math.sin(this.time * 0.3 + i) * 0.1;
+        pillar.rotation.z = Math.cos(this.time * 0.4 + i) * 0.1;
+        
+        // Subtle opacity pulsing
+        const pulse = 0.8 + Math.sin(this.time * 0.5 + i) * 0.2;
+        pillar.material.uniforms.opacity.value = pillar.userData.baseOpacity * pulse;
+    });
+}
+                
+             // Central star pulsing
+if (this.settings.centralStar) {
+    const pulse = 0.8 + Math.sin(this.time * 2) * 0.2;
+    const size = this.settings.starSize * pulse;
+    this.centralStar.scale.set(size, size, 1);
+    this.centralStar.userData.light.intensity = this.settings.starBrightness * pulse;
+}
+                
+// Shockwave expansion
+if (this.settings.shockwave) {
+    this.shockwaveTime += 0.000556;  // Reaches 12.0 in exactly 12 seconds at 60fps
+    
+    // Scale expansion
+    const scale = 1 + this.shockwaveTime * 2;
+    this.shockwave.scale.set(scale, scale, 1);
+    
+    // Update shader uniforms
+    this.shockwave.material.uniforms.waveProgress.value = this.shockwaveTime;
+    
+    // Fade out gradually over the full duration
+    const fadeOut = Math.max(0, 1.0 - (this.shockwaveTime / 12.0));
+    this.shockwave.material.uniforms.opacity.value = 0.9 * fadeOut;
+    
+    // Reset after 12 seconds
+    if (this.shockwaveTime >= 12.0) {
+        this.shockwaveTime = 0;
+    }
+} else {
+    this.shockwave.material.uniforms.opacity.value = 0;
+    this.shockwave.scale.set(1, 1, 1);
+    this.shockwaveTime = 0;  // ADD THIS LINE - Reset when turned off
+}
+                
+// Accretion disk rotation
+if (this.settings.accretionDisk) {
+    // Update shader time for spiral animation
+    this.accretionDisk.material.uniforms.time.value = this.time;
+    
+    // Rotate the disk
+    this.accretionDisk.rotation.z = this.time * 0.3;
+    
+    // Subtle pulsing
+    const pulse = 0.9 + Math.sin(this.time * 0.8) * 0.1;
+    this.accretionDisk.material.uniforms.opacity.value = this.accretionDisk.userData.baseOpacity * pulse;
+}
+
+                // Polar jets animation - ADD THIS ENTIRE BLOCK
+if (this.settings.jets && this.jets.length > 0) {
+    this.jets.forEach((jet, i) => {
+        // Update shader time for pulsing
+        jet.material.uniforms.time.value = this.time;
+        
+        // Subtle rotation around vertical axis
+        jet.rotation.y = this.time * 0.2 + i * Math.PI;
+        
+        // Pulsing opacity
+        const pulse = 0.6 + Math.sin(this.time * 2 + i * Math.PI) * 0.4;
+        jet.material.uniforms.opacity.value = jet.userData.baseOpacity * pulse;
+    });
+}
+                
+                // FPS counter
+                this.frameCount++;
+                const currentTime = performance.now();
+                if (currentTime - this.lastTime >= 1000) {
+                    const fps = Math.round(this.frameCount * 1000 / (currentTime - this.lastTime));
+                    document.getElementById('fps').textContent = `FPS: ${fps}`;
+                    this.frameCount = 0;
+                    this.lastTime = currentTime;
+                }
+                
+                // Render
+                this.renderer.render(this.scene, this.camera);
+                
+                // Post-processing
+                const ctx = this.canvas.getContext('2d', { willReadFrequently: false });
+                if (ctx && (this.settings.bloom || this.settings.filmGrain)) {
+                    this.applyPostProcessing(ctx);
+                }
+            }
+            
+            applyPostProcessing(ctx) {
+                // Bloom effect
+                if (this.settings.bloom) {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = this.canvas.width;
+                    tempCanvas.height = this.canvas.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    tempCtx.drawImage(this.canvas, 0, 0);
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.filter = `blur(${8 * this.settings.bloomStrength}px) brightness(${1 + this.settings.bloomStrength * 0.5})`;
+                    ctx.globalAlpha = 0.6 * this.settings.bloomStrength;
+                    ctx.drawImage(tempCanvas, 0, 0);
+                    ctx.filter = 'none';
+                    ctx.globalAlpha = 1;
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                
+                // Film grain
+                if (this.settings.filmGrain) {
+                    const imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    const data = imageData.data;
+                    const amount = this.settings.grainAmount * 255;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        const grain = (Math.random() - 0.5) * amount;
+                        data[i] += grain;
+                        data[i + 1] += grain;
+                        data[i + 2] += grain;
+                    }
+                    
+                    ctx.putImageData(imageData, 0, 0);
+                }
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            renderer = new NASANebulaRenderer();
+        });
+    </script>
+</body>
+</html>

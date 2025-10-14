@@ -346,6 +346,21 @@ body {
     color: var(--primary-bg);
 }
 
+/* Nebula Button Text */
+.nebula-btn-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
+}
+
+.btn-toggle:hover .nebula-btn-text {
+    color: rgba(255, 255, 255, 1.0);
+}
+
+.btn-toggle.active .nebula-btn-text {
+    color: var(--primary-bg);
+}
+
 
 /* Morph Button - Morph controls */
 .btn-morph {

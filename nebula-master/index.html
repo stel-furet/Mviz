@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Nebula</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="description" content="Nebula is a lightweight JavaScript library for creating beautiful universe animations. Including configurable Stars, Nebulas, Comets, Planets and Suns.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Staatliches&display=swap" rel="stylesheet">
+</head>
+<style rel="stylesheet">
+    html {
+        font-size: 16px;
+    }
+    .config_dashboard {
+        font-family: Source Code Pro,monospace;
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        background: rgba(34, 34, 34, 0.6);
+        color: white;
+        padding: 15px;
+        z-index: 10;
+        top: 20px;
+        right: 20px;
+        width: 260px;
+    }
+    .config_dashboard input {
+        margin-top: 10px;
+    }
+    .gradiant {
+        background: linear-gradient(324deg,#209bff,#00ffea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .card {
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: Bowlby One SC,cursive;
+        z-index: 1;
+        text-align: center;
+        position: relative;
+    }
+    .button {
+        text-decoration: none;
+        font-family: Source Code Pro,monospace;
+        color: #fff;
+        margin-top: 25px;
+        padding: 12px 25px;
+        outline: none;
+        border: 1px solid #fff;
+        font-size: 18px;
+        cursor: pointer;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: box-shadow .3s,background-color .3s,color .3s;
+        background-color: transparent;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .button:hover {
+        background: white;
+        color: #221e36;
+    }
+
+    @media (max-width: 770px){
+        .config_dashboard {display: none}
+        .card {
+            padding: 20px;
+        }
+        html {
+            font-size: 13px;
+        }
+    }
+</style>
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+<style>
+    html {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+    }
+    body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+    }
+    #app {
+        height: 100%;
+        width: 100%;
+    }
+</style>
+</html>
