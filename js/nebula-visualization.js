@@ -18,7 +18,7 @@ class NebulaVisualization {
         this.canvas.style.left = '0';
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
-        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.pointerEvents = 'auto';  // Enable mouse interaction (was 'none')
         this.canvas.style.zIndex = '20';  // Much higher z-index to ensure visibility
         
         // Three.js components
@@ -45,6 +45,9 @@ class NebulaVisualization {
             // Camera
             cameraDistance: 180,
             cameraOrbit: true,
+            orbitSpeed: 1.0,    // Orbit speed multiplier
+            flyThrough: false,  // Fly-through animation mode
+            flySpeed: 0.05,     // Fly-through speed multiplier (half of 0.1)
             
             // Filament structure
             filamentDensity: 1.4,
@@ -66,20 +69,123 @@ class NebulaVisualization {
             bloomStrength: 1.0,
             renderQuality: 1.0,
             
+            // Color controls
+            hueShift: 0,        // 0-360 degrees
+            saturation: 100,    // 0-200 percent
+            brightness: 100,    // 20-200 percent
+            
             // Audio reactivity settings
             audioReactive: true,
+            audioSensitivity: 1.0,
             beatReactive: true,
             bassResponse: 1.0,
             midResponse: 1.0,
-            trebleResponse: 1.0
+            trebleResponse: 1.0,
+            
+            // Audio reactive presets (toggleable)
+            audioPresets: {
+                color: true,     // Pulsar color reactivity
+                rotation: false, // Camera rotation reactivity (OFF by default)
+                distance: true,  // Camera distance reactivity
+                pulsar: true     // Pulsar size/pulse reactivity
+            }
         };
         
         // Performance
         this.performanceMode = false;
         this.frameSkip = 0;
         
+        // Audio reactivity smoothing
+        this.smoothedEnergy = 0;
+        this.smoothedRotationSpeed = 0;
+        this.smoothedBassEnergy = 0;
+        this.smoothedMidEnergy = 0;
+        this.smoothedHighEnergy = 0;
+        this.energySmoothingFactor = 0.05; // Much slower smoothing (was 0.1)
+        this.rotationSmoothingFactor = 0.02; // Extra slow for rotation (new)
+        
+        // Mouse interaction
+        this.mouseInteraction = {
+            enabled: true,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            manualRotationX: 0,  // Manual rotation overrides
+            manualRotationY: 0,
+            manualZoom: 0,       // Manual zoom offset
+            sensitivity: 0.01    // Mouse sensitivity
+        };
+        
+        // Fly-through animation state
+        this.flyThrough = {
+            startTime: 0,           // When fly-through started
+            startPosition: null,    // Camera position when fly-through began
+            isActive: false,        // Whether fly-through is currently running
+            pathRadius: 200,        // Radius of the figure-8
+            pathHeight: 100         // Height variation of the figure-8
+        };
+        
         console.log('🌌 Nebula Visualization created');
         this.init();
+        this.setupMouseInteraction();
+    }
+    
+    setupMouseInteraction() {
+        if (!this.canvas) return;
+        
+        // Mouse down - start dragging
+        this.canvas.addEventListener('mousedown', (e) => {
+            if (!this.mouseInteraction.enabled) return;
+            this.mouseInteraction.isDragging = true;
+            this.mouseInteraction.lastMouseX = e.clientX;
+            this.mouseInteraction.lastMouseY = e.clientY;
+            this.canvas.style.cursor = 'grabbing';
+        });
+        
+        // Mouse move - handle rotation
+        this.canvas.addEventListener('mousemove', (e) => {
+            if (!this.mouseInteraction.enabled || !this.mouseInteraction.isDragging) return;
+            
+            const deltaX = e.clientX - this.mouseInteraction.lastMouseX;
+            const deltaY = e.clientY - this.mouseInteraction.lastMouseY;
+            
+            // Apply mouse movement to manual rotation
+            this.mouseInteraction.manualRotationY += deltaX * this.mouseInteraction.sensitivity;
+            this.mouseInteraction.manualRotationX += deltaY * this.mouseInteraction.sensitivity;
+            
+            // Clamp vertical rotation to avoid flipping
+            this.mouseInteraction.manualRotationX = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.mouseInteraction.manualRotationX));
+            
+            this.mouseInteraction.lastMouseX = e.clientX;
+            this.mouseInteraction.lastMouseY = e.clientY;
+        });
+        
+        // Mouse up - stop dragging
+        this.canvas.addEventListener('mouseup', () => {
+            this.mouseInteraction.isDragging = false;
+            this.canvas.style.cursor = 'grab';
+        });
+        
+        // Mouse leave - stop dragging
+        this.canvas.addEventListener('mouseleave', () => {
+            this.mouseInteraction.isDragging = false;
+            this.canvas.style.cursor = 'default';
+        });
+        
+        // Mouse wheel - zoom
+        this.canvas.addEventListener('wheel', (e) => {
+            if (!this.mouseInteraction.enabled) return;
+            e.preventDefault();
+            
+            const zoomDelta = e.deltaY * 0.1;
+            this.mouseInteraction.manualZoom += zoomDelta;
+            
+            // Clamp zoom to reasonable limits
+            this.mouseInteraction.manualZoom = Math.max(-200, Math.min(300, this.mouseInteraction.manualZoom));
+        });
+        
+        // Set initial cursor
+        this.canvas.style.cursor = 'grab';
     }
     
     init() {
@@ -124,6 +230,9 @@ class NebulaVisualization {
             
             // Apply initial bloom effect
             setTimeout(() => this.updateBloomEffect(this.settings.bloom), 150);
+            
+            // Apply initial color adjustments
+            setTimeout(() => this.applyColorAdjustments(), 200);
             
             console.log('🌌 Nebula Three.js scene initialized successfully');
         } catch (error) {
@@ -260,29 +369,37 @@ class NebulaVisualization {
                 currentPos.add(moveDir);
                 positions.push(currentPos.x, currentPos.y, currentPos.z);
                 
-                // Color gradient: blue/white → green → red/orange
+                // Color gradient: blue/white → green → red/orange with color adjustments
+                let r, g, b;
                 if (t < 0.25) {
                     const mix = t / 0.25;
-                    colors.push(
-                        0.7 + mix * 0.3,
-                        0.8 + mix * 0.2,
-                        1.0
-                    );
+                    r = 0.7 + mix * 0.3;
+                    g = 0.8 + mix * 0.2;
+                    b = 1.0;
                 } else if (t < 0.6) {
                     const mix = (t - 0.25) / 0.35;
-                    colors.push(
-                        0.4 + mix * 0.4,
-                        0.9,
-                        0.5 - mix * 0.3
-                    );
+                    r = 0.4 + mix * 0.4;
+                    g = 0.9;
+                    b = 0.5 - mix * 0.3;
                 } else {
                     const mix = (t - 0.6) / 0.4;
-                    colors.push(
-                        1.0,
-                        0.5 - mix * 0.2,
-                        0.2 - mix * 0.1
-                    );
+                    r = 1.0;
+                    g = 0.5 - mix * 0.2;
+                    b = 0.2 - mix * 0.1;
                 }
+                
+                // Apply color adjustments if any
+                if (this.settings.hueShift !== 0 || this.settings.saturation !== 100 || this.settings.brightness !== 100) {
+                    const hueShift = this.settings.hueShift / 360;
+                    const saturationMult = this.settings.saturation / 100;
+                    const brightnessMult = this.settings.brightness / 100;
+                    const adjustedColor = this.adjustColor({ r, g, b }, hueShift, saturationMult, brightnessMult);
+                    r = adjustedColor.r;
+                    g = adjustedColor.g;
+                    b = adjustedColor.b;
+                }
+                
+                colors.push(r, g, b);
                 
                 const baseThickness = 0.8 + Math.random() * 0.4 * this.settings.threadVariation;
                 const thickness = Math.sin(t * Math.PI);
@@ -427,75 +544,239 @@ class NebulaVisualization {
     
     // Audio reactivity methods
     update(audioData) {
-        if (!this.enabled || !audioData) return;
+        if (!this.enabled) return;
         
-        // Extract audio features for reactivity
-        if (this.settings.audioReactive) {
-            this.bassLevel = this.getAverageFrequency(audioData, 0, 4);
-            this.midLevel = this.getAverageFrequency(audioData, 4, 12);
-            this.trebleLevel = this.getAverageFrequency(audioData, 12, 24);
-            
-            // Apply audio reactivity
-            this.animateToAudio();
+        // Direct AudioMotion audio reactivity (simple & effective)
+        if (this.settings.audioReactive && window.visualizer?.audioMotion?.dataArray) {
+            this.updateDirectAudioReactivity();
         }
         
         this.time += 0.016;
     }
     
-    getAverageFrequency(audioData, startBin, endBin) {
-        if (!audioData || !audioData.length) return 0;
+    updateDirectAudioReactivity() {
+        const dataArray = window.visualizer.audioMotion.dataArray;
+        if (!dataArray) return;
         
-        let sum = 0;
-        const count = Math.min(endBin, audioData.length) - startBin;
+        // Calculate total energy (like Kaleidoscope does - simple & effective)
+        let energy = 0;
+        const sampleEnd = Math.min(Math.floor(dataArray.length * 0.4), dataArray.length);
         
-        for (let i = startBin; i < Math.min(endBin, audioData.length); i++) {
-            sum += audioData[i] / 255.0;
+        for (let i = 0; i < sampleEnd; i++) {
+            energy += dataArray[i];
         }
+        energy = energy / sampleEnd / 255; // 0-1 range
         
-        return count > 0 ? sum / count : 0;
+        // Calculate frequency bands for different effects
+        const bassEnergy = this.getFrequencyBandEnergy(dataArray, 0, 0.1);     // Bass (0-10%)
+        const midEnergy = this.getFrequencyBandEnergy(dataArray, 0.1, 0.4);    // Mids (10-40%)  
+        const highEnergy = this.getFrequencyBandEnergy(dataArray, 0.4, 1.0);   // Highs (40-100%)
+        
+        // Smooth all energy transitions to prevent jarring changes
+        this.smoothedEnergy += (energy - this.smoothedEnergy) * this.energySmoothingFactor;
+        this.smoothedBassEnergy += (bassEnergy - this.smoothedBassEnergy) * this.energySmoothingFactor;
+        this.smoothedMidEnergy += (midEnergy - this.smoothedMidEnergy) * this.energySmoothingFactor;
+        this.smoothedHighEnergy += (highEnergy - this.smoothedHighEnergy) * this.energySmoothingFactor;
+        
+        // Apply audio effects with smoothed energy
+        this.applyPulsarReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
+        this.applyNebulaColorReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
+        this.applyRotationReactivity(this.smoothedEnergy);
+        this.applyDistanceReactivity(this.smoothedBassEnergy);
+        this.applyElementReactivity(this.smoothedEnergy, this.smoothedBassEnergy);
     }
     
-    animateToAudio() {
-        // Pulse rate responds to bass
-        const audioPulseRate = this.settings.pulseRate + (this.bassLevel * 2.0 * this.settings.bassResponse);
+    getFrequencyBandEnergy(dataArray, startPercent, endPercent) {
+        const startIndex = Math.floor(dataArray.length * startPercent);
+        const endIndex = Math.floor(dataArray.length * endPercent);
         
-        // Filament density responds to mid frequencies  
-        const audioFilamentDensity = this.settings.filamentDensity + (this.midLevel * 1.5 * this.settings.midResponse);
-        
-        // Chaos responds to treble
-        const audioChaos = this.settings.chaos + (this.trebleLevel * 3.0 * this.settings.trebleResponse);
-        
-        // Update pulsar
-        if (this.pulsar && this.settings.showPulsar) {
-            const pulseFast = Math.sin(this.time * audioPulseRate * Math.PI * 2);
-            const intensity = 0.3 + (pulseFast + 1) * 0.35;
-            
-            this.pulsar.material.opacity = intensity * this.opacity;
-            const scale = this.pulsar.userData.baseScale * (0.8 + intensity * 0.4);
-            this.pulsar.scale.set(scale, scale, 1);
+        let sum = 0;
+        for (let i = startIndex; i < endIndex; i++) {
+            sum += dataArray[i];
         }
         
-        // Update filaments with audio chaos
-        this.filaments.forEach((filament, i) => {
-            if (filament.material.uniforms) {
-                filament.material.uniforms.time.value = this.time;
+        return sum / (endIndex - startIndex) / 255; // Normalize to 0-1
+    }
+    
+    applyPulsarReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
+        if (!this.pulsar || !this.settings.showPulsar) return;
+        
+        // 1. Pulsar Color Reactivity - smooth energy-based HSV transitions
+        if (this.settings.audioReactive && this.settings.audioPresets.color) {
+            // Create smooth color transitions based on energy levels
+            // Use HSV color space for smooth transitions
+            let hue = 0.6; // Default blue
+            let saturation = 0.8;
+            let brightness = 0.9;
+            
+            // Calculate hue based on dominant frequency (smooth transitions)
+            const totalFreqEnergy = bassEnergy + midEnergy + highEnergy;
+            if (totalFreqEnergy > 0.1) {
+                // Weighted average for smooth color transitions
+                const bassWeight = bassEnergy / totalFreqEnergy;
+                const midWeight = midEnergy / totalFreqEnergy;
+                const highWeight = highEnergy / totalFreqEnergy;
+                
+                // Map frequencies to hue values (0-1)
+                // Bass: Red (0.0), Mid: Yellow/Green (0.3), High: Blue/Purple (0.6-0.8)
+                hue = (bassWeight * 0.0) + (midWeight * 0.3) + (highWeight * 0.7);
+                
+                // Adjust saturation and brightness based on total energy
+                saturation = 0.6 + (totalEnergy * this.settings.audioSensitivity * 0.4);
+                brightness = 0.7 + (totalEnergy * this.settings.audioSensitivity * 0.3);
             }
             
-            const breathe = 1.0 + Math.sin(this.time * 0.3 + i * 0.1) * 0.02;
-            const audioScale = 1.0 + (this.midLevel * 0.1);
-            filament.scale.setScalar(breathe * audioScale);
+            // Convert HSV to RGB
+            const rgb = this.hsvToRgb(hue, saturation, brightness);
             
-            filament.rotation.y = this.time * 0.05 + i * 0.1;
-            filament.rotation.x = Math.sin(this.time * 0.03 + i) * 0.1 * (1 + this.trebleLevel);
-        });
-        
-        // Update inner core
-        if (this.innerCore) {
-            this.innerCore.material.uniforms.time.value = this.time;
-            const pulse = 1.0 + Math.sin(this.time * 1.5) * 0.05;
-            const audioPulse = 1.0 + (this.bassLevel * 0.2);
-            this.innerCore.scale.setScalar(pulse * audioPulse);
+            // Apply color to pulsar material
+            if (this.pulsar.material && this.pulsar.material.color) {
+                this.pulsar.material.color.setRGB(rgb.r, rgb.g, rgb.b);
+            }
         }
+        
+        // 2. Pulsar Size & Pulse Rate Reactivity - only if pulsar preset is enabled
+        let audioSize = this.pulsar.userData.baseScale;
+        let audioPulseRate = this.settings.pulseRate;
+        
+        if (this.settings.audioReactive && this.settings.audioPresets.pulsar) {
+            // Size reactivity based on bass energy
+            const baseSizeMultiplier = 1.0 + (bassEnergy * this.settings.audioSensitivity * 1.5);
+            audioSize = this.pulsar.userData.baseScale * baseSizeMultiplier;
+            
+            // Pulse rate reactivity based on total energy
+            audioPulseRate = this.settings.pulseRate + (totalEnergy * this.settings.audioSensitivity * 3.0);
+        }
+        
+        // 3. ALWAYS apply pulse animation (even when audio reactive is off)
+        const pulseFast = Math.sin(this.time * audioPulseRate * Math.PI * 2);
+        const intensity = 0.3 + (pulseFast + 1) * 0.35;
+        
+        // Combine manual size with audio size and pulse animation
+        const finalScale = audioSize * (0.8 + intensity * 0.4);
+        this.pulsar.scale.set(finalScale, finalScale, 1);
+        
+        // Apply opacity with audio boost (if pulsar preset enabled)
+        let audioOpacity = intensity;
+        if (this.settings.audioReactive && this.settings.audioPresets.pulsar) {
+            audioOpacity = intensity + (totalEnergy * this.settings.audioSensitivity * 0.3);
+        }
+        this.pulsar.material.opacity = Math.min(1.0, audioOpacity * this.opacity);
+    }
+    
+    // HSV to RGB conversion for smooth color transitions
+    hsvToRgb(h, s, v) {
+        let r, g, b;
+        const i = Math.floor(h * 6);
+        const f = h * 6 - i;
+        const p = v * (1 - s);
+        const q = v * (1 - f * s);
+        const t = v * (1 - (1 - f) * s);
+        
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        
+        return { r: r, g: g, b: b };
+    }
+    
+    // New method for nebula filament color reactivity
+    applyNebulaColorReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
+        if (!this.settings.audioPresets.color) return;
+        
+        // Apply color shifts to nebula filaments based on energy
+        this.filaments.forEach((filament, index) => {
+            if (filament.material) {
+                // Create different color zones based on filament index
+                const zoneOffset = (index / this.filaments.length) * 0.3; // 0-0.3 offset
+                
+                // Calculate hue based on frequency content + zone offset
+                const totalFreqEnergy = bassEnergy + midEnergy + highEnergy;
+                let hue = 0.6 + zoneOffset; // Base blue + zone variation
+                
+                if (totalFreqEnergy > 0.1) {
+                    const bassWeight = bassEnergy / totalFreqEnergy;
+                    const midWeight = midEnergy / totalFreqEnergy;
+                    const highWeight = highEnergy / totalFreqEnergy;
+                    
+                    // Map frequencies to hue with zone offset for variety
+                    hue = (bassWeight * 0.0) + (midWeight * 0.3) + (highWeight * 0.7) + zoneOffset;
+                }
+                
+                // Wrap hue to 0-1 range
+                hue = hue % 1.0;
+                
+                // Convert to RGB and apply to filament
+                const rgb = this.hsvToRgb(hue, 0.8, 0.9);
+                
+                // Apply color to filament material (if it supports color)
+                if (filament.material.color) {
+                    filament.material.color.setRGB(rgb.r, rgb.g, rgb.b);
+                } else if (filament.material.uniforms && filament.material.uniforms.colorShift) {
+                    // Apply color shift to shader uniform if available
+                    filament.material.uniforms.colorShift.value = hue;
+                }
+            }
+        });
+    }
+    
+    applyRotationReactivity(smoothedEnergy) {
+        if (this.settings.cameraOrbit && this.settings.audioPresets.rotation) {
+            // Much slower and smoother rotation boost calculation
+            const targetRotationBoost = smoothedEnergy * this.settings.audioSensitivity * 0.5; // Reduced from 2.0 to 0.5
+            
+            // Use separate, much slower smoothing for rotation (prevents jumpiness)
+            this.smoothedRotationSpeed += (targetRotationBoost - this.smoothedRotationSpeed) * this.rotationSmoothingFactor;
+            
+            // Use smoothed rotation speed instead of direct energy
+            this.audioRotationBoost = this.smoothedRotationSpeed;
+        } else {
+            // Very gradually decay rotation boost when orbit is off or rotation preset disabled
+            this.smoothedRotationSpeed *= 0.95; // Slower decay (was 0.9)
+            this.audioRotationBoost = 0;
+        }
+    }
+    
+    applyDistanceReactivity(bassEnergy) {
+        if (this.settings.audioPresets.distance) {
+            // Pulse camera distance with bass (breathing effect) - only if distance preset enabled
+            const bassPulse = bassEnergy * this.settings.audioSensitivity * 20; // 0-20 unit pulse
+            this.audioCameraOffset = bassPulse;
+        } else {
+            this.audioCameraOffset = 0;
+        }
+    }
+    
+    applyElementReactivity(energy, bassEnergy) {
+        // Inner core glow reactivity
+        if (this.innerCore) {
+            const coreGlow = 1.0 + (bassEnergy * this.settings.audioSensitivity * 0.5);
+            this.innerCore.scale.setScalar(coreGlow);
+        }
+        
+        // Star twinkle reactivity
+        if (this.stars && this.stars.material) {
+            const twinkle = 0.7 + (energy * this.settings.audioSensitivity * 0.3);
+            this.stars.material.opacity = twinkle;
+        }
+        
+        // Filament brightness reactivity
+        this.filaments.forEach((filament, index) => {
+            if (filament.material) {
+                const breathe = 1.0 + Math.sin(this.time * 0.3 + index * 0.1) * 0.02;
+                const audioScale = 1.0 + (energy * this.settings.audioSensitivity * 0.1);
+                filament.scale.setScalar(breathe * audioScale);
+                
+                // Subtle rotation based on energy
+                filament.rotation.y = this.time * 0.05 + index * 0.1;
+                filament.rotation.x = Math.sin(this.time * 0.03 + index) * 0.1 * (1 + energy * this.settings.audioSensitivity);
+            }
+        });
     }
     
     onBeatDetected(beatStrength) {
@@ -524,19 +805,38 @@ class NebulaVisualization {
         if (this.performanceMode && this.frameSkip++ < 2) return;
         this.frameSkip = 0;
         
-        // Camera orbit animation
-        if (this.settings.cameraOrbit) {
-            const angle = this.time * 0.1;
-            const dist = this.settings.cameraDistance;
-            this.camera.position.x = Math.sin(angle) * dist;
-            this.camera.position.z = Math.cos(angle) * dist;
+        // Camera animation logic with priority: Fly-through > Mouse > Orbit > Static
+        if (this.settings.flyThrough && this.flyThrough.isActive) {
+            // Fly-through animation takes highest priority
+            this.updateFlyThroughCamera();
+        } else if (this.settings.cameraOrbit && !this.mouseInteraction.isDragging) {
+            // Only use automatic orbit when not manually dragging and fly-through is off
+            const baseSpeed = 0.02 * this.settings.orbitSpeed; // Apply orbit speed multiplier
+            const effectiveSpeed = baseSpeed + (this.audioRotationBoost || 0);
+            
+            const angle = this.time * effectiveSpeed;
+            const baseDist = this.settings.cameraDistance;
+            const effectiveDist = baseDist + (this.audioCameraOffset || 0) + this.mouseInteraction.manualZoom;
+            
+            this.camera.position.x = Math.sin(angle) * effectiveDist;
+            this.camera.position.z = Math.cos(angle) * effectiveDist;
             this.camera.position.y = Math.sin(angle * 0.5) * 10;
             this.camera.lookAt(0, 0, 0);
         } else {
-            // When orbit is off, ensure camera is positioned correctly at the set distance
-            this.camera.position.x = 0;
-            this.camera.position.y = 0;
-            this.camera.position.z = this.settings.cameraDistance;
+            // Manual camera control (mouse interaction) or orbit off
+            const baseDist = this.settings.cameraDistance;
+            const effectiveDist = baseDist + (this.audioCameraOffset || 0) + this.mouseInteraction.manualZoom;
+            
+            // Apply manual rotation from mouse
+            const rotY = this.mouseInteraction.manualRotationY;
+            const rotX = this.mouseInteraction.manualRotationX;
+            
+            // Calculate camera position based on manual rotation
+            this.camera.position.x = Math.sin(rotY) * Math.cos(rotX) * effectiveDist;
+            this.camera.position.y = Math.sin(rotX) * effectiveDist;
+            this.camera.position.z = Math.cos(rotY) * Math.cos(rotX) * effectiveDist;
+            
+            // Always look at center
             this.camera.lookAt(0, 0, 0);
         }
         
@@ -661,6 +961,20 @@ class NebulaVisualization {
                 case 'bloom':
                     this.updateBloomEffect(value);
                     break;
+                case 'hueShift':
+                case 'saturation':
+                case 'brightness':
+                    // Apply color adjustments to all nebula elements
+                    this.applyColorAdjustments();
+                    break;
+                case 'flyThrough':
+                    // Initialize or stop fly-through
+                    if (value) {
+                        this.startFlyThrough();
+                    } else {
+                        this.stopFlyThrough();
+                    }
+                    break;
             }
         }
     }
@@ -711,6 +1025,265 @@ class NebulaVisualization {
                 this.stars.material.blending = THREE.AdditiveBlending; // Keep stars additive
             }
         }
+    }
+    
+    applyColorAdjustments() {
+        const hueShift = this.settings.hueShift / 360; // Convert to 0-1
+        const saturationMult = this.settings.saturation / 100; // Convert to multiplier
+        const brightnessMult = this.settings.brightness / 100; // Convert to multiplier
+        
+        // Apply to pulsar (Sprite material - this works)
+        if (this.pulsar && this.pulsar.material) {
+            // Store base color if not already stored
+            if (!this.pulsar.userData.baseColor) {
+                this.pulsar.userData.baseColor = { r: 0.7, g: 0.8, b: 1.0 }; // Light blue default
+            }
+            
+            const baseColor = this.pulsar.userData.baseColor;
+            const adjustedColor = this.adjustColor(baseColor, hueShift, saturationMult, brightnessMult);
+            
+            // SpriteMaterial uses color property
+            if (this.pulsar.material.color) {
+                this.pulsar.material.color.setRGB(adjustedColor.r, adjustedColor.g, adjustedColor.b);
+            }
+        }
+        
+        // Apply to filaments - UPDATE COLORS IN PLACE (don't recreate)
+        this.filaments.forEach((filament, filamentIndex) => {
+            if (filament.geometry && filament.geometry.attributes.color) {
+                const colorArray = filament.geometry.attributes.color.array;
+                const particleCount = colorArray.length / 3;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const t = i / particleCount;
+                    
+                    // Recreate the same base color logic as in createFilaments
+                    let r, g, b;
+                    if (t < 0.25) {
+                        const mix = t / 0.25;
+                        r = 0.7 + mix * 0.3;
+                        g = 0.8 + mix * 0.2;
+                        b = 1.0;
+                    } else if (t < 0.6) {
+                        const mix = (t - 0.25) / 0.35;
+                        r = 0.4 + mix * 0.4;
+                        g = 0.9;
+                        b = 0.5 - mix * 0.3;
+                    } else {
+                        const mix = (t - 0.6) / 0.4;
+                        r = 1.0;
+                        g = 0.5 - mix * 0.2;
+                        b = 0.2 - mix * 0.1;
+                    }
+                    
+                    // Apply color adjustments
+                    const adjustedColor = this.adjustColor({ r, g, b }, hueShift, saturationMult, brightnessMult);
+                    
+                    // Update the color array directly
+                    const index = i * 3;
+                    colorArray[index] = adjustedColor.r;
+                    colorArray[index + 1] = adjustedColor.g;
+                    colorArray[index + 2] = adjustedColor.b;
+                }
+                
+                // Mark the color attribute as needing update
+                filament.geometry.attributes.color.needsUpdate = true;
+            }
+        });
+        
+        // Apply to inner core - UPDATE SHADER UNIFORMS (don't recreate)
+        if (this.innerCore && this.innerCore.material && this.innerCore.material.uniforms) {
+            // Store base color if not already stored
+            if (!this.innerCore.userData) {
+                this.innerCore.userData = {};
+            }
+            if (!this.innerCore.userData.baseColor) {
+                this.innerCore.userData.baseColor = { r: 1.0, g: 0.8, b: 0.4 }; // Warm core color
+            }
+            
+            const baseColor = this.innerCore.userData.baseColor;
+            const adjustedColor = this.adjustColor(baseColor, hueShift, saturationMult, brightnessMult);
+            
+            // Add color uniform to shader if it doesn't exist
+            if (!this.innerCore.material.uniforms.colorTint) {
+                this.innerCore.material.uniforms.colorTint = { value: new THREE.Color(adjustedColor.r, adjustedColor.g, adjustedColor.b) };
+                // Update the shader to use the color tint
+                this.updateInnerCoreShader();
+            } else {
+                this.innerCore.material.uniforms.colorTint.value.setRGB(adjustedColor.r, adjustedColor.g, adjustedColor.b);
+            }
+        }
+        
+        // Apply to stars (PointsMaterial - this should work)
+        if (this.stars && this.stars.material) {
+            // Store base color if not already stored
+            if (!this.stars.userData) {
+                this.stars.userData = {};
+            }
+            if (!this.stars.userData.baseColor) {
+                this.stars.userData.baseColor = { r: 1.0, g: 1.0, b: 1.0 }; // White stars
+            }
+            
+            const baseColor = this.stars.userData.baseColor;
+            const adjustedColor = this.adjustColor(baseColor, hueShift * 0.3, saturationMult * 0.5, brightnessMult);
+            
+            // PointsMaterial should have color property
+            if (this.stars.material.color) {
+                this.stars.material.color.setRGB(adjustedColor.r, adjustedColor.g, adjustedColor.b);
+            }
+        }
+    }
+    
+    adjustColor(baseColor, hueShift, saturationMult, brightnessMult) {
+        // Convert RGB to HSV
+        const hsv = this.rgbToHsv(baseColor.r, baseColor.g, baseColor.b);
+        
+        // Apply adjustments
+        let newHue = (hsv.h + hueShift) % 1.0;
+        if (newHue < 0) newHue += 1.0;
+        
+        let newSaturation = Math.max(0, Math.min(1, hsv.s * saturationMult));
+        let newValue = Math.max(0.1, Math.min(1, hsv.v * brightnessMult));
+        
+        // Convert back to RGB
+        return this.hsvToRgb(newHue, newSaturation, newValue);
+    }
+    
+    rgbToHsv(r, g, b) {
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const diff = max - min;
+        
+        let h = 0;
+        if (diff !== 0) {
+            if (max === r) {
+                h = ((g - b) / diff) % 6;
+            } else if (max === g) {
+                h = (b - r) / diff + 2;
+            } else {
+                h = (r - g) / diff + 4;
+            }
+            h /= 6;
+            if (h < 0) h += 1;
+        }
+        
+        const s = max === 0 ? 0 : diff / max;
+        const v = max;
+        
+        return { h, s, v };
+    }
+    
+    updateInnerCoreShader() {
+        if (!this.innerCore || !this.innerCore.material) return;
+        
+        // Update the fragment shader to include color tinting
+        this.innerCore.material.fragmentShader = `
+            uniform float time;
+            uniform vec3 colorTint;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            
+            void main() {
+                float dist = length(vPosition) / 3.0;
+                float pulse = sin(time * 3.0) * 0.5 + 0.5;
+                
+                vec3 baseColor = vec3(1.0, 0.6, 0.2);
+                vec3 finalColor = baseColor * colorTint;
+                
+                float alpha = (1.0 - dist) * (0.6 + pulse * 0.4);
+                gl_FragColor = vec4(finalColor, alpha);
+            }
+        `;
+        
+        this.innerCore.material.needsUpdate = true;
+    }
+    
+    startFlyThrough() {
+        // Capture current camera position as starting point
+        this.flyThrough.startPosition = {
+            x: this.camera.position.x,
+            y: this.camera.position.y,
+            z: this.camera.position.z
+        };
+        this.flyThrough.startTime = this.time;
+        this.flyThrough.isActive = true;
+        // Don't store speed here - use current setting dynamically
+    }
+    
+    stopFlyThrough() {
+        this.flyThrough.isActive = false;
+        this.flyThrough.startPosition = null;
+    }
+    
+    updateFlyThroughCamera() {
+        if (!this.flyThrough.isActive || !this.flyThrough.startPosition) return;
+        
+        // Calculate time elapsed since fly-through started (using current speed setting)
+        const elapsedTime = (this.time - this.flyThrough.startTime) * this.settings.flySpeed;
+        
+        // Figure-8 parametric equations (Lemniscate of Bernoulli)
+        // x = a * cos(t) / (1 + sin²(t))
+        // y = a * sin(t) * cos(t) / (1 + sin²(t))
+        // z = b * sin(2t) for vertical variation
+        
+        const t = elapsedTime * 0.5; // Control speed of figure-8
+        const radius = this.flyThrough.pathRadius;
+        const height = this.flyThrough.pathHeight;
+        
+        // Calculate figure-8 position (centered at origin - nebula center)
+        const sinT = Math.sin(t);
+        const cosT = Math.cos(t);
+        const denominator = 1 + sinT * sinT;
+        
+        const figure8X = radius * cosT / denominator;
+        const figure8Z = radius * sinT * cosT / denominator;
+        const figure8Y = height * Math.sin(2 * t); // Vertical variation
+        
+        // Calculate velocity (derivative of position) to determine forward direction
+        const dt = 0.01; // Small time step for derivative calculation
+        const tNext = t + dt;
+        const sinTNext = Math.sin(tNext);
+        const cosTNext = Math.cos(tNext);
+        const denominatorNext = 1 + sinTNext * sinTNext;
+        
+        const nextX = radius * cosTNext / denominatorNext;
+        const nextZ = radius * sinTNext * cosTNext / denominatorNext;
+        const nextY = height * Math.sin(2 * tNext);
+        
+        // Calculate velocity vector (direction of movement)
+        const velocityX = (nextX - figure8X) / dt;
+        const velocityY = (nextY - figure8Y) / dt;
+        const velocityZ = (nextZ - figure8Z) / dt;
+        
+        // Normalize velocity to get forward direction
+        const velocityLength = Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
+        let forwardX = 0, forwardY = 0, forwardZ = 1; // Default forward if velocity is zero
+        
+        if (velocityLength > 0.001) {
+            forwardX = velocityX / velocityLength;
+            forwardY = velocityY / velocityLength;
+            forwardZ = velocityZ / velocityLength;
+        }
+        
+        // Blend from start position to figure-8 path over first 2 seconds
+        const blendDuration = 2.0;
+        const blendFactor = Math.min(elapsedTime / blendDuration, 1.0);
+        
+        // Smooth transition using ease-in-out
+        const smoothBlend = blendFactor * blendFactor * (3.0 - 2.0 * blendFactor);
+        
+        // Interpolate from start position to figure-8 path
+        this.camera.position.x = this.flyThrough.startPosition.x * (1 - smoothBlend) + figure8X * smoothBlend;
+        this.camera.position.y = this.flyThrough.startPosition.y * (1 - smoothBlend) + figure8Y * smoothBlend;
+        this.camera.position.z = this.flyThrough.startPosition.z * (1 - smoothBlend) + figure8Z * smoothBlend;
+        
+        // Camera looks forward along the flight path, not at nebula center
+        const lookAtDistance = 50; // How far ahead to look
+        const lookAtX = this.camera.position.x + forwardX * lookAtDistance;
+        const lookAtY = this.camera.position.y + forwardY * lookAtDistance;
+        const lookAtZ = this.camera.position.z + forwardZ * lookAtDistance;
+        
+        this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
     }
 
     updateFilaments() {

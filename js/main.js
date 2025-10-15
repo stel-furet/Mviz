@@ -18115,6 +18115,9 @@ https://rogueamoeba.com/loopback/
                 visualizerContainer.appendChild(this.nebulaVisualization.canvas);
                 this.nebulaVisualization.canvas.style.display = 'none';
                 this.nebulaVisualization.autoResize();
+                
+                // Initialize toggle button states after nebula is created
+                this.initializeNebulaToggleStates();
                 return true;
             } else {
                 console.error('🌌 Container or canvas not found');
@@ -18124,6 +18127,27 @@ https://rogueamoeba.com/loopback/
             console.error('🌌 Error initializing nebula:', error);
             return false;
         }
+    }
+    
+    initializeNebulaToggleStates() {
+        if (!this.nebulaVisualization) return;
+        
+        // Update all toggle buttons to match nebula settings
+        const toggleControls = [
+            { id: 'nebulaCameraOrbitToggle', property: 'cameraOrbit' },
+            { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
+            { id: 'nebulaBloomToggle', property: 'bloom' },
+            { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
+            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' }
+        ];
+        
+        toggleControls.forEach(control => {
+            const element = document.getElementById(control.id);
+            if (element) {
+                const isEnabled = this.nebulaVisualization.settings[control.property];
+                this.updateNebulaToggleButton(element, isEnabled);
+            }
+        });
     }
 
     toggleNebula() {
@@ -18156,18 +18180,31 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaAsymmetry', property: 'asymmetry' },
             { id: 'nebulaPulsarSize', property: 'pulsarSize' },
             { id: 'nebulaPulseRate', property: 'pulseRate' },
-            { id: 'nebulaStarCount', property: 'starCount' }
+            { id: 'nebulaStarCount', property: 'starCount' },
+            { id: 'nebulaOrbitSpeed', property: 'orbitSpeed' },
+            { id: 'nebulaFlySpeed', property: 'flySpeed' },
+            { id: 'nebulaAudioSensitivity', property: 'audioSensitivity' },
+            { id: 'nebulaHueShift', property: 'hueShift' },
+            { id: 'nebulaSaturation', property: 'saturation' },
+            { id: 'nebulaBrightness', property: 'brightness' }
         ];
         
         controls.forEach(control => {
             const element = document.getElementById(control.id);
-            const valueDisplay = element?.parentElement.querySelector('.value-display');
+            const valueDisplay = element?.parentElement.querySelector('.slider-1-value');
             
             if (element) {
                 element.addEventListener('input', (e) => {
                     const value = parseFloat(e.target.value);
                     if (valueDisplay) {
-                        valueDisplay.textContent = value;
+                        // Format display value based on control type
+                        let displayValue = value;
+                        if (control.id === 'nebulaHueShift') {
+                            displayValue = value + '°';
+                        } else if (control.id === 'nebulaSaturation' || control.id === 'nebulaBrightness') {
+                            displayValue = value + '%';
+                        }
+                        valueDisplay.textContent = displayValue;
                     }
                     
                     if (this.nebulaVisualization) {
@@ -18177,23 +18214,163 @@ https://rogueamoeba.com/loopback/
             }
         });
         
-        // Checkboxes
-        const checkboxControls = [
-            { id: 'nebulaCameraOrbit', property: 'cameraOrbit' },
-            { id: 'nebulaShowPulsar', property: 'showPulsar' },
-            { id: 'nebulaBloom', property: 'bloom' }
+        // Toggle buttons (replaced checkboxes)
+        const toggleControls = [
+            { id: 'nebulaCameraOrbitToggle', property: 'cameraOrbit' },
+            { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
+            { id: 'nebulaBloomToggle', property: 'bloom' },
+            { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
+            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' }
         ];
         
-        checkboxControls.forEach(control => {
+        toggleControls.forEach(control => {
             const element = document.getElementById(control.id);
             if (element) {
-                element.addEventListener('change', (e) => {
+                // Set initial state based on nebula settings
+                if (this.nebulaVisualization) {
+                    const isEnabled = this.nebulaVisualization.settings[control.property];
+                    this.updateNebulaToggleButton(element, isEnabled);
+                }
+                
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     if (this.nebulaVisualization) {
-                        this.nebulaVisualization.updateSetting(control.property, e.target.checked);
+                        // Toggle the setting
+                        const currentValue = this.nebulaVisualization.settings[control.property];
+                        const newValue = !currentValue;
+                        
+                        // Update the visualization
+                        this.nebulaVisualization.updateSetting(control.property, newValue);
+                        
+                        // Update button appearance
+                        this.updateNebulaToggleButton(element, newValue);
                     }
                 });
             }
         });
+    }
+    
+    initNebulaPresetHandlers() {
+        // Preset button handlers
+        const presetButtons = [
+            { id: 'headerNebulaColorPresetBtn', preset: 'color' },
+            { id: 'headerNebulaRotationPresetBtn', preset: 'rotation' },
+            { id: 'headerNebulaDistancePresetBtn', preset: 'distance' },
+            { id: 'headerNebulaPulsarPresetBtn', preset: 'pulsar' }
+        ];
+        
+        presetButtons.forEach(button => {
+            const element = document.getElementById(button.id);
+            if (element) {
+                // Set initial state
+                this.updateNebulaPresetButton(button.preset, element);
+                
+                element.addEventListener('click', () => {
+                    if (this.nebulaVisualization) {
+                        // Toggle the preset
+                        const currentState = this.nebulaVisualization.settings.audioPresets[button.preset];
+                        this.nebulaVisualization.settings.audioPresets[button.preset] = !currentState;
+                        
+                        // Update button appearance
+                        this.updateNebulaPresetButton(button.preset, element);
+                    }
+                });
+            }
+        });
+    }
+    
+    updateNebulaPresetButton(presetName, buttonElement) {
+        if (!this.nebulaVisualization || !buttonElement) return;
+        
+        const isEnabled = this.nebulaVisualization.settings.audioPresets[presetName];
+        
+        if (isEnabled) {
+            buttonElement.classList.add('active');
+            buttonElement.textContent = presetName.charAt(0).toUpperCase() + presetName.slice(1) + ' ON';
+        } else {
+            buttonElement.classList.remove('active');
+            buttonElement.textContent = presetName.charAt(0).toUpperCase() + presetName.slice(1) + ' OFF';
+        }
+    }
+    
+    updateNebulaToggleButton(buttonElement, isEnabled) {
+        if (!buttonElement) return;
+        
+        const toggleText = buttonElement.querySelector('.toggle-text');
+        if (toggleText) {
+            toggleText.textContent = isEnabled ? 'ON' : 'OFF';
+        }
+        
+        if (isEnabled) {
+            buttonElement.classList.add('active');
+        } else {
+            buttonElement.classList.remove('active');
+        }
+    }
+    
+    initNebulaColorPresetHandlers() {
+        // Color preset button handlers
+        const colorPresetButtons = document.querySelectorAll('.nebula-color-preset');
+        
+        colorPresetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (this.nebulaVisualization) {
+                    const presetName = button.getAttribute('data-preset');
+                    this.applyNebulaColorPreset(presetName);
+                    
+                    // Update active state
+                    colorPresetButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    applyNebulaColorPreset(presetName) {
+        if (!this.nebulaVisualization) {
+            console.warn('🎨 Cannot apply color preset - nebula visualization not available');
+            return;
+        }
+        
+        // Define color presets with hue, saturation, brightness values
+        const presets = {
+            default: { hue: 0, saturation: 100, brightness: 100 },      // Original nebula colors (no adjustment)
+            fire: { hue: 280, saturation: 200, brightness: 110 },       // Purple-magenta with high saturation
+            ice: { hue: 125, saturation: 70, brightness: 95 },          // Green-cyan with moderate saturation
+            toxic: { hue: 190, saturation: 200, brightness: 105 },      // Cyan-blue with high saturation
+            sunset: { hue: 320, saturation: 140, brightness: 115 },     // Magenta-pink with high saturation
+            deepspace: { hue: 270, saturation: 60, brightness: 85 }     // Deep Purple/Magenta (unchanged)
+        };
+        
+        const preset = presets[presetName];
+        if (!preset) {
+            console.warn('🎨 Unknown preset:', presetName);
+            return;
+        }
+        
+        // Apply the preset values to the nebula settings
+        this.nebulaVisualization.updateSetting('hueShift', preset.hue);
+        this.nebulaVisualization.updateSetting('saturation', preset.saturation);
+        this.nebulaVisualization.updateSetting('brightness', preset.brightness);
+        
+        // Update the UI sliders to reflect the new values
+        this.updateNebulaSliderValue('nebulaHueShift', preset.hue, preset.hue + '°');
+        this.updateNebulaSliderValue('nebulaSaturation', preset.saturation, preset.saturation + '%');
+        this.updateNebulaSliderValue('nebulaBrightness', preset.brightness, preset.brightness + '%');
+    }
+    
+    updateNebulaSliderValue(sliderId, value, displayValue) {
+        const slider = document.getElementById(sliderId);
+        const valueDisplay = slider?.parentElement.querySelector('.slider-1-value');
+        
+        if (slider) {
+            slider.value = value;
+        }
+        if (valueDisplay) {
+            valueDisplay.textContent = displayValue;
+        }
     }
 
     updateNebulaButtons() {
@@ -20095,6 +20272,12 @@ https://rogueamoeba.com/loopback/
         
         // Nebula control event handlers
         this.initNebulaControlHandlers();
+        
+        // Nebula preset button handlers
+        this.initNebulaPresetHandlers();
+        
+        // Nebula color preset handlers
+        this.initNebulaColorPresetHandlers();
 
         // Header Infinite Zoom Toggle button
         const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
