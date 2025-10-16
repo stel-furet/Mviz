@@ -82,12 +82,17 @@ class NebulaVisualization {
             midResponse: 1.0,
             trebleResponse: 1.0,
             
+            // Morphing mode - allows filaments to evolve and transform over time
+            morphingMode: false,
+            
             // Audio reactive presets (toggleable)
             audioPresets: {
-                color: true,     // Pulsar color reactivity
-                rotation: false, // Camera rotation reactivity (OFF by default)
-                distance: true,  // Camera distance reactivity
-                pulsar: true     // Pulsar size/pulse reactivity
+                color: false,          // Pulsar color reactivity (OFF by default)
+                rotation: false,       // Camera rotation reactivity (OFF by default)
+                distance: true,        // Camera distance reactivity
+                pulsar: true,          // Pulsar size/pulse reactivity
+                filamentDensity: true, // Filament density/thickness reactivity
+                chaos: true            // Chaos/randomness reactivity (NEW)
             }
         };
         
@@ -120,9 +125,12 @@ class NebulaVisualization {
         this.flyThrough = {
             startTime: 0,           // When fly-through started
             startPosition: null,    // Camera position when fly-through began
+            startLookAt: null,      // What camera was looking at when fly-through began
             isActive: false,        // Whether fly-through is currently running
             pathRadius: 200,        // Radius of the figure-8
-            pathHeight: 100         // Height variation of the figure-8
+            pathHeight: 100,        // Height variation of the figure-8
+            approachDuration: 3.0,  // Time to approach the figure-8 path (Stage 1)
+            pathEntryPoint: null    // Where camera enters the figure-8 path
         };
         
         console.log('🌌 Nebula Visualization created');
@@ -319,6 +327,10 @@ class NebulaVisualization {
         this.filaments.forEach(f => this.scene.remove(f));
         this.filaments = [];
         
+        // Reset original positions and chaos amounts for audio reactivity
+        this.originalFilamentPositions = null;
+        this.originalChaosAmounts = null;
+        
         const filamentCount = Math.floor(200 * this.settings.filamentDensity);
         
         for (let i = 0; i < filamentCount; i++) {
@@ -456,7 +468,11 @@ class NebulaVisualization {
             });
             
             const filament = new THREE.Points(geometry, material);
-            filament.userData.baseDir = baseDir.clone();
+            // Initialize userData for storing original colors and other data
+            filament.userData = {
+                baseDir: baseDir.clone()
+            };
+            
             this.filaments.push(filament);
             this.scene.add(filament);
         }
@@ -583,6 +599,8 @@ class NebulaVisualization {
         this.applyNebulaColorReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
         this.applyRotationReactivity(this.smoothedEnergy);
         this.applyDistanceReactivity(this.smoothedBassEnergy);
+        this.applyFilamentDensityReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
+        this.applyChaosReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
         this.applyElementReactivity(this.smoothedEnergy, this.smoothedBassEnergy);
     }
     
@@ -689,38 +707,75 @@ class NebulaVisualization {
     applyNebulaColorReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
         if (!this.settings.audioPresets.color) return;
         
-        // Apply color shifts to nebula filaments based on energy
+        // Apply subtle color shifts to nebula filaments based on energy
+        // This preserves the original color scheme and just adds reactive variations
         this.filaments.forEach((filament, index) => {
-            if (filament.material) {
-                // Create different color zones based on filament index
-                const zoneOffset = (index / this.filaments.length) * 0.3; // 0-0.3 offset
+            if (filament.geometry && filament.geometry.attributes.color) {
+                // Store original colors if not already stored
+                // This should capture the current colors (including any preset that was applied)
+                if (!filament.userData.originalColors) {
+                    filament.userData.originalColors = new Float32Array(filament.geometry.attributes.color.array);
+                }
                 
-                // Calculate hue based on frequency content + zone offset
-                const totalFreqEnergy = bassEnergy + midEnergy + highEnergy;
-                let hue = 0.6 + zoneOffset; // Base blue + zone variation
+                const colorArray = filament.geometry.attributes.color.array;
+                const originalColors = filament.userData.originalColors;
+                const particleCount = colorArray.length / 3;
                 
-                if (totalFreqEnergy > 0.1) {
-                    const bassWeight = bassEnergy / totalFreqEnergy;
-                    const midWeight = midEnergy / totalFreqEnergy;
-                    const highWeight = highEnergy / totalFreqEnergy;
+                // Calculate color shift based on energy
+                const filamentZone = index / this.filaments.length;
+                let energySource;
+                
+                if (filamentZone < 0.33) {
+                    energySource = bassEnergy;
+                } else if (filamentZone < 0.66) {
+                    energySource = midEnergy;
+                } else {
+                    energySource = highEnergy;
+                }
+                
+                // Create color shifts - temporarily more dramatic for testing
+                const shiftIntensity = energySource * this.settings.audioSensitivity * 1.0; // More visible for testing
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
                     
-                    // Map frequencies to hue with zone offset for variety
-                    hue = (bassWeight * 0.0) + (midWeight * 0.3) + (highWeight * 0.7) + zoneOffset;
+                    // Apply subtle shifts to original colors
+                    const baseR = originalColors[i3];
+                    const baseG = originalColors[i3 + 1];
+                    const baseB = originalColors[i3 + 2];
+                    
+                    // Create subtle color variations based on frequency
+                    let shiftR = 0, shiftG = 0, shiftB = 0;
+                    
+                    if (filamentZone < 0.33) {
+                        // Bass: red shift - more dramatic for testing
+                        shiftR = shiftIntensity * 0.5;
+                    } else if (filamentZone < 0.66) {
+                        // Mids: green shift - more dramatic for testing
+                        shiftG = shiftIntensity * 0.5;
+                    } else {
+                        // Highs: blue shift - more dramatic for testing
+                        shiftB = shiftIntensity * 0.5;
+                    }
+                    
+                    // Apply shifts while preserving original color character
+                    colorArray[i3] = Math.min(1.0, baseR + shiftR);
+                    colorArray[i3 + 1] = Math.min(1.0, baseG + shiftG);
+                    colorArray[i3 + 2] = Math.min(1.0, baseB + shiftB);
                 }
                 
-                // Wrap hue to 0-1 range
-                hue = hue % 1.0;
-                
-                // Convert to RGB and apply to filament
-                const rgb = this.hsvToRgb(hue, 0.8, 0.9);
-                
-                // Apply color to filament material (if it supports color)
-                if (filament.material.color) {
-                    filament.material.color.setRGB(rgb.r, rgb.g, rgb.b);
-                } else if (filament.material.uniforms && filament.material.uniforms.colorShift) {
-                    // Apply color shift to shader uniform if available
-                    filament.material.uniforms.colorShift.value = hue;
-                }
+                // Mark colors as needing update
+                filament.geometry.attributes.color.needsUpdate = true;
+            }
+        });
+    }
+    
+    refreshOriginalColors() {
+        // Update the stored original colors to current colors
+        // This should be called when color presets change while color reactivity is ON
+        this.filaments.forEach((filament) => {
+            if (filament.geometry && filament.geometry.attributes.color && filament.userData) {
+                filament.userData.originalColors = new Float32Array(filament.geometry.attributes.color.array);
             }
         });
     }
@@ -750,6 +805,191 @@ class NebulaVisualization {
         } else {
             this.audioCameraOffset = 0;
         }
+    }
+    
+    applyFilamentDensityReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
+        if (!this.settings.audioPresets.filamentDensity) {
+            // If filament density is OFF and we're not in morphing mode, 
+            // reset to original positions to prevent cumulative effects
+            if (!this.settings.morphingMode && this.originalFilamentPositions) {
+                this.resetToOriginalPositions();
+            }
+            return;
+        }
+        
+        // Store original positions if not already stored
+        if (!this.originalFilamentPositions) {
+            this.originalFilamentPositions = this.filaments.map(filament => {
+                if (filament.geometry && filament.geometry.attributes.position) {
+                    // Clone the original position array
+                    return new Float32Array(filament.geometry.attributes.position.array);
+                }
+                return null;
+            });
+        }
+        
+        // Apply position wiggling to filaments based on audio energy
+        // Keep original filament structure intact - only add small position offsets
+        this.filaments.forEach((filament, index) => {
+            if (!filament.geometry || !filament.geometry.attributes.position || 
+                !this.originalFilamentPositions || !this.originalFilamentPositions[index]) return;
+            
+            const positions = filament.geometry.attributes.position.array;
+            const originalPositions = this.originalFilamentPositions[index];
+            const particleCount = positions.length / 3;
+            
+            // Calculate wiggle intensity based on energy
+            // Use different frequency bands for different filaments to create variety
+            const filamentZone = index / this.filaments.length; // 0-1 range
+            let energySource;
+            
+            if (filamentZone < 0.33) {
+                // Inner filaments respond to bass
+                energySource = bassEnergy;
+            } else if (filamentZone < 0.66) {
+                // Middle filaments respond to mids
+                energySource = midEnergy;
+            } else {
+                // Outer filaments respond to highs
+                energySource = highEnergy;
+            }
+            
+            // Calculate wiggle intensity (0.0 to 2.6 based on energy) - increased by 30%
+            const wiggleIntensity = energySource * this.settings.audioSensitivity * 2.6;
+            
+            // Apply wiggling motion to each particle
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                const t = i / particleCount; // Position along filament (0-1)
+                
+                // Create wave-like motion along the filament
+                const timeOffset = this.time * 2.0; // Animation speed
+                const positionOffset = index * 0.5 + t * 3.0; // Unique offset per filament and position
+                
+                // Generate smooth wiggle offsets using sine waves
+                const wiggleX = Math.sin(timeOffset + positionOffset) * wiggleIntensity * 0.5;
+                const wiggleY = Math.cos(timeOffset * 1.3 + positionOffset * 1.2) * wiggleIntensity * 0.5;
+                const wiggleZ = Math.sin(timeOffset * 0.8 + positionOffset * 0.9) * wiggleIntensity * 0.3;
+                
+                // Apply wiggle - morphing mode affects how positions are applied
+                if (this.settings.morphingMode) {
+                    // Morphing mode: add to current positions (cumulative effect)
+                    positions[i3] += wiggleX * 0.1; // Smaller increments for gradual morphing
+                    positions[i3 + 1] += wiggleY * 0.1;
+                    positions[i3 + 2] += wiggleZ * 0.1;
+                } else {
+                    // Normal mode: apply to original positions (preserve structure)
+                    positions[i3] = originalPositions[i3] + wiggleX;
+                    positions[i3 + 1] = originalPositions[i3 + 1] + wiggleY;
+                    positions[i3 + 2] = originalPositions[i3 + 2] + wiggleZ;
+                }
+            }
+            
+            // Mark positions as needing update
+            filament.geometry.attributes.position.needsUpdate = true;
+        });
+    }
+    
+    applyChaosReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
+        if (!this.settings.audioPresets.chaos) return;
+        
+        // If filament density is OFF and we're not in morphing mode,
+        // don't apply chaos to prevent the cumulative swirling bug
+        if (!this.settings.audioPresets.filamentDensity && !this.settings.morphingMode) {
+            return;
+        }
+        
+        // Store original chaos amounts if not already stored
+        if (!this.originalChaosAmounts) {
+            this.originalChaosAmounts = this.filaments.map((filament, index) => {
+                // Store the base chaos amount for each filament
+                return this.settings.chaos * (0.7 + (index / this.filaments.length) * 0.6 * this.settings.threadVariation);
+            });
+        }
+        
+        // Apply chaos scaling to filaments based on audio energy
+        // This affects the randomness/wildness of filament paths
+        this.filaments.forEach((filament, index) => {
+            if (!filament.geometry || !filament.geometry.attributes.position || 
+                !this.originalFilamentPositions || !this.originalFilamentPositions[index]) return;
+            
+            const positions = filament.geometry.attributes.position.array;
+            const originalPositions = this.originalFilamentPositions[index];
+            const particleCount = positions.length / 3;
+            
+            // Calculate chaos multiplier based on energy
+            // Use different frequency bands for different chaos types
+            const filamentZone = index / this.filaments.length; // 0-1 range
+            let energySource;
+            
+            if (filamentZone < 0.33) {
+                // Inner filaments: bass creates deep, slow chaos
+                energySource = bassEnergy;
+            } else if (filamentZone < 0.66) {
+                // Middle filaments: mids create moderate chaos
+                energySource = midEnergy;
+            } else {
+                // Outer filaments: highs create fast, sharp chaos
+                energySource = highEnergy;
+            }
+            
+            // Calculate chaos intensity (0.5x to 2.5x based on energy)
+            const baseChaos = this.originalChaosAmounts[index] || this.settings.chaos;
+            const chaosMultiplier = 0.5 + (energySource * this.settings.audioSensitivity * 2.0);
+            const currentChaosAmount = baseChaos * Math.min(2.5, Math.max(0.5, chaosMultiplier));
+            
+            // Apply additional chaos offsets to create more randomness
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                const t = i / particleCount; // Position along filament (0-1)
+                
+                // Create chaos-based random offsets
+                const timeOffset = this.time * 1.5; // Slower than wiggle for different feel
+                const chaosOffset = index * 0.7 + t * 2.0; // Unique chaos seed per filament and position
+                
+                // Generate chaotic offsets using different noise patterns
+                const chaosX = (Math.sin(timeOffset * 0.6 + chaosOffset * 1.3) + Math.cos(timeOffset * 1.1 + chaosOffset * 0.8)) * currentChaosAmount * 0.3;
+                const chaosY = (Math.cos(timeOffset * 0.8 + chaosOffset * 1.1) + Math.sin(timeOffset * 1.3 + chaosOffset * 0.9)) * currentChaosAmount * 0.3;
+                const chaosZ = (Math.sin(timeOffset * 0.9 + chaosOffset * 0.7) + Math.cos(timeOffset * 0.7 + chaosOffset * 1.2)) * currentChaosAmount * 0.2;
+                
+                // Apply chaos - morphing mode affects how chaos is applied
+                if (this.settings.morphingMode) {
+                    // Morphing mode: add to current positions (cumulative morphing effect)
+                    positions[i3] += chaosX * 0.05; // Even smaller increments for chaos in morphing mode
+                    positions[i3 + 1] += chaosY * 0.05;
+                    positions[i3 + 2] += chaosZ * 0.05;
+                } else {
+                    // Normal mode: add to wiggle effect (temporary additive effect)
+                    positions[i3] += chaosX;
+                    positions[i3 + 1] += chaosY;
+                    positions[i3 + 2] += chaosZ;
+                }
+            }
+            
+            // Mark positions as needing update
+            filament.geometry.attributes.position.needsUpdate = true;
+        });
+    }
+    
+    resetToOriginalPositions() {
+        // Reset all filaments to their original positions
+        if (!this.originalFilamentPositions) return;
+        
+        this.filaments.forEach((filament, index) => {
+            if (!filament.geometry || !filament.geometry.attributes.position || 
+                !this.originalFilamentPositions[index]) return;
+            
+            const positions = filament.geometry.attributes.position.array;
+            const originalPositions = this.originalFilamentPositions[index];
+            
+            // Copy original positions back
+            for (let i = 0; i < positions.length; i++) {
+                positions[i] = originalPositions[i];
+            }
+            
+            // Mark positions as needing update
+            filament.geometry.attributes.position.needsUpdate = true;
+        });
     }
     
     applyElementReactivity(energy, bassEnergy) {
@@ -961,6 +1201,12 @@ class NebulaVisualization {
                 case 'bloom':
                     this.updateBloomEffect(value);
                     break;
+                case 'morphingMode':
+                    // When morphing mode is turned off, reset to original positions
+                    if (!value) {
+                        this.resetToOriginalPositions();
+                    }
+                    break;
                 case 'hueShift':
                 case 'saturation':
                 case 'brightness':
@@ -1132,6 +1378,12 @@ class NebulaVisualization {
                 this.stars.material.color.setRGB(adjustedColor.r, adjustedColor.g, adjustedColor.b);
             }
         }
+        
+        // If color reactivity is ON, refresh the stored original colors
+        // so that audio reactivity works from the new preset colors
+        if (this.settings.audioPresets.color) {
+            this.refreshOriginalColors();
+        }
     }
     
     adjustColor(baseColor, hueShift, saturationMult, brightnessMult) {
@@ -1205,85 +1457,144 @@ class NebulaVisualization {
             y: this.camera.position.y,
             z: this.camera.position.z
         };
+        
+        // Capture what the camera is currently looking at
+        const lookAtVector = new THREE.Vector3();
+        this.camera.getWorldDirection(lookAtVector);
+        const lookAtDistance = 100; // Assume camera is looking 100 units ahead
+        this.flyThrough.startLookAt = {
+            x: this.camera.position.x + lookAtVector.x * lookAtDistance,
+            y: this.camera.position.y + lookAtVector.y * lookAtDistance,
+            z: this.camera.position.z + lookAtVector.z * lookAtDistance
+        };
+        
+        // Calculate the best entry point on the figure-8 path
+        // Find the closest point on the figure-8 to the current camera position
+        this.flyThrough.pathEntryPoint = this.findBestPathEntryPoint();
+        
         this.flyThrough.startTime = this.time;
         this.flyThrough.isActive = true;
-        // Don't store speed here - use current setting dynamically
+    }
+    
+    findBestPathEntryPoint() {
+        // Sample multiple points on the figure-8 to find the closest one
+        const radius = this.flyThrough.pathRadius;
+        const height = this.flyThrough.pathHeight;
+        let closestPoint = null;
+        let minDistance = Infinity;
+        let bestT = 0;
+        
+        // Sample 100 points around the figure-8
+        for (let i = 0; i < 100; i++) {
+            const t = (i / 100) * Math.PI * 4; // Full figure-8 cycle
+            const sinT = Math.sin(t);
+            const cosT = Math.cos(t);
+            const denominator = 1 + sinT * sinT;
+            
+            const x = radius * cosT / denominator;
+            const z = radius * sinT * cosT / denominator;
+            const y = height * Math.sin(2 * t);
+            
+            // Calculate distance to current camera position
+            const dx = x - this.camera.position.x;
+            const dy = y - this.camera.position.y;
+            const dz = z - this.camera.position.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPoint = { x, y, z };
+                bestT = t;
+            }
+        }
+        
+        return { point: closestPoint, t: bestT };
     }
     
     stopFlyThrough() {
         this.flyThrough.isActive = false;
         this.flyThrough.startPosition = null;
+        this.flyThrough.startLookAt = null;
+        this.flyThrough.pathEntryPoint = null;
     }
     
     updateFlyThroughCamera() {
-        if (!this.flyThrough.isActive || !this.flyThrough.startPosition) return;
+        if (!this.flyThrough.isActive || !this.flyThrough.startPosition || !this.flyThrough.pathEntryPoint) return;
         
         // Calculate time elapsed since fly-through started (using current speed setting)
         const elapsedTime = (this.time - this.flyThrough.startTime) * this.settings.flySpeed;
+        const approachDuration = this.flyThrough.approachDuration;
         
-        // Figure-8 parametric equations (Lemniscate of Bernoulli)
-        // x = a * cos(t) / (1 + sin²(t))
-        // y = a * sin(t) * cos(t) / (1 + sin²(t))
-        // z = b * sin(2t) for vertical variation
-        
-        const t = elapsedTime * 0.5; // Control speed of figure-8
-        const radius = this.flyThrough.pathRadius;
-        const height = this.flyThrough.pathHeight;
-        
-        // Calculate figure-8 position (centered at origin - nebula center)
-        const sinT = Math.sin(t);
-        const cosT = Math.cos(t);
-        const denominator = 1 + sinT * sinT;
-        
-        const figure8X = radius * cosT / denominator;
-        const figure8Z = radius * sinT * cosT / denominator;
-        const figure8Y = height * Math.sin(2 * t); // Vertical variation
-        
-        // Calculate velocity (derivative of position) to determine forward direction
-        const dt = 0.01; // Small time step for derivative calculation
-        const tNext = t + dt;
-        const sinTNext = Math.sin(tNext);
-        const cosTNext = Math.cos(tNext);
-        const denominatorNext = 1 + sinTNext * sinTNext;
-        
-        const nextX = radius * cosTNext / denominatorNext;
-        const nextZ = radius * sinTNext * cosTNext / denominatorNext;
-        const nextY = height * Math.sin(2 * tNext);
-        
-        // Calculate velocity vector (direction of movement)
-        const velocityX = (nextX - figure8X) / dt;
-        const velocityY = (nextY - figure8Y) / dt;
-        const velocityZ = (nextZ - figure8Z) / dt;
-        
-        // Normalize velocity to get forward direction
-        const velocityLength = Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
-        let forwardX = 0, forwardY = 0, forwardZ = 1; // Default forward if velocity is zero
-        
-        if (velocityLength > 0.001) {
-            forwardX = velocityX / velocityLength;
-            forwardY = velocityY / velocityLength;
-            forwardZ = velocityZ / velocityLength;
+        if (elapsedTime < approachDuration) {
+            // STAGE 1: Approach the figure-8 path while maintaining current look direction
+            const approachProgress = elapsedTime / approachDuration;
+            const smoothProgress = approachProgress * approachProgress * (3.0 - 2.0 * approachProgress); // Ease-in-out
+            
+            // Interpolate position from start to entry point
+            const entryPoint = this.flyThrough.pathEntryPoint.point;
+            this.camera.position.x = this.flyThrough.startPosition.x + (entryPoint.x - this.flyThrough.startPosition.x) * smoothProgress;
+            this.camera.position.y = this.flyThrough.startPosition.y + (entryPoint.y - this.flyThrough.startPosition.y) * smoothProgress;
+            this.camera.position.z = this.flyThrough.startPosition.z + (entryPoint.z - this.flyThrough.startPosition.z) * smoothProgress;
+            
+            // Maintain original look direction during approach
+            this.camera.lookAt(this.flyThrough.startLookAt.x, this.flyThrough.startLookAt.y, this.flyThrough.startLookAt.z);
+            
+        } else {
+            // STAGE 2: Follow the figure-8 path with forward-facing camera
+            const pathTime = elapsedTime - approachDuration;
+            const t = this.flyThrough.pathEntryPoint.t + pathTime * 0.5; // Continue from entry point
+            
+            const radius = this.flyThrough.pathRadius;
+            const height = this.flyThrough.pathHeight;
+            
+            // Calculate current figure-8 position
+            const sinT = Math.sin(t);
+            const cosT = Math.cos(t);
+            const denominator = 1 + sinT * sinT;
+            
+            const figure8X = radius * cosT / denominator;
+            const figure8Z = radius * sinT * cosT / denominator;
+            const figure8Y = height * Math.sin(2 * t);
+            
+            // Set camera position
+            this.camera.position.x = figure8X;
+            this.camera.position.y = figure8Y;
+            this.camera.position.z = figure8Z;
+            
+            // Calculate forward direction from velocity
+            const dt = 0.01;
+            const tNext = t + dt;
+            const sinTNext = Math.sin(tNext);
+            const cosTNext = Math.cos(tNext);
+            const denominatorNext = 1 + sinTNext * sinTNext;
+            
+            const nextX = radius * cosTNext / denominatorNext;
+            const nextZ = radius * sinTNext * cosTNext / denominatorNext;
+            const nextY = height * Math.sin(2 * tNext);
+            
+            // Calculate velocity vector (direction of movement)
+            const velocityX = (nextX - figure8X) / dt;
+            const velocityY = (nextY - figure8Y) / dt;
+            const velocityZ = (nextZ - figure8Z) / dt;
+            
+            // Normalize velocity to get forward direction
+            const velocityLength = Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
+            let forwardX = 0, forwardY = 0, forwardZ = 1;
+            
+            if (velocityLength > 0.001) {
+                forwardX = velocityX / velocityLength;
+                forwardY = velocityY / velocityLength;
+                forwardZ = velocityZ / velocityLength;
+            }
+            
+            // Camera looks forward along the flight path
+            const lookAtDistance = 50;
+            const lookAtX = this.camera.position.x + forwardX * lookAtDistance;
+            const lookAtY = this.camera.position.y + forwardY * lookAtDistance;
+            const lookAtZ = this.camera.position.z + forwardZ * lookAtDistance;
+            
+            this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
         }
-        
-        // Blend from start position to figure-8 path over first 2 seconds
-        const blendDuration = 2.0;
-        const blendFactor = Math.min(elapsedTime / blendDuration, 1.0);
-        
-        // Smooth transition using ease-in-out
-        const smoothBlend = blendFactor * blendFactor * (3.0 - 2.0 * blendFactor);
-        
-        // Interpolate from start position to figure-8 path
-        this.camera.position.x = this.flyThrough.startPosition.x * (1 - smoothBlend) + figure8X * smoothBlend;
-        this.camera.position.y = this.flyThrough.startPosition.y * (1 - smoothBlend) + figure8Y * smoothBlend;
-        this.camera.position.z = this.flyThrough.startPosition.z * (1 - smoothBlend) + figure8Z * smoothBlend;
-        
-        // Camera looks forward along the flight path, not at nebula center
-        const lookAtDistance = 50; // How far ahead to look
-        const lookAtX = this.camera.position.x + forwardX * lookAtDistance;
-        const lookAtY = this.camera.position.y + forwardY * lookAtDistance;
-        const lookAtZ = this.camera.position.z + forwardZ * lookAtDistance;
-        
-        this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
     }
 
     updateFilaments() {

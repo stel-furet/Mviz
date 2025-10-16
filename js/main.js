@@ -1625,6 +1625,7 @@ class RecordManager {
         this.audioQuality = 'auto';
         this.customFilename = 'Vizzy_Recording';
         this.matchVisualizationAspect = true;
+        this.recordFormat = 'mp4'; // Default to MP4 if supported
         
         // Resolution presets
         this.resolutionPresets = {
@@ -1652,8 +1653,66 @@ class RecordManager {
         };
         
         this.loadSettings();
+        this.detectSupportedFormats();
         // console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
         this.initializeUI();
+        this.updateFileExtensionDisplay();
+    }
+    
+    detectSupportedFormats() {
+        // Check MP4 support (prefer H.264 + AAC for best compatibility)
+        this.supportsMP4 = MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac') || 
+                          MediaRecorder.isTypeSupported('video/mp4');
+        
+        // Check WebM support (fallback)
+        this.supportsWebM = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ||
+                           MediaRecorder.isTypeSupported('video/webm');
+        
+        console.log('🎬 Recording format support:', {
+            MP4: this.supportsMP4,
+            WebM: this.supportsWebM
+        });
+        
+        // If MP4 is not supported, fallback to WebM
+        if (!this.supportsMP4 && this.recordFormat === 'mp4') {
+            this.recordFormat = 'webm';
+            console.log('🎬 MP4 not supported, falling back to WebM');
+        }
+    }
+    
+    showFormatFallbackMessage() {
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff9800;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            z-index: 10000;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        notification.textContent = '⚠️ MP4 not supported - recording in WebM format';
+        document.body.appendChild(notification);
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 4000);
+    }
+    
+    updateFileExtensionDisplay() {
+        // Update the file extension display in the UI
+        const extension = this.recordFormat === 'mp4' ? '.mp4' : '.webm';
+        const extensionElement = document.getElementById('footerRecordFileExtension');
+        if (extensionElement) {
+            extensionElement.textContent = extension;
+        }
     }
     
     loadSettings() {
@@ -1669,6 +1728,7 @@ class RecordManager {
                 this.customFilename = settings.customFilename || 'Vizzy_Recording';
                 this.saveLocation = settings.saveLocation || null;
                 this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
+                this.recordFormat = settings.recordFormat || 'mp4';
                 
                 // console.log('Loaded recording settings:', {
                 //     resolution: this.resolution,
@@ -1692,7 +1752,8 @@ class RecordManager {
                 audioQuality: this.audioQuality,
                 customFilename: this.customFilename,
                 saveLocation: this.saveLocation,
-                matchVisualizationAspect: this.matchVisualizationAspect
+                matchVisualizationAspect: this.matchVisualizationAspect,
+                recordFormat: this.recordFormat
             };
             localStorage.setItem('gitup_record_settings', JSON.stringify(settings));
         } catch (e) {
@@ -6127,14 +6188,39 @@ class RecordManager {
                 audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
             }
             
-            // Setup MediaRecorder
-            const mimeType = 'video/webm;codecs=vp9,opus';
+            // Setup MediaRecorder with dynamic format
+            let mimeType;
+            let actualFormat = this.recordFormat;
+            
+            if (this.recordFormat === 'mp4' && this.supportsMP4) {
+                // Try MP4 with H.264 + AAC first, then fallback to generic MP4
+                if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac')) {
+                    mimeType = 'video/mp4;codecs=h264,aac';
+                } else {
+                    mimeType = 'video/mp4';
+                }
+            } else {
+                // Fallback to WebM
+                mimeType = 'video/webm;codecs=vp9,opus';
+                actualFormat = 'webm';
+                
+                if (this.recordFormat === 'mp4') {
+                    console.warn('🎬 MP4 not supported, recording in WebM format');
+                    // Show user notification
+                    this.showFormatFallbackMessage();
+                }
+            }
+            
+            console.log('🎬 Recording with MIME type:', mimeType);
             const videoBitrate = this.videoQualityPresets[this.videoQuality];
             
             this.mediaRecorder = new MediaRecorder(combinedStream, {
                 mimeType: mimeType,
                 videoBitsPerSecond: videoBitrate
             });
+            
+            // Store the actual format being used for saving
+            this.actualRecordFormat = actualFormat;
             
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
@@ -6894,10 +6980,15 @@ class RecordManager {
         }
         
         try {
-            const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-            console.log('Blob created, size:', blob.size, 'bytes');
+            // Use the actual format that was recorded
+            const format = this.actualRecordFormat || this.recordFormat;
+            const mimeType = format === 'mp4' ? 'video/mp4' : 'video/webm';
+            const extension = format === 'mp4' ? '.mp4' : '.webm';
+            
+            const blob = new Blob(this.recordedChunks, { type: mimeType });
+            console.log('Blob created, size:', blob.size, 'bytes, format:', format);
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            const filename = `${this.customFilename}_${timestamp}.webm`;
+            const filename = `${this.customFilename}_${timestamp}${extension}`;
             console.log('Attempting to save as:', filename);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
@@ -10804,6 +10895,18 @@ class GitItUpVisualizer {
                 this.recordManager.saveSettings();
                 
                 // Footer controls work independently (sidebar sync removed)
+            });
+        }
+        
+        // Format select (new MP4/WebM dropdown)
+        const footerFormatSelect = document.getElementById('footerRecordFormatSelect');
+        if (footerFormatSelect) {
+            footerFormatSelect.value = this.recordManager.recordFormat;
+            footerFormatSelect.addEventListener('change', (e) => {
+                this.recordManager.recordFormat = e.target.value;
+                this.recordManager.updateFileExtensionDisplay();
+                this.recordManager.saveSettings();
+                console.log('🎬 Record format changed to:', e.target.value);
             });
         }
         
@@ -16444,20 +16547,20 @@ class GitItUpVisualizer {
         
         // Update mixer video control sliders
         if (window.multiDisplayManager) {
-            window.multiDisplayManager.updateMixerVideoBrightnessSlider();
-            window.multiDisplayManager.updateMixerVideoContrastSlider();
-            window.multiDisplayManager.updateMixerVideoSaturationSlider();
-            window.multiDisplayManager.updateMixerVideoHueRotateSlider();
-            window.multiDisplayManager.updateMixerVideoGrayscaleSlider();
-            window.multiDisplayManager.updateMixerVideoFadeTimeSlider();
-            window.multiDisplayManager.updateMixerVideoSepiaSlider();
-            window.multiDisplayManager.updateMixerVideoBlurSlider();
-            window.multiDisplayManager.updateMixerVideoVignetteSlider();
-            window.multiDisplayManager.updateMixerVideoPosterizeSlider();
-            window.multiDisplayManager.updateMixerVideoInvertToggle();
-            window.multiDisplayManager.updateMixerVideoMirrorToggle();
-            window.multiDisplayManager.updateMixerVideoPulseToggle();
-            window.multiDisplayManager.updateMixerVideoPulseRateSlider();
+            try { window.multiDisplayManager.updateMixerVideoBrightnessSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoContrastSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoSaturationSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoHueRotateSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoGrayscaleSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoFadeTimeSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoSepiaSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoBlurSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoVignetteSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoPosterizeSlider(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoInvertToggle(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoMirrorToggle(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoPulseToggle(); } catch(e) {}
+            try { window.multiDisplayManager.updateMixerVideoPulseRateSlider(); } catch(e) {}
         }
     }
 
@@ -18138,7 +18241,8 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
             { id: 'nebulaBloomToggle', property: 'bloom' },
             { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
-            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' }
+            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
+            { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
         ];
         
         toggleControls.forEach(control => {
@@ -18220,7 +18324,8 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
             { id: 'nebulaBloomToggle', property: 'bloom' },
             { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
-            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' }
+            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
+            { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
         ];
         
         toggleControls.forEach(control => {
@@ -18258,7 +18363,9 @@ https://rogueamoeba.com/loopback/
             { id: 'headerNebulaColorPresetBtn', preset: 'color' },
             { id: 'headerNebulaRotationPresetBtn', preset: 'rotation' },
             { id: 'headerNebulaDistancePresetBtn', preset: 'distance' },
-            { id: 'headerNebulaPulsarPresetBtn', preset: 'pulsar' }
+            { id: 'headerNebulaPulsarPresetBtn', preset: 'pulsar' },
+            { id: 'headerNebulaFilamentDensityPresetBtn', preset: 'filamentDensity' },
+            { id: 'headerNebulaChaosPresetBtn', preset: 'chaos' }
         ];
         
         presetButtons.forEach(button => {
@@ -18272,6 +18379,16 @@ https://rogueamoeba.com/loopback/
                         // Toggle the preset
                         const currentState = this.nebulaVisualization.settings.audioPresets[button.preset];
                         this.nebulaVisualization.settings.audioPresets[button.preset] = !currentState;
+                        
+                        // Special handling for color preset toggle
+                        if (button.preset === 'color') {
+                            // Clear stored original colors so they get refreshed with current preset colors
+                            this.nebulaVisualization.filaments.forEach(filament => {
+                                if (filament.userData) {
+                                    filament.userData.originalColors = null;
+                                }
+                            });
+                        }
                         
                         // Update button appearance
                         this.updateNebulaPresetButton(button.preset, element);

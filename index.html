@@ -410,6 +410,8 @@
                         <button id="headerNebulaRotationPresetBtn" class="btn-preset">Rotation</button>
                         <button id="headerNebulaDistancePresetBtn" class="btn-preset">Distance</button>
                         <button id="headerNebulaPulsarPresetBtn" class="btn-preset">Pulsar</button>
+                        <button id="headerNebulaFilamentDensityPresetBtn" class="btn-preset">Density</button>
+                        <button id="headerNebulaChaosPresetBtn" class="btn-preset">Chaos</button>
                     </div>
                 </div>
                 
@@ -562,6 +564,13 @@
                     <label>Audio Reactive</label>
                     <button class="btn-toggle-32w nebula-toggle" id="nebulaAudioReactiveToggle" data-setting="audioReactive">
                         <span class="toggle-text">ON</span>
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Morphing Mode</label>
+                    <button class="btn-toggle-32w nebula-toggle" id="nebulaMorphingModeToggle" data-setting="morphingMode">
+                        <span class="toggle-text">OFF</span>
                     </button>
                 </div>
                 
@@ -1617,10 +1626,14 @@
                     📥 Downloads folder
                 </div>
                 <button class="btn-secondary" id="footerRecordChooseLocationBtn">Choose Location</button>
+                <select id="footerRecordFormatSelect" class="select">
+                    <option value="mp4">Format: MP4</option>
+                    <option value="webm">Format: WebM</option>
+                </select>
                 <div class="input-container">
                     <label>Filename</label>
                     <input type="text" id="footerRecordFilenameInput" placeholder="Vizzy_Recording" class="control-input">
-                    <span class="file-extension">.webm</span>
+                    <span class="file-extension" id="footerRecordFileExtension">.mp4</span>
                 </div>
             </div>
 
