@@ -18365,7 +18365,8 @@ https://rogueamoeba.com/loopback/
             { id: 'headerNebulaDistancePresetBtn', preset: 'distance' },
             { id: 'headerNebulaPulsarPresetBtn', preset: 'pulsar' },
             { id: 'headerNebulaFilamentDensityPresetBtn', preset: 'filamentDensity' },
-            { id: 'headerNebulaChaosPresetBtn', preset: 'chaos' }
+            { id: 'headerNebulaChaosPresetBtn', preset: 'chaos' },
+            { id: 'headerNebulaExpansionPresetBtn', preset: 'expansion' }
         ];
         
         presetButtons.forEach(button => {
@@ -18380,14 +18381,23 @@ https://rogueamoeba.com/loopback/
                         const currentState = this.nebulaVisualization.settings.audioPresets[button.preset];
                         this.nebulaVisualization.settings.audioPresets[button.preset] = !currentState;
                         
+                        // Debug logging for color preset
+                        if (button.preset === 'color') {
+                            console.log('🎨 Color preset toggled:', !currentState, 'audioPresets.color:', this.nebulaVisualization.settings.audioPresets.color);
+                        }
+                        
                         // Special handling for color preset toggle
                         if (button.preset === 'color') {
-                            // Clear stored original colors so they get refreshed with current preset colors
-                            this.nebulaVisualization.filaments.forEach(filament => {
-                                if (filament.userData) {
-                                    filament.userData.originalColors = null;
-                                }
-                            });
+                            // Only clear stored original colors when turning OFF (so they get refreshed when turned back ON)
+                            if (currentState === true) {
+                                // Turning OFF - clear stored colors
+                                this.nebulaVisualization.filaments.forEach(filament => {
+                                    if (filament.userData) {
+                                        filament.userData.originalColors = null;
+                                    }
+                                });
+                            }
+                            // When turning ON, let applyNebulaColorReactivity capture the current colors as baseline
                         }
                         
                         // Update button appearance
@@ -18476,6 +18486,141 @@ https://rogueamoeba.com/loopback/
         this.updateNebulaSliderValue('nebulaHueShift', preset.hue, preset.hue + '°');
         this.updateNebulaSliderValue('nebulaSaturation', preset.saturation, preset.saturation + '%');
         this.updateNebulaSliderValue('nebulaBrightness', preset.brightness, preset.brightness + '%');
+    }
+    
+    initNebulaPresetManagementHandlers() {
+        // Preset dropdown selector
+        const presetSelect = document.getElementById('nebulaPresetSelect');
+        if (presetSelect) {
+            presetSelect.addEventListener('change', (e) => {
+                const index = parseInt(e.target.value);
+                if (!isNaN(index) && this.nebulaVisualization) {
+                    const success = this.nebulaVisualization.loadPreset(index);
+                    if (success) {
+                        this.updateNebulaUIFromSettings();
+                        console.log('📂 Nebula preset loaded from dropdown');
+                    }
+                }
+                // Reset dropdown to default
+                e.target.value = '';
+            });
+        }
+        
+        // Save preset button
+        const saveBtn = document.getElementById('nebulaSavePresetBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                if (!this.nebulaVisualization) return;
+                
+                const name = prompt('Enter preset name:', `Nebula Preset ${this.nebulaVisualization.savedPresets.length + 1}`);
+                if (name && name.trim() !== '') {
+                    this.nebulaVisualization.saveCurrentAsPreset(name.trim());
+                    this.updateNebulaPresetDropdown();
+                    console.log('💾 Nebula preset saved from UI');
+                }
+            });
+        }
+        
+        // Export presets button
+        const exportBtn = document.getElementById('nebulaExportPresetsBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                if (!this.nebulaVisualization) return;
+                
+                this.nebulaVisualization.exportPresets();
+                console.log('📤 Nebula presets exported from UI');
+            });
+        }
+        
+        // Import presets button
+        const importBtn = document.getElementById('nebulaImportPresetsBtn');
+        const importFile = document.getElementById('nebulaImportPresetsFile');
+        
+        if (importBtn && importFile) {
+            importBtn.addEventListener('click', () => {
+                importFile.click();
+            });
+            
+            importFile.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file || !this.nebulaVisualization) return;
+                
+                try {
+                    const count = await this.nebulaVisualization.importPresets(file);
+                    this.updateNebulaPresetDropdown();
+                    alert(`Successfully imported ${count} nebula presets!`);
+                    console.log('📥 Nebula presets imported from UI');
+                } catch (error) {
+                    alert('Error importing presets: ' + error);
+                    console.error('❌ Nebula preset import error:', error);
+                }
+                
+                // Reset file input
+                e.target.value = '';
+            });
+        }
+        
+        // Initialize dropdown with existing presets
+        this.updateNebulaPresetDropdown();
+    }
+    
+    updateNebulaPresetDropdown() {
+        const presetSelect = document.getElementById('nebulaPresetSelect');
+        if (!presetSelect || !this.nebulaVisualization) return;
+        
+        // Clear existing options except the first one
+        while (presetSelect.children.length > 1) {
+            presetSelect.removeChild(presetSelect.lastChild);
+        }
+        
+        // Add saved presets
+        if (this.nebulaVisualization.savedPresets && this.nebulaVisualization.savedPresets.length > 0) {
+            this.nebulaVisualization.savedPresets.forEach((preset, index) => {
+                const option = document.createElement('option');
+                option.value = index.toString();
+                option.textContent = preset.name || `Preset ${index + 1}`;
+                presetSelect.appendChild(option);
+            });
+        }
+        
+        console.log('🔄 Nebula preset dropdown updated:', this.nebulaVisualization.savedPresets.length, 'presets');
+    }
+    
+    updateNebulaUIFromSettings() {
+        if (!this.nebulaVisualization) return;
+        
+        const settings = this.nebulaVisualization.settings;
+        
+        // Update all sliders
+        this.updateNebulaSliderValue('nebulaHueShift', settings.hueShift, settings.hueShift + '°');
+        this.updateNebulaSliderValue('nebulaSaturation', settings.saturation, settings.saturation + '%');
+        this.updateNebulaSliderValue('nebulaBrightness', settings.brightness, settings.brightness + '%');
+        this.updateNebulaSliderValue('nebulaCameraDistance', settings.cameraDistance, settings.cameraDistance.toString());
+        this.updateNebulaSliderValue('nebulaFilamentDensity', settings.filamentDensity, settings.filamentDensity.toString());
+        this.updateNebulaSliderValue('nebulaExpansion', settings.expansion, settings.expansion.toString());
+        this.updateNebulaSliderValue('nebulaChaos', settings.chaos, settings.chaos.toString());
+        this.updateNebulaSliderValue('nebulaAsymmetry', settings.asymmetry, settings.asymmetry.toString());
+        this.updateNebulaSliderValue('nebulaPulsarSize', settings.pulsarSize, settings.pulsarSize.toString());
+        this.updateNebulaSliderValue('nebulaPulseRate', settings.pulseRate, settings.pulseRate.toString());
+        this.updateNebulaSliderValue('nebulaStarCount', settings.starCount, settings.starCount.toString());
+        this.updateNebulaSliderValue('nebulaOrbitSpeed', settings.orbitSpeed, settings.orbitSpeed.toString());
+        this.updateNebulaSliderValue('nebulaFlySpeed', settings.flySpeed, settings.flySpeed.toString());
+        this.updateNebulaSliderValue('nebulaAudioSensitivity', settings.audioSensitivity, settings.audioSensitivity.toString());
+        
+        // Update toggles
+        this.updateNebulaToggleButton('nebulaCameraOrbitToggle', settings.cameraOrbit);
+        this.updateNebulaToggleButton('nebulaFlyThroughToggle', settings.flyThrough);
+        this.updateNebulaToggleButton('nebulaShowPulsarToggle', settings.showPulsar);
+        this.updateNebulaToggleButton('nebulaBloomToggle', settings.bloom);
+        this.updateNebulaToggleButton('nebulaAudioReactiveToggle', settings.audioReactive);
+        this.updateNebulaToggleButton('nebulaMorphingModeToggle', settings.morphingMode);
+        
+        // Update preset buttons
+        Object.keys(settings.audioPresets).forEach(preset => {
+            this.updateNebulaPresetButton(preset, document.getElementById(`headerNebula${preset.charAt(0).toUpperCase() + preset.slice(1)}PresetBtn`));
+        });
+        
+        console.log('🔄 Nebula UI updated from settings');
     }
     
     updateNebulaSliderValue(sliderId, value, displayValue) {
@@ -20395,6 +20540,9 @@ https://rogueamoeba.com/loopback/
         
         // Nebula color preset handlers
         this.initNebulaColorPresetHandlers();
+        
+        // Nebula preset management handlers
+        this.initNebulaPresetManagementHandlers();
 
         // Header Infinite Zoom Toggle button
         const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');

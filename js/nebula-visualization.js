@@ -92,7 +92,8 @@ class NebulaVisualization {
                 distance: true,        // Camera distance reactivity
                 pulsar: true,          // Pulsar size/pulse reactivity
                 filamentDensity: true, // Filament density/thickness reactivity
-                chaos: true            // Chaos/randomness reactivity (NEW)
+                chaos: true,           // Chaos/randomness reactivity
+                expansion: true        // Expansion/contraction reactivity (NEW)
             }
         };
         
@@ -108,6 +109,16 @@ class NebulaVisualization {
         this.smoothedHighEnergy = 0;
         this.energySmoothingFactor = 0.05; // Much slower smoothing (was 0.1)
         this.rotationSmoothingFactor = 0.02; // Extra slow for rotation (new)
+        
+        // Beat-based color flash system
+        this.beatFlash = {
+            isActive: false,
+            startTime: 0,
+            duration: 200, // Flash duration in ms
+            intensity: 0,  // Current flash intensity (0-1)
+            lastBeatTime: 0,
+            minBeatInterval: 100 // Minimum time between beats (ms)
+        };
         
         // Mouse interaction
         this.mouseInteraction = {
@@ -136,6 +147,167 @@ class NebulaVisualization {
         console.log('🌌 Nebula Visualization created');
         this.init();
         this.setupMouseInteraction();
+        
+        // Initialize preset system
+        this.initializePresetSystem();
+    }
+    
+    // Preset System Methods
+    initializePresetSystem() {
+        // Load saved presets from localStorage
+        this.savedPresets = this.loadPresets();
+        console.log('🌌 Loaded nebula presets:', this.savedPresets.length);
+    }
+    
+    loadPresets() {
+        try {
+            const saved = localStorage.getItem('MVpro_nebula_presets');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('Error loading nebula presets:', e);
+            return [];
+        }
+    }
+    
+    savePresets() {
+        try {
+            localStorage.setItem('MVpro_nebula_presets', JSON.stringify(this.savedPresets));
+            console.log('💾 Nebula presets saved to localStorage');
+        } catch (e) {
+            console.error('Error saving nebula presets:', e);
+        }
+    }
+    
+    getCurrentConfig() {
+        // Capture all 13 settings for comprehensive preset
+        return {
+            // Color controls
+            hueShift: this.settings.hueShift,
+            saturation: this.settings.saturation,
+            brightness: this.settings.brightness,
+            
+            // Camera controls
+            cameraDistance: this.settings.cameraDistance,
+            cameraOrbit: this.settings.cameraOrbit,
+            orbitSpeed: this.settings.orbitSpeed,
+            flyThrough: this.settings.flyThrough,
+            flySpeed: this.settings.flySpeed,
+            
+            // Filament controls
+            filamentDensity: this.settings.filamentDensity,
+            expansion: this.settings.expansion,
+            chaos: this.settings.chaos,
+            asymmetry: this.settings.asymmetry,
+            
+            // Pulsar controls
+            showPulsar: this.settings.showPulsar,
+            pulsarSize: this.settings.pulsarSize,
+            pulseRate: this.settings.pulseRate,
+            
+            // Star controls
+            starCount: this.settings.starCount,
+            
+            // Effects
+            bloom: this.settings.bloom,
+            
+            // Audio reactivity
+            audioReactive: this.settings.audioReactive,
+            audioSensitivity: this.settings.audioSensitivity,
+            morphingMode: this.settings.morphingMode,
+            
+            // Audio presets
+            audioPresets: { ...this.settings.audioPresets }
+        };
+    }
+    
+    saveCurrentAsPreset(name) {
+        if (!name || name.trim() === '') return;
+        
+        const preset = {
+            name: name.trim(),
+            timestamp: Date.now(),
+            config: this.getCurrentConfig()
+        };
+        
+        this.savedPresets.push(preset);
+        
+        this.savePresets();
+        console.log('💾 Nebula preset saved:', name);
+        return preset;
+    }
+    
+    loadPreset(index) {
+        if (index < 0 || index >= this.savedPresets.length) return false;
+        
+        const preset = this.savedPresets[index];
+        if (!preset || !preset.config) return false;
+        
+        const config = preset.config;
+        
+        // Apply all settings from preset
+        Object.keys(config).forEach(key => {
+            if (key === 'audioPresets') {
+                // Deep copy audio presets
+                this.settings.audioPresets = { ...config.audioPresets };
+            } else if (this.settings.hasOwnProperty(key)) {
+                this.settings[key] = config[key];
+            }
+        });
+        
+        // Update visual elements that need recreation
+        this.createFilaments();
+        this.updateStarField();
+        this.applyColorAdjustments();
+        
+        console.log('📂 Nebula preset loaded:', preset.name);
+        return true;
+    }
+    
+    exportPresets() {
+        const data = {
+            version: '1.0',
+            timestamp: Date.now(),
+            presets: this.savedPresets
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nebula_presets_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log('📤 Nebula presets exported');
+    }
+    
+    importPresets(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.presets && Array.isArray(data.presets)) {
+                        // Merge with existing presets
+                        this.savedPresets = [...this.savedPresets, ...data.presets];
+                        
+                        this.savePresets();
+                        console.log('📥 Nebula presets imported:', data.presets.length);
+                        resolve(data.presets.length);
+                    } else {
+                        reject('Invalid preset file format');
+                    }
+                } catch (error) {
+                    reject('Error parsing preset file: ' + error.message);
+                }
+            };
+            reader.onerror = () => reject('Error reading file');
+            reader.readAsText(file);
+        });
     }
     
     setupMouseInteraction() {
@@ -567,6 +739,14 @@ class NebulaVisualization {
             this.updateDirectAudioReactivity();
         }
         
+        // Beat-based color flash system
+        if (this.settings.audioReactive && this.settings.audioPresets.color && audioData?.beat) {
+            this.triggerBeatFlash();
+        }
+        
+        // Update beat flash intensity
+        this.updateBeatFlash();
+        
         this.time += 0.016;
     }
     
@@ -597,11 +777,51 @@ class NebulaVisualization {
         // Apply audio effects with smoothed energy
         this.applyPulsarReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
         this.applyNebulaColorReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
+        
+        // Apply audio effects with smoothed energy values
         this.applyRotationReactivity(this.smoothedEnergy);
         this.applyDistanceReactivity(this.smoothedBassEnergy);
         this.applyFilamentDensityReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
         this.applyChaosReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
+        this.applyExpansionReactivity(this.smoothedBassEnergy, this.smoothedMidEnergy, this.smoothedHighEnergy, this.smoothedEnergy);
         this.applyElementReactivity(this.smoothedEnergy, this.smoothedBassEnergy);
+    }
+    
+    triggerBeatFlash() {
+        const now = Date.now();
+        
+        // Prevent too frequent beat flashes
+        if (now - this.beatFlash.lastBeatTime < this.beatFlash.minBeatInterval) {
+            return;
+        }
+        
+        // Trigger new beat flash
+        this.beatFlash.isActive = true;
+        this.beatFlash.startTime = now;
+        this.beatFlash.lastBeatTime = now;
+        this.beatFlash.intensity = 1.0; // Start at full intensity
+        
+        // Beat flash triggered - will create dramatic color flash
+    }
+    
+    updateBeatFlash() {
+        if (!this.beatFlash.isActive) {
+            this.beatFlash.intensity = 0;
+            return;
+        }
+        
+        const now = Date.now();
+        const elapsed = now - this.beatFlash.startTime;
+        
+        if (elapsed >= this.beatFlash.duration) {
+            // Flash finished
+            this.beatFlash.isActive = false;
+            this.beatFlash.intensity = 0;
+        } else {
+            // Calculate fade-out intensity (1.0 to 0.0)
+            const progress = elapsed / this.beatFlash.duration;
+            this.beatFlash.intensity = 1.0 - progress;
+        }
     }
     
     getFrequencyBandEnergy(dataArray, startPercent, endPercent) {
@@ -707,6 +927,8 @@ class NebulaVisualization {
     applyNebulaColorReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
         if (!this.settings.audioPresets.color) return;
         
+        // Apply color reactivity to all filaments
+        
         // Apply subtle color shifts to nebula filaments based on energy
         // This preserves the original color scheme and just adds reactive variations
         this.filaments.forEach((filament, index) => {
@@ -733,8 +955,8 @@ class NebulaVisualization {
                     energySource = highEnergy;
                 }
                 
-                // Create color shifts - temporarily more dramatic for testing
-                const shiftIntensity = energySource * this.settings.audioSensitivity * 1.0; // More visible for testing
+                // Create color shifts - subtle but visible
+                const shiftIntensity = energySource * this.settings.audioSensitivity * 0.8;
                 
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
@@ -744,28 +966,62 @@ class NebulaVisualization {
                     const baseG = originalColors[i3 + 1];
                     const baseB = originalColors[i3 + 2];
                     
-                    // Create subtle color variations based on frequency
+                    // Color shifts: energy-based (smooth) + beat-based (dramatic flashes)
                     let shiftR = 0, shiftG = 0, shiftB = 0;
                     
+                    // Energy-based color shifts (smooth)
                     if (filamentZone < 0.33) {
-                        // Bass: red shift - more dramatic for testing
-                        shiftR = shiftIntensity * 0.5;
+                        // Bass: warm red/orange shift
+                        shiftR = shiftIntensity * 0.4;
+                        shiftG = shiftIntensity * 0.2;
                     } else if (filamentZone < 0.66) {
-                        // Mids: green shift - more dramatic for testing
-                        shiftG = shiftIntensity * 0.5;
+                        // Mids: green/yellow shift  
+                        shiftG = shiftIntensity * 0.4;
+                        shiftR = shiftIntensity * 0.1;
                     } else {
-                        // Highs: blue shift - more dramatic for testing
-                        shiftB = shiftIntensity * 0.5;
+                        // Highs: blue/purple shift
+                        shiftB = shiftIntensity * 0.4;
+                        shiftR = shiftIntensity * 0.1;
                     }
                     
-                    // Apply shifts while preserving original color character
+                    // Beat-based color flash (dramatic)
+                    if (this.beatFlash.intensity > 0) {
+                        const flashIntensity = this.beatFlash.intensity;
+                        
+                        if (filamentZone < 0.33) {
+                            // Bass beats: bright red flash
+                            shiftR += flashIntensity * 0.8;
+                            shiftG += flashIntensity * 0.2;
+                        } else if (filamentZone < 0.66) {
+                            // Mid beats: bright green flash
+                            shiftG += flashIntensity * 0.8;
+                            shiftR += flashIntensity * 0.2;
+                        } else {
+                            // High beats: bright blue flash
+                            shiftB += flashIntensity * 0.8;
+                            shiftR += flashIntensity * 0.1;
+                        }
+                    }
+                    
+                    // Apply combined shifts (energy + beat flash)
                     colorArray[i3] = Math.min(1.0, baseR + shiftR);
                     colorArray[i3 + 1] = Math.min(1.0, baseG + shiftG);
                     colorArray[i3 + 2] = Math.min(1.0, baseB + shiftB);
+                    
+                    // Debug: Log color changes for first filament, first particle
+                    if (index === 0 && i === 0 && (shiftR > 0.1 || shiftG > 0.1 || shiftB > 0.1)) {
+                        console.log('🎨 Color shift applied:', {
+                            original: [baseR, baseG, baseB],
+                            shifts: [shiftR, shiftG, shiftB],
+                            final: [colorArray[i3], colorArray[i3 + 1], colorArray[i3 + 2]],
+                            shiftIntensity
+                        });
+                    }
                 }
                 
-                // Mark colors as needing update
-                filament.geometry.attributes.color.needsUpdate = true;
+                // RECREATE the color attribute entirely (Three.js r128 approach)
+                const newColorAttribute = new THREE.Float32BufferAttribute(colorArray, 3);
+                filament.geometry.setAttribute('color', newColorAttribute);
             }
         });
     }
@@ -969,6 +1225,37 @@ class NebulaVisualization {
             // Mark positions as needing update
             filament.geometry.attributes.position.needsUpdate = true;
         });
+    }
+    
+    applyExpansionReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
+        if (!this.settings.audioPresets.expansion) return;
+        
+        // Store original expansion if not already stored
+        if (!this.originalExpansion) {
+            this.originalExpansion = this.settings.expansion;
+        }
+        
+        // Apply expansion scaling based on audio energy
+        // Use total energy for overall expansion, with frequency-specific modulation
+        const baseExpansionMultiplier = 0.8 + (totalEnergy * this.settings.audioSensitivity * 0.6); // 0.8x to 1.4x
+        
+        // Add frequency-specific modulation for more dynamic expansion
+        const bassModulation = bassEnergy * 0.3;      // Bass adds expansion
+        const midModulation = midEnergy * 0.2;        // Mids add moderate expansion  
+        const highModulation = highEnergy * 0.1;      // Highs add subtle expansion
+        
+        const finalExpansionMultiplier = baseExpansionMultiplier + bassModulation + midModulation + highModulation;
+        
+        // Apply the expansion scaling (clamped to reasonable range)
+        const newExpansion = this.originalExpansion * Math.min(2.0, Math.max(0.5, finalExpansionMultiplier));
+        
+        // Only update if the change is significant (prevents constant recreation)
+        if (Math.abs(this.settings.expansion - newExpansion) > 1.0) {
+            this.settings.expansion = newExpansion;
+            
+            // Recreate filaments with new expansion
+            this.createFilaments();
+        }
     }
     
     resetToOriginalPositions() {

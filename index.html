@@ -412,6 +412,7 @@
                         <button id="headerNebulaPulsarPresetBtn" class="btn-preset">Pulsar</button>
                         <button id="headerNebulaFilamentDensityPresetBtn" class="btn-preset">Density</button>
                         <button id="headerNebulaChaosPresetBtn" class="btn-preset">Chaos</button>
+                        <button id="headerNebulaExpansionPresetBtn" class="btn-preset">Expansion</button>
                     </div>
                 </div>
                 
@@ -581,8 +582,28 @@
                         <span class="slider-1-value">1.0</span>
                     </div>
                 </div>
+                
+                <!-- Preset Management -->
+                <div class="control-group-major">
+                    <div class="group-label">Preset Management</div>
+                    
+                    <div class="control-group">
+                        <select id="nebulaPresetSelect" class="select">
+                            <option value="">Load Preset...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="preset-buttons">
+                        <button id="nebulaSavePresetBtn" class="btn-secondary">Save</button>
+                        <button id="nebulaExportPresetsBtn" class="btn-secondary">Export</button>
+                        <button id="nebulaImportPresetsBtn" class="btn-secondary">Import</button>
+                    </div>
+                    
+                    <!-- Hidden file input for import -->
+                    <input type="file" id="nebulaImportPresetsFile" accept=".json" style="display: none;">
+                </div>
             </div>
-            </div>
+        </div>
             
             <!-- Fluid Dynamics settings panel -->
             <div class="panel-floating" id="headerFluidDynamicsPanel" data-button-id="headerFluidDynamicsBtn" style="display: none;">
