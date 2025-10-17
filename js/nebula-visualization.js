@@ -1973,12 +1973,20 @@ class NebulaVisualization {
     }
 
     resize(width, height) {
-        if (!this.camera || !this.renderer) return;
+        if (!this.camera || !this.renderer) {
+            console.warn('🌌 Nebula resize: Camera or renderer not initialized');
+            return;
+        }
+        
+        // Ensure minimum dimensions and fallback to defaults
+        const newWidth = Math.max(width || 1920, 100);
+        const newHeight = Math.max(height || 1080, 100);
         
         // Update canvas dimensions
-        this.canvas.width = width || 1920;
-        this.canvas.height = height || 1080;
+        this.canvas.width = newWidth;
+        this.canvas.height = newHeight;
         
+        // Update camera aspect ratio
         this.camera.aspect = this.canvas.width / this.canvas.height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(this.canvas.width, this.canvas.height);
@@ -1991,7 +1999,14 @@ class NebulaVisualization {
         const container = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
         if (container) {
             const rect = container.getBoundingClientRect();
-            this.resize(rect.width, rect.height);
+            if (rect.width > 0 && rect.height > 0) {
+                this.resize(rect.width, rect.height);
+                console.log(`🌌 Nebula auto-resized to container: ${rect.width}x${rect.height}`);
+            } else {
+                console.warn('🌌 Nebula autoResize: Container has zero dimensions');
+            }
+        } else {
+            console.warn('🌌 Nebula autoResize: Container not found');
         }
     }
     

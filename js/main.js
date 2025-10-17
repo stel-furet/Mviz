@@ -23991,7 +23991,7 @@ if (window.visualizer && window.visualizer.loadVideoSource) {
     }
 }
 
-// Add resize listener for Infinite Zoom, Blobs, Kaleidoscope, and WebGL
+// Add resize listener for Infinite Zoom, Blobs, Kaleidoscope, WebGL, and Nebula
 window.addEventListener('resize', () => {
     if (window.visualizer && window.visualizer.infiniteZoom) {
         window.visualizer.infiniteZoom.resize();
@@ -24004,6 +24004,9 @@ window.addEventListener('resize', () => {
     }
     if (window.visualizer && window.visualizer.webglVisualization) {
         window.visualizer.webglVisualization.resize();
+    }
+    if (window.visualizer && window.visualizer.nebulaVisualization) {
+        window.visualizer.nebulaVisualization.autoResize();
     }
 });
 
