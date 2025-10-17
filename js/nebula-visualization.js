@@ -43,8 +43,8 @@ class NebulaVisualization {
         // Settings - base supernova configuration
         this.settings = {
             // Camera
-            cameraDistance: 180,
-            cameraOrbit: true,
+            cameraDistance: 80,
+            cameraOrbit: false,  // OFF by default
             orbitSpeed: 1.0,    // Orbit speed multiplier
             flyThrough: false,  // Fly-through animation mode
             flySpeed: 0.05,     // Fly-through speed multiplier (half of 0.1)
@@ -1738,64 +1738,104 @@ class NebulaVisualization {
     }
     
     startFlyThrough() {
-        // Capture current camera position as starting point
-        this.flyThrough.startPosition = {
-            x: this.camera.position.x,
-            y: this.camera.position.y,
-            z: this.camera.position.z
-        };
-        
-        // Capture what the camera is currently looking at
-        const lookAtVector = new THREE.Vector3();
-        this.camera.getWorldDirection(lookAtVector);
-        const lookAtDistance = 100; // Assume camera is looking 100 units ahead
-        this.flyThrough.startLookAt = {
-            x: this.camera.position.x + lookAtVector.x * lookAtDistance,
-            y: this.camera.position.y + lookAtVector.y * lookAtDistance,
-            z: this.camera.position.z + lookAtVector.z * lookAtDistance
-        };
-        
-        // Calculate the best entry point on the figure-8 path
-        // Find the closest point on the figure-8 to the current camera position
-        this.flyThrough.pathEntryPoint = this.findBestPathEntryPoint();
-        
+        // Store current camera state for smooth transition
+        this.flyThrough.startPosition = this.camera.position.clone();
         this.flyThrough.startTime = this.time;
         this.flyThrough.isActive = true;
+        
+        // Find the best entry point on figure-8 where camera faces nebula center
+        this.flyThrough.entryPoint = this.findNebulaFacingEntryPoint();
+        
+        console.log('🚁 Fly-through started - transitioning to nebula-facing entry point');
     }
     
-    findBestPathEntryPoint() {
-        // Sample multiple points on the figure-8 to find the closest one
+    
+    findNebulaFacingEntryPoint() {
         const radius = this.flyThrough.pathRadius;
         const height = this.flyThrough.pathHeight;
-        let closestPoint = null;
-        let minDistance = Infinity;
-        let bestT = 0;
         
-        // Sample 100 points around the figure-8
+        // Sample points on the figure-8 path to find where camera would face nebula center
+        let bestT = 0;
+        let bestScore = -Infinity;
+        let bestPosition = null;
+        let bestLookDirection = null;
+        
+        // Test multiple points around the figure-8 path
         for (let i = 0; i < 100; i++) {
             const t = (i / 100) * Math.PI * 4; // Full figure-8 cycle
+            
+            // Calculate position on figure-8
             const sinT = Math.sin(t);
             const cosT = Math.cos(t);
             const denominator = 1 + sinT * sinT;
             
-            const x = radius * cosT / denominator;
-            const z = radius * sinT * cosT / denominator;
-            const y = height * Math.sin(2 * t);
+            const pathX = radius * cosT / denominator;
+            const pathZ = radius * sinT * cosT / denominator;
+            const pathY = height * Math.sin(2 * t);
             
-            // Calculate distance to current camera position
-            const dx = x - this.camera.position.x;
-            const dy = y - this.camera.position.y;
-            const dz = z - this.camera.position.z;
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            // Calculate forward direction at this point (velocity vector)
+            const dt = 0.01;
+            const tNext = t + dt;
+            const sinTNext = Math.sin(tNext);
+            const cosTNext = Math.cos(tNext);
+            const denominatorNext = 1 + sinTNext * sinTNext;
             
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestPoint = { x, y, z };
+            const nextX = radius * cosTNext / denominatorNext;
+            const nextZ = radius * sinTNext * cosTNext / denominatorNext;
+            const nextY = height * Math.sin(2 * tNext);
+            
+            // Velocity vector (forward direction)
+            const velocityX = (nextX - pathX) / dt;
+            const velocityY = (nextY - pathY) / dt;
+            const velocityZ = (nextZ - pathZ) / dt;
+            
+            // Normalize velocity
+            const velocityLength = Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
+            if (velocityLength < 0.001) continue;
+            
+            const forwardX = velocityX / velocityLength;
+            const forwardY = velocityY / velocityLength;
+            const forwardZ = velocityZ / velocityLength;
+            
+            // Calculate direction from this position to nebula center
+            const toNebulaX = 0 - pathX;
+            const toNebulaY = 0 - pathY;
+            const toNebulaZ = 0 - pathZ;
+            const toNebulaLength = Math.sqrt(toNebulaX * toNebulaX + toNebulaY * toNebulaY + toNebulaZ * toNebulaZ);
+            
+            if (toNebulaLength < 0.001) continue;
+            
+            const toNebulaNormX = toNebulaX / toNebulaLength;
+            const toNebulaNormY = toNebulaY / toNebulaLength;
+            const toNebulaNormZ = toNebulaZ / toNebulaLength;
+            
+            // Calculate how well the forward direction aligns with direction to nebula
+            // Dot product: 1 = perfect alignment, -1 = opposite direction
+            const alignment = forwardX * toNebulaNormX + forwardY * toNebulaNormY + forwardZ * toNebulaNormZ;
+            
+            // Also consider distance from current camera position (prefer closer points)
+            const distanceFromCurrent = Math.sqrt(
+                Math.pow(pathX - this.flyThrough.startPosition.x, 2) +
+                Math.pow(pathY - this.flyThrough.startPosition.y, 2) +
+                Math.pow(pathZ - this.flyThrough.startPosition.z, 2)
+            );
+            
+            // Score: prioritize alignment with nebula direction, with distance as tiebreaker
+            const score = alignment * 10 - (distanceFromCurrent / 100);
+            
+            if (score > bestScore) {
+                bestScore = score;
                 bestT = t;
+                bestPosition = { x: pathX, y: pathY, z: pathZ };
+                bestLookDirection = { x: forwardX, y: forwardY, z: forwardZ };
             }
         }
         
-        return { point: closestPoint, t: bestT };
+        return {
+            t: bestT,
+            position: bestPosition,
+            lookDirection: bestLookDirection
+        };
     }
     
     stopFlyThrough() {
@@ -1803,36 +1843,63 @@ class NebulaVisualization {
         this.flyThrough.startPosition = null;
         this.flyThrough.startLookAt = null;
         this.flyThrough.pathEntryPoint = null;
+        this.flyThrough.entryPoint = null;
     }
     
     updateFlyThroughCamera() {
-        if (!this.flyThrough.isActive || !this.flyThrough.startPosition || !this.flyThrough.pathEntryPoint) return;
+        if (!this.flyThrough.isActive || !this.flyThrough.startPosition || !this.flyThrough.entryPoint) return;
         
         // Calculate time elapsed since fly-through started (using current speed setting)
         const elapsedTime = (this.time - this.flyThrough.startTime) * this.settings.flySpeed;
-        const approachDuration = this.flyThrough.approachDuration;
+        const transitionDuration = 2.0; // 2 seconds to smoothly transition to entry point
         
-        if (elapsedTime < approachDuration) {
-            // STAGE 1: Approach the figure-8 path while maintaining current look direction
-            const approachProgress = elapsedTime / approachDuration;
-            const smoothProgress = approachProgress * approachProgress * (3.0 - 2.0 * approachProgress); // Ease-in-out
+        const radius = this.flyThrough.pathRadius;
+        const height = this.flyThrough.pathHeight;
+        
+        if (elapsedTime < transitionDuration) {
+            // SMOOTH TRANSITION PHASE: Move to nebula-facing entry point
+            const transitionProgress = elapsedTime / transitionDuration;
+            const smoothProgress = transitionProgress * transitionProgress * (3.0 - 2.0 * transitionProgress); // Ease-in-out
             
-            // Interpolate position from start to entry point
-            const entryPoint = this.flyThrough.pathEntryPoint.point;
-            this.camera.position.x = this.flyThrough.startPosition.x + (entryPoint.x - this.flyThrough.startPosition.x) * smoothProgress;
-            this.camera.position.y = this.flyThrough.startPosition.y + (entryPoint.y - this.flyThrough.startPosition.y) * smoothProgress;
-            this.camera.position.z = this.flyThrough.startPosition.z + (entryPoint.z - this.flyThrough.startPosition.z) * smoothProgress;
+            // Smoothly interpolate from start position to entry point position
+            const entryPos = this.flyThrough.entryPoint.position;
+            this.camera.position.x = this.flyThrough.startPosition.x + (entryPos.x - this.flyThrough.startPosition.x) * smoothProgress;
+            this.camera.position.y = this.flyThrough.startPosition.y + (entryPos.y - this.flyThrough.startPosition.y) * smoothProgress;
+            this.camera.position.z = this.flyThrough.startPosition.z + (entryPos.z - this.flyThrough.startPosition.z) * smoothProgress;
             
-            // Maintain original look direction during approach
-            this.camera.lookAt(this.flyThrough.startLookAt.x, this.flyThrough.startLookAt.y, this.flyThrough.startLookAt.z);
+            // Smoothly interpolate camera orientation from looking at nebula to forward direction
+            const entryLookDir = this.flyThrough.entryPoint.lookDirection;
+            
+            // Direction to nebula center from current position
+            const toNebulaX = 0 - this.camera.position.x;
+            const toNebulaY = 0 - this.camera.position.y;
+            const toNebulaZ = 0 - this.camera.position.z;
+            const toNebulaLength = Math.sqrt(toNebulaX * toNebulaX + toNebulaY * toNebulaY + toNebulaZ * toNebulaZ);
+            
+            let lookDirX = toNebulaX / toNebulaLength;
+            let lookDirY = toNebulaY / toNebulaLength;
+            let lookDirZ = toNebulaZ / toNebulaLength;
+            
+            // Gradually blend from nebula-facing to forward-facing
+            if (smoothProgress > 0.5) {
+                const orientationProgress = (smoothProgress - 0.5) * 2; // 0 to 1 in second half
+                lookDirX = lookDirX + (entryLookDir.x - lookDirX) * orientationProgress;
+                lookDirY = lookDirY + (entryLookDir.y - lookDirY) * orientationProgress;
+                lookDirZ = lookDirZ + (entryLookDir.z - lookDirZ) * orientationProgress;
+            }
+            
+            // Set camera look direction
+            const lookAtDistance = 50;
+            const lookAtX = this.camera.position.x + lookDirX * lookAtDistance;
+            const lookAtY = this.camera.position.y + lookDirY * lookAtDistance;
+            const lookAtZ = this.camera.position.z + lookDirZ * lookAtDistance;
+            
+            this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
             
         } else {
-            // STAGE 2: Follow the figure-8 path with forward-facing camera
-            const pathTime = elapsedTime - approachDuration;
-            const t = this.flyThrough.pathEntryPoint.t + pathTime * 0.5; // Continue from entry point
-            
-            const radius = this.flyThrough.pathRadius;
-            const height = this.flyThrough.pathHeight;
+            // FIGURE-8 PATH PHASE: Continue from entry point with normal flight behavior
+            const pathTime = elapsedTime - transitionDuration;
+            const t = this.flyThrough.entryPoint.t + pathTime * 0.5; // Continue from entry point
             
             // Calculate current figure-8 position
             const sinT = Math.sin(t);
