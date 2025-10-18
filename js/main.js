@@ -18241,6 +18241,7 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
             { id: 'nebulaBloomToggle', property: 'bloom' },
             { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
+            { id: 'nebulaKnockoutBackgroundToggle', property: 'knockoutBackground' },
             { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
             { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
         ];
@@ -18279,6 +18280,8 @@ https://rogueamoeba.com/loopback/
         const controls = [
             { id: 'nebulaCameraDistance', property: 'cameraDistance' },
             { id: 'nebulaFilamentDensity', property: 'filamentDensity' },
+            { id: 'nebulaParticlesPerFilament', property: 'particlesPerFilament' },
+            { id: 'nebulaParticleSize', property: 'particleSize' },
             { id: 'nebulaExpansion', property: 'expansion' },
             { id: 'nebulaChaos', property: 'chaos' },
             { id: 'nebulaAsymmetry', property: 'asymmetry' },
@@ -18288,6 +18291,8 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaOrbitSpeed', property: 'orbitSpeed' },
             { id: 'nebulaFlySpeed', property: 'flySpeed' },
             { id: 'nebulaAudioSensitivity', property: 'audioSensitivity' },
+            { id: 'nebulaOverallOpacity', property: 'overallOpacity' },
+            { id: 'nebulaMorphingSpeed', property: 'morphingSpeed' },
             { id: 'nebulaHueShift', property: 'hueShift' },
             { id: 'nebulaSaturation', property: 'saturation' },
             { id: 'nebulaBrightness', property: 'brightness' }
@@ -18324,6 +18329,7 @@ https://rogueamoeba.com/loopback/
             { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
             { id: 'nebulaBloomToggle', property: 'bloom' },
             { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
+            { id: 'nebulaKnockoutBackgroundToggle', property: 'knockoutBackground' },
             { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
             { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
         ];
@@ -18388,16 +18394,16 @@ https://rogueamoeba.com/loopback/
                         
                         // Special handling for color preset toggle
                         if (button.preset === 'color') {
-                            // Only clear stored original colors when turning OFF (so they get refreshed when turned back ON)
                             if (currentState === true) {
-                                // Turning OFF - clear stored colors
-                                this.nebulaVisualization.filaments.forEach(filament => {
-                                    if (filament.userData) {
-                                        filament.userData.originalColors = null;
-                                    }
-                                });
+                                // Turning OFF - reset hue shift to original value
+                                if (this.nebulaVisualization.originalHueShift !== undefined) {
+                                    this.nebulaVisualization.settings.hueShift = this.nebulaVisualization.originalHueShift;
+                                    this.nebulaVisualization.applyColorAdjustments();
+                                    // Update UI slider to reflect reset value
+                                    this.updateNebulaSliderValue('nebulaHueShift', this.nebulaVisualization.originalHueShift, this.nebulaVisualization.originalHueShift + '°');
+                                }
                             }
-                            // When turning ON, let applyNebulaColorReactivity capture the current colors as baseline
+                            // When turning ON, the originalHueShift will be stored automatically
                         }
                         
                         // Update button appearance
@@ -18597,6 +18603,8 @@ https://rogueamoeba.com/loopback/
         this.updateNebulaSliderValue('nebulaBrightness', settings.brightness, settings.brightness + '%');
         this.updateNebulaSliderValue('nebulaCameraDistance', settings.cameraDistance, settings.cameraDistance.toString());
         this.updateNebulaSliderValue('nebulaFilamentDensity', settings.filamentDensity, settings.filamentDensity.toString());
+        this.updateNebulaSliderValue('nebulaParticlesPerFilament', settings.particlesPerFilament, settings.particlesPerFilament.toString());
+        this.updateNebulaSliderValue('nebulaParticleSize', settings.particleSize, settings.particleSize.toString());
         this.updateNebulaSliderValue('nebulaExpansion', settings.expansion, settings.expansion.toString());
         this.updateNebulaSliderValue('nebulaChaos', settings.chaos, settings.chaos.toString());
         this.updateNebulaSliderValue('nebulaAsymmetry', settings.asymmetry, settings.asymmetry.toString());
@@ -18606,6 +18614,8 @@ https://rogueamoeba.com/loopback/
         this.updateNebulaSliderValue('nebulaOrbitSpeed', settings.orbitSpeed, settings.orbitSpeed.toString());
         this.updateNebulaSliderValue('nebulaFlySpeed', settings.flySpeed, settings.flySpeed.toString());
         this.updateNebulaSliderValue('nebulaAudioSensitivity', settings.audioSensitivity, settings.audioSensitivity.toString());
+        this.updateNebulaSliderValue('nebulaOverallOpacity', settings.overallOpacity, Math.round(settings.overallOpacity * 100) + '%');
+        this.updateNebulaSliderValue('nebulaMorphingSpeed', settings.morphingSpeed, settings.morphingSpeed.toString());
         
         // Update toggles
         this.updateNebulaToggleButton('nebulaCameraOrbitToggle', settings.cameraOrbit);
@@ -18613,6 +18623,7 @@ https://rogueamoeba.com/loopback/
         this.updateNebulaToggleButton('nebulaShowPulsarToggle', settings.showPulsar);
         this.updateNebulaToggleButton('nebulaBloomToggle', settings.bloom);
         this.updateNebulaToggleButton('nebulaAudioReactiveToggle', settings.audioReactive);
+        this.updateNebulaToggleButton('nebulaKnockoutBackgroundToggle', settings.knockoutBackground);
         this.updateNebulaToggleButton('nebulaMorphingModeToggle', settings.morphingMode);
         
         // Update preset buttons

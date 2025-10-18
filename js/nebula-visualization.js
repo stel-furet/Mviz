@@ -45,9 +45,9 @@ class NebulaVisualization {
             // Camera
             cameraDistance: 80,
             cameraOrbit: false,  // OFF by default
-            orbitSpeed: 1.0,    // Orbit speed multiplier
+            orbitSpeed: 3.0,    // Orbit speed multiplier (default to 5)
             flyThrough: false,  // Fly-through animation mode
-            flySpeed: 0.05,     // Fly-through speed multiplier (half of 0.1)
+            flySpeed: 0.25,     // Fly-through speed multiplier (default to 0.25)
             
             // Filament structure
             filamentDensity: 1.4,
@@ -55,6 +55,8 @@ class NebulaVisualization {
             chaos: 2.8,
             asymmetry: 1.1,
             threadVariation: 1.1,
+            particlesPerFilament: 120,  // Base particles per filament (was hardcoded)
+            particleSize: 1.0,          // Particle size multiplier
             
             // Central pulsar
             showPulsar: true,
@@ -77,6 +79,8 @@ class NebulaVisualization {
             // Audio reactivity settings
             audioReactive: true,
             audioSensitivity: 1.0,
+            overallOpacity: 1.0,   // Master opacity control (0.0 to 1.0)
+            knockoutBackground: false,  // Black background knockout using blend modes
             beatReactive: true,
             bassResponse: 1.0,
             midResponse: 1.0,
@@ -84,12 +88,13 @@ class NebulaVisualization {
             
             // Morphing mode - allows filaments to evolve and transform over time
             morphingMode: false,
+            morphingSpeed: 1.0,     // Speed of morphing changes (0.1 = very slow, 2.0 = fast)
             
             // Audio reactive presets (toggleable)
             audioPresets: {
                 color: false,          // Pulsar color reactivity (OFF by default)
                 rotation: false,       // Camera rotation reactivity (OFF by default)
-                distance: true,        // Camera distance reactivity
+                distance: false,       // Camera distance reactivity (OFF by default)
                 pulsar: true,          // Pulsar size/pulse reactivity
                 filamentDensity: true, // Filament density/thickness reactivity
                 chaos: true,           // Chaos/randomness reactivity
@@ -131,6 +136,10 @@ class NebulaVisualization {
             manualZoom: 0,       // Manual zoom offset
             sensitivity: 0.01    // Mouse sensitivity
         };
+        
+        // Orbit tracking for smooth speed transitions
+        this.orbitAngle = 0;                    // Persistent orbit angle
+        this.lastOrbitSpeed = this.settings.orbitSpeed;  // Track speed changes
         
         // Fly-through animation state
         this.flyThrough = {
@@ -179,7 +188,7 @@ class NebulaVisualization {
     }
     
     getCurrentConfig() {
-        // Capture all 13 settings for comprehensive preset
+        // Capture all 15 settings for comprehensive preset
         return {
             // Color controls
             hueShift: this.settings.hueShift,
@@ -195,6 +204,8 @@ class NebulaVisualization {
             
             // Filament controls
             filamentDensity: this.settings.filamentDensity,
+            particlesPerFilament: this.settings.particlesPerFilament,
+            particleSize: this.settings.particleSize,
             expansion: this.settings.expansion,
             chaos: this.settings.chaos,
             asymmetry: this.settings.asymmetry,
@@ -213,7 +224,10 @@ class NebulaVisualization {
             // Audio reactivity
             audioReactive: this.settings.audioReactive,
             audioSensitivity: this.settings.audioSensitivity,
+            overallOpacity: this.settings.overallOpacity,
+            knockoutBackground: this.settings.knockoutBackground,
             morphingMode: this.settings.morphingMode,
+            morphingSpeed: this.settings.morphingSpeed,
             
             // Audio presets
             audioPresets: { ...this.settings.audioPresets }
@@ -526,8 +540,8 @@ class NebulaVisualization {
                 Math.cos(favoredPhi)
             );
             
-            const baseParticles = 120;
-            const variationAmount = Math.floor(Math.random() * 100 * this.settings.threadVariation);
+            const baseParticles = this.settings.particlesPerFilament;
+            const variationAmount = Math.floor(Math.random() * (baseParticles * 0.8) * this.settings.threadVariation);
             const particleCount = baseParticles + variationAmount;
             
             const startRadius = 1.5 + (Math.random() - 0.5) * this.settings.threadVariation;
@@ -587,7 +601,8 @@ class NebulaVisualization {
                 
                 const baseThickness = 0.8 + Math.random() * 0.4 * this.settings.threadVariation;
                 const thickness = Math.sin(t * Math.PI);
-                sizes.push(baseThickness + thickness * 1.5);
+                const finalSize = (baseThickness + thickness * 1.5) * this.settings.particleSize;
+                sizes.push(finalSize);
                 
                 const fadeFactor = 1.0 - Math.pow(t, 1.5);
                 alphas.push(fadeFactor * (0.7 + Math.random() * 0.3));
@@ -746,6 +761,11 @@ class NebulaVisualization {
         
         // Update beat flash intensity
         this.updateBeatFlash();
+        
+        // Apply morphing mode changes
+        if (this.settings.morphingMode) {
+            this.applyMorphingMode();
+        }
         
         this.time += 0.016;
     }
@@ -927,103 +947,213 @@ class NebulaVisualization {
     applyNebulaColorReactivity(bassEnergy, midEnergy, highEnergy, totalEnergy) {
         if (!this.settings.audioPresets.color) return;
         
-        // Apply color reactivity to all filaments
+        // Simple and effective: adjust Hue Shift based on audio energy
+        // Store original hue shift if not already stored
+        if (this.originalHueShift === undefined) {
+            this.originalHueShift = this.settings.hueShift;
+        }
         
-        // Apply subtle color shifts to nebula filaments based on energy
-        // This preserves the original color scheme and just adds reactive variations
-        this.filaments.forEach((filament, index) => {
-            if (filament.geometry && filament.geometry.attributes.color) {
-                // Store original colors if not already stored
-                // This should capture the current colors (including any preset that was applied)
-                if (!filament.userData.originalColors) {
-                    filament.userData.originalColors = new Float32Array(filament.geometry.attributes.color.array);
-                }
-                
-                const colorArray = filament.geometry.attributes.color.array;
-                const originalColors = filament.userData.originalColors;
-                const particleCount = colorArray.length / 3;
-                
-                // Calculate color shift based on energy
-                const filamentZone = index / this.filaments.length;
-                let energySource;
-                
-                if (filamentZone < 0.33) {
-                    energySource = bassEnergy;
-                } else if (filamentZone < 0.66) {
-                    energySource = midEnergy;
-                } else {
-                    energySource = highEnergy;
-                }
-                
-                // Create color shifts - subtle but visible
-                const shiftIntensity = energySource * this.settings.audioSensitivity * 0.8;
-                
-                for (let i = 0; i < particleCount; i++) {
-                    const i3 = i * 3;
-                    
-                    // Apply subtle shifts to original colors
-                    const baseR = originalColors[i3];
-                    const baseG = originalColors[i3 + 1];
-                    const baseB = originalColors[i3 + 2];
-                    
-                    // Color shifts: energy-based (smooth) + beat-based (dramatic flashes)
-                    let shiftR = 0, shiftG = 0, shiftB = 0;
-                    
-                    // Energy-based color shifts (smooth)
-                    if (filamentZone < 0.33) {
-                        // Bass: warm red/orange shift
-                        shiftR = shiftIntensity * 0.4;
-                        shiftG = shiftIntensity * 0.2;
-                    } else if (filamentZone < 0.66) {
-                        // Mids: green/yellow shift  
-                        shiftG = shiftIntensity * 0.4;
-                        shiftR = shiftIntensity * 0.1;
-                    } else {
-                        // Highs: blue/purple shift
-                        shiftB = shiftIntensity * 0.4;
-                        shiftR = shiftIntensity * 0.1;
-                    }
-                    
-                    // Beat-based color flash (dramatic)
-                    if (this.beatFlash.intensity > 0) {
-                        const flashIntensity = this.beatFlash.intensity;
-                        
-                        if (filamentZone < 0.33) {
-                            // Bass beats: bright red flash
-                            shiftR += flashIntensity * 0.8;
-                            shiftG += flashIntensity * 0.2;
-                        } else if (filamentZone < 0.66) {
-                            // Mid beats: bright green flash
-                            shiftG += flashIntensity * 0.8;
-                            shiftR += flashIntensity * 0.2;
-                        } else {
-                            // High beats: bright blue flash
-                            shiftB += flashIntensity * 0.8;
-                            shiftR += flashIntensity * 0.1;
-                        }
-                    }
-                    
-                    // Apply combined shifts (energy + beat flash)
-                    colorArray[i3] = Math.min(1.0, baseR + shiftR);
-                    colorArray[i3 + 1] = Math.min(1.0, baseG + shiftG);
-                    colorArray[i3 + 2] = Math.min(1.0, baseB + shiftB);
-                    
-                    // Debug: Log color changes for first filament, first particle
-                    if (index === 0 && i === 0 && (shiftR > 0.1 || shiftG > 0.1 || shiftB > 0.1)) {
-                        console.log('🎨 Color shift applied:', {
-                            original: [baseR, baseG, baseB],
-                            shifts: [shiftR, shiftG, shiftB],
-                            final: [colorArray[i3], colorArray[i3 + 1], colorArray[i3 + 2]],
-                            shiftIntensity
-                        });
-                    }
-                }
-                
-                // RECREATE the color attribute entirely (Three.js r128 approach)
-                const newColorAttribute = new THREE.Float32BufferAttribute(colorArray, 3);
-                filament.geometry.setAttribute('color', newColorAttribute);
+        // Calculate hue shift based on energy and beats
+        let energyHueShift = 0;
+        
+        // Energy-based smooth hue shifting (0-60 degrees)
+        energyHueShift += totalEnergy * this.settings.audioSensitivity * 60;
+        
+        // Beat-based dramatic hue shifts
+        if (this.beatFlash.intensity > 0) {
+            const flashHueShift = this.beatFlash.intensity * 120; // Up to 120 degrees on beats
+            energyHueShift += flashHueShift;
+        }
+        
+        // Apply the dynamic hue shift
+        const newHueShift = this.originalHueShift + energyHueShift;
+        
+        // Update the hue shift setting (this will trigger color updates)
+        if (Math.abs(this.settings.hueShift - newHueShift) > 1) {
+            this.settings.hueShift = newHueShift % 360; // Keep within 0-360 range
+            this.applyColorAdjustments();
+        }
+    }
+    
+    applyMorphingMode() {
+        // Gradually morph various settings over time for organic evolution
+        // Each setting morphs at different rates and ranges for variety
+        
+        const morphSpeed = this.settings.morphingSpeed;
+        const time = this.time;
+        
+        // Store original values if not already stored
+        if (!this.morphingBaselines) {
+            this.morphingBaselines = {
+                hueShift: this.settings.hueShift,
+                particleSize: this.settings.particleSize,
+                chaos: this.settings.chaos,
+                expansion: this.settings.expansion,
+                saturation: this.settings.saturation,
+                filamentDensity: this.settings.filamentDensity,
+                pulsarSize: this.settings.pulsarSize,
+                pulseRate: this.settings.pulseRate
+            };
+        }
+        
+        const baselines = this.morphingBaselines;
+        let needsFilamentRecreation = false;
+        let needsColorUpdate = false;
+        
+        // Smooth interpolation factor - higher speeds get more smoothing
+        const smoothingFactor = Math.min(0.1, 0.02 + (morphSpeed * 0.02));
+        
+        // Hue Shift - smooth color cycling (±60 degrees over time) - More visible
+        const targetHueShift = baselines.hueShift + Math.sin(time * morphSpeed * 0.2) * 60;
+        const newHueShift = this.settings.hueShift + (targetHueShift - this.settings.hueShift) * smoothingFactor;
+        if (Math.abs(this.settings.hueShift - newHueShift) > 0.5) {
+            this.settings.hueShift = (newHueShift + 360) % 360; // Ensure positive
+            needsColorUpdate = true;
+        }
+        
+        // Saturation - breathing saturation effect (±20%) - More visible
+        const targetSaturation = baselines.saturation + Math.sin(time * morphSpeed * 0.15) * 20;
+        const newSaturation = this.settings.saturation + (targetSaturation - this.settings.saturation) * smoothingFactor;
+        if (Math.abs(this.settings.saturation - newSaturation) > 0.5) {
+            this.settings.saturation = Math.max(20, Math.min(200, newSaturation));
+            needsColorUpdate = true;
+        }
+        
+        // Particle Size - pulsing size effect (±0.2x) - Smooth interpolation
+        const targetParticleSize = baselines.particleSize + Math.sin(time * morphSpeed * 0.1) * 0.2;
+        const newParticleSize = this.settings.particleSize + (targetParticleSize - this.settings.particleSize) * smoothingFactor;
+        if (Math.abs(this.settings.particleSize - newParticleSize) > 0.01) {
+            this.settings.particleSize = Math.max(0.3, Math.min(3.0, newParticleSize));
+            needsFilamentRecreation = true;
+        }
+        
+        // Chaos - evolving randomness (±0.3) - Smooth interpolation
+        const targetChaos = baselines.chaos + Math.sin(time * morphSpeed * 0.08) * 0.3;
+        const newChaos = this.settings.chaos + (targetChaos - this.settings.chaos) * smoothingFactor;
+        if (Math.abs(this.settings.chaos - newChaos) > 0.02) {
+            this.settings.chaos = Math.max(1.0, Math.min(5.0, newChaos));
+            needsFilamentRecreation = true;
+        }
+        
+        // Expansion - breathing nebula effect (±5) - Smooth interpolation
+        const targetExpansion = baselines.expansion + Math.sin(time * morphSpeed * 0.05) * 5;
+        const newExpansion = this.settings.expansion + (targetExpansion - this.settings.expansion) * smoothingFactor;
+        if (Math.abs(this.settings.expansion - newExpansion) > 0.2) {
+            this.settings.expansion = Math.max(10, Math.min(80, newExpansion));
+            needsFilamentRecreation = true;
+        }
+        
+        // Filament Density - evolving complexity (±0.1) - Smooth interpolation
+        const targetFilamentDensity = baselines.filamentDensity + Math.sin(time * morphSpeed * 0.03) * 0.1;
+        const newFilamentDensity = this.settings.filamentDensity + (targetFilamentDensity - this.settings.filamentDensity) * smoothingFactor;
+        if (Math.abs(this.settings.filamentDensity - newFilamentDensity) > 0.01) {
+            this.settings.filamentDensity = Math.max(0.5, Math.min(3.0, newFilamentDensity));
+            needsFilamentRecreation = true;
+        }
+        
+        // Pulsar Size - pulsing central core (±0.5) - Smooth interpolation
+        const targetPulsarSize = baselines.pulsarSize + Math.sin(time * morphSpeed * 0.12) * 0.5;
+        const newPulsarSize = this.settings.pulsarSize + (targetPulsarSize - this.settings.pulsarSize) * smoothingFactor;
+        if (Math.abs(this.settings.pulsarSize - newPulsarSize) > 0.05) {
+            this.settings.pulsarSize = Math.max(1, Math.min(15, newPulsarSize));
+            if (this.pulsar) {
+                this.pulsar.userData.baseScale = this.settings.pulsarSize;
             }
-        });
+        }
+        
+        // Pulse Rate - evolving rhythm (±0.3) - Smooth interpolation
+        const targetPulseRate = baselines.pulseRate + Math.sin(time * morphSpeed * 0.09) * 0.3;
+        const newPulseRate = this.settings.pulseRate + (targetPulseRate - this.settings.pulseRate) * smoothingFactor;
+        if (Math.abs(this.settings.pulseRate - newPulseRate) > 0.02) {
+            this.settings.pulseRate = Math.max(0.25, Math.min(5.0, newPulseRate));
+        }
+        
+        // Apply updates efficiently
+        if (needsColorUpdate) {
+            this.applyColorAdjustments();
+            // Debug: Log color changes occasionally
+            if (Math.floor(time * 10) % 30 === 0) {
+                console.log('🎨 Morphing color update:', {
+                    hue: Math.round(this.settings.hueShift),
+                    saturation: Math.round(this.settings.saturation),
+                    speed: morphSpeed
+                });
+            }
+        }
+        
+        if (needsFilamentRecreation) {
+            // Throttle filament recreation to prevent performance issues and abrupt changes
+            if (!this.lastMorphingRecreation || (time - this.lastMorphingRecreation) > 2.0) {
+                this.updateFilaments();
+                this.lastMorphingRecreation = time;
+            }
+        }
+    }
+    
+    resetMorphingBaselines() {
+        // Reset all morphed settings to their baseline values
+        if (!this.morphingBaselines) return;
+        
+        const baselines = this.morphingBaselines;
+        let needsFilamentRecreation = false;
+        let needsColorUpdate = false;
+        
+        // Reset all morphed settings
+        if (this.settings.hueShift !== baselines.hueShift) {
+            this.settings.hueShift = baselines.hueShift;
+            needsColorUpdate = true;
+        }
+        
+        if (this.settings.saturation !== baselines.saturation) {
+            this.settings.saturation = baselines.saturation;
+            needsColorUpdate = true;
+        }
+        
+        if (this.settings.particleSize !== baselines.particleSize) {
+            this.settings.particleSize = baselines.particleSize;
+            needsFilamentRecreation = true;
+        }
+        
+        if (this.settings.chaos !== baselines.chaos) {
+            this.settings.chaos = baselines.chaos;
+            needsFilamentRecreation = true;
+        }
+        
+        if (this.settings.expansion !== baselines.expansion) {
+            this.settings.expansion = baselines.expansion;
+            needsFilamentRecreation = true;
+        }
+        
+        if (this.settings.filamentDensity !== baselines.filamentDensity) {
+            this.settings.filamentDensity = baselines.filamentDensity;
+            needsFilamentRecreation = true;
+        }
+        
+        if (this.settings.pulsarSize !== baselines.pulsarSize) {
+            this.settings.pulsarSize = baselines.pulsarSize;
+            if (this.pulsar) {
+                this.pulsar.userData.baseScale = this.settings.pulsarSize;
+            }
+        }
+        
+        if (this.settings.pulseRate !== baselines.pulseRate) {
+            this.settings.pulseRate = baselines.pulseRate;
+        }
+        
+        // Apply updates
+        if (needsColorUpdate) {
+            this.applyColorAdjustments();
+        }
+        
+        if (needsFilamentRecreation) {
+            this.updateFilaments();
+        }
+        
+        // Clear the baselines
+        this.morphingBaselines = null;
+        this.lastMorphingRecreation = null;
+        
+        console.log('🔄 Morphing baselines reset');
     }
     
     refreshOriginalColors() {
@@ -1338,10 +1468,20 @@ class NebulaVisualization {
             this.updateFlyThroughCamera();
         } else if (this.settings.cameraOrbit && !this.mouseInteraction.isDragging) {
             // Only use automatic orbit when not manually dragging and fly-through is off
-            const baseSpeed = 0.02 * this.settings.orbitSpeed; // Apply orbit speed multiplier
+            
+            // Detect speed changes and maintain smooth transitions
+            if (Math.abs(this.settings.orbitSpeed - this.lastOrbitSpeed) > 0.1) {
+                // Speed changed - maintain current angle to prevent jumps
+                this.lastOrbitSpeed = this.settings.orbitSpeed;
+            }
+            
+            // Map 0-10 slider range to 0-0.8 speed (four times the old max of 0.2)
+            const baseSpeed = (this.settings.orbitSpeed / 10) * 2.0;
             const effectiveSpeed = baseSpeed + (this.audioRotationBoost || 0);
             
-            const angle = this.time * effectiveSpeed;
+            // Use persistent angle with frame-rate independent increment
+            this.orbitAngle += effectiveSpeed * 0.016; // Assume 60fps (1/60 = 0.016)
+            const angle = this.orbitAngle;
             const baseDist = this.settings.cameraDistance;
             const effectiveDist = baseDist + (this.audioCameraOffset || 0) + this.mouseInteraction.manualZoom;
             
@@ -1389,7 +1529,23 @@ class NebulaVisualization {
     setOpacity(opacity) {
         this.opacity = Math.max(0, Math.min(1, opacity));
         if (this.canvas) {
-            this.canvas.style.opacity = this.opacity;
+            // Apply both the passed opacity and the overall opacity setting
+            const finalOpacity = this.opacity * this.settings.overallOpacity;
+            this.canvas.style.opacity = finalOpacity;
+        }
+    }
+    
+    applyBackgroundKnockout() {
+        if (!this.canvas) return;
+        
+        if (this.settings.knockoutBackground) {
+            // Apply blend mode to make dark areas transparent
+            this.canvas.style.mixBlendMode = 'screen';
+            console.log('🌌 Nebula background knockout enabled (screen blend mode)');
+        } else {
+            // Reset to normal blending
+            this.canvas.style.mixBlendMode = 'normal';
+            console.log('🌌 Nebula background knockout disabled (normal blend mode)');
         }
     }
     
@@ -1465,6 +1621,8 @@ class NebulaVisualization {
                     }
                     break;
                 case 'filamentDensity':
+                case 'particlesPerFilament':
+                case 'particleSize':
                 case 'expansion':
                 case 'chaos':
                 case 'asymmetry':
@@ -1489,9 +1647,10 @@ class NebulaVisualization {
                     this.updateBloomEffect(value);
                     break;
                 case 'morphingMode':
-                    // When morphing mode is turned off, reset to original positions
+                    // When morphing mode is turned off, reset to baseline values
                     if (!value) {
                         this.resetToOriginalPositions();
+                        this.resetMorphingBaselines();
                     }
                     break;
                 case 'hueShift':
@@ -1499,6 +1658,14 @@ class NebulaVisualization {
                 case 'brightness':
                     // Apply color adjustments to all nebula elements
                     this.applyColorAdjustments();
+                    break;
+                case 'overallOpacity':
+                    // Update the canvas opacity immediately
+                    this.setOpacity(this.opacity);
+                    break;
+                case 'knockoutBackground':
+                    // Apply or remove blend mode for background knockout
+                    this.applyBackgroundKnockout();
                     break;
                 case 'flyThrough':
                     // Initialize or stop fly-through
@@ -1844,36 +2011,51 @@ class NebulaVisualization {
         this.flyThrough.startLookAt = null;
         this.flyThrough.pathEntryPoint = null;
         this.flyThrough.entryPoint = null;
+        this.flyThrough.smoothCamera = null; // Clean up smooth camera tracking
     }
     
     updateFlyThroughCamera() {
         if (!this.flyThrough.isActive || !this.flyThrough.startPosition || !this.flyThrough.entryPoint) return;
         
+        // Initialize smooth camera tracking if not exists
+        if (!this.flyThrough.smoothCamera) {
+            this.flyThrough.smoothCamera = {
+                position: this.camera.position.clone(),
+                lookAt: new THREE.Vector3(0, 0, 0)
+            };
+        }
+        
         // Calculate time elapsed since fly-through started (using current speed setting)
         const elapsedTime = (this.time - this.flyThrough.startTime) * this.settings.flySpeed;
         const transitionDuration = 2.0; // 2 seconds to smoothly transition to entry point
         
+        // Smooth interpolation factor for camera movement
+        const cameraSmoothing = 0.08; // Adjust for smoothness vs responsiveness
+        
         const radius = this.flyThrough.pathRadius;
         const height = this.flyThrough.pathHeight;
+        
+        let targetPosition = new THREE.Vector3();
+        let targetLookAt = new THREE.Vector3();
         
         if (elapsedTime < transitionDuration) {
             // SMOOTH TRANSITION PHASE: Move to nebula-facing entry point
             const transitionProgress = elapsedTime / transitionDuration;
             const smoothProgress = transitionProgress * transitionProgress * (3.0 - 2.0 * transitionProgress); // Ease-in-out
             
-            // Smoothly interpolate from start position to entry point position
+            // Calculate target position (interpolated from start to entry point)
             const entryPos = this.flyThrough.entryPoint.position;
-            this.camera.position.x = this.flyThrough.startPosition.x + (entryPos.x - this.flyThrough.startPosition.x) * smoothProgress;
-            this.camera.position.y = this.flyThrough.startPosition.y + (entryPos.y - this.flyThrough.startPosition.y) * smoothProgress;
-            this.camera.position.z = this.flyThrough.startPosition.z + (entryPos.z - this.flyThrough.startPosition.z) * smoothProgress;
+            targetPosition.x = this.flyThrough.startPosition.x + (entryPos.x - this.flyThrough.startPosition.x) * smoothProgress;
+            targetPosition.y = this.flyThrough.startPosition.y + (entryPos.y - this.flyThrough.startPosition.y) * smoothProgress;
+            targetPosition.z = this.flyThrough.startPosition.z + (entryPos.z - this.flyThrough.startPosition.z) * smoothProgress;
             
-            // Smoothly interpolate camera orientation from looking at nebula to forward direction
+            // Calculate target look direction
             const entryLookDir = this.flyThrough.entryPoint.lookDirection;
             
-            // Direction to nebula center from current position
-            const toNebulaX = 0 - this.camera.position.x;
-            const toNebulaY = 0 - this.camera.position.y;
-            const toNebulaZ = 0 - this.camera.position.z;
+            // Direction to nebula center from target position
+            const toNebulaX = 0 - targetPosition.x;
+            const toNebulaY = 0 - targetPosition.y;
+            const toNebulaZ = 0 - targetPosition.z;
             const toNebulaLength = Math.sqrt(toNebulaX * toNebulaX + toNebulaY * toNebulaY + toNebulaZ * toNebulaZ);
             
             let lookDirX = toNebulaX / toNebulaLength;
@@ -1888,34 +2070,27 @@ class NebulaVisualization {
                 lookDirZ = lookDirZ + (entryLookDir.z - lookDirZ) * orientationProgress;
             }
             
-            // Set camera look direction
+            // Set target look at point
             const lookAtDistance = 50;
-            const lookAtX = this.camera.position.x + lookDirX * lookAtDistance;
-            const lookAtY = this.camera.position.y + lookDirY * lookAtDistance;
-            const lookAtZ = this.camera.position.z + lookDirZ * lookAtDistance;
-            
-            this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
+            targetLookAt.x = targetPosition.x + lookDirX * lookAtDistance;
+            targetLookAt.y = targetPosition.y + lookDirY * lookAtDistance;
+            targetLookAt.z = targetPosition.z + lookDirZ * lookAtDistance;
             
         } else {
             // FIGURE-8 PATH PHASE: Continue from entry point with normal flight behavior
             const pathTime = elapsedTime - transitionDuration;
             const t = this.flyThrough.entryPoint.t + pathTime * 0.5; // Continue from entry point
             
-            // Calculate current figure-8 position
+            // Calculate target figure-8 position
             const sinT = Math.sin(t);
             const cosT = Math.cos(t);
             const denominator = 1 + sinT * sinT;
             
-            const figure8X = radius * cosT / denominator;
-            const figure8Z = radius * sinT * cosT / denominator;
-            const figure8Y = height * Math.sin(2 * t);
+            targetPosition.x = radius * cosT / denominator;
+            targetPosition.z = radius * sinT * cosT / denominator;
+            targetPosition.y = height * Math.sin(2 * t);
             
-            // Set camera position
-            this.camera.position.x = figure8X;
-            this.camera.position.y = figure8Y;
-            this.camera.position.z = figure8Z;
-            
-            // Calculate forward direction from velocity
+            // Calculate forward direction from velocity (for smooth look direction)
             const dt = 0.01;
             const tNext = t + dt;
             const sinTNext = Math.sin(tNext);
@@ -1927,9 +2102,9 @@ class NebulaVisualization {
             const nextY = height * Math.sin(2 * tNext);
             
             // Calculate velocity vector (direction of movement)
-            const velocityX = (nextX - figure8X) / dt;
-            const velocityY = (nextY - figure8Y) / dt;
-            const velocityZ = (nextZ - figure8Z) / dt;
+            const velocityX = (nextX - targetPosition.x) / dt;
+            const velocityY = (nextY - targetPosition.y) / dt;
+            const velocityZ = (nextZ - targetPosition.z) / dt;
             
             // Normalize velocity to get forward direction
             const velocityLength = Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
@@ -1941,14 +2116,20 @@ class NebulaVisualization {
                 forwardZ = velocityZ / velocityLength;
             }
             
-            // Camera looks forward along the flight path
+            // Set target look at point
             const lookAtDistance = 50;
-            const lookAtX = this.camera.position.x + forwardX * lookAtDistance;
-            const lookAtY = this.camera.position.y + forwardY * lookAtDistance;
-            const lookAtZ = this.camera.position.z + forwardZ * lookAtDistance;
-            
-            this.camera.lookAt(lookAtX, lookAtY, lookAtZ);
+            targetLookAt.x = targetPosition.x + forwardX * lookAtDistance;
+            targetLookAt.y = targetPosition.y + forwardY * lookAtDistance;
+            targetLookAt.z = targetPosition.z + forwardZ * lookAtDistance;
         }
+        
+        // Apply smooth interpolation to actual camera position and look direction
+        this.flyThrough.smoothCamera.position.lerp(targetPosition, cameraSmoothing);
+        this.flyThrough.smoothCamera.lookAt.lerp(targetLookAt, cameraSmoothing);
+        
+        // Update actual camera
+        this.camera.position.copy(this.flyThrough.smoothCamera.position);
+        this.camera.lookAt(this.flyThrough.smoothCamera.lookAt);
     }
 
     updateFilaments() {

@@ -471,6 +471,22 @@
                 
                 <div class="control-group">
                     <div class="slider-1-wrapper">
+                        <div class="slider-label">Particles Per Filament</div>
+                        <input type="range" id="nebulaParticlesPerFilament" min="50" max="300" value="120" step="10" class="slider-1">
+                        <span class="slider-1-value">120</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Particle Size</div>
+                        <input type="range" id="nebulaParticleSize" min="0.3" max="3.0" value="1.0" step="0.1" class="slider-1">
+                        <span class="slider-1-value">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="slider-1-wrapper">
                         <div class="slider-label">Expansion</div>
                         <input type="range" id="nebulaExpansion" min="10" max="80" value="36" step="2" class="slider-1">
                         <span class="slider-1-value">36</span>
@@ -527,8 +543,8 @@
                 <div class="control-group">
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Orbit Speed</div>
-                        <input type="range" id="nebulaOrbitSpeed" min="0" max="5" value="1" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.0</span>
+                        <input type="range" id="nebulaOrbitSpeed" min="0" max="10" value="5" step="0.1" class="slider-1">
+                        <span class="slider-1-value">3.0</span>
                     </div>
                 </div>
                 
@@ -542,8 +558,8 @@
                 <div class="control-group">
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Fly Speed</div>
-                        <input type="range" id="nebulaFlySpeed" min="0.05" max="3.0" value="0.05" step="0.05" class="slider-1">
-                        <span class="slider-1-value">0.05</span>
+                        <input type="range" id="nebulaFlySpeed" min="0.05" max="3.0" value="0.25" step="0.05" class="slider-1">
+                        <span class="slider-1-value">0.25</span>
                     </div>
                 </div>
                 
@@ -569,6 +585,13 @@
                 </div>
                 
                 <div class="control-group">
+                    <label>Knockout Background</label>
+                    <button class="btn-toggle-32w nebula-toggle" id="nebulaKnockoutBackgroundToggle" data-setting="knockoutBackground">
+                        <span class="toggle-text">OFF</span>
+                    </button>
+                </div>
+                
+                <div class="control-group">
                     <label>Morphing Mode</label>
                     <button class="btn-toggle-32w nebula-toggle" id="nebulaMorphingModeToggle" data-setting="morphingMode">
                         <span class="toggle-text">OFF</span>
@@ -577,9 +600,25 @@
                 
                 <div class="control-group">
                     <div class="slider-1-wrapper">
+                        <div class="slider-label">Morphing Speed</div>
+                        <input type="range" id="nebulaMorphingSpeed" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
+                        <span class="slider-1-value">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="slider-1-wrapper">
                         <div class="slider-label">Audio Sensitivity</div>
                         <input type="range" id="nebulaAudioSensitivity" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
                         <span class="slider-1-value">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="slider-1-wrapper">
+                        <div class="slider-label">Overall Opacity</div>
+                        <input type="range" id="nebulaOverallOpacity" min="0.0" max="1.0" value="1.0" step="0.05" class="slider-1">
+                        <span class="slider-1-value">100%</span>
                     </div>
                 </div>
                 
