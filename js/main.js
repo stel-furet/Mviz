@@ -6175,6 +6175,12 @@ class RecordManager {
             // Create composite canvas
             await this.setupCompositeCanvas();
             
+            // Start compositing to ensure first frame is ready
+            this.startCompositing();
+            
+            // Wait a moment for the first frame to be drawn (ensures Nebula and other visualizations are ready)
+            await new Promise(resolve => setTimeout(resolve, 150));
+            
             // Get video stream
             const videoStream = this.compositeCanvas.captureStream(this.frameRate);
             
@@ -6233,9 +6239,6 @@ class RecordManager {
             };
             
             this.mediaRecorder.start(1000); // Record in 1 second chunks
-            
-            // Start compositing loop
-            this.startCompositing();
             
             console.log('Recording started successfully');
             
@@ -6394,6 +6397,15 @@ class RecordManager {
                 }
             }
             
+            // Draw Nebula visualization if active and not captured via kaleidoscope
+            if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
+                    console.log('🎥 RecordManager: Drawing Nebula visualization in composite (with video)');
+                    this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing
             this.drawScaledVisualization(sourceCanvas);
@@ -6424,6 +6436,15 @@ class RecordManager {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                }
+            }
+            
+            // Draw Nebula visualization if active and not captured via kaleidoscope
+            if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
+                    console.log('🎥 RecordManager: Drawing Nebula visualization in composite (no video)');
+                    this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
                 }
             }
         }
