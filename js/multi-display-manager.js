@@ -290,6 +290,16 @@ class MultiDisplayManager {
                 this.updateToggleButton(captureFluidDynamicsBtn, 'Capture Fluid Dynamics', !currentState);
             });
         }
+        
+        // Capture Nebula toggle
+        const captureNebulaBtn = document.getElementById(`display${displayId}CaptureNebulaBtn`);
+        if (captureNebulaBtn) {
+            captureNebulaBtn.addEventListener('click', () => {
+                const currentState = this.getDisplaySettings(displayId).captureNebula !== false;
+                this.updateDisplaySettings(displayId, { captureNebula: !currentState });
+                this.updateToggleButton(captureNebulaBtn, 'Capture Nebula', !currentState);
+            });
+        }
     }
     
     // Toggle display window (create/close)
@@ -1059,6 +1069,7 @@ class DisplayInstance {
             captureInfiniteZoom: true,
             captureWebGL: true,
             captureFluidDynamics: true,
+            captureNebula: true,
             presentationMode: 'fit',
             displaySharpness: 0,
             letterboxColor: '#000000',

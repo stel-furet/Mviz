@@ -7107,7 +7107,8 @@ class LiveDisplayManager {
             captureKaleidoscope: true,
             captureInfiniteZoom: true,
             captureWebGL: true,
-            captureFluidDynamics: true
+            captureFluidDynamics: true,
+            captureNebula: true
         };
         
         // Set up settings channel message handler
@@ -7125,6 +7126,7 @@ class LiveDisplayManager {
                 if (settings.captureInfiniteZoom !== undefined) this.displaySettings.captureInfiniteZoom = settings.captureInfiniteZoom;
                 if (settings.captureWebGL !== undefined) this.displaySettings.captureWebGL = settings.captureWebGL;
                 if (settings.captureFluidDynamics !== undefined) this.displaySettings.captureFluidDynamics = settings.captureFluidDynamics;
+                if (settings.captureNebula !== undefined) this.displaySettings.captureNebula = settings.captureNebula;
                 
                 // Update presentation modes and other display settings
                 if (settings.presentationMode !== undefined) this.displaySettings.presentationMode = settings.presentationMode;
@@ -7605,6 +7607,17 @@ class LiveDisplayManager {
                 }
             }
             
+            // Draw Nebula visualization if active and not captured via kaleidoscope (if capture nebula is enabled)
+            if (this.displaySettings && this.displaySettings.captureNebula && 
+                this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
+                this.visualizer.nebulaVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
+                    console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (with video)');
+                    this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
+                }
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization) {
@@ -7638,6 +7651,17 @@ class LiveDisplayManager {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                }
+            }
+            
+            // Draw Nebula visualization if active and not captured via kaleidoscope (if capture nebula is enabled)
+            if (this.displaySettings && this.displaySettings.captureNebula && 
+                this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
+                this.visualizer.nebulaVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
+                    console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (no video)');
+                    this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
                 }
             }
         }
