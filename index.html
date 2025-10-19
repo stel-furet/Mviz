@@ -402,22 +402,84 @@
                     <button class="panel-close-btn" id="headerNebulaCloseBtn">×</button>
                 </div>
             <div class="panel-content">
-                <!-- Presets -->
-                <div class="control-group-major">
-                    <div class="group-label">Audio Reactive Presets</div>
-                    <div class="preset-buttons" style="margin-bottom: 8px;">
-                        <button id="headerNebulaColorPresetBtn" class="btn-preset">Color</button>
-                        <button id="headerNebulaRotationPresetBtn" class="btn-preset">Rotation</button>
-                        <button id="headerNebulaDistancePresetBtn" class="btn-preset">Distance</button>
-                        <button id="headerNebulaPulsarPresetBtn" class="btn-preset">Pulsar</button>
-                        <button id="headerNebulaFilamentDensityPresetBtn" class="btn-preset">Density</button>
-                        <button id="headerNebulaChaosPresetBtn" class="btn-preset">Chaos</button>
-                        <button id="headerNebulaExpansionPresetBtn" class="btn-preset">Expansion</button>
+                <!-- Environment -->
+                <div class="control-group">
+                    <div class="group-label">Environment</div>
+                    
+                    <div class="control-group">
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Opacity</div>
+                            <input type="range" id="nebulaOverallOpacity" min="0.0" max="1.0" value="1.0" step="0.05" class="slider-1">
+                            <span class="slider-1-value">100%</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Camera Distance</div>
+                            <input type="range" id="nebulaCameraDistance" min="-180" max="180" value="80" step="10" class="slider-1">
+                            <span class="slider-1-value">80</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Star Count</div>
+                            <input type="range" id="nebulaStarCount" min="1000" max="10000" value="1000" step="500" class="slider-1">
+                            <span class="slider-1-value">1000</span>
+                        </div>
+                        
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaBloomToggle" data-setting="bloom">
+                                <span class="toggle-text">Bloom Effect:ON</span>
+                            </button>
+                        </div>
+                        
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaKnockoutBackgroundToggle" data-setting="knockoutBackground">
+                                <span class="toggle-text">Knockout Background:OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preset Management -->
+                <div class="control-group">
+                    <div class="group-label">Preset Management</div>
+                    
+                    <div class="control-group">
+                        <select id="nebulaPresetSelect" class="select">
+                            <option value="">Load Preset...</option>
+                        </select>
+                        
+                        <div class="preset-buttons">
+                            <button id="nebulaSavePresetBtn" class="btn-secondary">Save</button>
+                            <button id="nebulaExportPresetsBtn" class="btn-secondary">Export</button>
+                            <button id="nebulaImportPresetsBtn" class="btn-secondary">Import</button>
+                        </div>
+                        
+                        <!-- Hidden file input for import -->
+                        <input type="file" id="nebulaImportPresetsFile" accept=".json" style="display: none;">
+                    </div>
+                </div>
+                
+                <!-- Morphing Controls -->
+                <div class="control-group">
+                    <div class="group-label">Morphing Controls</div>
+                    
+                    <div class="control-group">
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaMorphingModeToggle" data-setting="morphingMode">
+                                <span class="toggle-text">Morph:OFF</span>
+                            </button>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Morphing Speed</div>
+                            <input type="range" id="nebulaMorphingSpeed" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
+                            <span class="slider-1-value">1.0</span>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Color Controls -->
-                <div class="control-group-major">
+                <div class="control-group">
                     <div class="group-label">Color Controls</div>
                     
                     <!-- Color Presets -->
@@ -436,15 +498,13 @@
                             <input type="range" id="nebulaHueShift" min="0" max="360" value="0" step="5" class="slider-1">
                             <span class="slider-1-value">0°</span>
                         </div>
-                    </div>
-                    <div class="control-group">
+                        
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Saturation</div>
                             <input type="range" id="nebulaSaturation" min="0" max="200" value="100" step="5" class="slider-1">
                             <span class="slider-1-value">100%</span>
                         </div>
-                    </div>
-                    <div class="control-group">
+                        
                         <div class="slider-1-wrapper">
                             <div class="slider-label">Brightness</div>
                             <input type="range" id="nebulaBrightness" min="20" max="200" value="100" step="5" class="slider-1">
@@ -453,194 +513,132 @@
                     </div>
                 </div>
                 
+                <!-- Filament Controls -->
                 <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Camera Distance</div>
-                        <input type="range" id="nebulaCameraDistance" min="-180" max="180" value="80" step="10" class="slider-1">
-                        <span class="slider-1-value">80</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Filament Density</div>
-                        <input type="range" id="nebulaFilamentDensity" min="0.5" max="3.0" value="1.4" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.4</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Particles Per Filament</div>
-                        <input type="range" id="nebulaParticlesPerFilament" min="50" max="300" value="120" step="10" class="slider-1">
-                        <span class="slider-1-value">120</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Particle Size</div>
-                        <input type="range" id="nebulaParticleSize" min="0.3" max="3.0" value="1.0" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.0</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Expansion</div>
-                        <input type="range" id="nebulaExpansion" min="10" max="80" value="36" step="2" class="slider-1">
-                        <span class="slider-1-value">36</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Chaos</div>
-                        <input type="range" id="nebulaChaos" min="1.0" max="5.0" value="2.8" step="0.1" class="slider-1">
-                        <span class="slider-1-value">2.8</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Asymmetry</div>
-                        <input type="range" id="nebulaAsymmetry" min="0.5" max="2.0" value="1.1" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.1</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Pulsar Size</div>
-                        <input type="range" id="nebulaPulsarSize" min="1" max="15" value="5" step="1" class="slider-1">
-                        <span class="slider-1-value">5</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Pulse Rate</div>
-                        <input type="range" id="nebulaPulseRate" min="0.25" max="5.0" value="2.0" step="0.25" class="slider-1">
-                        <span class="slider-1-value">2.0</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Star Count</div>
-                        <input type="range" id="nebulaStarCount" min="1000" max="10000" value="1000" step="500" class="slider-1">
-                        <span class="slider-1-value">1000</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label>Camera Orbit</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaCameraOrbitToggle" data-setting="cameraOrbit">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Orbit Speed</div>
-                        <input type="range" id="nebulaOrbitSpeed" min="0" max="10" value="5" step="0.1" class="slider-1">
-                        <span class="slider-1-value">3.0</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label>Fly Through</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaFlyThroughToggle" data-setting="flyThrough">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Fly Speed</div>
-                        <input type="range" id="nebulaFlySpeed" min="0.05" max="3.0" value="0.25" step="0.05" class="slider-1">
-                        <span class="slider-1-value">0.25</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label>Show Pulsar</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaShowPulsarToggle" data-setting="showPulsar">
-                        <span class="toggle-text">ON</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <label>Bloom Effect</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaBloomToggle" data-setting="bloom">
-                        <span class="toggle-text">ON</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <label>Audio Reactive</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaAudioReactiveToggle" data-setting="audioReactive">
-                        <span class="toggle-text">ON</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <label>Knockout Background</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaKnockoutBackgroundToggle" data-setting="knockoutBackground">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <label>Morphing Mode</label>
-                    <button class="btn-toggle-32w nebula-toggle" id="nebulaMorphingModeToggle" data-setting="morphingMode">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Morphing Speed</div>
-                        <input type="range" id="nebulaMorphingSpeed" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.0</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Audio Sensitivity</div>
-                        <input type="range" id="nebulaAudioSensitivity" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
-                        <span class="slider-1-value">1.0</span>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Overall Opacity</div>
-                        <input type="range" id="nebulaOverallOpacity" min="0.0" max="1.0" value="1.0" step="0.05" class="slider-1">
-                        <span class="slider-1-value">100%</span>
-                    </div>
-                </div>
-                
-                <!-- Preset Management -->
-                <div class="control-group-major">
-                    <div class="group-label">Preset Management</div>
+                    <div class="group-label">Filament Controls</div>
                     
                     <div class="control-group">
-                        <select id="nebulaPresetSelect" class="select">
-                            <option value="">Load Preset...</option>
-                        </select>
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Filament Density</div>
+                            <input type="range" id="nebulaFilamentDensity" min="0.5" max="3.0" value="1.4" step="0.1" class="slider-1">
+                            <span class="slider-1-value">1.4</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Particles Per Filament</div>
+                            <input type="range" id="nebulaParticlesPerFilament" min="50" max="300" value="120" step="10" class="slider-1">
+                            <span class="slider-1-value">120</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Particle Size</div>
+                            <input type="range" id="nebulaParticleSize" min="0.3" max="3.0" value="1.0" step="0.1" class="slider-1">
+                            <span class="slider-1-value">1.0</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Expansion</div>
+                            <input type="range" id="nebulaExpansion" min="10" max="80" value="36" step="2" class="slider-1">
+                            <span class="slider-1-value">36</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Chaos</div>
+                            <input type="range" id="nebulaChaos" min="1.0" max="5.0" value="2.8" step="0.1" class="slider-1">
+                            <span class="slider-1-value">2.8</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Asymmetry</div>
+                            <input type="range" id="nebulaAsymmetry" min="0.5" max="2.0" value="1.1" step="0.1" class="slider-1">
+                            <span class="slider-1-value">1.1</span>
+                        </div>
                     </div>
-                    
-                    <div class="preset-buttons">
-                        <button id="nebulaSavePresetBtn" class="btn-secondary">Save</button>
-                        <button id="nebulaExportPresetsBtn" class="btn-secondary">Export</button>
-                        <button id="nebulaImportPresetsBtn" class="btn-secondary">Import</button>
-                    </div>
-                    
-                    <!-- Hidden file input for import -->
-                    <input type="file" id="nebulaImportPresetsFile" accept=".json" style="display: none;">
                 </div>
+                
+                <!-- Pulsar Controls -->
+                <div class="control-group">
+                    <div class="group-label">Pulsar Controls</div>
+                    
+                    <div class="control-group">
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaShowPulsarToggle" data-setting="showPulsar">
+                                <span class="toggle-text">Show Pulsar:ON</span>
+                            </button>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Pulsar Size</div>
+                            <input type="range" id="nebulaPulsarSize" min="1" max="15" value="5" step="1" class="slider-1">
+                            <span class="slider-1-value">5</span>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Pulse Rate</div>
+                            <input type="range" id="nebulaPulseRate" min="0.25" max="5.0" value="2.0" step="0.25" class="slider-1">
+                            <span class="slider-1-value">2.0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Audio Reactive Controls -->
+                <div class="control-group">
+                    <div class="group-label">Audio Reactive Controls</div>
+                    
+                    <div class="control-group">
+                        <button class="btn-toggle" id="nebulaAudioReactiveToggle" data-setting="audioReactive">
+                            <span class="toggle-text">Audio React:ON</span>
+                        </button>
+                        
+                        <div class="preset-buttons" style="margin-bottom: 8px;">
+                            <button id="headerNebulaColorPresetBtn" class="btn-preset">Color</button>
+                            <button id="headerNebulaRotationPresetBtn" class="btn-preset">Rotation</button>
+                            <button id="headerNebulaDistancePresetBtn" class="btn-preset">Distance</button>
+                            <button id="headerNebulaPulsarPresetBtn" class="btn-preset">Pulsar</button>
+                            <button id="headerNebulaFilamentDensityPresetBtn" class="btn-preset">Density</button>
+                            <button id="headerNebulaChaosPresetBtn" class="btn-preset">Chaos</button>
+                            <button id="headerNebulaExpansionPresetBtn" class="btn-preset">Expansion</button>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Audio Sensitivity</div>
+                            <input type="range" id="nebulaAudioSensitivity" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
+                            <span class="slider-1-value">1.0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Camera Controls -->
+                <div class="control-group">
+                    <div class="group-label">Camera Controls</div>
+                    
+                    <div class="control-group">
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaCameraOrbitToggle" data-setting="cameraOrbit">
+                                <span class="toggle-text">Camera Orbit:OFF</span>
+                            </button>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Orbit Speed</div>
+                            <input type="range" id="nebulaOrbitSpeed" min="0" max="10" value="5" step="0.1" class="slider-1">
+                            <span class="slider-1-value">3.0</span>
+                        </div>
+                        
+                        <div class="button-container">
+                            <button class="btn-toggle" id="nebulaFlyThroughToggle" data-setting="flyThrough">
+                                <span class="toggle-text">Fly Through:OFF</span>
+                            </button>
+                        </div>
+                        
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Fly Speed</div>
+                            <input type="range" id="nebulaFlySpeed" min="0.05" max="3.0" value="0.25" step="0.05" class="slider-1">
+                            <span class="slider-1-value">0.25</span>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
         </div>
             
@@ -652,7 +650,7 @@
                 </div>
                 <div class="panel-content">
                     <!-- Presets -->
-                    <div class="control-group-major">
+                    <div class="control-group">
                         <div class="group-label">Presets</div>
                         <div class="preset-buttons" style="margin-bottom: 8px;">
                             <button id="headerFluidDynamicsDefaultPresetBtn" class="btn-preset">Default</button>
@@ -731,7 +729,7 @@
                     </div>
                     
                     <!-- Energy-Based Physics -->
-                    <div class="control-group-major">
+                    <div class="control-group">
                         <div class="group-label">Energy-Based Physics</div>
                         <div class="button-container">
                             <button id="headerFluidDynamicsBeatReactBtn" class="btn-toggle active">Beat React: On</button>

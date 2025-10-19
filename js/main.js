@@ -18433,7 +18433,33 @@ https://rogueamoeba.com/loopback/
         
         const toggleText = buttonElement.querySelector('.toggle-text');
         if (toggleText) {
-            toggleText.textContent = isEnabled ? 'ON' : 'OFF';
+            // Special cases for self-contained toggle text
+            switch (buttonElement.id) {
+                case 'nebulaAudioReactiveToggle':
+                    toggleText.textContent = isEnabled ? 'Audio React:ON' : 'Audio React:OFF';
+                    break;
+                case 'nebulaShowPulsarToggle':
+                    toggleText.textContent = isEnabled ? 'Show Pulsar:ON' : 'Show Pulsar:OFF';
+                    break;
+                case 'nebulaCameraOrbitToggle':
+                    toggleText.textContent = isEnabled ? 'Camera Orbit:ON' : 'Camera Orbit:OFF';
+                    break;
+                case 'nebulaFlyThroughToggle':
+                    toggleText.textContent = isEnabled ? 'Fly Through:ON' : 'Fly Through:OFF';
+                    break;
+                case 'nebulaKnockoutBackgroundToggle':
+                    toggleText.textContent = isEnabled ? 'Knockout Background:ON' : 'Knockout Background:OFF';
+                    break;
+                case 'nebulaBloomToggle':
+                    toggleText.textContent = isEnabled ? 'Bloom Effect:ON' : 'Bloom Effect:OFF';
+                    break;
+                case 'nebulaMorphingModeToggle':
+                    toggleText.textContent = isEnabled ? 'Morph:ON' : 'Morph:OFF';
+                    break;
+                default:
+                    toggleText.textContent = isEnabled ? 'ON' : 'OFF';
+                    break;
+            }
         }
         
         if (isEnabled) {

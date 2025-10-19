@@ -1186,7 +1186,6 @@ html body .slider-2-wrapper .slider-2-value {
 
 /* Control Group */
 .control-group {
-    margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -1198,7 +1197,6 @@ html body .slider-2-wrapper .slider-2-value {
 
 /* Control Group Variations */
 .control-group-major {
-    margin-bottom: 12px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -1798,10 +1796,6 @@ html body .slider-2-wrapper .slider-2-value {
 }
 
 /* Control Group in Floating Panels */
-.panel-floating .control-group {
-    margin-bottom: 16px;
-}
-
 .panel-floating .control-group h4 {
     color: var(--text-secondary);
     font-size: 12px;
