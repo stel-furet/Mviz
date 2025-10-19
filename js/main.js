@@ -1967,6 +1967,7 @@ class RecordManager {
         this.updateMixerKaleidoscopeInfiniteZoomToggle();
         this.updateMixerKaleidoscopeWebGLToggle();
         this.updateMixerKaleidoscopeFluidToggle();
+        this.updateMixerKaleidoscopeNebulaToggle();
             
         // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -5935,6 +5936,18 @@ class RecordManager {
         }
     }
 
+    updateMixerKaleidoscopeNebulaToggle() {
+        const mixerKaleidoscopeNebulaToggle = document.getElementById('mixerKaleidoscopeNebulaToggle');
+        if (mixerKaleidoscopeNebulaToggle && this.visualizer) {
+            const toggleText = mixerKaleidoscopeNebulaToggle.querySelector('.toggle-text');
+            if (toggleText) {
+                const isOn = this.visualizer.kaleidoscopeApplyToNebula;
+                toggleText.textContent = isOn ? 'ON' : 'OFF';
+                mixerKaleidoscopeNebulaToggle.classList.toggle('active', isOn);
+            }
+        }
+    }
+
     updateHeaderVideoFileButtons() {
         console.log('🔄 updateHeaderVideoFileButtons called');
         
@@ -6305,8 +6318,16 @@ class RecordManager {
         
         // Determine which canvas to capture based on current state
         if (this.visualizer.kaleidoscopeEnabled) {
-            if (this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas) {
+            // Check if any visualization is being captured by kaleidoscope
+            const anyVizCapturedByKaleidoscope = this.visualizer.kaleidoscopeApplyToViz || 
+                                               this.visualizer.kaleidoscopeApplyToInfiniteZoom || 
+                                               this.visualizer.kaleidoscopeApplyToWebGL || 
+                                               this.visualizer.kaleidoscopeApplyToFluidDynamics || 
+                                               this.visualizer.kaleidoscopeApplyToNebula;
+            
+            if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+                console.log('🎥 RecordManager: Using Kaleidoscope viz canvas as source (includes Nebula effects)');
             } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
             } else if (this.visualizer.audioMotion?.canvas) {
@@ -6393,16 +6414,40 @@ class RecordManager {
             if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    console.log('🎥 RecordManager: Drawing Fluid Dynamics with opacity:', fluidOpacity);
+                    
                     this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
+                    this.compositeCtx.restore();
                 }
             }
             
             // Draw Nebula visualization if active and not captured via kaleidoscope
             if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
                     console.log('🎥 RecordManager: Drawing Nebula visualization in composite (with video)');
+                    
+                    // Apply Nebula opacity and background knockout settings
+                    this.compositeCtx.save();
+                    
+                    // Apply overall opacity
+                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
+                    this.compositeCtx.globalAlpha = nebulaOpacity;
+                    
+                    // Apply background knockout (screen blend mode)
+                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
+                        this.compositeCtx.globalCompositeOperation = 'screen';
+                        console.log('🎥 RecordManager: Applying Nebula background knockout (screen blend)');
+                    }
+                    
                     this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
+                    this.compositeCtx.restore();
+                } else if (!shouldDrawSeparately) {
+                    console.log('🎥 RecordManager: Skipping Nebula - captured by Kaleidoscope (with video)');
                 }
             }
             
@@ -6435,16 +6480,40 @@ class RecordManager {
             if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    console.log('🎥 RecordManager: Drawing Fluid Dynamics with opacity (no video):', fluidOpacity);
+                    
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                    this.compositeCtx.restore();
                 }
             }
             
             // Draw Nebula visualization if active and not captured via kaleidoscope
             if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
                     console.log('🎥 RecordManager: Drawing Nebula visualization in composite (no video)');
+                    
+                    // Apply Nebula opacity and background knockout settings
+                    this.compositeCtx.save();
+                    
+                    // Apply overall opacity
+                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
+                    this.compositeCtx.globalAlpha = nebulaOpacity;
+                    
+                    // Apply background knockout (screen blend mode)
+                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
+                        this.compositeCtx.globalCompositeOperation = 'screen';
+                        console.log('🎥 RecordManager: Applying Nebula background knockout (screen blend)');
+                    }
+                    
                     this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
+                    this.compositeCtx.restore();
+                } else if (!shouldDrawSeparately) {
+                    console.log('🎥 RecordManager: Skipping Nebula - captured by Kaleidoscope (no video)');
                 }
             }
         }
@@ -7494,8 +7563,16 @@ class LiveDisplayManager {
         
         // Determine which canvas to capture based on current state
         if (this.visualizer.kaleidoscopeEnabled) {
-            if (this.visualizer.kaleidoscopeApplyToViz && this.visualizer.kaleidoscopeVizCanvas) {
+            // Check if any visualization is being captured by kaleidoscope
+            const anyVizCapturedByKaleidoscope = this.visualizer.kaleidoscopeApplyToViz || 
+                                               this.visualizer.kaleidoscopeApplyToInfiniteZoom || 
+                                               this.visualizer.kaleidoscopeApplyToWebGL || 
+                                               this.visualizer.kaleidoscopeApplyToFluidDynamics || 
+                                               this.visualizer.kaleidoscopeApplyToNebula;
+            
+            if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+                console.log('🎥 RecordManager: Using Kaleidoscope viz canvas as source (includes Nebula effects)');
             } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
             } else if (this.visualizer.audioMotion?.canvas) {
@@ -7603,7 +7680,14 @@ class LiveDisplayManager {
                 this.visualizer.fluidDynamics.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    console.log('📺 LiveDisplayManager: Drawing Fluid Dynamics with opacity:', fluidOpacity);
+                    
                     this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
+                    this.compositeCtx.restore();
                 }
             }
             
@@ -7611,10 +7695,25 @@ class LiveDisplayManager {
             if (this.displaySettings && this.displaySettings.captureNebula && 
                 this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
                 this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
                     console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (with video)');
+                    
+                    // Apply Nebula opacity and background knockout settings
+                    this.compositeCtx.save();
+                    
+                    // Apply overall opacity
+                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
+                    this.compositeCtx.globalAlpha = nebulaOpacity;
+                    
+                    // Apply background knockout (screen blend mode)
+                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
+                        this.compositeCtx.globalCompositeOperation = 'screen';
+                        console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
+                    }
+                    
                     this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
+                    this.compositeCtx.restore();
                 }
             }
             
@@ -7650,7 +7749,14 @@ class LiveDisplayManager {
                 this.visualizer.fluidDynamics.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
                 if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    console.log('📺 LiveDisplayManager: Drawing Fluid Dynamics with opacity (no video):', fluidOpacity);
+                    
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                    this.compositeCtx.restore();
                 }
             }
             
@@ -7658,10 +7764,25 @@ class LiveDisplayManager {
             if (this.displaySettings && this.displaySettings.captureNebula && 
                 this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
                 this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToNebula;
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
                     console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (no video)');
+                    
+                    // Apply Nebula opacity and background knockout settings
+                    this.compositeCtx.save();
+                    
+                    // Apply overall opacity
+                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
+                    this.compositeCtx.globalAlpha = nebulaOpacity;
+                    
+                    // Apply background knockout (screen blend mode)
+                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
+                        this.compositeCtx.globalCompositeOperation = 'screen';
+                        console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
+                    }
+                    
                     this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
+                    this.compositeCtx.restore();
                 }
             }
         }
@@ -9337,6 +9458,7 @@ class GitItUpVisualizer {
         this.kaleidoscopeApplyToInfiniteZoom = false; // Default to disabled
         this.kaleidoscopeApplyToWebGL = false; // Default to disabled
         this.kaleidoscopeApplyToFluidDynamics = false; // Default to disabled
+        this.kaleidoscopeApplyToNebula = false; // Default to disabled
         
         // Blobs properties
         this.blobsEnabled = false;
@@ -17223,7 +17345,7 @@ https://rogueamoeba.com/loopback/
             }
 
             // Update button based on any Apply To button being ON
-            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics;
+            const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics || this.kaleidoscopeApplyToNebula;
             if (anyApplyToActive) {
                 btnText.textContent = 'Kaleidoscope';
                 btn.classList.add('active');
@@ -17242,7 +17364,7 @@ https://rogueamoeba.com/loopback/
         if (!btnText) return;
         
         // Check if any Apply To button is active
-        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics;
+        const anyApplyToActive = this.kaleidoscopeApplyToVideo || this.kaleidoscopeApplyToViz || this.kaleidoscopeApplyToInfiniteZoom || this.kaleidoscopeApplyToWebGL || this.kaleidoscopeApplyToFluidDynamics || this.kaleidoscopeApplyToNebula;
         
         if (anyApplyToActive) {
             btnText.textContent = 'Kaleidoscope';
@@ -19223,11 +19345,12 @@ https://rogueamoeba.com/loopback/
             }
         }
 
-        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, or Liquid Fire)
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, Nebula, or Liquid Fire)
         const shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
                                      (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
                                      (this.kaleidoscopeApplyToWebGL && this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas) ||
                                      (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas) ||
+                                     (this.kaleidoscopeApplyToNebula && this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas) ||
                                      (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas);
 
         if (shouldDrawKaleidoscope) {
@@ -19244,6 +19367,11 @@ https://rogueamoeba.com/loopback/
             // Hide Fluid Dynamics canvas when kaleidoscope is active and applying to fluid
             if (this.fluidDynamics && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
                 this.fluidDynamics.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide Nebula canvas when kaleidoscope is active and applying to nebula
+            if (this.nebulaVisualization && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
+                this.nebulaVisualization.canvas.style.visibility = 'hidden';
             }
             
             // Hide Infinite Zoom canvas when kaleidoscope is active and applying to infinite zoom
@@ -19334,6 +19462,11 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
                         
+        // Draw Nebula if active and enabled for kaleidoscope
+        if (this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
+            this.kaleidoscopeVizCtx.drawImage(this.nebulaVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        }
+                        
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
@@ -19363,6 +19496,11 @@ https://rogueamoeba.com/loopback/
         // Draw Fluid Dynamics if active and enabled for kaleidoscope
         if (this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        }
+                        
+        // Draw Nebula if active and enabled for kaleidoscope
+        if (this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
+            this.kaleidoscopeVizCtx.drawImage(this.nebulaVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
                         
         // Draw blobs if active and enabled for kaleidoscope
@@ -22130,7 +22268,46 @@ https://rogueamoeba.com/loopback/
                         this.initKaleidoscope();
                         this.startKaleidoscopeAnimation();
                     }
-                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom && !this.kaleidoscopeApplyToWebGL) {
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom && !this.kaleidoscopeApplyToWebGL && !this.kaleidoscopeApplyToNebula) {
+                    this.stopKaleidoscopeAnimation();
+                    this.kaleidoscopeEnabled = false;
+                }
+            });
+        }
+        
+        // Nebula Apply button
+        const headerKaleidoscopeNebulaBtn = document.getElementById('headerKaleidoscopeNebulaBtn');
+        if (headerKaleidoscopeNebulaBtn) {
+            headerKaleidoscopeNebulaBtn.textContent = `Nebula: ${
+                this.kaleidoscopeApplyToNebula ? 'On' : 'Off'
+            }`;
+            headerKaleidoscopeNebulaBtn.classList.toggle('active', this.kaleidoscopeApplyToNebula);
+            
+            headerKaleidoscopeNebulaBtn.addEventListener('click', () => {
+                // Check Nebula support before allowing toggle
+                if (!this.nebulaVisualization || !this.nebulaVisualization.canvas) {
+                    console.warn('🔮 Kaleidoscope: Nebula not available - cannot enable Nebula Apply');
+                    alert('Nebula not available. Please ensure Nebula is enabled.');
+                    return;
+                }
+                
+                this.kaleidoscopeApplyToNebula = !this.kaleidoscopeApplyToNebula;
+                headerKaleidoscopeNebulaBtn.textContent = `Nebula: ${
+                    this.kaleidoscopeApplyToNebula ? 'On' : 'Off'
+                }`;
+                headerKaleidoscopeNebulaBtn.classList.toggle('active', this.kaleidoscopeApplyToNebula);
+                
+                // Update Kaleidoscope button state
+                this.updateKaleidoscopeButtonState();
+
+                // Enable kaleidoscope if turning on Nebula, disable if all are off
+                if (this.kaleidoscopeApplyToNebula) {
+                    if (!this.kaleidoscopeEnabled) {
+                        this.kaleidoscopeEnabled = true;
+                        this.initKaleidoscope();
+                        this.startKaleidoscopeAnimation();
+                    }
+                } else if (!this.kaleidoscopeApplyToViz && !this.kaleidoscopeApplyToVideo && !this.kaleidoscopeApplyToInfiniteZoom && !this.kaleidoscopeApplyToWebGL && !this.kaleidoscopeApplyToFluidDynamics) {
                     this.stopKaleidoscopeAnimation();
                     this.kaleidoscopeEnabled = false;
                 }
@@ -24892,6 +25069,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Call kaleidoscope logic
                     window.visualizer.updateKaleidoscopeButtonState();
                     if (window.visualizer.kaleidoscopeApplyToFluidDynamics && !window.visualizer.kaleidoscopeEnabled) {
+                        window.visualizer.kaleidoscopeEnabled = true;
+                        window.visualizer.initKaleidoscope();
+                        window.visualizer.startKaleidoscopeAnimation();
+                    }
+                });
+            }
+            
+            // Mixer Kaleidoscope Nebula Toggle
+            const mixerKaleidoscopeNebulaToggle = document.getElementById('mixerKaleidoscopeNebulaToggle');
+            if (mixerKaleidoscopeNebulaToggle) {
+                mixerKaleidoscopeNebulaToggle.addEventListener('click', () => {
+                    // Check Nebula support
+                    if (!window.visualizer.nebulaVisualization || !window.visualizer.nebulaVisualization.canvas) {
+                        console.warn('🔮 Kaleidoscope: Nebula not available');
+                        alert('Nebula not available. Please ensure Nebula is enabled.');
+                        return;
+                    }
+                    
+                    // Toggle the state
+                    window.visualizer.kaleidoscopeApplyToNebula = !window.visualizer.kaleidoscopeApplyToNebula;
+                    
+                    // Update both UIs
+                    window.multiDisplayManager.updateMixerKaleidoscopeNebulaToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerKaleidoscopeNebulaBtn');
+                    if (headerBtn) {
+                        headerBtn.textContent = `Nebula: ${window.visualizer.kaleidoscopeApplyToNebula ? 'On' : 'Off'}`;
+                        headerBtn.classList.toggle('active', window.visualizer.kaleidoscopeApplyToNebula);
+                    }
+                    
+                    // Call kaleidoscope logic
+                    window.visualizer.updateKaleidoscopeButtonState();
+                    if (window.visualizer.kaleidoscopeApplyToNebula && !window.visualizer.kaleidoscopeEnabled) {
                         window.visualizer.kaleidoscopeEnabled = true;
                         window.visualizer.initKaleidoscope();
                         window.visualizer.startKaleidoscopeAnimation();
