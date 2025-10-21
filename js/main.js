@@ -2869,15 +2869,27 @@ class RecordManager {
         if (headerAMBackgroundOpacity && headerAMBackgroundOpacityValue) {
             console.log('✅ Header AM background opacity slider found, adding event listener');
             headerAMBackgroundOpacity.addEventListener('input', (e) => {
-                if (this.visualizer && this.visualizer.audioMotion) {
+                if (this.visualizer) {
                     const value = parseInt(e.target.value);
-                    const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
-                    // Update bgAlpha for background opacity
-                    this.visualizer.audioMotion.bgAlpha = opacityValue;
-                    // Enable showBgColor if opacity > 0, disable if 0
-                    this.visualizer.audioMotion.showBgColor = value > 0;
+                    
+                    // Check if unified method exists, otherwise use direct approach
+                    if (typeof this.visualizer.updateBackgroundOpacity === 'function') {
+                        this.visualizer.updateBackgroundOpacity(value);
+                    } else {
+                        // Fallback to direct method calls
+                        const opacityValue = value / 100;
+                        if (this.visualizer.audioMotion) {
+                            this.visualizer.audioMotion.bgAlpha = opacityValue;
+                            this.visualizer.audioMotion.showBgColor = value > 0;
+                        }
+                        if (this.visualizer.officialAudioMotion && this.visualizer.useOfficialAudioMotion) {
+                            this.visualizer.officialAudioMotion.bgAlpha = opacityValue;
+                            this.visualizer.officialAudioMotion.showBgColor = value > 0;
+                        }
+                        console.log('🎨 Background opacity updated directly - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
+                    }
+                    
                     headerAMBackgroundOpacityValue.textContent = value + '%';
-                    console.log('🎨 Header AM background opacity changed to:', value, '% (bgAlpha:', opacityValue, ', showBgColor:', value > 0, ')');
                 }
             });
         } else {
@@ -2894,11 +2906,20 @@ class RecordManager {
                     console.log('🎨 Header AM preset clicked:', presetIndex);
                     
                     if (this.visualizer && presetIndex >= 0 && presetIndex < this.visualizer.visualizationModes.length) {
+                        // Switch back to custom analyzer if using official
+                        if (this.visualizer.useOfficialAudioMotion) {
+                            this.visualizer.switchToCustomAnalyzer();
+                        }
+                        
                         this.visualizer.setVisualizationMode(presetIndex);
                         
                         // Update active state
                         headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
+                        
+                        // Remove active state from Pro preset buttons
+                        const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro');
+                        headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
                         
                         console.log('🎨 Applied AM preset:', presetIndex, this.visualizer.visualizationModes[presetIndex]);
                     }
@@ -2906,6 +2927,36 @@ class RecordManager {
             });
         } else {
             console.error('❌ Header AM preset buttons not found');
+        }
+
+        // Header AM Pro Preset buttons (Official AudioMotion)
+        const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
+        if (headerAMProPresetButtons.length > 0) {
+            console.log('✅ Header AM Pro preset buttons found:', headerAMProPresetButtons.length);
+            headerAMProPresetButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event bubbling to other handlers
+                    e.preventDefault(); // Prevent default button behavior
+                    
+                    const presetIndex = parseInt(button.getAttribute('data-official-preset'));
+                    console.log('🎨 Header AM Pro preset clicked:', presetIndex);
+                    
+                    if (this.visualizer && this.visualizer.officialAudioMotionPresets && presetIndex >= 0 && presetIndex < this.visualizer.officialAudioMotionPresets.length) {
+                        this.visualizer.setOfficialAudioMotionPreset(presetIndex);
+                        
+                        // Update active state
+                        headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        // Clear regular preset active states
+                        headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        console.log('🎨 Applied AM Pro preset:', presetIndex, this.visualizer.officialAudioMotionPresets[presetIndex]);
+                    }
+                });
+            });
+        } else {
+            console.error('❌ Header AM Pro preset buttons not found');
         }
 
         // Mixer AM Visualization Mode dropdown
@@ -6596,6 +6647,32 @@ class RecordManager {
         }
     }
 
+    // Unified method to update background opacity across all visualization systems
+    updateBackgroundOpacity(value) {
+        const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
+        
+        console.log('🎨 Updating background opacity for all visualization systems:', value + '%');
+        
+        // Update custom AudioMotion (regular visualizations)
+        if (this.audioMotion) {
+            this.audioMotion.bgAlpha = opacityValue;
+            this.audioMotion.showBgColor = value > 0;
+            console.log('🎨 Updated custom AudioMotion background opacity');
+        }
+        
+        // Update official AudioMotion (Pro visualizations) if active
+        if (this.officialAudioMotion && this.useOfficialAudioMotion) {
+            this.officialAudioMotion.bgAlpha = opacityValue;
+            this.officialAudioMotion.showBgColor = value > 0;
+            console.log('🎨 Updated official AudioMotion background opacity');
+        }
+        
+        // Future visualization systems can be added here
+        // Example: if (this.futureVisualization) { this.futureVisualization.setBackgroundOpacity(opacityValue); }
+        
+        console.log('🎨 Background opacity update complete - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
+    }
+
     formatFileSize(bytes) {
         if (bytes === 0) return '0 B';
         const k = 1024;
@@ -10136,6 +10213,10 @@ class GitItUpVisualizer {
         this.videoPulseRate = 2.0;
         // seconds for one complete pulse cycle
 
+        // Hybrid Visualization Manager
+        this.hybridVisualizationManager = null;
+        this.useOfficialAudioMotion = false; // Flag to switch between custom and official
+
         // AudioMotion-style visualization modes
         this.visualizationModes = [
             // 0 - Spectrum
@@ -10515,6 +10596,106 @@ class GitItUpVisualizer {
                 useCanvas: true,
                 volume: 1,
                 weightingFilter: ''
+            },
+            // 7 - Fluid (Smooth waveform visualization)
+            {
+                alphaBars: false,
+                ansiBands: false,
+                barSpace: 0.1,
+                bgAlpha: 0.7,
+                channelLayout: 'single',
+                colorMode: 'bar-level',
+                fadePeaks: false,
+                fftSize: 8192,
+                fillAlpha: 0.6,
+                frequencyScale: 'log',
+                gradient: 'rainbow',
+                gravity: 3.8,
+                ledBars: false,
+                linearAmplitude: true,
+                linearBoost: 2.8,
+                lineWidth: 1.5,
+                loRes: false,
+                lumiBars: false,
+                maxDecibels: -35,
+                maxFPS: 0,
+                maxFreq: 20000,
+                minDecibels: -85,
+                minFreq: 30,
+                mirror: -1,
+                mode: 10,
+                noteLabels: false,
+                outlineBars: false,
+                overlay: false,
+                peakFadeTime: 750,
+                peakHoldTime: 500,
+                peakLine: false,
+                radial: false,
+                radialInvert: false,
+                radius: 0.3,
+                reflexAlpha: 1,
+                reflexBright: 1,
+                reflexFit: true,
+                reflexRatio: 0.5,
+                roundBars: true,
+                showBgColor: false, // Transparent background
+                showFPS: false,
+                showPeaks: false,
+                showScaleX: false,
+                showScaleY: false,
+                smoothing: 0.7,
+                spinSpeed: 1,
+                splitGradient: false,
+                trueLeds: false,
+                useCanvas: true,
+                volume: 1,
+                weightingFilter: 'D'
+            }
+        ];
+
+        // Official AudioMotion Presets (using official library)
+        this.officialAudioMotionPresets = [
+            // 0 - Fluid Pro (using official audioMotion)
+            {
+                name: 'Fluid Pro',
+                useOfficial: true,
+                config: {
+                    mode: 10,              // Line graph
+                    colorMode: 'bar-level', // This is the key difference!
+                    gradient: 'rainbow',
+                    fillAlpha: 0.6,
+                    lineWidth: 1.5,
+                    mirror: -1,
+                    linearAmplitude: true,
+                    linearBoost: 2.8,
+                    maxFreq: 20000,
+                    minFreq: 30,
+                    smoothing: 0.7,
+                    showBgColor: false,
+                    reflexRatio: 0.5,
+                    reflexAlpha: 1,
+                    spinSpeed: 1,
+                    weightingFilter: 'D'
+                }
+            },
+            // 1 - Prism Pro (using official audioMotion)
+            {
+                name: 'Prism Pro',
+                useOfficial: true,
+                config: {
+                    mode: 0,               // Bars
+                    colorMode: 'bar-level',
+                    gradient: 'prism',
+                    barSpace: 0.1,
+                    fillAlpha: 0.8,
+                    linearAmplitude: true,
+                    linearBoost: 2.0,
+                    maxFreq: 22000,
+                    roundBars: true,
+                    showBgColor: false,
+                    showPeaks: true,
+                    peakHoldTime: 300
+                }
             }
         ];
 
@@ -10603,7 +10784,43 @@ class GitItUpVisualizer {
 
     async initAudioMotion() {
         try {
+            // Initialize custom SpectrumAnalyzer (existing system)
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
+
+            // Initialize official AudioMotion (new hybrid system)
+            console.log('🔍 Checking for AudioMotionAnalyzer:', typeof AudioMotionAnalyzer);
+            if (typeof AudioMotionAnalyzer !== 'undefined') {
+                console.log('🎵 Official AudioMotion library detected, initializing hybrid system');
+                try {
+                    // Use the same audio context AND canvas as the custom analyzer
+                    const sharedAudioContext = this.audioMotion.audioCtx;
+                    const sharedCanvas = this.audioMotion.canvas;
+                    console.log('🔗 Sharing audio context:', sharedAudioContext);
+                    console.log('🎨 Sharing canvas:', sharedCanvas);
+                    
+                    this.officialAudioMotion = new AudioMotionAnalyzer(
+                        null, // No container - we're providing the canvas directly
+                        {
+                            mode: 10,
+                            colorMode: 'bar-level',
+                            gradient: 'rainbow',
+                            showBgColor: false, // No background color
+                            bgAlpha: 0, // Fully transparent background
+                            overlay: true, // Overlay mode for transparency
+                            start: false, // Don't start automatically
+                            audioCtx: sharedAudioContext, // Share the same audio context
+                            canvas: sharedCanvas // Share the same canvas
+                        }
+                    );
+                    console.log('✅ Official AudioMotion initialized successfully with shared context:', this.officialAudioMotion);
+                } catch (error) {
+                    console.error('❌ Failed to initialize Official AudioMotion:', error);
+                    this.officialAudioMotion = null;
+                }
+            } else {
+                console.warn('⚠️ Official AudioMotion library not loaded, using custom only');
+                this.officialAudioMotion = null;
+            }
 
             // Set initial AM canvas opacity
             if (this.audioMotion && this.audioMotion.canvas) {
@@ -14910,6 +15127,15 @@ class GitItUpVisualizer {
             
             console.log('Video audio connected to AudioMotion with gain control');
             
+            // Set isConnected flag so regular AM visualizations can access audio data
+            if (this.audioMotion) {
+                this.audioMotion.isConnected = true;
+                console.log('🔗 Set audioMotion.isConnected = true for video audio');
+            }
+            
+            // Reconnect official AudioMotion if it needs connection
+            this.reconnectOfficialAudioMotion();
+            
         } catch (error) {
             console.error('Failed to connect video audio:', error);
         }
@@ -17451,6 +17677,9 @@ class GitItUpVisualizer {
                 }
 
                 this.audioMotion.isConnected = true;
+                
+                // Reconnect official AudioMotion if it needs connection
+                this.reconnectOfficialAudioMotion();
             }
 
             // Audio input button removed - using select dropdown
@@ -17544,6 +17773,9 @@ class GitItUpVisualizer {
         if (this.audio && this.audioMotion) {
             this.audioMotion.connectInput(this.audio);
             this.updateTrackInfo();
+            
+            // Reconnect official AudioMotion if it needs connection
+            this.reconnectOfficialAudioMotion();
         }
     }
 
@@ -17752,7 +17984,6 @@ https://rogueamoeba.com/loopback/
             alphaBars: false,
             ansiBands: randomMode === 1 || randomMode === 2 ? Math.random() > 0.5 : false,
             barSpace: randomMode === 0 ? 0 : Math.random() * 0.05, // No space for mode 0 (fluid)
-            bgAlpha: 0.3 + Math.random() * 0.7,
             fillAlpha: 0.8 + Math.random() * 0.2, // Keep high for brightness (0.8-1.0)
             frequencyScale: Math.random() > 0.5 ? 'log' : 'linear',
             gradient: [
@@ -19656,8 +19887,15 @@ https://rogueamoeba.com/loopback/
         this.kaleidoscopeSpeed = preset.speed;
         this.kaleidoscopeRingSpacing = preset.ringSpacing / 100;
 
-        // Update UI sliders
-        document.getElementById('kaleidoscopeSegments').value = preset.segments;
+        // Update UI sliders (only if kaleidoscope panel is open)
+        const segmentsSlider = document.getElementById('kaleidoscopeSegments');
+        if (!segmentsSlider) {
+            // Kaleidoscope panel is not open, skip UI updates
+            console.log('🔄 Kaleidoscope preset applied but panel not open - skipping UI updates');
+            return;
+        }
+        
+        segmentsSlider.value = preset.segments;
         document.getElementById('kaleidoscopeSegmentsValue').textContent = preset.segments;
         document.getElementById('kaleidoscopeRings').value = preset.rings;
         document.getElementById('kaleidoscopeRingsValue').textContent = preset.rings;
@@ -20221,7 +20459,6 @@ https://rogueamoeba.com/loopback/
             reflexAlpha: 0.5 + Math.random() * 0.5,
             roundBars: Math.random() > 0.5,
             lineWidth: isRadial ? 4 + Math.random() * 4 : Math.random() * 2,
-            bgAlpha: 0.5 + Math.random() * 0.5,
 
             // Critical parameters for visibility - boost these for radial
             fftSize: 8192,
@@ -20555,6 +20792,274 @@ https://rogueamoeba.com/loopback/
         }
         
         console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
+    }
+
+    // Set Official AudioMotion Preset (Hybrid System)
+    setOfficialAudioMotionPreset(presetIndex) {
+        console.log('🔍 Debug setOfficialAudioMotionPreset:', {
+            officialAudioMotion: !!this.officialAudioMotion,
+            presetIndex: presetIndex,
+            presetsLength: this.officialAudioMotionPresets?.length,
+            AudioMotionAnalyzer: typeof AudioMotionAnalyzer
+        });
+
+        if (!this.officialAudioMotion) {
+            console.error('❌ Official AudioMotion not initialized. Trying to initialize now...');
+            
+            // Try to initialize it now if the library is available
+            if (typeof AudioMotionAnalyzer !== 'undefined') {
+                try {
+                    // Use the same audio context AND canvas as the custom analyzer
+                    const sharedAudioContext = this.audioMotion?.audioCtx;
+                    const sharedCanvas = this.audioMotion?.canvas;
+                    console.log('🔗 Using shared audio context for on-demand init:', sharedAudioContext);
+                    console.log('🎨 Using shared canvas for on-demand init:', sharedCanvas);
+                    
+                    this.officialAudioMotion = new AudioMotionAnalyzer(
+                        null, // No container - we're providing the canvas directly
+                        {
+                            mode: 10,
+                            colorMode: 'bar-level',
+                            gradient: 'rainbow',
+                            showBgColor: false, // No background color
+                            bgAlpha: 0, // Fully transparent background
+                            overlay: true, // Overlay mode for transparency
+                            start: false,
+                            audioCtx: sharedAudioContext, // Share the same audio context
+                            canvas: sharedCanvas // Share the same canvas
+                        }
+                    );
+                    console.log('✅ Official AudioMotion initialized on demand with shared context');
+                } catch (error) {
+                    console.error('❌ Failed to initialize Official AudioMotion on demand:', error);
+                    return;
+                }
+            } else {
+                console.error('❌ AudioMotionAnalyzer library not available');
+                return;
+            }
+        }
+
+        if (!this.officialAudioMotionPresets[presetIndex]) {
+            console.error('❌ Invalid preset index:', presetIndex);
+            return;
+        }
+
+        const preset = this.officialAudioMotionPresets[presetIndex];
+        console.log('🎵 Switching to Official AudioMotion preset:', preset.name);
+
+        // Stop custom analyzer and clear canvas
+        if (this.audioMotion && this.audioMotion.stop) {
+            this.audioMotion.stop();
+            // Clear the shared canvas before switching
+            if (this.audioMotion.canvas && this.audioMotion.ctx) {
+                this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
+                console.log('🧹 Cleared canvas before switching to official AudioMotion');
+            }
+        }
+
+        // Configure and start official AudioMotion
+        try {
+            // Disconnect any existing audio connections first
+            if (this.officialAudioMotion.disconnectInput) {
+                try {
+                    this.officialAudioMotion.disconnectInput();
+                    console.log('🔌 Disconnected previous audio connections from official AudioMotion');
+                } catch (error) {
+                    console.warn('⚠️ Failed to disconnect previous audio connections:', error);
+                }
+            }
+            
+            // Merge preset config with transparency settings
+            const transparentConfig = {
+                ...preset.config,
+                showBgColor: false,
+                bgAlpha: 0,
+                overlay: true
+            };
+            this.officialAudioMotion.setOptions(transparentConfig);
+            console.log('🎨 Applied transparent background settings to official AudioMotion');
+            
+            // Connect to same audio sources as custom analyzer
+            let audioConnected = false;
+            
+            // Connect via audio file source node (for regular audio files)
+            if (this.audioMotion && this.audioMotion.source) {
+                console.log('🔗 Connecting official AudioMotion to audio file source node');
+                try {
+                    this.officialAudioMotion.connectInput(this.audioMotion.source);
+                    audioConnected = true;
+                    console.log('✅ Connected to audio file source node');
+                } catch (error) {
+                    console.warn('⚠️ Failed to connect to audio file source node:', error);
+                }
+            }
+            
+            // Also connect to video audio gain node (for video files)
+            if (this.videoAudioGain) {
+                console.log('🔗 Connecting official AudioMotion to video audio gain node');
+                try {
+                    this.officialAudioMotion.connectInput(this.videoAudioGain);
+                    audioConnected = true;
+                    console.log('✅ Connected to video audio gain node');
+                } catch (error) {
+                    console.warn('⚠️ Failed to connect to video audio gain node:', error);
+                }
+            }
+            
+            // Also connect to live audio source (for microphone)
+            if (this.streamSource) {
+                console.log('🔗 Connecting official AudioMotion to live audio source');
+                try {
+                    this.officialAudioMotion.connectInput(this.streamSource);
+                    audioConnected = true;
+                    console.log('✅ Connected to live audio source');
+                } catch (error) {
+                    console.warn('⚠️ Failed to connect to live audio source:', error);
+                }
+            }
+            
+            if (!audioConnected) {
+                console.warn('⚠️ No audio source available for official AudioMotion - will reconnect when audio becomes available');
+                // Set flag to reconnect when audio becomes available
+                this.officialAudioMotionNeedsConnection = true;
+            } else {
+                this.officialAudioMotionNeedsConnection = false;
+            }
+            
+            // Start the official AudioMotion analyzer
+            this.officialAudioMotion.toggleAnalyzer(true);
+            console.log('🎵 Official AudioMotion analyzer started');
+            
+            // Set flag to use official analyzer
+            this.useOfficialAudioMotion = true;
+            
+            console.log('✅ Official AudioMotion preset applied:', preset.name);
+            
+        } catch (error) {
+            console.error('❌ Error applying official AudioMotion preset:', error);
+            this.useOfficialAudioMotion = false;
+        }
+    }
+
+    // Switch back to custom analyzer
+    switchToCustomAnalyzer() {
+        if (this.officialAudioMotion) {
+            // Disconnect audio first, then stop analyzer
+            if (this.officialAudioMotion.disconnectInput) {
+                try {
+                    this.officialAudioMotion.disconnectInput();
+                    console.log('🔌 Disconnected audio from official AudioMotion');
+                } catch (error) {
+                    console.warn('⚠️ Failed to disconnect audio from official AudioMotion:', error);
+                }
+            }
+            
+            this.officialAudioMotion.toggleAnalyzer(false);
+            console.log('⏹️ Stopped official AudioMotion analyzer');
+            
+            // Clear the shared canvas before switching back
+            if (this.audioMotion && this.audioMotion.canvas && this.audioMotion.ctx) {
+                this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
+                console.log('🧹 Cleared canvas before switching back to custom analyzer');
+            }
+        }
+        
+        // Restart custom analyzer and ensure audio connection
+        if (this.audioMotion) {
+            if (this.audioMotion.start) {
+                this.audioMotion.start();
+                console.log('🔄 Custom analyzer restarted');
+            }
+            
+            // Ensure audio is still connected
+            if (this.audio && this.audioMotion.connectInput) {
+                try {
+                    this.audioMotion.connectInput(this.audio);
+                    console.log('🔗 Reconnected audio to custom analyzer');
+                } catch (error) {
+                    console.warn('⚠️ Failed to reconnect audio to custom analyzer:', error);
+                }
+            }
+        }
+        
+        this.useOfficialAudioMotion = false;
+        console.log('🔄 Switched back to custom analyzer');
+    }
+
+    // Reconnect official AudioMotion to audio source when it becomes available
+    reconnectOfficialAudioMotion() {
+        if (!this.officialAudioMotion || !this.useOfficialAudioMotion) {
+            return false;
+        }
+
+        console.log('🔄 Attempting to reconnect official AudioMotion to audio source');
+
+        // Disconnect first to ensure clean connection
+        if (this.officialAudioMotion.disconnectInput) {
+            try {
+                this.officialAudioMotion.disconnectInput();
+                console.log('🔌 Disconnected previous connections before reconnecting');
+            } catch (error) {
+                console.warn('⚠️ Failed to disconnect before reconnecting:', error);
+            }
+        }
+
+        // Try to connect to available audio sources
+        let reconnected = false;
+        
+        // Connect to audio file source if available
+        if (this.audioMotion && this.audioMotion.source) {
+            try {
+                this.officialAudioMotion.connectInput(this.audioMotion.source);
+                console.log('✅ Official AudioMotion reconnected to audio file source');
+                reconnected = true;
+            } catch (error) {
+                console.warn('⚠️ Failed to reconnect to audio file source:', error);
+            }
+        }
+        
+        // Connect to video audio source if available
+        if (this.videoAudioGain) {
+            try {
+                this.officialAudioMotion.connectInput(this.videoAudioGain);
+                console.log('✅ Official AudioMotion reconnected to video audio source');
+                reconnected = true;
+            } catch (error) {
+                console.warn('⚠️ Failed to reconnect to video audio source:', error);
+            }
+        }
+        
+        // Connect to live audio source if available
+        if (this.streamSource) {
+            try {
+                this.officialAudioMotion.connectInput(this.streamSource);
+                console.log('✅ Official AudioMotion reconnected to live audio source');
+                reconnected = true;
+            } catch (error) {
+                console.warn('⚠️ Failed to reconnect to live audio source:', error);
+            }
+        }
+        
+        if (reconnected) {
+            this.officialAudioMotionNeedsConnection = false;
+            return true;
+        }
+
+        console.log('⚠️ Audio source still not available for reconnection');
+        this.officialAudioMotionNeedsConnection = true;
+        return false;
+    }
+
+    // Check if Official AudioMotion is available
+    isOfficialAudioMotionAvailable() {
+        const available = typeof AudioMotionAnalyzer !== 'undefined' && this.officialAudioMotion !== null;
+        console.log('🔍 Official AudioMotion availability check:', {
+            libraryLoaded: typeof AudioMotionAnalyzer !== 'undefined',
+            instanceCreated: !!this.officialAudioMotion,
+            available: available
+        });
+        return available;
     }
 
     // Set Blobs opacity
@@ -24484,6 +24989,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                     if (this.audioMotion) {
                         this.audioMotion.connectInput(this.audio);
+                        
+                        // Reconnect official AudioMotion if it needs connection
+                        this.reconnectOfficialAudioMotion();
                     }
 
                     this.currentTrackIndex = index;
