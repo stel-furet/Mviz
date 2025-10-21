@@ -18094,6 +18094,13 @@ https://rogueamoeba.com/loopback/
     }
 
     setRandomVisualization() {
+        // Check if we're using Pro visualizations
+        if (this.useOfficialAudioMotion) {
+            this.setRandomProVisualization();
+            return;
+        }
+        
+        // Regular AM random logic (unchanged)
         const randomMode = Math.floor(Math.random() * 11);
 
         const randomConfig = {
@@ -18187,6 +18194,122 @@ https://rogueamoeba.com/loopback/
             this.savePresets();
             this.updatePresetSelector();
         }
+    }
+
+    // Pro Random Visualization Methods
+    setRandomProVisualization() {
+        if (!this.officialAudioMotion) {
+            console.error('❌ Official AudioMotion not available for Pro random');
+            return;
+        }
+
+        const randomProConfig = this.generateRandomProConfig();
+        
+        // Apply to official AudioMotion
+        this.officialAudioMotion.setOptions(randomProConfig);
+        
+        console.log('🎲 Applied random Pro config:', randomProConfig);
+        
+        // Save as "Last Random Pro" preset for reference
+        const preset = {
+            name: 'Last Random Pro',
+            timestamp: Date.now(),
+            config: randomProConfig,
+            useOfficial: true
+        };
+
+        // Update or add to saved presets
+        const lastRandomProIndex = this.savedPresets.findIndex(p => p.name === 'Last Random Pro');
+        if (lastRandomProIndex >= 0) {
+            this.savedPresets[lastRandomProIndex] = preset;
+        } else {
+            this.savedPresets.push(preset);
+        }
+
+        this.savePresets();
+        this.updatePresetSelector();
+    }
+
+    generateRandomProConfig() {
+        const randomMode = Math.floor(Math.random() * 11); // Same modes as regular AM
+        
+        return {
+            // Core visualization parameters
+            mode: randomMode,
+            colorMode: 'bar-level', // Keep for Pro compatibility
+            
+            // Visual style parameters (same logic as regular AM)
+            alphaBars: false,
+            ansiBands: randomMode === 1 || randomMode === 2 ? Math.random() > 0.5 : false,
+            barSpace: randomMode === 0 ? 0 : Math.random() * 0.05,
+            fillAlpha: 0.8 + Math.random() * 0.2,
+            
+            // Frequency and audio parameters
+            frequencyScale: Math.random() > 0.5 ? 'log' : 'bark',
+            gradient: ['classic', 'rainbow', 'prism', 'steelblue', 'orangered'][Math.floor(Math.random() * 5)],
+            gravity: 1 + Math.random() * 5,
+            
+            // Advanced parameters
+            ledBars: randomMode === 6 ? Math.random() > 0.3 : false,
+            linearAmplitude: Math.random() > 0.5,
+            linearBoost: 2 + Math.random() * 2,
+            lineWidth: randomMode === 10 ? 3 + Math.random() * 2 : Math.random() * 5,
+            
+            // Audio range parameters
+            maxDecibels: -20 + Math.random() * 10,
+            minDecibels: -80 + Math.random() * 10,
+            maxFreq: 16000 + Math.random() * 6000,
+            minFreq: 20 + Math.random() * 30,
+            
+            // Spatial parameters
+            mirror: Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0,
+            radial: Math.random() > 0.6,
+            radialInvert: Math.random() > 0.5,
+            radius: 0.8 + Math.random() * 0.4,
+            spinSpeed: Math.random() > 0.6 ? Math.random() * 5 : 0,
+            
+            // Visual effects
+            outlineBars: Math.random() > 0.7,
+            roundBars: Math.random() > 0.5,
+            showPeaks: Math.random() > 0.3,
+            trueLeds: randomMode === 6 ? Math.random() > 0.5 : false,
+            
+            // Reflection parameters
+            reflexAlpha: 0.5 + Math.random() * 0.5,
+            reflexRatio: Math.random() * 0.5,
+            reflexBright: 1,
+            reflexFit: true,
+            
+            // Channel layout
+            channelLayout: Math.random() > 0.7 ? 
+                (Math.random() > 0.5 ? 'dual-vertical' : 'dual-horizontal') : 'single',
+            
+            // Performance and timing
+            peakFadeTime: 500 + Math.random() * 1500,
+            peakHoldTime: 300 + Math.random() * 400,
+            smoothing: 0.5 + Math.random() * 0.3,
+            volume: 1.5 + Math.random() * 1,
+            
+            // Fixed Pro-specific parameters
+            bgAlpha: 0,
+            showBgColor: false,
+            overlay: true,
+            fftSize: 8192,
+            weightingFilter: ['', 'A', 'B', 'C', 'D'][Math.floor(Math.random() * 5)],
+            
+            // Static parameters
+            fadePeaks: false,
+            loRes: false,
+            lumiBars: false,
+            maxFPS: 0,
+            noteLabels: false,
+            peakLine: false,
+            showFPS: false,
+            showScaleX: false,
+            showScaleY: false,
+            splitGradient: false,
+            useCanvas: true
+        };
     }
 
     // Kaleidoscope
