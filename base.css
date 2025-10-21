@@ -724,7 +724,7 @@ body {
 }
 
 .collapsible-content.expanded {
-    max-height: 500px; /* Generous max height for preset buttons */
+    max-height: 800px; /* Increased for Nebula mixer controls (27 elements) */
     opacity: 1;
 }
 

@@ -1909,6 +1909,8 @@ class RecordManager {
                 // AM Visualizer controls initialization
                 this.updateMixerAMToggle();
                 this.updateMixerAMOpacitySlider();
+                this.updateHeaderAMVisualizationOpacitySlider();
+                this.updateHeaderAMBackgroundOpacitySlider();
                 this.updateMixerAMVizModeSelect();
                 this.updateMixerAMMorphButton();
                 this.updateMixerAMMorphSpeedSelect();
@@ -1968,6 +1970,13 @@ class RecordManager {
         this.updateMixerKaleidoscopeWebGLToggle();
         this.updateMixerKaleidoscopeFluidToggle();
         this.updateMixerKaleidoscopeNebulaToggle();
+
+        // Nebula controls initialization
+        this.updateMixerNebulaToggle();
+        this.updateMixerNebulaOpacitySlider();
+        this.updateMixerNebulaColorSchemeSelect();
+        this.updateMixerNebulaPresetSelector();
+        this.updateMixerNebulaControlSliders();
             
         // Call mixer file info update on the MultiDisplayManager
             if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileInfo) {
@@ -1982,19 +1991,28 @@ class RecordManager {
         const backgroundImageFile = document.getElementById('backgroundImageFile');
         
         if (backgroundImgBtn) {
-            // B button now just opens/closes the background settings panel
+            // Header button toggles background image ON/OFF
             backgroundImgBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('🔘 Background IMG button clicked - opening/closing panel');
+                console.log('🔘 Header Background IMG button clicked - toggling background image');
                 
-                // Toggle the background settings panel
-                const backgroundSettingsPanel = document.getElementById('backgroundSettingsPanel');
-                if (backgroundSettingsPanel) {
-                    const isVisible = backgroundSettingsPanel.style.display !== 'none';
-                    backgroundSettingsPanel.style.display = isVisible ? 'none' : 'block';
-                    console.log('📋 Background settings panel:', isVisible ? 'closed' : 'opened');
-                } else {
-                    console.error('❌ Background settings panel not found');
+                if (this.visualizer) {
+                    // Toggle background image enabled state
+                    this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
+                    this.visualizer.saveBackgroundImage();
+                    
+                    // Update all UIs
+                    this.updateBackgroundToggleButton();
+                    this.updateMixerBackgroundToggleButton();
+                    this.visualizer.updateFooterBackgroundButton();
+                    
+                    console.log('🔘 Header background toggle changed to:', this.visualizer.backgroundImageEnabled);
+                    
+                    // Force redraw of visualization
+                    if (this.visualizer.audioMotion) {
+                        console.log('🔄 Forcing visualization redraw after header background toggle');
+                        this.visualizer.audioMotion.draw();
+                    }
                 }
             });
         }
@@ -2797,7 +2815,7 @@ class RecordManager {
             console.error('❌ Mixer AM toggle button not found');
         }
 
-        // Mixer AM opacity slider
+        // Mixer AM opacity slider (restored)
         const mixerAMOpacitySlider = document.getElementById('mixerAMOpacitySlider');
         if (mixerAMOpacitySlider) {
             console.log('✅ Mixer AM opacity slider found, initializing custom slider');
@@ -2813,11 +2831,81 @@ class RecordManager {
                         valueDisplay.textContent = value;
                     }
                     
+                    // Sync with header slider
+                    this.updateHeaderAMVisualizationOpacitySlider();
+                    
                     console.log('🎨 Mixer AM opacity changed to:', value, '% (', opacityValue, ')');
                 }
             });
         } else {
             console.error('❌ Mixer AM opacity slider not found');
+        }
+
+        // Header AM Visualization Opacity slider
+        const headerAMVisualizationOpacity = document.getElementById('headerAMVisualizationOpacity');
+        const headerAMVisualizationOpacityValue = headerAMVisualizationOpacity ? headerAMVisualizationOpacity.nextElementSibling : null;
+        if (headerAMVisualizationOpacity && headerAMVisualizationOpacityValue) {
+            console.log('✅ Header AM visualization opacity slider found, adding event listener');
+            headerAMVisualizationOpacity.addEventListener('input', (e) => {
+                if (this.visualizer) {
+                    const value = parseInt(e.target.value);
+                    const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
+                    this.visualizer.setVisualizationOpacity(opacityValue);
+                    headerAMVisualizationOpacityValue.textContent = value + '%';
+                    
+                    // Sync with mixer slider
+                    this.updateMixerAMOpacitySlider();
+                    
+                    console.log('🎨 Header AM visualization opacity changed to:', value, '% (', opacityValue, ')');
+                }
+            });
+        } else {
+            console.error('❌ Header AM visualization opacity slider not found');
+        }
+
+        // Header AM Background Opacity slider
+        const headerAMBackgroundOpacity = document.getElementById('headerAMBackgroundOpacity');
+        const headerAMBackgroundOpacityValue = headerAMBackgroundOpacity ? headerAMBackgroundOpacity.nextElementSibling : null;
+        if (headerAMBackgroundOpacity && headerAMBackgroundOpacityValue) {
+            console.log('✅ Header AM background opacity slider found, adding event listener');
+            headerAMBackgroundOpacity.addEventListener('input', (e) => {
+                if (this.visualizer && this.visualizer.audioMotion) {
+                    const value = parseInt(e.target.value);
+                    const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
+                    // Update bgAlpha for background opacity
+                    this.visualizer.audioMotion.bgAlpha = opacityValue;
+                    // Enable showBgColor if opacity > 0, disable if 0
+                    this.visualizer.audioMotion.showBgColor = value > 0;
+                    headerAMBackgroundOpacityValue.textContent = value + '%';
+                    console.log('🎨 Header AM background opacity changed to:', value, '% (bgAlpha:', opacityValue, ', showBgColor:', value > 0, ')');
+                }
+            });
+        } else {
+            console.error('❌ Header AM background opacity slider not found');
+        }
+
+        // Header AM Preset buttons
+        const headerAMPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset[data-preset]');
+        if (headerAMPresetButtons.length > 0) {
+            console.log('✅ Header AM preset buttons found:', headerAMPresetButtons.length);
+            headerAMPresetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const presetIndex = parseInt(button.getAttribute('data-preset'));
+                    console.log('🎨 Header AM preset clicked:', presetIndex);
+                    
+                    if (this.visualizer && presetIndex >= 0 && presetIndex < this.visualizer.visualizationModes.length) {
+                        this.visualizer.setVisualizationMode(presetIndex);
+                        
+                        // Update active state
+                        headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        console.log('🎨 Applied AM preset:', presetIndex, this.visualizer.visualizationModes[presetIndex]);
+                    }
+                });
+            });
+        } else {
+            console.error('❌ Header AM preset buttons not found');
         }
 
         // Mixer AM Visualization Mode dropdown
@@ -4070,6 +4158,303 @@ class RecordManager {
             });
         }
 
+        // ========== NEBULA CHANNEL ==========
+
+        // Mixer Nebula toggle button
+        const mixerNebulaToggle = document.getElementById('mixerNebulaToggle');
+        if (mixerNebulaToggle) {
+            console.log('✅ Mixer Nebula toggle button found, adding event listener');
+            mixerNebulaToggle.addEventListener('click', () => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaVisualization.enabled);
+                    
+                    // Toggle Nebula state
+                    this.visualizer.nebulaVisualization.toggle();
+                    
+                    // Update mixer UI
+                    this.updateMixerNebulaToggle();
+                    
+                    // Update header button
+                    const headerBtn = document.getElementById('headerNebulaBtn');
+                    if (headerBtn) {
+                        const toggleText = headerBtn.querySelector('.toggle-text');
+                        if (toggleText) {
+                            toggleText.textContent = this.visualizer.nebulaVisualization.enabled ? 'ON' : 'OFF';
+                            headerBtn.classList.toggle('active', this.visualizer.nebulaVisualization.enabled);
+                        }
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Mixer Nebula toggle button not found');
+        }
+
+        // Mixer Nebula opacity slider
+        const mixerNebulaOpacitySlider = document.getElementById('mixerNebulaOpacitySlider');
+        if (mixerNebulaOpacitySlider) {
+            console.log('✅ Mixer Nebula opacity slider found, initializing');
+            this.mixerNebulaOpacitySlider = this.initializeVerticalSlider(mixerNebulaOpacitySlider, (value) => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🎚️ Mixer Nebula opacity changed to:', value);
+                    // Convert 0-100 to 0.0-1.0 for nebula opacity
+                    const opacityValue = value / 100;
+                    this.visualizer.nebulaVisualization.updateSetting('overallOpacity', opacityValue);
+                    
+                    // Update header panel slider
+                    const headerSlider = document.getElementById('nebulaOverallOpacity');
+                    const headerValue = document.querySelector('#nebulaOverallOpacity + .slider-1-value');
+                    if (headerSlider && headerValue) {
+                        headerSlider.value = opacityValue;
+                        headerValue.textContent = Math.round(opacityValue * 100) + '%';
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Mixer Nebula opacity slider not found');
+        }
+
+        // Mixer Nebula color scheme dropdown
+        const mixerNebulaColorSchemeSelect = document.getElementById('mixerNebulaColorSchemeSelect');
+        if (mixerNebulaColorSchemeSelect) {
+            console.log('✅ Mixer Nebula color scheme select found, adding event listener');
+            mixerNebulaColorSchemeSelect.addEventListener('change', (e) => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    const scheme = e.target.value;
+                    console.log('🎨 Mixer Nebula color scheme changed to:', scheme);
+                    
+                    // Apply color scheme by triggering the appropriate header button
+                    const headerBtn = document.getElementById(`nebulaPreset${scheme.charAt(0).toUpperCase() + scheme.slice(1)}`);
+                    if (headerBtn) {
+                        headerBtn.click();
+                    }
+                    
+                    // Update mixer UI
+                    this.updateMixerNebulaColorSchemeSelect();
+                }
+            });
+        } else {
+            console.error('❌ Mixer Nebula color scheme select not found');
+        }
+
+        // ========== NEBULA PRESET CONTROLS ==========
+
+        // Built-in Preset Buttons
+        const mixerNebulaPresetDefault = document.getElementById('mixerNebulaPresetDefault');
+        if (mixerNebulaPresetDefault) {
+            mixerNebulaPresetDefault.addEventListener('click', () => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🎨 Mixer Nebula Default preset clicked');
+                    // Reset to default settings
+                    this.visualizer.nebulaVisualization.resetToDefaults();
+                    this.updateMixerNebulaControlSliders();
+                }
+            });
+        }
+
+        const mixerNebulaPresetCinematic = document.getElementById('mixerNebulaPresetCinematic');
+        if (mixerNebulaPresetCinematic) {
+            mixerNebulaPresetCinematic.addEventListener('click', () => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🎨 Mixer Nebula Cinematic preset clicked');
+                    // Apply cinematic preset
+                    const cinematicSettings = {
+                        cameraDistance: 120,
+                        filamentDensity: 2.0,
+                        pulsarSize: 8,
+                        pulseRate: 1.0,
+                        starCount: 2000,
+                        cameraOrbit: true,
+                        orbitSpeed: 2.0
+                    };
+                    Object.entries(cinematicSettings).forEach(([key, value]) => {
+                        this.visualizer.nebulaVisualization.updateSetting(key, value);
+                    });
+                    this.updateMixerNebulaControlSliders();
+                }
+            });
+        }
+
+        const mixerNebulaPresetEnergetic = document.getElementById('mixerNebulaPresetEnergetic');
+        if (mixerNebulaPresetEnergetic) {
+            mixerNebulaPresetEnergetic.addEventListener('click', () => {
+                if (this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🎨 Mixer Nebula Energetic preset clicked');
+                    // Apply energetic preset
+                    const energeticSettings = {
+                        filamentDensity: 3.0,
+                        expansion: 60,
+                        chaos: 4.0,
+                        pulsarSize: 12,
+                        pulseRate: 4.0,
+                        audioReactive: true,
+                        audioReactivePresets: { color: true, rotation: true, pulsar: true }
+                    };
+                    Object.entries(energeticSettings).forEach(([key, value]) => {
+                        this.visualizer.nebulaVisualization.updateSetting(key, value);
+                    });
+                    this.updateMixerNebulaControlSliders();
+                }
+            });
+        }
+
+        // User Presets Dropdown
+        const mixerNebulaUserPresetSelect = document.getElementById('mixerNebulaUserPresetSelect');
+        if (mixerNebulaUserPresetSelect) {
+            mixerNebulaUserPresetSelect.addEventListener('change', (e) => {
+                if (e.target.value && this.visualizer && this.visualizer.nebulaVisualization) {
+                    console.log('🎨 Mixer Nebula user preset selected:', e.target.value);
+                    this.visualizer.nebulaVisualization.loadPreset(e.target.value);
+                    this.updateMixerNebulaControlSliders();
+                    e.target.value = ''; // Reset dropdown
+                }
+            });
+        }
+
+        // Preset Management Buttons
+        const mixerNebulaSavePresetBtn = document.getElementById('mixerNebulaSavePresetBtn');
+        if (mixerNebulaSavePresetBtn) {
+            mixerNebulaSavePresetBtn.addEventListener('click', () => {
+                const headerBtn = document.getElementById('nebulaSavePresetBtn');
+                if (headerBtn) headerBtn.click();
+            });
+        }
+
+        const mixerNebulaExportPresetsBtn = document.getElementById('mixerNebulaExportPresetsBtn');
+        if (mixerNebulaExportPresetsBtn) {
+            mixerNebulaExportPresetsBtn.addEventListener('click', () => {
+                const headerBtn = document.getElementById('nebulaExportPresetsBtn');
+                if (headerBtn) headerBtn.click();
+            });
+        }
+
+        const mixerNebulaImportPresetsBtn = document.getElementById('mixerNebulaImportPresetsBtn');
+        if (mixerNebulaImportPresetsBtn) {
+            mixerNebulaImportPresetsBtn.addEventListener('click', () => {
+                const headerBtn = document.getElementById('nebulaImportPresetsBtn');
+                if (headerBtn) headerBtn.click();
+            });
+        }
+
+        // ========== NEBULA CONTROL SLIDERS ==========
+
+        // Helper function to sync mixer slider with header slider
+        const syncNebulaSlider = (mixerSliderId, mixerValueId, headerSliderId, headerValueId, setting, suffix = '') => {
+            const mixerSlider = document.getElementById(mixerSliderId);
+            const mixerValue = document.getElementById(mixerValueId);
+            
+            if (mixerSlider && mixerValue) {
+                mixerSlider.addEventListener('input', (e) => {
+                    if (this.visualizer && this.visualizer.nebulaVisualization) {
+                        const value = parseFloat(e.target.value);
+                        mixerValue.textContent = value + suffix;
+                        
+                        // Update nebula setting
+                        this.visualizer.nebulaVisualization.updateSetting(setting, value);
+                        
+                        // Sync with header slider
+                        const headerSlider = document.getElementById(headerSliderId);
+                        const headerValue = document.getElementById(headerValueId);
+                        if (headerSlider && headerValue) {
+                            headerSlider.value = value;
+                            headerValue.textContent = value + suffix;
+                        }
+                    }
+                });
+            }
+        };
+
+        // Helper function to sync mixer toggle with header toggle
+        const syncNebulaToggle = (mixerToggleId, headerToggleId, setting) => {
+            const mixerToggle = document.getElementById(mixerToggleId);
+            
+            if (mixerToggle) {
+                mixerToggle.addEventListener('click', () => {
+                    if (this.visualizer && this.visualizer.nebulaVisualization) {
+                        const currentValue = this.visualizer.nebulaVisualization.settings[setting];
+                        const newValue = !currentValue;
+                        
+                        // Update nebula setting
+                        this.visualizer.nebulaVisualization.updateSetting(setting, newValue);
+                        
+                        // Update mixer toggle
+                        const toggleText = mixerToggle.querySelector('.toggle-text');
+                        if (toggleText) {
+                            toggleText.textContent = newValue ? 'ON' : 'OFF';
+                            mixerToggle.classList.toggle('active', newValue);
+                        }
+                        
+                        // Sync with header toggle
+                        const headerToggle = document.getElementById(headerToggleId);
+                        if (headerToggle) {
+                            const headerToggleText = headerToggle.querySelector('.toggle-text');
+                            if (headerToggleText) {
+                                const currentText = headerToggleText.textContent;
+                                const newText = currentText.replace(/(ON|OFF)$/, newValue ? 'ON' : 'OFF');
+                                headerToggleText.textContent = newText;
+                                headerToggle.classList.toggle('active', newValue);
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // Sync all sliders
+        syncNebulaSlider('mixerNebulaCameraDistanceSlider', 'mixerNebulaCameraDistanceValue', 'nebulaCameraDistance', 'nebulaCameraDistance + .slider-1-value', 'cameraDistance');
+        syncNebulaSlider('mixerNebulaStarCountSlider', 'mixerNebulaStarCountValue', 'nebulaStarCount', 'nebulaStarCount + .slider-1-value', 'starCount');
+        syncNebulaSlider('mixerNebulaMorphingSpeedSlider', 'mixerNebulaMorphingSpeedValue', 'nebulaMorphingSpeed', 'nebulaMorphingSpeed + .slider-1-value', 'morphingSpeed');
+        syncNebulaSlider('mixerNebulaHueShiftSlider', 'mixerNebulaHueShiftValue', 'nebulaHueShift', 'nebulaHueShift + .slider-1-value', 'hueShift', '°');
+        syncNebulaSlider('mixerNebulaSaturationSlider', 'mixerNebulaSaturationValue', 'nebulaSaturation', 'nebulaSaturation + .slider-1-value', 'saturation', '%');
+        syncNebulaSlider('mixerNebulaBrightnessSlider', 'mixerNebulaBrightnessValue', 'nebulaBrightness', 'nebulaBrightness + .slider-1-value', 'brightness', '%');
+        syncNebulaSlider('mixerNebulaFilamentDensitySlider', 'mixerNebulaFilamentDensityValue', 'nebulaFilamentDensity', 'nebulaFilamentDensity + .slider-1-value', 'filamentDensity');
+        syncNebulaSlider('mixerNebulaParticlesPerFilamentSlider', 'mixerNebulaParticlesPerFilamentValue', 'nebulaParticlesPerFilament', 'nebulaParticlesPerFilament + .slider-1-value', 'particlesPerFilament');
+        syncNebulaSlider('mixerNebulaParticleSizeSlider', 'mixerNebulaParticleSizeValue', 'nebulaParticleSize', 'nebulaParticleSize + .slider-1-value', 'particleSize');
+        syncNebulaSlider('mixerNebulaExpansionSlider', 'mixerNebulaExpansionValue', 'nebulaExpansion', 'nebulaExpansion + .slider-1-value', 'expansion');
+        syncNebulaSlider('mixerNebulaChaosSlider', 'mixerNebulaChaosValue', 'nebulaChaos', 'nebulaChaos + .slider-1-value', 'chaos');
+        syncNebulaSlider('mixerNebulaAsymmetrySlider', 'mixerNebulaAsymmetryValue', 'nebulaAsymmetry', 'nebulaAsymmetry + .slider-1-value', 'asymmetry');
+        syncNebulaSlider('mixerNebulaPulsarSizeSlider', 'mixerNebulaPulsarSizeValue', 'nebulaPulsarSize', 'nebulaPulsarSize + .slider-1-value', 'pulsarSize');
+        syncNebulaSlider('mixerNebulaPulseRateSlider', 'mixerNebulaPulseRateValue', 'nebulaPulseRate', 'nebulaPulseRate + .slider-1-value', 'pulseRate');
+        syncNebulaSlider('mixerNebulaAudioSensitivitySlider', 'mixerNebulaAudioSensitivityValue', 'nebulaAudioSensitivity', 'nebulaAudioSensitivity + .slider-1-value', 'audioSensitivity');
+        syncNebulaSlider('mixerNebulaOrbitSpeedSlider', 'mixerNebulaOrbitSpeedValue', 'nebulaOrbitSpeed', 'nebulaOrbitSpeed + .slider-1-value', 'orbitSpeed');
+        syncNebulaSlider('mixerNebulaFlySpeedSlider', 'mixerNebulaFlySpeedValue', 'nebulaFlySpeed', 'nebulaFlySpeed + .slider-1-value', 'flySpeed');
+
+        // Sync all toggles
+        syncNebulaToggle('mixerNebulaBloomToggle', 'nebulaBloomToggle', 'bloom');
+        syncNebulaToggle('mixerNebulaKnockoutBackgroundToggle', 'nebulaKnockoutBackgroundToggle', 'knockoutBackground');
+        syncNebulaToggle('mixerNebulaMorphingModeToggle', 'nebulaMorphingModeToggle', 'morphingMode');
+        syncNebulaToggle('mixerNebulaShowPulsarToggle', 'nebulaShowPulsarToggle', 'showPulsar');
+        syncNebulaToggle('mixerNebulaAudioReactiveToggle', 'nebulaAudioReactiveToggle', 'audioReactive');
+        syncNebulaToggle('mixerNebulaCameraOrbitToggle', 'nebulaCameraOrbitToggle', 'cameraOrbit');
+        syncNebulaToggle('mixerNebulaFlyThroughToggle', 'nebulaFlyThroughToggle', 'flyThrough');
+
+        // Audio reactive preset toggles (special handling)
+        const mixerNebulaColorReactiveToggle = document.getElementById('mixerNebulaColorReactiveToggle');
+        if (mixerNebulaColorReactiveToggle) {
+            mixerNebulaColorReactiveToggle.addEventListener('click', () => {
+                const headerBtn = document.getElementById('headerNebulaColorPresetBtn');
+                if (headerBtn) headerBtn.click();
+                this.updateMixerNebulaControlSliders();
+            });
+        }
+
+        const mixerNebulaRotationReactiveToggle = document.getElementById('mixerNebulaRotationReactiveToggle');
+        if (mixerNebulaRotationReactiveToggle) {
+            mixerNebulaRotationReactiveToggle.addEventListener('click', () => {
+                const headerBtn = document.getElementById('headerNebulaRotationPresetBtn');
+                if (headerBtn) headerBtn.click();
+                this.updateMixerNebulaControlSliders();
+            });
+        }
+
+        const mixerNebulaPulsarReactiveToggle = document.getElementById('mixerNebulaPulsarReactiveToggle');
+        if (mixerNebulaPulsarReactiveToggle) {
+            mixerNebulaPulsarReactiveToggle.addEventListener('click', () => {
+                const headerBtn = document.getElementById('headerNebulaPulsarPresetBtn');
+                if (headerBtn) headerBtn.click();
+                this.updateMixerNebulaControlSliders();
+            });
+        }
+
         // Mixer audio volume slider
         const mixerAudioVolumeSlider = document.getElementById('mixerAudioVolumeSlider');
         if (mixerAudioVolumeSlider) {
@@ -4604,14 +4989,14 @@ class RecordManager {
 
     updateBackgroundToggleButton() {
         const backgroundImgBtn = document.getElementById('backgroundImgBtn');
-        if (backgroundImgBtn) {
-            // B button now just shows "Background Settings" since it opens the panel
+        if (backgroundImgBtn && this.visualizer) {
+            // Header button shows proper ON/OFF state
             const textSpan = backgroundImgBtn.querySelector('.background-text');
             if (textSpan) {
-                textSpan.textContent = 'Background Settings';
+                textSpan.textContent = this.visualizer.backgroundImageEnabled ? 'Background IMG: ON' : 'Background IMG: OFF';
             }
-            // Remove active state since this is no longer a toggle button
-            backgroundImgBtn.classList.remove('active');
+            // Update active state based on enabled status
+            backgroundImgBtn.classList.toggle('active', this.visualizer.backgroundImageEnabled);
         }
     }
 
@@ -5332,6 +5717,32 @@ class RecordManager {
         }
     }
 
+    updateHeaderAMVisualizationOpacitySlider() {
+        if (this.visualizer) {
+            // Update visualization opacity slider
+            const vizOpacitySlider = document.getElementById('headerAMVisualizationOpacity');
+            const vizOpacityValue = vizOpacitySlider ? vizOpacitySlider.nextElementSibling : null;
+            if (vizOpacitySlider && vizOpacityValue) {
+                const opacityPercent = Math.round(this.visualizer.visualizationOpacity * 100);
+                vizOpacitySlider.value = opacityPercent;
+                vizOpacityValue.textContent = opacityPercent + '%';
+            }
+        }
+    }
+
+    updateHeaderAMBackgroundOpacitySlider() {
+        if (this.visualizer && this.visualizer.audioMotion) {
+            // Update background opacity slider
+            const bgOpacitySlider = document.getElementById('headerAMBackgroundOpacity');
+            const bgOpacityValue = bgOpacitySlider ? bgOpacitySlider.nextElementSibling : null;
+            if (bgOpacitySlider && bgOpacityValue) {
+                const bgOpacityPercent = Math.round(this.visualizer.audioMotion.bgAlpha * 100);
+                bgOpacitySlider.value = bgOpacityPercent;
+                bgOpacityValue.textContent = bgOpacityPercent + '%';
+            }
+        }
+    }
+
     updateMixerAMVizModeSelect() {
         const mixerAMVizModeSelect = document.getElementById('mixerAMVizModeSelect');
         if (mixerAMVizModeSelect && this.visualizer) {
@@ -5946,6 +6357,147 @@ class RecordManager {
                 mixerKaleidoscopeNebulaToggle.classList.toggle('active', isOn);
             }
         }
+    }
+
+    // ========================================
+    // NEBULA MIXER METHODS
+    // ========================================
+
+    updateMixerNebulaToggle() {
+        const mixerNebulaToggle = document.getElementById('mixerNebulaToggle');
+        if (mixerNebulaToggle && this.visualizer && this.visualizer.nebulaVisualization) {
+            const isActive = this.visualizer.nebulaVisualization.enabled;
+            const toggleText = mixerNebulaToggle.querySelector('.toggle-text');
+            
+            if (isActive) {
+                mixerNebulaToggle.classList.add('active');
+                if (toggleText) toggleText.textContent = 'ON';
+            } else {
+                mixerNebulaToggle.classList.remove('active');
+                if (toggleText) toggleText.textContent = 'OFF';
+            }
+        }
+    }
+
+    updateMixerNebulaOpacitySlider() {
+        if (this.mixerNebulaOpacitySlider && this.visualizer && this.visualizer.nebulaVisualization) {
+            // Get current opacity from Nebula (0.0-1.0) and convert to 0-100
+            const opacityPercent = Math.round(this.visualizer.nebulaVisualization.settings.overallOpacity * 100);
+            this.mixerNebulaOpacitySlider.setValue(opacityPercent);
+            
+            // Update value display
+            const valueDisplay = document.getElementById('mixerNebulaOpacityValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = opacityPercent;
+            }
+        }
+    }
+
+    updateMixerNebulaColorSchemeSelect() {
+        const mixerNebulaColorSchemeSelect = document.getElementById('mixerNebulaColorSchemeSelect');
+        if (mixerNebulaColorSchemeSelect && this.visualizer && this.visualizer.nebulaVisualization) {
+            // Determine current color scheme based on nebula settings
+            const settings = this.visualizer.nebulaVisualization.settings;
+            let currentScheme = 'default';
+            
+            // Check if any preset colors are active
+            if (settings.hueShift === 280 && settings.saturation === 200) currentScheme = 'fire';
+            else if (settings.hueShift === 125 && settings.saturation === 70) currentScheme = 'ice';
+            else if (settings.hueShift === 190 && settings.saturation === 200) currentScheme = 'toxic';
+            else if (settings.hueShift === 320 && settings.saturation === 140) currentScheme = 'sunset';
+            else if (settings.hueShift === 0 && settings.saturation === 100) currentScheme = 'default';
+            
+            mixerNebulaColorSchemeSelect.value = currentScheme;
+        }
+    }
+
+    updateMixerNebulaPresetSelector() {
+        const mixerNebulaUserPresetSelect = document.getElementById('mixerNebulaUserPresetSelect');
+        if (mixerNebulaUserPresetSelect && this.visualizer && this.visualizer.nebulaVisualization) {
+            // Clear existing options except the first one
+            while (mixerNebulaUserPresetSelect.children.length > 1) {
+                mixerNebulaUserPresetSelect.removeChild(mixerNebulaUserPresetSelect.lastChild);
+            }
+            
+            // Load saved presets from localStorage
+            const savedPresets = JSON.parse(localStorage.getItem('nebulaPresets') || '{}');
+            Object.keys(savedPresets).forEach(presetName => {
+                const option = document.createElement('option');
+                option.value = presetName;
+                option.textContent = presetName;
+                mixerNebulaUserPresetSelect.appendChild(option);
+            });
+        }
+    }
+
+    updateMixerNebulaControlSliders() {
+        if (!this.visualizer || !this.visualizer.nebulaVisualization) return;
+        
+        const settings = this.visualizer.nebulaVisualization.settings;
+        
+        // Update all control sliders and their value displays
+        const controls = [
+            { slider: 'mixerNebulaCameraDistanceSlider', value: 'mixerNebulaCameraDistanceValue', setting: 'cameraDistance' },
+            { slider: 'mixerNebulaStarCountSlider', value: 'mixerNebulaStarCountValue', setting: 'starCount' },
+            { slider: 'mixerNebulaMorphingSpeedSlider', value: 'mixerNebulaMorphingSpeedValue', setting: 'morphingSpeed' },
+            { slider: 'mixerNebulaHueShiftSlider', value: 'mixerNebulaHueShiftValue', setting: 'hueShift', suffix: '°' },
+            { slider: 'mixerNebulaSaturationSlider', value: 'mixerNebulaSaturationValue', setting: 'saturation', suffix: '%' },
+            { slider: 'mixerNebulaBrightnessSlider', value: 'mixerNebulaBrightnessValue', setting: 'brightness', suffix: '%' },
+            { slider: 'mixerNebulaFilamentDensitySlider', value: 'mixerNebulaFilamentDensityValue', setting: 'filamentDensity' },
+            { slider: 'mixerNebulaParticlesPerFilamentSlider', value: 'mixerNebulaParticlesPerFilamentValue', setting: 'particlesPerFilament' },
+            { slider: 'mixerNebulaParticleSizeSlider', value: 'mixerNebulaParticleSizeValue', setting: 'particleSize' },
+            { slider: 'mixerNebulaExpansionSlider', value: 'mixerNebulaExpansionValue', setting: 'expansion' },
+            { slider: 'mixerNebulaChaosSlider', value: 'mixerNebulaChaosValue', setting: 'chaos' },
+            { slider: 'mixerNebulaAsymmetrySlider', value: 'mixerNebulaAsymmetryValue', setting: 'asymmetry' },
+            { slider: 'mixerNebulaPulsarSizeSlider', value: 'mixerNebulaPulsarSizeValue', setting: 'pulsarSize' },
+            { slider: 'mixerNebulaPulseRateSlider', value: 'mixerNebulaPulseRateValue', setting: 'pulseRate' },
+            { slider: 'mixerNebulaAudioSensitivitySlider', value: 'mixerNebulaAudioSensitivityValue', setting: 'audioSensitivity' },
+            { slider: 'mixerNebulaOrbitSpeedSlider', value: 'mixerNebulaOrbitSpeedValue', setting: 'orbitSpeed' },
+            { slider: 'mixerNebulaFlySpeedSlider', value: 'mixerNebulaFlySpeedValue', setting: 'flySpeed' }
+        ];
+        
+        controls.forEach(control => {
+            const sliderEl = document.getElementById(control.slider);
+            const valueEl = document.getElementById(control.value);
+            
+            if (sliderEl && valueEl && settings[control.setting] !== undefined) {
+                sliderEl.value = settings[control.setting];
+                const displayValue = control.suffix ? settings[control.setting] + control.suffix : settings[control.setting];
+                valueEl.textContent = displayValue;
+            }
+        });
+        
+        // Update toggle buttons
+        const toggles = [
+            { button: 'mixerNebulaBloomToggle', setting: 'bloom' },
+            { button: 'mixerNebulaKnockoutBackgroundToggle', setting: 'knockoutBackground' },
+            { button: 'mixerNebulaMorphingModeToggle', setting: 'morphingMode' },
+            { button: 'mixerNebulaShowPulsarToggle', setting: 'showPulsar' },
+            { button: 'mixerNebulaAudioReactiveToggle', setting: 'audioReactive' },
+            { button: 'mixerNebulaColorReactiveToggle', setting: 'color' },
+            { button: 'mixerNebulaRotationReactiveToggle', setting: 'rotation' },
+            { button: 'mixerNebulaPulsarReactiveToggle', setting: 'pulsar' },
+            { button: 'mixerNebulaCameraOrbitToggle', setting: 'cameraOrbit' },
+            { button: 'mixerNebulaFlyThroughToggle', setting: 'flyThrough' }
+        ];
+        
+        toggles.forEach(toggle => {
+            const buttonEl = document.getElementById(toggle.button);
+            if (buttonEl) {
+                const isActive = settings[toggle.setting] || (toggle.setting === 'color' && settings.audioReactivePresets?.color) || 
+                                (toggle.setting === 'rotation' && settings.audioReactivePresets?.rotation) || 
+                                (toggle.setting === 'pulsar' && settings.audioReactivePresets?.pulsar);
+                const toggleText = buttonEl.querySelector('.toggle-text');
+                
+                if (isActive) {
+                    buttonEl.classList.add('active');
+                    if (toggleText) toggleText.textContent = 'ON';
+                } else {
+                    buttonEl.classList.remove('active');
+                    if (toggleText) toggleText.textContent = 'OFF';
+                }
+            }
+        });
     }
 
     updateHeaderVideoFileButtons() {
@@ -9627,7 +10179,7 @@ class GitItUpVisualizer {
                 reflexFit: true,
                 reflexRatio: 0,
                 roundBars: false,
-                showBgColor: true,
+                showBgColor: false, // Transparent background
                 showFPS: false,
                 showPeaks: true, // As requested
                 showScaleX: false,
@@ -9645,7 +10197,7 @@ class GitItUpVisualizer {
                 alphaBars: false,
                 ansiBands: true,
                 barSpace: 0.4243301972800962,
-                bgAlpha: 0.8718491729657911,
+                bgAlpha: 0.0,
                 channelLayout: 'single',
                 colorMode: 'gradient',
                 fadePeaks: false,
@@ -9735,7 +10287,7 @@ class GitItUpVisualizer {
                 reflexFit: true,
                 reflexRatio: 0,
                 roundBars: false,
-                showBgColor: true,
+                showBgColor: false, // Transparent background
                 showFPS: false,
                 showPeaks: true,
                 showScaleX: false,
@@ -9789,7 +10341,7 @@ class GitItUpVisualizer {
                 reflexFit: true,
                 reflexRatio: 0.5,
                 roundBars: true,
-                showBgColor: true,
+                showBgColor: false, // Transparent background
                 showFPS: false,
                 showPeaks: true,
                 showScaleX: false,
@@ -9807,12 +10359,12 @@ class GitItUpVisualizer {
                 alphaBars: false,
                 ansiBands: true,
                 barSpace: 0.4243301972800962,
-                bgAlpha: 0.8718491729657911,
+                bgAlpha: 0.0,
                 channelLayout: 'single',
                 colorMode: 'gradient',
                 fadePeaks: false,
                 fftSize: 8192,
-                fillAlpha: 0.9,
+                fillAlpha: 1.0,
                 frequencyScale: 'linear',
                 gradient: 'prism',
                 gravity: 5.241110765118057,
@@ -9830,7 +10382,7 @@ class GitItUpVisualizer {
                 mirror: 0,
                 mode: 0,
                 noteLabels: false,
-                outlineBars: false,
+                outlineBars: true,
                 overlay: false,
                 peakFadeTime: 594.7913467712076,
                 peakHoldTime: 502.3206017658375,
@@ -9897,7 +10449,7 @@ class GitItUpVisualizer {
                 reflexFit: true,
                 reflexRatio: 0.5,
                 roundBars: false,
-                showBgColor: true,
+                showBgColor: false, // Transparent background
                 showFPS: false,
                 showPeaks: false,
                 showScaleX: false,
@@ -9951,7 +10503,7 @@ class GitItUpVisualizer {
                 reflexFit: true,
                 reflexRatio: 0.01,
                 roundBars: false,
-                showBgColor: true,
+                showBgColor: false, // Transparent background
                 showFPS: false,
                 showPeaks: false,
                 showScaleX: false,
@@ -12947,15 +13499,29 @@ class GitItUpVisualizer {
     }
 
     showVisualizerPanel() {
-        // Check if panel is already open, if so close it
-        const existingPanel = document.getElementById('visualizerPanel');
-        if (existingPanel) {
-            existingPanel.remove();
-            return;
+        // Show the header AM visualizer panel
+        const panel = document.getElementById('headerVisualizerPanel');
+        if (panel) {
+            // Toggle panel visibility
+            if (panel.style.display === 'none' || !panel.style.display) {
+                // Position panel relative to the visualizer button
+                const button = document.getElementById('footerVisualizerBtn');
+                if (button) {
+                    const rect = button.getBoundingClientRect();
+                    panel.style.position = 'fixed';
+                    panel.style.left = rect.left + 'px';
+                    panel.style.top = (rect.bottom + 5) + 'px';
+                    panel.style.zIndex = '10000';
+                }
+                panel.style.display = 'block';
+                console.log('🎛️ AM Visualizer panel opened');
+            } else {
+                panel.style.display = 'none';
+                console.log('🎛️ AM Visualizer panel closed');
+            }
+        } else {
+            console.error('❌ Header visualizer panel not found');
         }
-        
-        // Create visualizer panel
-        this.createVisualizerPanel();
     }
 
     createPlaylistPanel() {
@@ -19983,6 +20549,11 @@ https://rogueamoeba.com/loopback/
             window.multiDisplayManager.updateMixerAMOpacitySlider();
         }
         
+        // Update header opacity slider
+        if (window.multiDisplayManager && window.multiDisplayManager.updateHeaderAMVisualizationOpacitySlider) {
+            window.multiDisplayManager.updateHeaderAMVisualizationOpacitySlider();
+        }
+        
         console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
     }
 
@@ -21447,6 +22018,15 @@ https://rogueamoeba.com/loopback/
             });
         }
 
+        // Header AM Visualizer close button
+        const headerVisualizerCloseBtn = document.getElementById('headerVisualizerCloseBtn');
+        if (headerVisualizerCloseBtn) {
+            headerVisualizerCloseBtn.addEventListener('click', () => {
+                document.getElementById('headerVisualizerPanel').style.display = 'none';
+                document.getElementById('footerVisualizerBtn').classList.remove('active');
+            });
+        }
+
         // Fluid Dynamics Viscosity slider
         const fluidDynamicsViscositySlider = document.getElementById('headerFluidDynamicsViscositySlider');
         const fluidDynamicsViscosityValue = document.getElementById('headerFluidDynamicsViscosityValue');
@@ -22713,15 +23293,10 @@ https://rogueamoeba.com/loopback/
             footerLiveBackgroundBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Live Background button clicked');
+                console.log('Footer Live Background button clicked - opening background panel');
                 
-                // If background image is enabled, toggle it off
-                if (this.backgroundImageEnabled) {
-                    this.toggleBackgroundImage();
-                } else {
-                    // Otherwise show background image selection
-                    this.showBackgroundImageSelection();
-                }
+                // Only show background image selection panel (no toggle functionality)
+                this.showBackgroundImageSelection();
             });
         } else {
             console.error('Footer Live Background button not found');
