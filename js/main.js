@@ -18035,6 +18035,80 @@ https://rogueamoeba.com/loopback/
         alert(helpText);
     }
 
+    generateNewProMorphTarget() {
+        const baseConfig = this.lockedMorphParams || {};
+
+        // Check if we're in radial mode
+        const isRadial = baseConfig.radial !== undefined ? baseConfig.radial : Math.random() > 0.6;
+
+        // Use locked spinSpeed if it exists, otherwise keep current
+        const spinSpeed = baseConfig.spinSpeed !== undefined ? baseConfig.spinSpeed : (this.morphStartConfig ? this.morphStartConfig.spinSpeed : 0);
+
+        // Generate mode for Pro (1-8 and 10, exclude modes 0 and 9)
+        let randomMode;
+        const validModes = [1, 2, 3, 4, 5, 6, 7, 8, 10];
+        randomMode = validModes[Math.floor(Math.random() * validModes.length)];
+        
+        this.morphTargetConfig = {
+            // Keep locked parameters unchanged (same as Regular AM)
+            mode: baseConfig.mode !== undefined ? baseConfig.mode : randomMode,
+            radial: isRadial,
+            mirror: baseConfig.mirror !== undefined ? baseConfig.mirror : (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0),
+            ledBars: baseConfig.ledBars !== undefined ? baseConfig.ledBars : false,
+            ansiBands: baseConfig.ansiBands !== undefined ? baseConfig.ansiBands : Math.random() > 0.7,
+            channelLayout: baseConfig.channelLayout || (Math.random() > 0.7 ? 
+                (Math.random() > 0.5 ? 'dual-vertical' : 'dual-horizontal') : 'single'),
+            frequencyScale: baseConfig.frequencyScale || (Math.random() > 0.5 ? 'log' : 'bark'),
+            spinSpeed: spinSpeed,
+
+            // Variable parameters that can change (same as Regular AM, but exclude reflex properties)
+            barSpace: Math.random() * 0.05,
+            fillAlpha: isRadial ? 1 : 0.8 + Math.random() * 0.2,
+            smoothing: 0.3 + Math.random() * 0.5,
+            gradient: ['classic', 'rainbow', 'prism', 'steelblue', 'orangered'][Math.floor(Math.random() * 5)],
+            showPeaks: Math.random() > 0.5,
+            radius: isRadial ? 0.2 + Math.random() * 0.6 : 0.3 + Math.random() * 0.4,
+            roundBars: Math.random() > 0.5,
+            lineWidth: isRadial ? 4 + Math.random() * 4 : Math.random() * 2,
+
+            // Critical parameters for visibility - boost these for radial
+            maxDecibels: isRadial ? -15 + Math.random() * 5 : -20 + Math.random() * 10,
+            minDecibels: isRadial ? -70 + Math.random() * 10 : -80 + Math.random() * 10,
+            maxFreq: 16000 + Math.random() * 6000,
+            minFreq: 20 + Math.random() * 30,
+            linearAmplitude: true,
+            linearBoost: isRadial ? 3 + Math.random() * 3 : 2 + Math.random() * 3,
+            volume: isRadial ? 2 + Math.random() * 1.5 : 1.5 + Math.random() * 1,
+
+            // Other parameters (same as Regular AM, exclude reflex properties)
+            alphaBars: false,
+            fadePeaks: false,
+            loRes: false,
+            lumiBars: false,
+            maxFPS: 0,
+            noteLabels: false,
+            outlineBars: Math.random() > 0.7,
+            peakFadeTime: 500 + Math.random() * 500,
+            peakHoldTime: 300 + Math.random() * 400,
+            peakLine: false,
+            showFPS: false,
+            showScaleY: false,
+            splitGradient: false,
+            trueLeds: Math.random() > 0.5,
+            useCanvas: true,
+            weightingFilter: ['', 'A', 'B', 'C', 'D'][Math.floor(Math.random() * 5)],
+
+            // Pro-specific parameters (always locked)
+            colorMode: 'bar-level', // Always keep Pro color mode
+            overlay: true, // Always keep Pro overlay
+            showBgColor: false, // Always keep Pro background transparent
+            fftSize: 8192
+            // Note: bgAlpha and reflex properties excluded as requested
+        };
+
+        console.log('🎯 Generated new Pro morph target:', this.morphTargetConfig);
+    }
+
     // Preset Methods
     exportPresets() {
         try {
@@ -24966,6 +25040,15 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     return;
                 }
 
+                // Branch based on visualization system
+                if (this.useOfficialAudioMotion) {
+                    this.startProMorphing();
+                } else {
+                    this.startRegularMorphing();
+                }
+            }
+
+            startRegularMorphing() {
                 this.isMorphing = true;
 
                 // Sidebar morph button removed - functionality moved to footer
@@ -25022,6 +25105,75 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 }, 50);
             }
 
+            startProMorphing() {
+                if (!this.officialAudioMotion) {
+                    console.error('❌ Official AudioMotion not available for Pro morphing');
+                    return;
+                }
+
+                this.isMorphing = true;
+
+                // Update footer morph button (same UI as regular)
+                const footerMorphBtn = document.getElementById('footerMorphBtn');
+                if (footerMorphBtn) {
+                    footerMorphBtn.classList.add('active');
+                    const footerBtnText = footerMorphBtn.querySelector('.morph-btn-text');
+                    if (footerBtnText) {
+                        footerBtnText.textContent = 'Stop Morph';
+                    }
+                }
+
+                // Make sure energy history is initialized (same as regular)
+                this.energyHistory = this.energyHistory || [];
+                this.currentEnergy = 0;
+                this.lastEnergy = 0;
+
+                if (this.morphMode === 'energy') {
+                    this.startEnergyDetection();
+                    // Show sidebar energy container
+                    const energyContainer = document.getElementById('energyContainer');
+                    if (energyContainer) {
+                        energyContainer.style.display = 'block';
+                    }
+                    // Show footer energy container
+                    const footerEnergyContainer = document.getElementById('footerEnergyContainer');
+                    if (footerEnergyContainer) {
+                        footerEnergyContainer.style.display = 'block';
+                    }
+                }
+
+                this.morphStartConfig = this.getCurrentProConfig();
+
+                // Store locked parameters to match Regular AM morph behavior
+                this.lockedMorphParams = {
+                    // Core structure parameters - same as Regular AM (9 parameters)
+                    radial: this.morphStartConfig.radial,
+                    mirror: this.morphStartConfig.mirror,
+                    ledBars: this.morphStartConfig.ledBars,
+                    ansiBands: this.morphStartConfig.ansiBands,
+                    mode: this.morphStartConfig.mode,
+                    channelLayout: this.morphStartConfig.channelLayout,
+                    frequencyScale: this.morphStartConfig.frequencyScale,
+                    spinSpeed: this.morphStartConfig.spinSpeed,
+                    spinAngle: this.morphStartConfig.spinAngle || 0,
+                    
+                    // Pro-specific parameters (must stay locked for Pro functionality)
+                    colorMode: 'bar-level', // Always keep Pro color mode
+                    overlay: true, // Always keep Pro overlay
+                    showBgColor: false, // Always keep Pro background transparent
+                    bgAlpha: 0 // Always keep Pro background transparent
+                };
+
+                this.generateNewProMorphTarget();
+                this.morphProgress = 0;
+
+                this.morphInterval = setInterval(() => {
+                    this.updateProMorph();
+                }, 50);
+
+                console.log('🎨 Started Pro morphing with config:', this.morphStartConfig);
+            }
+
             stopMorphing() {
                 this.isMorphing = false;
                 this.lockedMorphParams = null;
@@ -25070,15 +25222,25 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             }
 
             detectEnergy() {
-                if (!this.audioMotion || !this.audioMotion.dataArray) {
-                    console.log('Energy detection: No audioMotion or dataArray');
+                // Check for data array from either regular or Pro AudioMotion
+                let dataArray = null;
+                if (this.useOfficialAudioMotion && this.officialAudioMotion) {
+                    // For Pro visualizations, get data from official AudioMotion
+                    try {
+                        dataArray = this.officialAudioMotion.getFrequencyData();
+                    } catch (e) {
+                        console.log('Energy detection: No Pro AudioMotion data available');
+                        return;
+                    }
+                } else if (this.audioMotion && this.audioMotion.dataArray) {
+                    // For regular visualizations, use custom AudioMotion
+                    dataArray = this.audioMotion.dataArray;
+                } else {
+                    console.log('Energy detection: No audioMotion or dataArray available');
                     return;
                 }
-                
-
 
                 let energy = 0;
-                const dataArray = this.audioMotion.dataArray;
 
                 const bassEnd = Math.min(Math.floor(dataArray.length * 0.1), dataArray.length);
                 for (let i = 0; i < bassEnd; i++) {
@@ -25169,6 +25331,31 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 }
             }
 
+            updateProMorph() {
+                if (!this.isMorphing || !this.officialAudioMotion) {
+                    return;
+                }
+
+                this.morphProgress += 50 / this.morphDuration;
+
+                if (this.morphProgress >= 1) {
+                    this.morphProgress = 1;
+
+                    // Apply target configuration using direct property updates
+                    this.applyProMorphConfig(this.morphTargetConfig);
+
+                    this.morphStartConfig = this.morphTargetConfig;
+                    this.generateNewProMorphTarget();
+                    this.morphProgress = 0;
+                } else {
+                    const easedProgress = this.easeInOutCubic(this.morphProgress);
+                    const currentConfig = this.interpolateProConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress);
+
+                    // Apply interpolated configuration using direct property updates
+                    this.applyProMorphConfig(currentConfig);
+                }
+            }
+
             interpolateConfigs(start, target, progress) {
                 const config = {};
 
@@ -25218,6 +25405,155 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 config.fftSize = 8192;
 
                 return config;
+            }
+
+            interpolateProConfigs(start, target, progress) {
+                const config = {};
+
+                // Always use locked parameters if they exist
+                if (this.lockedMorphParams) {
+                    Object.assign(config, this.lockedMorphParams);
+                }
+
+                // Interpolate ONLY numeric properties that should smoothly transition (Pro-specific, exclude bgAlpha and reflex properties)
+                const numericProps = [
+                    'barSpace',
+                    'fillAlpha',
+                    'smoothing',
+                    'lineWidth',
+                    'radius',
+                    'maxDecibels',
+                    'minDecibels',
+                    'linearBoost',
+                    'volume',
+                    'gravity',
+                    'peakFadeTime',
+                    'peakHoldTime',
+                    'maxFreq',
+                    'minFreq'
+                ];
+
+                numericProps.forEach(prop => {
+                    if (start[prop] !== undefined && target[prop] !== undefined) {
+                        config[prop] = start[prop] + (target[prop] - start[prop]) * progress;
+                    }
+                });
+
+                // Pro-specific gradient handling for smooth color transitions
+                // Create intermediate gradient steps during morphing
+                const availableGradients = ['classic', 'rainbow', 'prism', 'steelblue', 'orangered'];
+                const startGradientIndex = availableGradients.indexOf(start.gradient) || 0;
+                const targetGradientIndex = availableGradients.indexOf(target.gradient) || 0;
+                
+                if (startGradientIndex !== targetGradientIndex && progress < 1) {
+                    // Create smooth gradient transitions by stepping through intermediate gradients
+                    const totalSteps = Math.abs(targetGradientIndex - startGradientIndex);
+                    const currentStep = Math.floor(progress * totalSteps);
+                    const direction = targetGradientIndex > startGradientIndex ? 1 : -1;
+                    const intermediateIndex = (startGradientIndex + (currentStep * direction)) % availableGradients.length;
+                    config.gradient = availableGradients[Math.max(0, intermediateIndex)];
+                } else if (progress >= 1) {
+                    // At completion, use target gradient
+                    config.gradient = target.gradient;
+                } else {
+                    // Same gradient, keep start
+                    config.gradient = start.gradient;
+                }
+
+                // Keep these properties from start config to prevent jumps (same as Regular AM)
+                config.showPeaks = start.showPeaks;
+                config.roundBars = start.roundBars;
+                config.outlineBars = start.outlineBars;
+                config.linearAmplitude = start.linearAmplitude;
+
+                // Only switch these at the END of morph (same as Regular AM)
+                if (progress >= 1) {
+                    config.showPeaks = target.showPeaks;
+                    config.roundBars = target.roundBars;
+                    config.outlineBars = target.outlineBars;
+                }
+
+                // Always include these critical Pro properties
+                config.fftSize = 8192;
+                config.colorMode = 'bar-level'; // Always keep Pro color mode
+                config.overlay = true; // Always keep Pro overlay
+                config.showBgColor = false; // Always keep Pro background transparent
+                // Note: bgAlpha excluded as requested
+
+                return config;
+            }
+
+            applyProMorphConfig(config) {
+                if (!this.officialAudioMotion) {
+                    console.warn('⚠️ Official AudioMotion not available for Pro morph config');
+                    return;
+                }
+
+                try {
+                    // Use direct property assignment to avoid DEFAULT_SETTINGS merge
+                    // This prevents parameter resets that occur with setOptions()
+                    
+                    // Numeric properties that can be directly assigned
+                    const directProps = [
+                        'barSpace', 'fillAlpha', 'smoothing', 'lineWidth', 'radius',
+                        'maxDecibels', 'minDecibels', 'linearBoost', 'volume',
+                        'gravity', 'peakFadeTime', 'peakHoldTime', 'maxFreq', 'minFreq'
+                    ];
+
+                    directProps.forEach(prop => {
+                        if (config[prop] !== undefined) {
+                            this.officialAudioMotion[prop] = config[prop];
+                        }
+                    });
+
+                    // Boolean properties that can be directly assigned
+                    const boolProps = [
+                        'showPeaks', 'roundBars', 'outlineBars', 'linearAmplitude',
+                        'overlay', 'showBgColor'
+                    ];
+
+                    boolProps.forEach(prop => {
+                        if (config[prop] !== undefined) {
+                            this.officialAudioMotion[prop] = config[prop];
+                        }
+                    });
+
+                    // String properties that can be directly assigned
+                    if (config.gradient !== undefined) {
+                        this.officialAudioMotion.gradient = config.gradient;
+                    }
+
+                    if (config.colorMode !== undefined) {
+                        this.officialAudioMotion.colorMode = config.colorMode;
+                    }
+
+                    // Structural changes that require setOptions (use sparingly)
+                    const structuralProps = {};
+                    if (config.mode !== undefined && config.mode !== this.officialAudioMotion.mode) {
+                        structuralProps.mode = config.mode;
+                    }
+                    if (config.radial !== undefined && config.radial !== this.officialAudioMotion.radial) {
+                        structuralProps.radial = config.radial;
+                    }
+                    if (config.mirror !== undefined && config.mirror !== this.officialAudioMotion.mirror) {
+                        structuralProps.mirror = config.mirror;
+                    }
+                    if (config.channelLayout !== undefined && config.channelLayout !== this.officialAudioMotion.channelLayout) {
+                        structuralProps.channelLayout = config.channelLayout;
+                    }
+
+                    // Only call setOptions for structural changes to minimize resets
+                    if (Object.keys(structuralProps).length > 0) {
+                        // Preserve critical Pro properties when using setOptions
+                        structuralProps.colorMode = 'bar-level';
+                        structuralProps.overlay = true;
+                        structuralProps.showBgColor = false;
+                        this.officialAudioMotion.setOptions(structuralProps);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error applying Pro morph config:', error);
+                }
             }
 
             easeInOutCubic(t) { // Make the easing even smoother
