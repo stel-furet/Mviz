@@ -3075,7 +3075,10 @@ class RecordManager {
                     console.log('💾 Mixer AM save preset clicked');
                     
                     // Save current preset
-                    this.visualizer.saveCurrentPreset();
+                    const presetName = prompt('Enter preset name:');
+                    if (presetName) {
+                        this.visualizer.saveCurrentAsPreset(presetName);
+                    }
                     
                     // Update both dropdowns
                     this.updateMixerAMPresetSelector();
@@ -5864,7 +5867,10 @@ class RecordManager {
                 this.visualizer.savedPresets.forEach((preset, index) => {
                     const option = document.createElement('option');
                     option.value = index.toString();
+                    
+                    // Don't add visual indicator - keep preset names clean
                     option.textContent = preset.name || `Preset ${index + 1}`;
+                    
                     mixerAMPresetSelector.appendChild(option);
                 });
             }
@@ -13848,6 +13854,10 @@ class GitItUpVisualizer {
                     panel.style.zIndex = '10000';
                 }
                 panel.style.display = 'block';
+                
+                // Connect functionality to static HTML elements
+                this.connectStaticHeaderElements();
+                
                 console.log('🎛️ AM Visualizer panel opened');
             } else {
                 panel.style.display = 'none';
@@ -13856,6 +13866,106 @@ class GitItUpVisualizer {
         } else {
             console.error('❌ Header visualizer panel not found');
         }
+    }
+
+    connectStaticHeaderElements() {
+        // Connect static HTML elements to existing functionality
+        const loadPresetSelect = document.getElementById('headerPresetSelector');
+        const savePresetBtn = document.getElementById('headerSavePresetBtn');
+        const exportPresetsBtn = document.getElementById('headerExportPresetsBtn');
+        const importPresetsBtn = document.getElementById('headerImportPresetsBtn');
+        const importPresetsFile = document.getElementById('headerImportPresetsFile');
+        
+        const spectrumButton = document.getElementById('headerVizModeToggle');
+        const spectrumDropdownContent = document.getElementById('headerVizModeDropdown');
+        const onButton = document.getElementById('headerVizToggleBtn');
+        const randomButton = document.getElementById('headerRandomVizBtn');
+        
+        const colorSchemeButton = document.getElementById('headerColorSchemeToggle');
+        const colorSchemeDropdownContent = document.getElementById('headerColorSchemeDropdown');
+
+        // Connect functionality if elements exist
+        if (loadPresetSelect && savePresetBtn && exportPresetsBtn && importPresetsBtn && importPresetsFile) {
+            this.connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile);
+            // Load existing presets into dropdown
+            this.loadPresetOptions(loadPresetSelect);
+        }
+        
+        if (spectrumButton && spectrumDropdownContent && onButton && randomButton) {
+            this.connectHeaderSpectrumFunctionality(spectrumButton, spectrumDropdownContent, onButton, randomButton);
+        }
+        
+        if (colorSchemeButton && colorSchemeDropdownContent) {
+            this.connectHeaderColorSchemeFunctionality(colorSchemeButton, colorSchemeDropdownContent);
+        }
+        
+        // Connect dropdown item functionality
+        this.connectDropdownItems();
+        
+        console.log('🔗 Connected static header elements to functionality');
+    }
+
+    connectDropdownItems() {
+        // Connect spectrum mode dropdown items
+        const spectrumDropdownItems = document.querySelectorAll('#headerVizModeDropdown .dropdown-item');
+        spectrumDropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const mode = parseInt(e.target.getAttribute('data-mode'));
+                if (!isNaN(mode)) {
+                    // Switch back to custom analyzer if using official
+                    if (this.useOfficialAudioMotion) {
+                        this.switchToCustomAnalyzer();
+                    }
+                    
+                    this.setVisualizationMode(mode);
+                    
+                    // Update button text and dropdown
+                    const spectrumButton = document.getElementById('headerVizModeToggle');
+                    if (spectrumButton) {
+                        spectrumButton.textContent = e.target.textContent;
+                    }
+                    
+                    // Update active state
+                    spectrumDropdownItems.forEach(dropdownItem => dropdownItem.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Close dropdown
+                    const dropdown = document.getElementById('headerVizModeDropdown');
+                    if (dropdown) {
+                        dropdown.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        // Connect color scheme dropdown items
+        const colorSchemeDropdownItems = document.querySelectorAll('#headerColorSchemeDropdown .dropdown-item');
+        colorSchemeDropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const scheme = e.target.getAttribute('data-scheme');
+                if (scheme) {
+                    this.setColorScheme(scheme);
+                    
+                    // Update button text and dropdown
+                    const colorSchemeButton = document.getElementById('headerColorSchemeToggle');
+                    if (colorSchemeButton) {
+                        colorSchemeButton.textContent = e.target.textContent;
+                    }
+                    
+                    // Update active state
+                    colorSchemeDropdownItems.forEach(dropdownItem => dropdownItem.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Close dropdown
+                    const dropdown = document.getElementById('headerColorSchemeDropdown');
+                    if (dropdown) {
+                        dropdown.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        console.log('🔗 Connected dropdown items functionality');
     }
 
     createPlaylistPanel() {
@@ -14759,7 +14869,10 @@ class GitItUpVisualizer {
             this.savedPresets.forEach((preset, index) => {
                 const option = document.createElement('option');
                 option.value = index;
+                
+                // Don't add visual indicator - keep preset names clean
                 option.textContent = preset.name || `Preset ${index + 1}`;
+                
                 selectElement.appendChild(option);
                 console.log('Added option:', option.textContent, 'value:', option.value);
             });
@@ -18231,7 +18344,8 @@ https://rogueamoeba.com/loopback/
     }
 
     generateRandomProConfig() {
-        const randomMode = Math.floor(Math.random() * 11); // Same modes as regular AM
+        // Official AudioMotion supports modes 0-8 (not 9-10 like custom AM)
+        const randomMode = Math.floor(Math.random() * 9);
         
         return {
             // Core visualization parameters
@@ -20951,26 +21065,83 @@ https://rogueamoeba.com/loopback/
     }
 
     saveCurrentAsPreset(name) {
-        if (!this.audioMotion) 
-            return;
-        
+        // Detect which system is active and save accordingly
+        if (this.useOfficialAudioMotion && this.officialAudioMotion) {
+            this.saveCurrentProAsPreset(name);
+        } else if (this.audioMotion) {
+            // Existing regular AM save logic (unchanged)
+            const preset = {
+                name: name || `Preset ${
+                    this.savedPresets.length + 1
+                }`,
+                timestamp: Date.now(),
+                config: this.getCurrentConfig()
+            };
 
+            this.savedPresets.push(preset);
+            if (this.savedPresets.length > 20) {
+                this.savedPresets.shift();
+            }
+
+            this.savePresets();
+            this.updatePresetSelector();
+        } else {
+            console.error('❌ No active visualization system to save');
+        }
+    }
+
+    // Pro Preset Saving Methods
+    saveCurrentProAsPreset(name) {
+        if (!this.officialAudioMotion) {
+            console.error('❌ Official AudioMotion not available for Pro preset saving');
+            return;
+        }
 
         const preset = {
-            name: name || `Preset ${
-                this.savedPresets.length + 1
-            }`,
+            name: name || `Pro Preset ${this.savedPresets.length + 1}`,
             timestamp: Date.now(),
-            config: this.getCurrentConfig()
+            config: this.getCurrentProConfig(),
+            useOfficial: true  // Flag to identify Pro presets
         };
-
+        
         this.savedPresets.push(preset);
         if (this.savedPresets.length > 20) {
             this.savedPresets.shift();
         }
-
+        
         this.savePresets();
         this.updatePresetSelector();
+        
+        console.log('💾 Saved Pro preset:', preset.name, preset.config);
+    }
+
+    getCurrentProConfig() {
+        if (!this.officialAudioMotion) return {};
+        
+        // Extract current Pro configuration from official AudioMotion
+        const config = {};
+        const params = [
+            'alphaBars', 'ansiBands', 'barSpace', 'bgAlpha', 'channelLayout',
+            'colorMode', 'fadePeaks', 'fftSize', 'fillAlpha', 'frequencyScale',
+            'gradient', 'gradientLeft', 'gradientRight', 'gravity', 'ledBars',
+            'linearAmplitude', 'linearBoost', 'lineWidth', 'loRes', 'lumiBars',
+            'maxDecibels', 'maxFPS', 'maxFreq', 'minDecibels', 'minFreq',
+            'mirror', 'mode', 'noteLabels', 'outlineBars', 'overlay',
+            'peakFadeTime', 'peakHoldTime', 'peakLine', 'radial', 'radialInvert',
+            'radius', 'reflexAlpha', 'reflexBright', 'reflexFit', 'reflexRatio',
+            'roundBars', 'showBgColor', 'showFPS', 'showPeaks', 'showScaleX',
+            'showScaleY', 'smoothing', 'spinSpeed', 'splitGradient', 'trueLeds',
+            'useCanvas', 'volume', 'weightingFilter'
+        ];
+        
+        params.forEach(param => {
+            if (this.officialAudioMotion[param] !== undefined) {
+                config[param] = this.officialAudioMotion[param];
+            }
+        });
+        
+        console.log('📋 Extracted Pro config:', config);
+        return config;
     }
 
     toggleVisualization() {
@@ -21423,13 +21594,78 @@ https://rogueamoeba.com/loopback/
             return;
         
 
-
         const preset = this.savedPresets[index];
-        if (preset && preset.config && this.audioMotion) { // Don't apply brightness boost to saved presets
-            this.audioMotion.setOptions(preset.config);
-            document.querySelectorAll('#vizModeDropdown .dropdown-item').forEach(item => {
-                item.classList.remove('active');
-            });
+        if (!preset || !preset.config) return;
+        
+        // Check if this is a Pro preset
+        if (preset.useOfficial) {
+            this.loadProPreset(preset);
+        } else {
+            // Existing regular AM load logic (unchanged)
+            if (this.audioMotion) {
+                // Switch back to regular AM if currently using Pro
+                if (this.useOfficialAudioMotion) {
+                    this.switchToCustomAnalyzer();
+                }
+                
+                // Don't apply brightness boost to saved presets
+                this.audioMotion.setOptions(preset.config);
+                document.querySelectorAll('#vizModeDropdown .dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                console.log('📂 Loaded regular preset:', preset.name);
+            }
+        }
+    }
+
+    // Pro Preset Loading Methods
+    loadProPreset(preset) {
+        if (!this.officialAudioMotion) {
+            console.error('❌ Official AudioMotion not available for Pro preset loading');
+            return;
+        }
+        
+        // Switch to Pro system if not already active
+        if (!this.useOfficialAudioMotion) {
+            this.switchToOfficialAudioMotion();
+        }
+        
+        // Apply Pro preset configuration
+        this.officialAudioMotion.setOptions(preset.config);
+        
+        console.log('📂 Loaded Pro preset:', preset.name, preset.config);
+    }
+
+    switchToOfficialAudioMotion() {
+        // Stop custom analyzer
+        if (this.audioMotion) {
+            this.audioMotion.stop();
+        }
+        
+        // Clear canvas
+        const canvas = document.getElementById('visualizationCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Initialize official AudioMotion if needed
+        if (!this.officialAudioMotion) {
+            console.log('🔄 Initializing official AudioMotion for preset loading...');
+            // Use existing initialization logic
+            this.initAudioMotion();
+        }
+        
+        // Start official AudioMotion
+        if (this.officialAudioMotion) {
+            this.officialAudioMotion.toggleAnalyzer(true);
+            this.useOfficialAudioMotion = true;
+            
+            // Reconnect audio sources
+            this.reconnectOfficialAudioMotion();
+            
+            console.log('🔄 Switched to official AudioMotion for preset loading');
         }
     }
 
@@ -21446,7 +21682,10 @@ https://rogueamoeba.com/loopback/
             this.savedPresets.forEach((preset, index) => {
                 const option = document.createElement('option');
                 option.value = index;
+                
+                // Don't add visual indicator - keep preset names clean
                 option.textContent = preset.name;
+                
                 sel.appendChild(option);
             });
         };

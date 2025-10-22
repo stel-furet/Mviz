@@ -673,19 +673,69 @@
                         </div>
                     </div>
                     
-                    <!-- Presets -->
-                    <div class="control-group">
-                        <div class="group-label">Presets</div>
-                        <div class="preset-buttons">
-                            <button class="btn-preset" data-preset="0">Spectrum</button>
-                            <button class="btn-preset" data-preset="1">Mirror Wave</button>
-                            <button class="btn-preset" data-preset="2">Classic LED</button>
-                            <button class="btn-preset" data-preset="3">Stereo</button>
-                            <button class="btn-preset" data-preset="4">Radial</button>
-                            <button class="btn-preset" data-preset="5">Energy</button>
-                            <button class="btn-preset" data-preset="6">Mirror</button>
-                            <button class="btn-preset" data-preset="7">Fluid</button>
+                    <!-- Presets Management -->
+                    <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                        <div style="color: var(--text-primary); font-size: 12px; font-weight: bold; margin-bottom: 8px;">Presets</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <select id="headerPresetSelector" title="Load Saved Preset" style="background: var(--secondary-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 8px; border-radius: 4px; font-size: 12px; width: 100%; max-height: 200px; overflow-y: auto;">
+                                <option value="">Load Preset...</option>
+                            </select>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                <button id="headerSavePresetBtn" title="Save Current as Preset" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1 1 0%;">Save</button>
+                                <button id="headerExportPresetsBtn" title="Export All Presets" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1 1 0%;">Export</button>
+                                <button id="headerImportPresetsBtn" title="Import Presets" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1 1 0%;">Import</button>
+                            </div>
+                            <input type="file" id="headerImportPresetsFile" accept=".json" style="display: none;">
                         </div>
+                    </div>
+                    
+                    <!-- Spectrum Controls -->
+                    <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                        <div style="color: var(--text-primary); font-size: 12px; font-weight: bold; margin-bottom: 8px;">Spectrum</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <div style="flex: 1 1 0%; position: relative;">
+                                    <button id="headerVizModeToggle" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%; text-align: left;">Radial Spectrum</button>
+                                    <div id="headerVizModeDropdown" style="position: absolute; top: 100%; left: 0px; right: 0px; background: var(--secondary-bg); border: 1px solid var(--border-color); border-radius: 4px; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+                                        <div class="dropdown-item" data-mode="0" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Spectrum</div>
+                                        <div class="dropdown-item" data-mode="1" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Mirror Wave</div>
+                                        <div class="dropdown-item" data-mode="2" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Classic LED</div>
+                                        <div class="dropdown-item" data-mode="3" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Stereo</div>
+                                        <div class="dropdown-item active" data-mode="4" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Radial Spectrum</div>
+                                        <div class="dropdown-item" data-mode="5" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Energy</div>
+                                        <div class="dropdown-item" data-mode="6" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Mirror</div>
+                                    </div>
+                                </div>
+                                <button id="headerVizToggleBtn" title="Toggle Visualization" style="background: var(--accent-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;">ON</button>
+                            </div>
+                            <button id="headerRandomVizBtn" title="Random Visualization" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">Random</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Color Scheme -->
+                    <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                        <div style="color: var(--text-primary); font-size: 12px; font-weight: bold; margin-bottom: 8px;">Color Scheme</div>
+                        <div style="position: relative;">
+                            <button id="headerColorSchemeToggle" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%; text-align: left;">default</button>
+                            <div id="headerColorSchemeDropdown" style="position: absolute; top: 100%; left: 0px; right: 0px; background: var(--secondary-bg); border: 1px solid var(--border-color); border-radius: 4px; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+                                <div class="dropdown-item active" data-scheme="default" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Default</div>
+                                <div class="dropdown-item" data-scheme="earthtones" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Earthtones</div>
+                                <div class="dropdown-item" data-scheme="luigi" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Luigi</div>
+                                <div class="dropdown-item" data-scheme="metal" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Heavy Metal</div>
+                                <div class="dropdown-item" data-scheme="psychedelic" style="padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--text-primary);">Psychedelic</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Preset Buttons -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn-preset" data-preset="0" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Spectrum</button>
+                        <button class="btn-preset" data-preset="1" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Mirror Wave</button>
+                        <button class="btn-preset" data-preset="2" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Classic LED</button>
+                        <button class="btn-preset" data-preset="3" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Stereo</button>
+                        <button class="btn-preset" data-preset="4" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Radial Spectrum</button>
+                        <button class="btn-preset" data-preset="5" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Energy</button>
+                        <button class="btn-preset" data-preset="6" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Mirror</button>
                     </div>
                     
                     <!-- Pro Presets (Official AudioMotion) -->
