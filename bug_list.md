@@ -57,3 +57,42 @@
 - **Issue**: When selecting file video, then selecting camera source with live video already active, camera video goes black when file video fade out completes. Then no video is viewable until app reloaded.
 - **Reproduction**: 1) Start live camera video 2) Switch to file video 3) Switch back to camera - camera goes black after fade
 - **Status**: Reported, needs investigation
+
+---
+
+# COMPLETE TODO LIST - BUG FIXES & ENHANCEMENTS
+
+## 🔊 Audio & Visualization Issues
+1. **Fix: Regular AM viz and Pro viz have distinctly different sound output levels**
+2. **Fix: In user presets list, rename 'Last Random Pro' to 'Last Random' and ensure it's always last in list**
+3. **Add: Pro presets need wait animation like regular presets have during loading**
+4. **Fix: Pro presets not fully resetting all parameters when switching - parameters like Radial are leaking to new preset**
+5. **Fix: Energy Morph not working for Pro visualizations**
+6. **Add: User controls for Pro morph parameters and possibly break out Pro parameters into separate container**
+7. **Add: Make Energy Morph the default selection**
+
+## 🎵 Audio System
+8. **Fix: Clicking play just after app launch before audio is scanned causes error - disable play button until audio loading complete, show 'Loading...' message**
+9. **Fix: When fast-forwarding to a track, first track in list always plays instead of selected track**
+10. **Add: Clear Audio Input functionality**
+
+## 🎨 UI/UX Improvements
+11. **Improve: Better UI continuity between settings panels for consistent user experience**
+12. **Add: Better user preset management - add clear list button**
+13. **Fix: Click Outside handler for all panels and mixer**
+14. **Fix: Match Header button order to Mixer order**
+
+## 📹 Video System
+15. **Add: More video effects**
+16. **Add: Clear Video Input functionality**
+
+## 🔧 Technical Enhancements
+17. **Modify: Official AudioMotion library to add more gradients and color options**
+
+## 🏷️ Branding & Cleanup
+18. **Rename: App everywhere to Metl, remove all MVPro, Vizzy, GitItUp references**
+19. **Remove: All console messages and debug code**
+20. **Fix: Remove the Pro suffix from the Advanced AM Viz button labels**
+
+## 🔊 Audio Controls
+21. **Add: Speaker icon in transport needs to function as a mute button**

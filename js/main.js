@@ -10040,6 +10040,7 @@ class GitItUpVisualizer {
         // Viz ON/OFF Toggle
         this.visualizationEnabled = true;
         this.visualizationOpacity = 1.0; // AM Visualizer opacity (0.0-1.0)
+        this.advancedVolumeAdjust = 0.0; // Default Advanced volume adjustment
 
         // Infinite Zoom properties
         this.infiniteZoomOpacity = 1.0; // Infinite Zoom opacity (0.0-1.0)
@@ -10759,7 +10760,7 @@ class GitItUpVisualizer {
                     splitGradient: false,
                     trueLeds: false,
                     useCanvas: true,
-                    volume: 1,
+                    volume: 0.0,
                     weightingFilter: "D"
                 }
             },
@@ -10817,7 +10818,7 @@ class GitItUpVisualizer {
                     splitGradient: false,
                     trueLeds: false,
                     useCanvas: true,
-                    volume: 1,
+                    volume: 0.0,
                     weightingFilter: "D"
                 }
             }
@@ -21409,6 +21410,10 @@ https://rogueamoeba.com/loopback/
                 overlay: true
             };
             this.officialAudioMotion.setOptions(transparentConfig);
+            
+            // Apply user's volume adjustment
+            this.officialAudioMotion.volume = this.advancedVolumeAdjust;
+            
             console.log('🎨 Applied transparent background settings to official AudioMotion');
             
             // Connect to same audio sources as custom analyzer
@@ -21704,7 +21709,7 @@ https://rogueamoeba.com/loopback/
         config.fftSize = config.fftSize || 8192;
         config.linearAmplitude = config.linearAmplitude !== undefined ? config.linearAmplitude : true;
         config.linearBoost = config.linearBoost || 2;
-        config.volume = config.volume || 1.5;
+        config.volume = config.volume || 0.0;
 
         return config;
     }
@@ -21753,6 +21758,9 @@ https://rogueamoeba.com/loopback/
         
         // Apply Pro preset configuration
         this.officialAudioMotion.setOptions(preset.config);
+        
+        // Apply user's volume adjustment
+        this.officialAudioMotion.volume = this.advancedVolumeAdjust;
         
         console.log('📂 Loaded Pro preset:', preset.name, preset.config);
     }
@@ -22041,6 +22049,37 @@ https://rogueamoeba.com/loopback/
             volumeIcon.style.cursor = 'pointer'; // Make it look clickable
             volumeIcon.addEventListener('click', () => {
                 this.toggleMute();
+            });
+        }
+
+        // Advanced Volume Adjust Slider
+        const advancedVolumeSlider = document.getElementById('advancedVolumeSlider');
+        const advancedVolumeValue = document.getElementById('advancedVolumeValue');
+        if (advancedVolumeSlider && advancedVolumeValue) {
+            // Load saved value
+            const savedVolume = localStorage.getItem('advancedVolumeAdjust');
+            if (savedVolume !== null) {
+                this.advancedVolumeAdjust = parseFloat(savedVolume);
+                const sliderValue = Math.round(this.advancedVolumeAdjust * 100);
+                advancedVolumeSlider.value = sliderValue;
+                advancedVolumeValue.textContent = sliderValue + '%';
+            } else {
+                // Set initial display to match default value
+                advancedVolumeValue.textContent = '0%';
+            }
+
+            advancedVolumeSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.advancedVolumeAdjust = value / 100; // Convert 0-100 to 0.0-1.0
+                advancedVolumeValue.textContent = value + '%';
+                
+                // Apply immediately to current Pro visualization
+                if (this.useOfficialAudioMotion && this.officialAudioMotion) {
+                    this.officialAudioMotion.volume = this.advancedVolumeAdjust;
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('advancedVolumeAdjust', this.advancedVolumeAdjust.toString());
             });
         }
 
