@@ -10010,6 +10010,7 @@ class GitItUpVisualizer {
         this.savedPresets = this.loadPresets();
         this.audioInitialized = false;
         this.streamManager = null;
+        this.pendingProPreset = null; // Queue Pro presets during morph
 
         // Audio input properties
         this.inputMode = 'playlist';
@@ -14758,6 +14759,11 @@ class GitItUpVisualizer {
     }
 
     connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile) {
+        // Prevent duplicate event listeners by checking if already connected
+        if (savePresetBtn.dataset.connected === 'true') {
+            return;
+        }
+        
         // Connect load preset functionality
         loadPresetSelect.addEventListener('change', (e) => {
             const presetIndex = e.target.value;
@@ -14802,6 +14808,13 @@ class GitItUpVisualizer {
                 e.target.value = '';
             }
         });
+        
+        // Mark as connected to prevent duplicate event listeners
+        savePresetBtn.dataset.connected = 'true';
+        exportPresetsBtn.dataset.connected = 'true';
+        importPresetsBtn.dataset.connected = 'true';
+        loadPresetSelect.dataset.connected = 'true';
+        importPresetsFile.dataset.connected = 'true';
     }
 
     connectHeaderSpectrumFunctionality(spectrumButton, spectrumDropdownContent, onButton, randomButton) {
@@ -18321,7 +18334,7 @@ https://rogueamoeba.com/loopback/
             radialInvert: Math.random() > 0.5,
             radius: 0.8 + Math.random() * 0.4, // Larger radius (0.8-1.2)
             reflexAlpha: 0.5 + Math.random() * 0.5, // Higher minimum
-            reflexRatio: Math.random() * 0.5,
+            reflexRatio: Math.random(),
             roundBars: Math.random() > 0.5,
             showBgColor: Math.random() > 0.3,
             showPeaks: Math.random() > 0.3,
@@ -18464,7 +18477,7 @@ https://rogueamoeba.com/loopback/
             
             // Reflection parameters
             reflexAlpha: 0.5 + Math.random() * 0.5,
-            reflexRatio: Math.random() * 0.5,
+            reflexRatio: Math.random(),
             reflexBright: 1,
             reflexFit: true,
             
@@ -18721,9 +18734,6 @@ https://rogueamoeba.com/loopback/
         } else {
             console.error('🔵 headerBlobsPanel not found!');
         }
-        
-        // Toggle blobs functionality
-        this.toggleBlobs();
     }
 
     toggleHeaderWebGL() {
@@ -18772,6 +18782,20 @@ https://rogueamoeba.com/loopback/
             } else {
                 headerBtnText.textContent = 'Blobs Off';
                 headerBtn.classList.remove('active');
+            }
+        }
+        
+        // Update toggle button
+        const toggleBtn = document.getElementById('headerBlobsToggleBtn');
+        const toggleText = toggleBtn ? toggleBtn.querySelector('.toggle-text') : null;
+        
+        if (toggleBtn && toggleText) {
+            if (this.blobsEnabled) {
+                toggleText.textContent = 'ON';
+                toggleBtn.classList.add('active');
+            } else {
+                toggleText.textContent = 'OFF';
+                toggleBtn.classList.remove('active');
             }
         }
     }
@@ -20883,7 +20907,7 @@ https://rogueamoeba.com/loopback/
             ][Math.floor(Math.random() * 5)],
             showPeaks: Math.random() > 0.5,
             radius: isRadial ? 0.8 + Math.random() * 0.6 : 0.3 + Math.random() * 0.5,
-            reflexRatio: Math.random() * 0.5,
+            reflexRatio: Math.random(),
             reflexAlpha: 0.5 + Math.random() * 0.5,
             roundBars: Math.random() > 0.5,
             lineWidth: isRadial ? 4 + Math.random() * 4 : Math.random() * 2,
@@ -21159,6 +21183,12 @@ https://rogueamoeba.com/loopback/
 
             this.savePresets();
             this.updatePresetSelector();
+            
+            // Also update the header preset selector specifically
+            const headerSelector = document.getElementById('headerPresetSelector');
+            if (headerSelector) {
+                this.loadPresetOptions(headerSelector);
+            }
         } else {
             console.error('❌ No active visualization system to save');
         }
@@ -21185,6 +21215,12 @@ https://rogueamoeba.com/loopback/
         
         this.savePresets();
         this.updatePresetSelector();
+        
+        // Also update the header preset selector specifically
+        const headerSelector = document.getElementById('headerPresetSelector');
+        if (headerSelector) {
+            this.loadPresetOptions(headerSelector);
+        }
         
         console.log('💾 Saved Pro preset:', preset.name, preset.config);
     }
@@ -21281,6 +21317,16 @@ https://rogueamoeba.com/loopback/
 
     // Set Official AudioMotion Preset (Hybrid System)
     setOfficialAudioMotionPreset(presetIndex) {
+        // Queue Pro preset if morph is running
+        if (this.isMorphing) {
+            this.pendingProPreset = presetIndex;
+            console.log('🎵 Pro preset queued - will switch when morph cycle completes:', presetIndex);
+            return;
+        }
+        
+        // Clear any pending preset since we're switching immediately
+        this.pendingProPreset = null;
+        
         console.log('🔍 Debug setOfficialAudioMotionPreset:', {
             officialAudioMotion: !!this.officialAudioMotion,
             presetIndex: presetIndex,
@@ -21713,7 +21759,7 @@ https://rogueamoeba.com/loopback/
 
     switchToOfficialAudioMotion() {
         // Stop custom analyzer
-        if (this.audioMotion) {
+        if (this.audioMotion && this.audioMotion.stop) {
             this.audioMotion.stop();
         }
         
@@ -22435,6 +22481,16 @@ https://rogueamoeba.com/loopback/
         if (headerBlobsBtn) {
             headerBlobsBtn.addEventListener('click', () => {
                 this.toggleHeaderBlobs();
+            });
+        }
+
+        // Header Blobs Toggle button
+        const headerBlobsToggleBtn = document.getElementById('headerBlobsToggleBtn');
+        if (headerBlobsToggleBtn) {
+            headerBlobsToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleBlobs();
             });
         }
 
@@ -25323,6 +25379,26 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.morphStartConfig = this.morphTargetConfig;
                     this.generateNewMorphTarget();
                     this.morphProgress = 0;
+                    
+                    // Process any queued Pro preset
+                    if (this.pendingProPreset !== null) {
+                        const queuedPreset = this.pendingProPreset;
+                        this.pendingProPreset = null;
+                        console.log('🎵 Processing queued Pro preset from REGULAR morph completion:', queuedPreset);
+                        
+                        // Temporarily stop morph to allow Pro preset switch
+                        const wasMorphing = this.isMorphing;
+                        this.stopMorphing();
+                        
+                        // Switch to Pro preset
+                        this.setOfficialAudioMotionPreset(queuedPreset);
+                        
+                        // Restart morph in Pro mode since user had morph active
+                        if (wasMorphing) {
+                            console.log('🔄 Restarting morph in Pro mode after preset switch');
+                            this.startProMorphing();
+                        }
+                    }
                 } else {
                     const easedProgress = this.easeInOutCubic(this.morphProgress);
                     const currentConfig = this.interpolateConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress);
@@ -25347,6 +25423,26 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.morphStartConfig = this.morphTargetConfig;
                     this.generateNewProMorphTarget();
                     this.morphProgress = 0;
+                    
+                    // Process any queued Pro preset
+                    if (this.pendingProPreset !== null) {
+                        const queuedPreset = this.pendingProPreset;
+                        this.pendingProPreset = null;
+                        console.log('🎵 Processing queued Pro preset from PRO morph completion:', queuedPreset);
+                        
+                        // Temporarily stop morph to allow Pro preset switch
+                        const wasMorphing = this.isMorphing;
+                        this.stopMorphing();
+                        
+                        // Switch to Pro preset
+                        this.setOfficialAudioMotionPreset(queuedPreset);
+                        
+                        // Restart morph in Pro mode since user had morph active
+                        if (wasMorphing) {
+                            console.log('🔄 Restarting morph in Pro mode after preset switch');
+                            this.startProMorphing();
+                        }
+                    }
                 } else {
                     const easedProgress = this.easeInOutCubic(this.morphProgress);
                     const currentConfig = this.interpolateProConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress);

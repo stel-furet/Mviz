@@ -113,31 +113,19 @@
             <button class="btn-toggle" id="headerInfiniteZoomBtn" title="Infinite Zoom">
                 <span class="infinite-zoom-btn-text">Infinite Zoom</span>
             </button>
-            <button class="btn-toggle-32w" id="headerInfiniteZoomToggleBtn" title="Toggle Infinite Zoom">
-                <span class="toggle-text">ON</span>
-            </button>
             <button class="btn-toggle" id="headerBlobsBtn" title="Blobs">
                 <span class="blobs-btn-text">Blobs</span>
             </button>
             <button class="btn-toggle" id="headerWebGLBtn" title="Starfall">
                 <span class="webgl-btn-text">Starfall</span>
             </button>
-            <button class="btn-toggle-32w" id="headerWebGLToggleBtn" title="Toggle WebGL">
-                <span class="toggle-text">OFF</span>
-            </button>
             <button class="btn-toggle" id="headerFluidDynamicsBtn" title="Fluidity">
                 <span class="fluid-dynamics-btn-text">Fluidity</span>
-            </button>
-            <button class="btn-toggle-32w" id="headerFluidDynamicsToggleBtn" title="Toggle Fluid Dynamics">
-                <span class="toggle-text">OFF</span>
             </button>
             
             <!-- Nebula Controls -->
             <button class="btn-toggle" id="headerNebulaBtn" title="Nebula">
                 <span class="nebula-btn-text">Nebula</span>
-            </button>
-            <button class="btn-toggle-32w" id="headerNebulaToggleBtn" title="Toggle Nebula">
-                <span class="toggle-text">OFF</span>
             </button>
             
             <!-- Kaleidoscope settings panel -->
@@ -251,6 +239,12 @@
                     <button class="panel-close-btn" id="headerInfiniteZoomCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
+                    <!-- Infinite Zoom Toggle -->
+                    <div class="control-group">
+                        <button class="btn-toggle" id="headerInfiniteZoomToggleBtn" title="Toggle Infinite Zoom">
+                            <span class="toggle-text">ON</span>
+                        </button>
+                    </div>
 
                 <div class="control-group">
                     <div class="button-container">
@@ -332,6 +326,13 @@
                     <button class="panel-close-btn" id="headerBlobsCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
+                    <!-- Blobs Toggle -->
+                    <div class="control-group">
+                        <button class="btn-toggle" id="headerBlobsToggleBtn" title="Toggle Blobs">
+                            <span class="toggle-text">OFF</span>
+                        </button>
+                    </div>
+                    
                     <div class="control-group">
                     <div class="slider-1-wrapper">
                         <div class="slider-label">Opacity</div>
@@ -402,6 +403,13 @@
                     <button class="panel-close-btn" id="headerNebulaCloseBtn">×</button>
                 </div>
             <div class="panel-content">
+                <!-- Nebula Toggle -->
+                <div class="control-group">
+                    <button class="btn-toggle" id="headerNebulaToggleBtn" title="Toggle Nebula">
+                        <span class="toggle-text">OFF</span>
+                    </button>
+                </div>
+                
                 <!-- Environment -->
                 <div class="control-group">
                     <div class="group-label">Environment</div>
@@ -738,9 +746,9 @@
                         <button class="btn-preset" data-preset="6" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 12px;">Mirror</button>
                     </div>
                     
-                    <!-- Pro Presets (Official AudioMotion) -->
+                    <!-- Advanced Presets (Official AudioMotion) -->
                     <div class="control-group">
-                        <div class="group-label">Pro Presets</div>
+                        <div class="group-label">Advanced</div>
                         <div class="preset-buttons">
                             <button class="btn-preset btn-preset-pro" data-official-preset="0">Fluid Pro</button>
                             <button class="btn-preset btn-preset-pro" data-official-preset="1">Prism Pro</button>
@@ -758,6 +766,13 @@
                     <button class="panel-close-btn" id="headerFluidDynamicsCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
+                    <!-- Fluidity Toggle -->
+                    <div class="control-group">
+                        <button class="btn-toggle" id="headerFluidDynamicsToggleBtn" title="Toggle Fluid Dynamics">
+                            <span class="toggle-text">OFF</span>
+                        </button>
+                    </div>
+                    
                     <!-- Presets -->
                     <div class="control-group">
                         <div class="group-label">Presets</div>
@@ -874,6 +889,13 @@
                     <button class="panel-close-btn" id="headerWebGLCloseBtn">×</button>
                 </div>
                 <div class="panel-content">
+                    <!-- Starfall Toggle -->
+                    <div class="control-group">
+                        <button class="btn-toggle" id="headerWebGLToggleBtn" title="Toggle WebGL">
+                            <span class="toggle-text">OFF</span>
+                        </button>
+                    </div>
+                    
                     <div class="control-group">
                         <div class="dropdown-wrapper">
                             <div class="dropdown-label">Color Scheme</div>
