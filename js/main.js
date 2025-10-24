@@ -2899,11 +2899,9 @@ class RecordManager {
         // Header AM Preset buttons
         const headerAMPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset[data-preset]');
         if (headerAMPresetButtons.length > 0) {
-            console.log('✅ Header AM preset buttons found:', headerAMPresetButtons.length);
             headerAMPresetButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const presetIndex = parseInt(button.getAttribute('data-preset'));
-                    console.log('🎨 Header AM preset clicked:', presetIndex);
                     
                     if (this.visualizer && presetIndex >= 0 && presetIndex < this.visualizer.visualizationModes.length) {
                         // Switch back to custom analyzer if using official
@@ -2932,14 +2930,12 @@ class RecordManager {
         // Header AM Pro Preset buttons (Official AudioMotion)
         const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
         if (headerAMProPresetButtons.length > 0) {
-            console.log('✅ Header AM Pro preset buttons found:', headerAMProPresetButtons.length);
             headerAMProPresetButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent event bubbling to other handlers
                     e.preventDefault(); // Prevent default button behavior
                     
                     const presetIndex = parseInt(button.getAttribute('data-official-preset'));
-                    console.log('🎨 Header AM Pro preset clicked:', presetIndex);
                     
                     if (this.visualizer && this.visualizer.officialAudioMotionPresets && presetIndex >= 0 && presetIndex < this.visualizer.officialAudioMotionPresets.length) {
                         this.visualizer.setOfficialAudioMotionPreset(presetIndex);
@@ -2951,31 +2947,23 @@ class RecordManager {
                         // Clear regular preset active states
                         headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
                         
-                        console.log('🎨 Applied AM Pro preset:', presetIndex, this.visualizer.officialAudioMotionPresets[presetIndex]);
                     }
                 });
             });
-        } else {
-            console.error('❌ Header AM Pro preset buttons not found');
         }
 
         // Mixer AM Visualization Mode dropdown
         const mixerAMVizModeSelect = document.getElementById('mixerAMVizModeSelect');
         if (mixerAMVizModeSelect) {
-            console.log('✅ Mixer AM viz mode select found, adding event listener');
             mixerAMVizModeSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const modeId = parseInt(e.target.value);
-                    console.log('🎨 Mixer AM viz mode selected:', modeId);
                     
                     // Set visualization mode
                     this.visualizer.setVisualizationMode(modeId);
                     
-                    console.log('🎨 Mixer AM viz mode changed to:', modeId);
                 }
             });
-        } else {
-            console.error('❌ Mixer AM viz mode select not found');
         }
 
         // Mixer AM Random button
@@ -10041,6 +10029,18 @@ class GitItUpVisualizer {
         this.visualizationEnabled = true;
         this.visualizationOpacity = 1.0; // AM Visualizer opacity (0.0-1.0)
         this.advancedVolumeAdjust = 0.0; // Default Advanced volume adjustment
+        
+        // Advanced Visualization Waiting State (Hybrid Approach)
+        this.advancedWaitingState = {
+            isActive: false,
+            energyHistory: [],
+            oscillators: null,
+            gainNodes: null,
+            masterGain: null,
+            oscillator: null,  // Legacy single oscillator
+            gainNode: null,    // Legacy single gain
+            timer: 0
+        };
 
         // Infinite Zoom properties
         this.infiniteZoomOpacity = 1.0; // Infinite Zoom opacity (0.0-1.0)
@@ -10668,21 +10668,56 @@ class GitItUpVisualizer {
                 name: 'Fluid Pro',
                 useOfficial: true,
                 config: {
-                    mode: 10,              // Line graph
-                    colorMode: 'bar-level', // This is the key difference!
-                    gradient: 'rainbow',
+                    alphaBars: false,
+                    ansiBands: false,
+                    barSpace: 0.1,
+                    bgAlpha: 0,
+                    channelLayout: "single",
+                    colorMode: 'bar-level',
+                    fadePeaks: false,
+                    fftSize: 8192,
                     fillAlpha: 0.6,
-                    lineWidth: 1.5,
-                    mirror: -1,
+                    frequencyScale: "log",
+                    gradient: 'rainbow',
+                    gravity: 3.8,
+                    ledBars: false,
                     linearAmplitude: true,
                     linearBoost: 2.8,
+                    lineWidth: 1.5,
+                    loRes: false,
+                    lumiBars: false,
+                    maxDecibels: -25,
+                    maxFPS: 0,
                     maxFreq: 20000,
+                    minDecibels: -85,
                     minFreq: 30,
-                    smoothing: 0.7,
-                    showBgColor: false,
-                    reflexRatio: 0.5,
+                    mirror: -1,
+                    mode: 10,
+                    noteLabels: false,
+                    outlineBars: false,
+                    overlay: true,
+                    peakFadeTime: 750,
+                    peakHoldTime: 500,
+                    peakLine: false,
+                    radial: false,
+                    radialInvert: false,
+                    radius: 0.3,
                     reflexAlpha: 1,
+                    reflexBright: 1,
+                    reflexFit: true,
+                    reflexRatio: 0.5,
+                    roundBars: false,
+                    showBgColor: false,
+                    showFPS: false,
+                    showPeaks: false,
+                    showScaleX: false,
+                    showScaleY: false,
+                    smoothing: 0.7,
                     spinSpeed: 1,
+                    splitGradient: false,
+                    trueLeds: false,
+                    useCanvas: true,
+                    volume: 0.0,
                     weightingFilter: 'D'
                 }
             },
@@ -10691,18 +10726,57 @@ class GitItUpVisualizer {
                 name: 'Prism Pro',
                 useOfficial: true,
                 config: {
-                    mode: 0,               // Bars
-                    colorMode: 'bar-level',
-                    gradient: 'prism',
+                    alphaBars: false,
+                    ansiBands: false,
                     barSpace: 0.1,
+                    bgAlpha: 0,
+                    channelLayout: "single",
+                    colorMode: 'bar-level',
+                    fadePeaks: false,
+                    fftSize: 8192,
                     fillAlpha: 0.8,
+                    frequencyScale: "log",
+                    gradient: 'prism',
+                    gravity: 3.8,
+                    ledBars: false,
                     linearAmplitude: true,
                     linearBoost: 2.0,
+                    lineWidth: 1.5,
+                    loRes: false,
+                    lumiBars: false,
+                    maxDecibels: -25,
+                    maxFPS: 0,
                     maxFreq: 22000,
+                    minDecibels: -85,
+                    minFreq: 30,
+                    mirror: 0,
+                    mode: 0,
+                    noteLabels: false,
+                    outlineBars: false,
+                    overlay: true,
+                    peakFadeTime: 750,
+                    peakHoldTime: 300,
+                    peakLine: false,
+                    radial: false,
+                    radialInvert: false,
+                    radius: 0.3,
+                    reflexAlpha: 1,
+                    reflexBright: 1,
+                    reflexFit: true,
+                    reflexRatio: 0.5,
                     roundBars: true,
                     showBgColor: false,
+                    showFPS: false,
                     showPeaks: true,
-                    peakHoldTime: 300
+                    showScaleX: false,
+                    showScaleY: false,
+                    smoothing: 0.7,
+                    spinSpeed: 0,
+                    splitGradient: false,
+                    trueLeds: false,
+                    useCanvas: true,
+                    volume: 0.0,
+                    weightingFilter: 'D'
                 }
             },
             // 2 - Twin Peaks Pro (using official audioMotion)
@@ -11875,7 +11949,6 @@ class GitItUpVisualizer {
                         linearBoost: 5.0,
                         gradient: 0.9,
                         fillAlpha: 0.8,
-                        volume: 3.0,
                         smoothing: 0.2,
                         peakHoldTime: 200
                     };
@@ -14880,12 +14953,22 @@ class GitItUpVisualizer {
 
         // Add saved presets
         if (this.savedPresets && this.savedPresets.length > 0) {
-            this.savedPresets.forEach((preset, index) => {
+            // Sort presets: "Last Random" always last, others by name
+            const sortedPresets = [...this.savedPresets].sort((a, b) => {
+                if (a.name === 'Last Random') return 1;
+                if (b.name === 'Last Random') return -1;
+                return a.name.localeCompare(b.name);
+            });
+            
+            sortedPresets.forEach((preset, sortedIndex) => {
+                // Find original index for value
+                const originalIndex = this.savedPresets.findIndex(p => p === preset);
+                
                 const option = document.createElement('option');
-                option.value = index;
+                option.value = originalIndex;
                 
                 // Don't add visual indicator - keep preset names clean
-                option.textContent = preset.name || `Preset ${index + 1}`;
+                option.textContent = preset.name || `Preset ${originalIndex + 1}`;
                 
                 selectElement.appendChild(option);
                 console.log('Added option:', option.textContent, 'value:', option.value);
@@ -18092,7 +18175,6 @@ https://rogueamoeba.com/loopback/
             minFreq: 20 + Math.random() * 30,
             linearAmplitude: true,
             linearBoost: isRadial ? 3 + Math.random() * 3 : 2 + Math.random() * 3,
-            volume: isRadial ? 2 + Math.random() * 1.5 : 1.5 + Math.random() * 1,
 
             // Other parameters (same as Regular AM, exclude reflex properties)
             alphaBars: false,
@@ -18343,7 +18425,6 @@ https://rogueamoeba.com/loopback/
             smoothing: 0.5 + Math.random() * 0.3, // 0.5-0.8 for smoother animation
             spinSpeed: Math.random() > 0.6 ? Math.random() * 2 : 0,
             trueLeds: randomMode === 6 ? Math.random() > 0.5 : false,
-            volume: 1.5 + Math.random() * 1, // 1.5-2.5 for better amplitude
             channelLayout: Math.random() > 0.7 ? (Math.random() > 0.5 ? 'dual-vertical' : 'dual-horizontal') : 'single',
             colorMode: 'gradient',
             fadePeaks: false,
@@ -18385,12 +18466,11 @@ https://rogueamoeba.com/loopback/
                 config: randomConfig
             };
 
-            const lastRandomIndex = this.savedPresets.findIndex(p => p.name === 'Last Random');
-            if (lastRandomIndex >= 0) {
-                this.savedPresets[lastRandomIndex] = preset;
-            } else {
-                this.savedPresets.push(preset);
-            }
+            // Remove any existing "Last Random" preset (regular or Pro)
+            this.savedPresets = this.savedPresets.filter(p => p.name !== 'Last Random');
+            
+            // Add new "Last Random" preset
+            this.savedPresets.push(preset);
 
             this.savePresets();
             this.updatePresetSelector();
@@ -18411,21 +18491,19 @@ https://rogueamoeba.com/loopback/
         
         console.log('🎲 Applied random Pro config:', randomProConfig);
         
-        // Save as "Last Random Pro" preset for reference
+        // Save as "Last Random" preset for reference
         const preset = {
-            name: 'Last Random Pro',
+            name: 'Last Random',
             timestamp: Date.now(),
             config: randomProConfig,
             useOfficial: true
         };
 
-        // Update or add to saved presets
-        const lastRandomProIndex = this.savedPresets.findIndex(p => p.name === 'Last Random Pro');
-        if (lastRandomProIndex >= 0) {
-            this.savedPresets[lastRandomProIndex] = preset;
-        } else {
-            this.savedPresets.push(preset);
-        }
+        // Remove any existing "Last Random" preset (regular or Pro)
+        this.savedPresets = this.savedPresets.filter(p => p.name !== 'Last Random');
+        
+        // Add new "Last Random" preset
+        this.savedPresets.push(preset);
 
         this.savePresets();
         this.updatePresetSelector();
@@ -18490,7 +18568,6 @@ https://rogueamoeba.com/loopback/
             peakFadeTime: 500 + Math.random() * 1500,
             peakHoldTime: 300 + Math.random() * 400,
             smoothing: 0.5 + Math.random() * 0.3,
-            volume: 1.5 + Math.random() * 1,
             
             // Fixed Pro-specific parameters
             bgAlpha: 0,
@@ -20921,7 +20998,6 @@ https://rogueamoeba.com/loopback/
             minFreq: 20 + Math.random() * 30,
             linearAmplitude: true,
             linearBoost: isRadial ? 3 + Math.random() * 3 : 2 + Math.random() * 3,
-            volume: isRadial ? 2 + Math.random() * 1.5 : 1.5 + Math.random() * 1,
 
             // Other parameters
             alphaBars: false,
@@ -21328,24 +21404,14 @@ https://rogueamoeba.com/loopback/
         // Clear any pending preset since we're switching immediately
         this.pendingProPreset = null;
         
-        console.log('🔍 Debug setOfficialAudioMotionPreset:', {
-            officialAudioMotion: !!this.officialAudioMotion,
-            presetIndex: presetIndex,
-            presetsLength: this.officialAudioMotionPresets?.length,
-            AudioMotionAnalyzer: typeof AudioMotionAnalyzer
-        });
 
         if (!this.officialAudioMotion) {
-            console.error('❌ Official AudioMotion not initialized. Trying to initialize now...');
-            
             // Try to initialize it now if the library is available
             if (typeof AudioMotionAnalyzer !== 'undefined') {
                 try {
                     // Use the same audio context AND canvas as the custom analyzer
                     const sharedAudioContext = this.audioMotion?.audioCtx;
                     const sharedCanvas = this.audioMotion?.canvas;
-                    console.log('🔗 Using shared audio context for on-demand init:', sharedAudioContext);
-                    console.log('🎨 Using shared canvas for on-demand init:', sharedCanvas);
                     
                     this.officialAudioMotion = new AudioMotionAnalyzer(
                         null, // No container - we're providing the canvas directly
@@ -21361,24 +21427,19 @@ https://rogueamoeba.com/loopback/
                             canvas: sharedCanvas // Share the same canvas
                         }
                     );
-                    console.log('✅ Official AudioMotion initialized on demand with shared context');
                 } catch (error) {
-                    console.error('❌ Failed to initialize Official AudioMotion on demand:', error);
                     return;
                 }
             } else {
-                console.error('❌ AudioMotionAnalyzer library not available');
                 return;
             }
         }
 
         if (!this.officialAudioMotionPresets[presetIndex]) {
-            console.error('❌ Invalid preset index:', presetIndex);
             return;
         }
 
         const preset = this.officialAudioMotionPresets[presetIndex];
-        console.log('🎵 Switching to Official AudioMotion preset:', preset.name);
 
         // Stop custom analyzer and clear canvas
         if (this.audioMotion && this.audioMotion.stop) {
@@ -21386,7 +21447,6 @@ https://rogueamoeba.com/loopback/
             // Clear the shared canvas before switching
             if (this.audioMotion.canvas && this.audioMotion.ctx) {
                 this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
-                console.log('🧹 Cleared canvas before switching to official AudioMotion');
             }
         }
 
@@ -21396,9 +21456,8 @@ https://rogueamoeba.com/loopback/
             if (this.officialAudioMotion.disconnectInput) {
                 try {
                     this.officialAudioMotion.disconnectInput();
-                    console.log('🔌 Disconnected previous audio connections from official AudioMotion');
                 } catch (error) {
-                    console.warn('⚠️ Failed to disconnect previous audio connections:', error);
+                    // Ignore disconnect errors
                 }
             }
             
@@ -21414,66 +21473,60 @@ https://rogueamoeba.com/loopback/
             // Apply user's volume adjustment
             this.officialAudioMotion.volume = this.advancedVolumeAdjust;
             
-            console.log('🎨 Applied transparent background settings to official AudioMotion');
-            
             // Connect to same audio sources as custom analyzer
             let audioConnected = false;
             
             // Connect via audio file source node (for regular audio files)
             if (this.audioMotion && this.audioMotion.source) {
-                console.log('🔗 Connecting official AudioMotion to audio file source node');
                 try {
                     this.officialAudioMotion.connectInput(this.audioMotion.source);
                     audioConnected = true;
-                    console.log('✅ Connected to audio file source node');
                 } catch (error) {
-                    console.warn('⚠️ Failed to connect to audio file source node:', error);
+                    // Ignore connection errors
                 }
             }
             
             // Also connect to video audio gain node (for video files)
             if (this.videoAudioGain) {
-                console.log('🔗 Connecting official AudioMotion to video audio gain node');
                 try {
                     this.officialAudioMotion.connectInput(this.videoAudioGain);
                     audioConnected = true;
-                    console.log('✅ Connected to video audio gain node');
                 } catch (error) {
-                    console.warn('⚠️ Failed to connect to video audio gain node:', error);
+                    // Ignore connection errors
                 }
             }
             
             // Also connect to live audio source (for microphone)
             if (this.streamSource) {
-                console.log('🔗 Connecting official AudioMotion to live audio source');
                 try {
                     this.officialAudioMotion.connectInput(this.streamSource);
                     audioConnected = true;
-                    console.log('✅ Connected to live audio source');
                 } catch (error) {
-                    console.warn('⚠️ Failed to connect to live audio source:', error);
+                    // Ignore connection errors
                 }
             }
             
             if (!audioConnected) {
-                console.warn('⚠️ No audio source available for official AudioMotion - will reconnect when audio becomes available');
-                // Set flag to reconnect when audio becomes available
                 this.officialAudioMotionNeedsConnection = true;
+                
+                // Try immediate reconnection in case audio source exists now
+                setTimeout(() => {
+                    this.reconnectOfficialAudioMotion();
+                }, 100);
             } else {
                 this.officialAudioMotionNeedsConnection = false;
             }
             
             // Start the official AudioMotion analyzer
             this.officialAudioMotion.toggleAnalyzer(true);
-            console.log('🎵 Official AudioMotion analyzer started');
             
             // Set flag to use official analyzer
             this.useOfficialAudioMotion = true;
             
-            console.log('✅ Official AudioMotion preset applied:', preset.name);
+            // Start waiting state monitoring for Advanced visualizations (AFTER flag is set)
+            this.startAdvancedWaitingStateMonitoring();
             
         } catch (error) {
-            console.error('❌ Error applying official AudioMotion preset:', error);
             this.useOfficialAudioMotion = false;
         }
     }
@@ -21481,23 +21534,23 @@ https://rogueamoeba.com/loopback/
     // Switch back to custom analyzer
     switchToCustomAnalyzer() {
         if (this.officialAudioMotion) {
+            // Stop waiting state monitoring
+            this.stopAdvancedWaitingStateMonitoring();
+            
             // Disconnect audio first, then stop analyzer
             if (this.officialAudioMotion.disconnectInput) {
                 try {
                     this.officialAudioMotion.disconnectInput();
-                    console.log('🔌 Disconnected audio from official AudioMotion');
                 } catch (error) {
-                    console.warn('⚠️ Failed to disconnect audio from official AudioMotion:', error);
+                    // Ignore disconnect errors
                 }
             }
             
             this.officialAudioMotion.toggleAnalyzer(false);
-            console.log('⏹️ Stopped official AudioMotion analyzer');
             
             // Clear the shared canvas before switching back
             if (this.audioMotion && this.audioMotion.canvas && this.audioMotion.ctx) {
                 this.audioMotion.ctx.clearRect(0, 0, this.audioMotion.canvas.width, this.audioMotion.canvas.height);
-                console.log('🧹 Cleared canvas before switching back to custom analyzer');
             }
         }
         
@@ -21505,22 +21558,19 @@ https://rogueamoeba.com/loopback/
         if (this.audioMotion) {
             if (this.audioMotion.start) {
                 this.audioMotion.start();
-                console.log('🔄 Custom analyzer restarted');
             }
             
             // Ensure audio is still connected
             if (this.audio && this.audioMotion.connectInput) {
                 try {
                     this.audioMotion.connectInput(this.audio);
-                    console.log('🔗 Reconnected audio to custom analyzer');
                 } catch (error) {
-                    console.warn('⚠️ Failed to reconnect audio to custom analyzer:', error);
+                    // Ignore reconnection errors
                 }
             }
         }
         
         this.useOfficialAudioMotion = false;
-        console.log('🔄 Switched back to custom analyzer');
     }
 
     // Reconnect official AudioMotion to audio source when it becomes available
@@ -21529,15 +21579,12 @@ https://rogueamoeba.com/loopback/
             return false;
         }
 
-        console.log('🔄 Attempting to reconnect official AudioMotion to audio source');
-
         // Disconnect first to ensure clean connection
         if (this.officialAudioMotion.disconnectInput) {
             try {
                 this.officialAudioMotion.disconnectInput();
-                console.log('🔌 Disconnected previous connections before reconnecting');
             } catch (error) {
-                console.warn('⚠️ Failed to disconnect before reconnecting:', error);
+                // Ignore disconnect errors
             }
         }
 
@@ -21548,10 +21595,9 @@ https://rogueamoeba.com/loopback/
         if (this.audioMotion && this.audioMotion.source) {
             try {
                 this.officialAudioMotion.connectInput(this.audioMotion.source);
-                console.log('✅ Official AudioMotion reconnected to audio file source');
                 reconnected = true;
             } catch (error) {
-                console.warn('⚠️ Failed to reconnect to audio file source:', error);
+                // Ignore connection errors
             }
         }
         
@@ -21559,10 +21605,9 @@ https://rogueamoeba.com/loopback/
         if (this.videoAudioGain) {
             try {
                 this.officialAudioMotion.connectInput(this.videoAudioGain);
-                console.log('✅ Official AudioMotion reconnected to video audio source');
                 reconnected = true;
             } catch (error) {
-                console.warn('⚠️ Failed to reconnect to video audio source:', error);
+                // Ignore connection errors
             }
         }
         
@@ -21570,10 +21615,9 @@ https://rogueamoeba.com/loopback/
         if (this.streamSource) {
             try {
                 this.officialAudioMotion.connectInput(this.streamSource);
-                console.log('✅ Official AudioMotion reconnected to live audio source');
                 reconnected = true;
             } catch (error) {
-                console.warn('⚠️ Failed to reconnect to live audio source:', error);
+                // Ignore connection errors
             }
         }
         
@@ -21582,7 +21626,6 @@ https://rogueamoeba.com/loopback/
             return true;
         }
 
-        console.log('⚠️ Audio source still not available for reconnection');
         this.officialAudioMotionNeedsConnection = true;
         return false;
     }
@@ -21762,6 +21805,9 @@ https://rogueamoeba.com/loopback/
         // Apply user's volume adjustment
         this.officialAudioMotion.volume = this.advancedVolumeAdjust;
         
+        // Start waiting state monitoring for Advanced visualizations
+        this.startAdvancedWaitingStateMonitoring();
+        
         console.log('📂 Loaded Pro preset:', preset.name, preset.config);
     }
 
@@ -21797,6 +21843,308 @@ https://rogueamoeba.com/loopback/
         }
     }
 
+    // Advanced Visualization Waiting State Methods (Hybrid Approach)
+    startAdvancedWaitingStateMonitoring() {
+        if (!this.officialAudioMotion || !this.useOfficialAudioMotion) return;
+        
+        // Clear any existing monitoring
+        if (this.advancedWaitingState.monitoringInterval) {
+            clearInterval(this.advancedWaitingState.monitoringInterval);
+        }
+        
+        // Monitor energy every 100ms
+        this.advancedWaitingState.monitoringInterval = setInterval(() => {
+            this.checkAdvancedWaitingState();
+        }, 100);
+        
+    }
+    
+    stopAdvancedWaitingStateMonitoring() {
+        if (this.advancedWaitingState.monitoringInterval) {
+            clearInterval(this.advancedWaitingState.monitoringInterval);
+            this.advancedWaitingState.monitoringInterval = null;
+        }
+        
+        // Stop synthetic audio if active
+        if (this.advancedWaitingState.isActive) {
+            this.exitAdvancedWaitingState();
+        }
+        
+    }
+    
+    checkAdvancedWaitingState() {
+        if (!this.officialAudioMotion || !this.useOfficialAudioMotion) return;
+        
+        // Get current energy from audio analyzer
+        let currentEnergy = 0;
+        
+        try {
+            // Try to get energy from AI Autopilot first
+            if (this.aiAutopilot && this.aiAutopilot.audioAnalyzer) {
+                const features = this.aiAutopilot.audioAnalyzer.getCurrentFeatures();
+                if (features && features.energy !== undefined) {
+                    currentEnergy = features.energy;
+                }
+            }
+            // Fallback: try to get from custom AudioMotion
+            else if (this.audioMotion && this.audioMotion.getCurrentAudioFeatures) {
+                const features = this.audioMotion.getCurrentAudioFeatures();
+                if (features && features.energy !== undefined) {
+                    currentEnergy = features.energy;
+                }
+            }
+            // Final fallback: calculate from frequency data
+            else if (this.audioMotion && this.audioMotion.dataArray) {
+                const dataArray = this.audioMotion.dataArray;
+                let sum = 0;
+                const sampleEnd = Math.min(Math.floor(dataArray.length * 0.4), dataArray.length);
+                for (let i = 0; i < sampleEnd; i++) {
+                    sum += dataArray[i];
+                }
+                currentEnergy = sum / sampleEnd / 255; // Normalize to 0-1
+            }
+        } catch (error) {
+            // Silent fallback - use previous energy or 0
+            currentEnergy = this.advancedWaitingState.energyHistory.length > 0 ? 
+                this.advancedWaitingState.energyHistory[this.advancedWaitingState.energyHistory.length - 1] : 0;
+        }
+        
+        // Update energy history (same as Fluid Dynamics)
+        this.advancedWaitingState.energyHistory.push(currentEnergy);
+        if (this.advancedWaitingState.energyHistory.length > 10) {
+            this.advancedWaitingState.energyHistory.shift();
+        }
+        
+        // Calculate average energy over recent history
+        const avgEnergy = this.advancedWaitingState.energyHistory.reduce((sum, val) => sum + val, 0) / 
+                         this.advancedWaitingState.energyHistory.length;
+        
+        // Use same threshold as Fluid Dynamics
+        const useWaitingAnimation = avgEnergy < 0.02;
+        
+        if (useWaitingAnimation && !this.advancedWaitingState.isActive) {
+            this.enterAdvancedWaitingState();
+        } else if (!useWaitingAnimation && this.advancedWaitingState.isActive) {
+            this.exitAdvancedWaitingState();
+        }
+    }
+    
+    enterAdvancedWaitingState() {
+        if (!this.officialAudioMotion || this.advancedWaitingState.isActive) return;
+        
+        this.advancedWaitingState.isActive = true;
+        this.advancedWaitingState.timer = 0;
+        
+        // Create synthetic audio source for gentle animation
+        this.createSyntheticAudioSource();
+        
+    }
+    
+    exitAdvancedWaitingState() {
+        if (!this.officialAudioMotion || !this.advancedWaitingState.isActive) return;
+        
+        this.advancedWaitingState.isActive = false;
+        
+        // Stop synthetic audio source
+        this.stopSyntheticAudioSource();
+        
+    }
+    
+    createSyntheticAudioSource() {
+        try {
+            // Use the same AudioContext as the official AudioMotion
+            const audioContext = this.officialAudioMotion.audioCtx;
+            if (!audioContext) return;
+            
+            // Create multiple oscillators for broader spectrum coverage
+            this.advancedWaitingState.oscillators = [];
+            this.advancedWaitingState.gainNodes = [];
+            this.advancedWaitingState.masterGain = audioContext.createGain();
+            
+            // Create oscillators across different frequency ranges for spectrum coverage
+            const frequencies = [
+                80,   // Low bass
+                150,  // Mid bass  
+                300,  // Low mid
+                600,  // Mid
+                1200, // High mid
+                2400  // High
+            ];
+            
+            frequencies.forEach((baseFreq, index) => {
+                // Create oscillator and gain for each frequency
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Different waveforms for variety
+                const waveforms = ['sine', 'triangle', 'sawtooth'];
+                oscillator.type = waveforms[index % waveforms.length];
+                
+                // Set base frequency
+                oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+                
+                // Higher gain per oscillator for more visible activity
+                gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+                
+                // Connect: oscillator → individual gain → master gain
+                oscillator.connect(gainNode);
+                gainNode.connect(this.advancedWaitingState.masterGain);
+                
+                // Store references
+                this.advancedWaitingState.oscillators.push(oscillator);
+                this.advancedWaitingState.gainNodes.push(gainNode);
+                
+                // Start the oscillator
+                oscillator.start();
+            });
+            
+            // Connect master gain to AudioMotion input
+            this.advancedWaitingState.masterGain.connect(this.officialAudioMotion._input);
+            
+            // Set higher master gain for more visible activity
+            this.advancedWaitingState.masterGain.gain.setValueAtTime(2.0, audioContext.currentTime);
+            
+            // Animate all oscillators for gentle swirling effect
+            this.animateSyntheticAudio();
+            
+        } catch (error) {
+            // Ignore synthetic audio creation errors
+        }
+    }
+    
+    stopSyntheticAudioSource() {
+        try {
+            // Stop all oscillators
+            if (this.advancedWaitingState.oscillators) {
+                this.advancedWaitingState.oscillators.forEach(oscillator => {
+                    if (oscillator) {
+                        oscillator.stop();
+                        oscillator.disconnect();
+                    }
+                });
+                this.advancedWaitingState.oscillators = [];
+            }
+            
+            // Disconnect all gain nodes
+            if (this.advancedWaitingState.gainNodes) {
+                this.advancedWaitingState.gainNodes.forEach(gainNode => {
+                    if (gainNode) {
+                        gainNode.disconnect();
+                    }
+                });
+                this.advancedWaitingState.gainNodes = [];
+            }
+            
+            // Disconnect master gain
+            if (this.advancedWaitingState.masterGain) {
+                this.advancedWaitingState.masterGain.disconnect();
+                this.advancedWaitingState.masterGain = null;
+            }
+            
+            // Legacy cleanup for single oscillator (backwards compatibility)
+            if (this.advancedWaitingState.oscillator) {
+                this.advancedWaitingState.oscillator.stop();
+                this.advancedWaitingState.oscillator.disconnect();
+                this.advancedWaitingState.oscillator = null;
+            }
+            
+            if (this.advancedWaitingState.gainNode) {
+                this.advancedWaitingState.gainNode.disconnect();
+                this.advancedWaitingState.gainNode = null;
+            }
+            
+            if (this.advancedWaitingState.animationFrame) {
+                cancelAnimationFrame(this.advancedWaitingState.animationFrame);
+                this.advancedWaitingState.animationFrame = null;
+            }
+        } catch (error) {
+            // Ignore synthetic audio stop errors
+        }
+    }
+    
+    animateSyntheticAudio() {
+        if (!this.advancedWaitingState.isActive || 
+            (!this.advancedWaitingState.oscillators && !this.advancedWaitingState.oscillator)) return;
+        
+        // Increment timer (same timing as Fluid Dynamics)
+        this.advancedWaitingState.timer += 0.008;
+        
+        const time = this.advancedWaitingState.timer;
+        const audioContext = this.officialAudioMotion.audioCtx;
+        
+        if (audioContext) {
+            // Animate multiple oscillators for spectrum coverage
+            if (this.advancedWaitingState.oscillators && this.advancedWaitingState.gainNodes) {
+                this.advancedWaitingState.oscillators.forEach((oscillator, index) => {
+                    if (oscillator && this.advancedWaitingState.gainNodes[index]) {
+                        const gainNode = this.advancedWaitingState.gainNodes[index];
+                        
+                        // Different phase offsets for each oscillator to create swirling effect
+                        const phaseOffset = (index / this.advancedWaitingState.oscillators.length) * Math.PI * 2;
+                        
+                        // Get base frequency for this oscillator
+                        const frequencies = [80, 150, 300, 600, 1200, 2400];
+                        const baseFreq = frequencies[index] || 300;
+                        
+                        // Gentle frequency modulation with different speeds per oscillator
+                        const freqSpeed = 0.2 + (index * 0.1); // Different speeds: 0.2, 0.3, 0.4, etc.
+                        const freqVariation = Math.sin(time * freqSpeed + phaseOffset) * (baseFreq * 0.1); // 10% variation
+                        const newFreq = baseFreq + freqVariation;
+                        
+                        oscillator.frequency.setValueAtTime(newFreq, audioContext.currentTime);
+                        
+                        // More pronounced gain modulation for visible activity
+                        const gainSpeed = 0.3 + (index * 0.05); // Slightly different gain speeds
+                        const baseGain = 0.02; // Higher base gain
+                        const gainVariation = Math.sin(time * gainSpeed + phaseOffset) * 0.015; // More pronounced pulsing
+                        const newGain = Math.max(0.005, baseGain + gainVariation);
+                        
+                        gainNode.gain.setValueAtTime(newGain, audioContext.currentTime);
+                    }
+                });
+                
+                // Animate master gain for overall breathing effect
+                if (this.advancedWaitingState.masterGain) {
+                    const masterGainBase = 2.0; // Higher base for more activity
+                    const masterGainVariation = Math.sin(time * 0.15) * 0.5; // More pronounced breathing
+                    const newMasterGain = Math.max(1.0, masterGainBase + masterGainVariation);
+                    
+                    this.advancedWaitingState.masterGain.gain.setValueAtTime(
+                        newMasterGain, 
+                        audioContext.currentTime
+                    );
+                }
+            }
+            // Legacy single oscillator animation (backwards compatibility)
+            else if (this.advancedWaitingState.oscillator && this.advancedWaitingState.gainNode) {
+                // Gentle frequency modulation (like Fluid Dynamics swirls)
+                const baseFreq = 60;
+                const freqVariation = Math.sin(time * 0.3) * 20; // Slow, gentle variation
+                const newFreq = baseFreq + freqVariation;
+                
+                this.advancedWaitingState.oscillator.frequency.setValueAtTime(
+                    newFreq, 
+                    audioContext.currentTime
+                );
+                
+                // Gentle gain modulation for pulsing effect
+                const baseGain = 0.01;
+                const gainVariation = Math.sin(time * 0.5) * 0.005; // Very subtle pulsing
+                const newGain = Math.max(0.001, baseGain + gainVariation);
+                
+                this.advancedWaitingState.gainNode.gain.setValueAtTime(
+                    newGain, 
+                    audioContext.currentTime
+                );
+            }
+        }
+        
+        // Continue animation
+        this.advancedWaitingState.animationFrame = requestAnimationFrame(() => {
+            this.animateSyntheticAudio();
+        });
+    }
+
     updatePresetSelector() {
         // Sidebar presetSelector removed - functionality moved to header
         const fsSelector = document.getElementById('fsPresetSelect');
@@ -21807,9 +22155,20 @@ https://rogueamoeba.com/loopback/
             
 
             sel.innerHTML = '<option value="">Load Preset...</option>';
-            this.savedPresets.forEach((preset, index) => {
+            
+            // Sort presets: "Last Random" always last, others by name
+            const sortedPresets = [...this.savedPresets].sort((a, b) => {
+                if (a.name === 'Last Random') return 1;
+                if (b.name === 'Last Random') return -1;
+                return a.name.localeCompare(b.name);
+            });
+            
+            sortedPresets.forEach((preset, sortedIndex) => {
+                // Find original index for value
+                const originalIndex = this.savedPresets.findIndex(p => p === preset);
+                
                 const option = document.createElement('option');
-                option.value = index;
+                option.value = originalIndex;
                 
                 // Don't add visual indicator - keep preset names clean
                 option.textContent = preset.name;

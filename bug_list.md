@@ -63,8 +63,8 @@
 # COMPLETE TODO LIST - BUG FIXES & ENHANCEMENTS
 
 ## 🔊 Audio & Visualization Issues
-1. **Fix: Regular AM viz and Pro viz have distinctly different sound output levels**
-2. **Fix: In user presets list, rename 'Last Random Pro' to 'Last Random' and ensure it's always last in list**
+1. ✅ **COMPLETED: Regular AM viz and Pro viz have distinctly different sound output levels** - Added user Volume Adjust slider (0-100%) in Advanced section, defaults to 0% (muted)
+2. ✅ **COMPLETED: In user presets list, rename 'Last Random Pro' to 'Last Random' and ensure it's always last in list** - Unified naming, added sorting logic to keep "Last Random" at end
 3. **Add: Pro presets need wait animation like regular presets have during loading**
 4. **Fix: Pro presets not fully resetting all parameters when switching - parameters like Radial are leaking to new preset**
 5. **Fix: Energy Morph not working for Pro visualizations**
@@ -96,3 +96,7 @@
 
 ## 🔊 Audio Controls
 21. **Add: Speaker icon in transport needs to function as a mute button**
+
+## 🔄 Preset System Issues
+22. **Fix: Last Random not visible until app restarted**
+23. **Fix: After loading preset list from file, app must be restarted before it is visible**
