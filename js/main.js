@@ -2808,6 +2808,22 @@ class RecordManager {
             console.error('❌ Mixer audio device select not found');
         }
 
+        // Mixer audio clear input button
+        const mixerAudioClearInputBtn = document.getElementById('mixerAudioClearInputBtn');
+        if (mixerAudioClearInputBtn) {
+            console.log('✅ Mixer audio clear input button found, adding event listener');
+            mixerAudioClearInputBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.visualizer) {
+                    console.log('🗑️ Clearing audio input from mixer');
+                    this.visualizer.clearAudioInput();
+                }
+            });
+        } else {
+            console.error('❌ Mixer audio clear input button not found');
+        }
+
         // ========== AM VISUALIZER CHANNEL ==========
 
         // Mixer AM toggle button
@@ -12415,7 +12431,24 @@ class GitItUpVisualizer {
             }
         };
         
+        // Clear Input Button
+        const clearAudioInputBtn = document.createElement('button');
+        clearAudioInputBtn.className = 'btn-danger';
+        clearAudioInputBtn.id = 'headerAudioClearInputBtn';
+        clearAudioInputBtn.textContent = 'Clear Input';
+        clearAudioInputBtn.style.cssText = `
+            margin-top: 10px;
+            width: 100%;
+        `;
+        
+        clearAudioInputBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.clearAudioInput();
+        };
+        
         toggleSection.appendChild(audioToggle);
+        toggleSection.appendChild(clearAudioInputBtn);
         settingsSection.appendChild(toggleSection);
         
         // Playlist Controls
@@ -15451,6 +15484,49 @@ class GitItUpVisualizer {
         }
     }
 
+    clearAudioInput() {
+        console.log('🗑️ Clearing audio input - resetting to initial state');
+        
+        // Stop any current live audio input
+        this.stopLiveInput();
+        
+        // Reset audio properties to initial state
+        this.liveAudioEnabled = false;
+        this.inputMode = 'playlist';
+        this.currentDeviceId = null;
+        this.lastAudioDeviceId = null;
+        
+        // Reset audio device selection in mixer
+        const mixerAudioDeviceSelect = document.getElementById('mixerAudioDeviceSelect');
+        if (mixerAudioDeviceSelect) {
+            mixerAudioDeviceSelect.value = '';
+        }
+        
+        // Update header audio device selector
+        this.updateAudioElements('audioDeviceSelect', (select) => {
+            select.value = '';
+        });
+        
+        // Update toggle states (turn OFF)
+        this.updateAudioElements('liveAudioToggleBtn', (btn) => {
+            btn.textContent = 'OFF';
+            btn.classList.remove('active');
+        });
+        
+        // Update mixer audio toggle button state
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAudioToggle) {
+            window.multiDisplayManager.updateMixerAudioToggle();
+        }
+        
+        // Resume playlist mode
+        this.resumePlaylist();
+        
+        // Update footer Live Audio button state
+        this.updateFooterLiveAudioButton();
+        
+        console.log('✅ Audio input cleared successfully');
+    }
+
     async initializeVideoInput() {
         try { // Request permission if needed
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -15477,7 +15553,12 @@ class GitItUpVisualizer {
     updateVideoDeviceList() {
         // Header-only video controls (sidebar removed)
         console.log('Video device list update - header controls only');
-            return;
+        
+        // Update mixer video camera select dropdown
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoCameraSelect) {
+            console.log('Updating mixer video camera select with available devices');
+            window.multiDisplayManager.updateMixerVideoCameraSelect();
+        }
     }
 
     async toggleVideoInput() {

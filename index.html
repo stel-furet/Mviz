@@ -2592,11 +2592,13 @@
                 </div>
                 
                 <div class="channel-input-section">
-                    <select class="dropdown-selector-mixer" id="mixerVideoCameraSelect">
-                        <option value="">Select Video Source</option>
-                    </select>
-                    
-                    <button class="control-btn clear-btn" id="mixerVideoClearInputBtn">Clear Input</button>
+                    <div class="control-mini-group">
+                        <select class="dropdown-selector-mixer" id="mixerVideoCameraSelect">
+                            <option value="">Select Video Source</option>
+                        </select>
+                        
+                        <button class="control-btn clear-btn" id="mixerVideoClearInputBtn">Clear Input</button>
+                    </div>
                     
                     <!-- Mixer Video File Info (conditional display based on header panel) -->
                     <div id="mixerVideoFileInfo" class="mixer-video-file-info">
@@ -2809,9 +2811,13 @@
                 </div>
                 
                 <div class="channel-input-section">
-                    <select class="dropdown-selector-mixer" id="mixerAudioDeviceSelect">
-                        <option value="">Select Audio Input...</option>
-                    </select>
+                    <div class="control-mini-group">
+                        <select class="dropdown-selector-mixer" id="mixerAudioDeviceSelect">
+                            <option value="">Select Audio Input...</option>
+                        </select>
+                        
+                        <button class="control-btn clear-btn" id="mixerAudioClearInputBtn">Clear Input</button>
+                    </div>
                 </div>
                 
                 <div class="channel-presets-section">
