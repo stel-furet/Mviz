@@ -18358,23 +18358,83 @@ https://rogueamoeba.com/loopback/
     }
 
     // Preset Methods
-    exportPresets() {
+    async exportPresets() {
         try {
             const dataStr = JSON.stringify(this.savedPresets, null, 2);
+            
+            // Generate default filename with timestamp
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
+            const defaultFilename = `Melt_Visualizer_Presets_${timestamp}.json`;
+            
+            // Try File System Access API first (modern browsers)
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const fileHandle = await window.showSaveFilePicker({
+                        suggestedName: defaultFilename,
+                        types: [{
+                            description: 'JSON files',
+                            accept: { 'application/json': ['.json'] }
+                        }]
+                    });
+                    
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(dataStr);
+                    await writable.close();
+                    
+                    // Show success message
+                    this.showSuccessMessage('Presets exported successfully');
+                    return;
+                } catch (err) {
+                    // User cancelled or error occurred, fall back to download
+                    if (err.name !== 'AbortError') {
+                        console.warn('File System Access API failed, falling back to download:', err);
+                    } else {
+                        // User cancelled - don't show error
+                        return;
+                    }
+                }
+            }
+            
+            // Fallback to traditional download for older browsers
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `visualizer_presets_${
-                Date.now()
-            }.json`;
+            link.download = defaultFilename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+            
+            // Show success message
+            this.showSuccessMessage('Presets exported successfully');
+            
         } catch (e) {
             console.error('Error exporting presets:', e);
-            alert('Failed to export presets');
+            alert('Failed to export presets: ' + e.message);
+        }
+    }
+
+    showSuccessMessage(message) {
+        // Reuse the existing error notification system with success styling
+        const errorDiv = document.getElementById('error');
+        const errorText = document.getElementById('error-text');
+        if (errorDiv && errorText) {
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = 'var(--success-color, #10b981)';
+            errorText.textContent = message;
+            document.getElementById('loading').style.display = 'none';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.background = ''; // Reset background
+            }, 3000);
+
+            errorDiv.onclick = () => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.background = ''; // Reset background
+            };
         }
     }
 
@@ -21439,7 +21499,7 @@ https://rogueamoeba.com/loopback/
     // Preset Methods
     loadPresets() {
         try {
-            const saved = localStorage.getItem('visualizer_presets');
+            const saved = localStorage.getItem('melt_visualizer_presets');
             return saved ? JSON.parse(saved) : [];
         } catch (e) {
             console.error('Error loading presets:', e);
@@ -21645,7 +21705,7 @@ https://rogueamoeba.com/loopback/
 
     savePresets() {
         try {
-            localStorage.setItem('visualizer_presets', JSON.stringify(this.savedPresets));
+            localStorage.setItem('melt_visualizer_presets', JSON.stringify(this.savedPresets));
         } catch (e) {
             console.error('Error saving presets:', e);
         }
@@ -22456,6 +22516,7 @@ https://rogueamoeba.com/loopback/
             this.advancedWaitingState.oscillators = [];
             this.advancedWaitingState.gainNodes = [];
             this.advancedWaitingState.masterGain = audioContext.createGain();
+            this.advancedWaitingState.silentGain = audioContext.createGain();
             
             // Create oscillators across different frequency ranges for spectrum coverage
             const frequencies = [
@@ -22494,10 +22555,14 @@ https://rogueamoeba.com/loopback/
                 oscillator.start();
             });
             
-            // Connect master gain to AudioMotion input
-            this.advancedWaitingState.masterGain.connect(this.officialAudioMotion._input);
+            // Set silent gain to prevent synthetic audio from being audible (virtually silent but not zero)
+            this.advancedWaitingState.silentGain.gain.setValueAtTime(0.001, audioContext.currentTime); // -60dB
             
-            // Set higher master gain for more visible activity
+            // Connect: master gain → silent gain → AudioMotion input
+            this.advancedWaitingState.masterGain.connect(this.advancedWaitingState.silentGain);
+            this.advancedWaitingState.silentGain.connect(this.officialAudioMotion._input);
+            
+            // Set higher master gain for more visible activity (before silent gain)
             this.advancedWaitingState.masterGain.gain.setValueAtTime(2.0, audioContext.currentTime);
             
             // Animate all oscillators for gentle swirling effect
@@ -22535,6 +22600,12 @@ https://rogueamoeba.com/loopback/
             if (this.advancedWaitingState.masterGain) {
                 this.advancedWaitingState.masterGain.disconnect();
                 this.advancedWaitingState.masterGain = null;
+            }
+            
+            // Disconnect silent gain
+            if (this.advancedWaitingState.silentGain) {
+                this.advancedWaitingState.silentGain.disconnect();
+                this.advancedWaitingState.silentGain = null;
             }
             
             // Legacy cleanup for single oscillator (backwards compatibility)
