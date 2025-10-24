@@ -18617,6 +18617,18 @@ https://rogueamoeba.com/loopback/
 
                     this.savePresets();
                     this.updatePresetSelector();
+                    
+                    // Update header preset selector
+                    const headerSelector = document.getElementById('headerPresetSelector');
+                    if (headerSelector) {
+                        this.loadPresetOptions(headerSelector);
+                    }
+                    
+                    // Update mixer preset selector
+                    if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMPresetSelector) {
+                        window.multiDisplayManager.updateMixerAMPresetSelector();
+                    }
+                    
                     alert(`Successfully imported ${
                         imported.length
                     } preset(s)`);
@@ -25475,13 +25487,8 @@ https://rogueamoeba.com/loopback/
                 e.stopPropagation();
                 console.log('Footer Live Audio button clicked');
                 
-                // If live audio is ON, toggle it OFF
-                if (this.liveAudioEnabled) {
-                    this.toggleLiveAudio();
-                } else {
-                    // If live audio is OFF, show device selection menu
-                    this.showAudioInputMenu();
-                }
+                // Always show audio input menu (panel)
+                this.showAudioInputMenu();
             });
         } else {
             console.error('Footer Live Audio button not found');
