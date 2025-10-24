@@ -2750,6 +2750,22 @@ class RecordManager {
             console.error('❌ Mixer video file delete button not found');
         }
 
+        // Mixer video clear input button
+        const mixerVideoClearInputBtn = document.getElementById('mixerVideoClearInputBtn');
+        if (mixerVideoClearInputBtn) {
+            console.log('✅ Mixer video clear input button found, adding event listener');
+            mixerVideoClearInputBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.visualizer) {
+                    console.log('🗑️ Clearing video input from mixer');
+                    this.visualizer.clearVideoInput();
+                }
+            });
+        } else {
+            console.error('❌ Mixer video clear input button not found');
+        }
+
         // ========== AUDIO INPUT CHANNEL ==========
 
         // Mixer audio toggle button
@@ -12774,7 +12790,24 @@ class GitItUpVisualizer {
             this.updateVideoToggleState();
         };
         
+        // Clear Input Button
+        const clearInputBtn = document.createElement('button');
+        clearInputBtn.className = 'btn-danger';
+        clearInputBtn.id = 'headerVideoClearInputBtn';
+        clearInputBtn.textContent = 'Clear Input';
+        clearInputBtn.style.cssText = `
+            margin-top: 10px;
+            width: 100%;
+        `;
+        
+        clearInputBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.clearVideoInput();
+        };
+        
         toggleSection.appendChild(videoToggle);
+        toggleSection.appendChild(clearInputBtn);
         settingsSection.appendChild(toggleSection);
         
         // Basic Controls
@@ -15460,6 +15493,46 @@ class GitItUpVisualizer {
             this.videoMode = 'off';
             this.updateVideoToggleState();
         }
+    }
+
+    clearVideoInput() {
+        console.log('🗑️ Clearing video input - resetting to initial state');
+        
+        // Stop any current video input
+        this.stopVideoInput();
+        
+        // Reset video properties to initial state
+        this.videoFile = null;
+        this.videoMode = 'off';
+        this.videoStream = null;
+        
+        // Reset video device selections in both header and mixer
+        const mixerVideoCameraSelect = document.getElementById('mixerVideoCameraSelect');
+        if (mixerVideoCameraSelect) {
+            mixerVideoCameraSelect.value = '';
+        }
+        
+        const videoDeviceSelect = document.getElementById('videoDeviceSelect');
+        if (videoDeviceSelect) {
+            videoDeviceSelect.value = '';
+        }
+        
+        // Update toggle states (turn OFF)
+        this.updateVideoToggleState();
+        
+        // Hide video file controls
+        this.hideVideoFileControls();
+        
+        // Update mixer video toggle button state
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoToggleButton) {
+            window.multiDisplayManager.updateMixerVideoToggleButton();
+        }
+        
+        // Sync header clear button state (if needed for visual feedback)
+        const headerClearBtn = document.getElementById('headerVideoClearInputBtn');
+        const mixerClearBtn = document.getElementById('mixerVideoClearInputBtn');
+        
+        console.log('✅ Video input cleared successfully');
     }
 
     toggleVideoPlayback() {
