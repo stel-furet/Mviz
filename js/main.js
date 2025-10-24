@@ -10057,7 +10057,7 @@ class GitItUpVisualizer {
         this.morphTargetConfig = null;
         this.morphProgress = 0;
         this.morphDuration = 5000;
-        this.morphMode = 'medium';
+        this.morphMode = 'energy';
 
         // Auto-hide fullscreen controls
         this.controlsTimeout = null;
@@ -26296,7 +26296,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 const footerEnergyFill = document.getElementById('footerEnergyFill');
                 if (footerEnergyFill) {
                     footerEnergyFill.style.width = `${
-                        this.currentEnergy * 100
+                        Math.min(this.currentEnergy * 350, 100)
                     }%`;
                     const hue = 120 - (this.currentEnergy * 120);
                     footerEnergyFill.style.background = `hsl(${hue}, 100%, 50%)`;
@@ -27241,6 +27241,8 @@ if (window.visualizer && window.visualizer.updateFooterVisualizerButton) {
         // Initialize Footer Morph Controls
         if (window.visualizer && window.visualizer.initializeFooterMorphControls) {
             window.visualizer.initializeFooterMorphControls();
+            // Apply default energy morph settings
+            window.visualizer.setMorphSpeed('energy');
         }
 
         // Initialize Background Button State
