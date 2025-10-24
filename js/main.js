@@ -2952,6 +2952,11 @@ class RecordManager {
             });
         }
 
+        // Advanced Preset Controls Setup
+        if (this.visualizer && typeof this.visualizer.setupAdvancedPresetControls === 'function') {
+            this.visualizer.setupAdvancedPresetControls();
+        }
+
         // Mixer AM Visualization Mode dropdown
         const mixerAMVizModeSelect = document.getElementById('mixerAMVizModeSelect');
         if (mixerAMVizModeSelect) {
@@ -14085,6 +14090,7 @@ class GitItUpVisualizer {
         const exportPresetsBtn = document.getElementById('headerExportPresetsBtn');
         const importPresetsBtn = document.getElementById('headerImportPresetsBtn');
         const importPresetsFile = document.getElementById('headerImportPresetsFile');
+        const clearAllPresetsBtn = document.getElementById('clearAllPresetsBtn');
         
         const spectrumButton = document.getElementById('headerVizModeToggle');
         const spectrumDropdownContent = document.getElementById('headerVizModeDropdown');
@@ -14095,8 +14101,8 @@ class GitItUpVisualizer {
         const colorSchemeDropdownContent = document.getElementById('headerColorSchemeDropdown');
 
         // Connect functionality if elements exist
-        if (loadPresetSelect && savePresetBtn && exportPresetsBtn && importPresetsBtn && importPresetsFile) {
-            this.connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile);
+        if (loadPresetSelect && savePresetBtn && exportPresetsBtn && importPresetsBtn && importPresetsFile && clearAllPresetsBtn) {
+            this.connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile, clearAllPresetsBtn);
             // Load existing presets into dropdown
             this.loadPresetOptions(loadPresetSelect);
         }
@@ -14967,7 +14973,7 @@ class GitItUpVisualizer {
         this.connectHeaderColorSchemeFunctionality(colorSchemeButton, colorSchemeDropdownContent);
     }
 
-    connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile) {
+    connectHeaderPresetsFunctionality(loadPresetSelect, savePresetBtn, exportPresetsBtn, importPresetsBtn, importPresetsFile, clearAllPresetsBtn) {
         // Prevent duplicate event listeners by checking if already connected
         if (savePresetBtn.dataset.connected === 'true') {
             return;
@@ -15017,6 +15023,11 @@ class GitItUpVisualizer {
                 e.target.value = '';
             }
         });
+
+        // Connect clear all presets functionality
+        clearAllPresetsBtn.addEventListener('click', () => {
+            this.showClearPresetsModal();
+        });
         
         // Mark as connected to prevent duplicate event listeners
         savePresetBtn.dataset.connected = 'true';
@@ -15024,6 +15035,7 @@ class GitItUpVisualizer {
         importPresetsBtn.dataset.connected = 'true';
         loadPresetSelect.dataset.connected = 'true';
         importPresetsFile.dataset.connected = 'true';
+        clearAllPresetsBtn.dataset.connected = 'true';
     }
 
     connectHeaderSpectrumFunctionality(spectrumButton, spectrumDropdownContent, onButton, randomButton) {
@@ -18353,7 +18365,7 @@ https://rogueamoeba.com/loopback/
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `gitup_presets_${
+            link.download = `visualizer_presets_${
                 Date.now()
             }.json`;
             document.body.appendChild(link);
@@ -18614,6 +18626,12 @@ https://rogueamoeba.com/loopback/
 
             this.savePresets();
             this.updatePresetSelector();
+            
+            // Also update the header preset selector
+            const headerSelector = document.getElementById('headerPresetSelector');
+            if (headerSelector) {
+                this.loadPresetOptions(headerSelector);
+            }
         }
     }
 
@@ -18647,6 +18665,12 @@ https://rogueamoeba.com/loopback/
 
         this.savePresets();
         this.updatePresetSelector();
+        
+        // Also update the header preset selector
+        const headerSelector = document.getElementById('headerPresetSelector');
+        if (headerSelector) {
+            this.loadPresetOptions(headerSelector);
+        }
     }
 
     generateRandomProConfig() {
@@ -19997,6 +20021,254 @@ https://rogueamoeba.com/loopback/
         });
     }
     
+    // Advanced Preset Controls Setup and Management
+    setupAdvancedPresetControls() {
+        console.log('🎛️ Setting up Advanced Preset Controls...');
+        
+        // Show/hide controls when Pro presets are active
+        const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
+        const advancedControls = document.getElementById('advancedPresetControls');
+        
+        console.log('🎛️ Found Pro preset buttons:', headerAMProPresetButtons.length);
+        console.log('🎛️ Found advanced controls container:', !!advancedControls);
+        
+        if (advancedControls) {
+            console.log('🎛️ Advanced controls current display:', advancedControls.style.display);
+            console.log('🎛️ Advanced controls parent:', advancedControls.parentElement?.id);
+        }
+        
+        if (!advancedControls) {
+            console.warn('Advanced Preset Controls container not found');
+            return;
+        }
+        
+        // Show controls when Pro preset is clicked
+        headerAMProPresetButtons.forEach((button, index) => {
+            console.log(`🎛️ Adding click listener to Pro preset button ${index}:`, button.textContent);
+            button.addEventListener('click', () => {
+                console.log('🎛️ Pro preset button clicked, showing advanced controls');
+                advancedControls.style.display = 'block';
+                console.log('🎛️ Advanced controls display after setting:', advancedControls.style.display);
+                setTimeout(() => this.loadAdvancedControlsFromPreset(), 100);
+            });
+        });
+        
+        // Hide controls when regular preset is clicked
+        const headerAMPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset:not(.btn-preset-pro)');
+        headerAMPresetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                advancedControls.style.display = 'none';
+            });
+        });
+        
+        // Set up all control event listeners
+        this.setupAdvancedControlEventListeners();
+    }
+
+    setupAdvancedControlEventListeners() {
+        // Gradient dropdown
+        const gradientSelect = document.getElementById('advancedGradient');
+        if (gradientSelect) {
+            gradientSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.gradient = e.target.value;
+                }
+            });
+        }
+        
+        // Color Mode dropdown
+        const colorModeSelect = document.getElementById('advancedColorMode');
+        if (colorModeSelect) {
+            colorModeSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.colorMode = e.target.value;
+                }
+            });
+        }
+        
+        // Channel Layout dropdown
+        const channelLayoutSelect = document.getElementById('advancedChannelLayout');
+        if (channelLayoutSelect) {
+            channelLayoutSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.channelLayout = e.target.value;
+                }
+            });
+        }
+        
+        // FFT Size dropdown
+        const fftSizeSelect = document.getElementById('advancedFftSize');
+        if (fftSizeSelect) {
+            fftSizeSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.fftSize = parseInt(e.target.value);
+                }
+            });
+        }
+        
+        // Radial toggle (with conditional Radius control)
+        const radialCheckbox = document.getElementById('advancedRadial');
+        const radiusWrapper = document.getElementById('advancedRadiusWrapper');
+        if (radialCheckbox) {
+            radialCheckbox.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.radial = e.target.checked;
+                    
+                    // Show/hide radius control
+                    if (radiusWrapper) {
+                        radiusWrapper.style.display = e.target.checked ? 'block' : 'none';
+                    }
+                }
+            });
+        }
+        
+        // All other toggles
+        const toggles = [
+            { id: 'advancedRadialInvert', prop: 'radialInvert' },
+            { id: 'advancedRoundBars', prop: 'roundBars' },
+            { id: 'advancedLedBars', prop: 'ledBars' },
+            { id: 'advancedLumiBars', prop: 'lumiBars' },
+            { id: 'advancedAlphaBars', prop: 'alphaBars' },
+            { id: 'advancedSplitGradient', prop: 'splitGradient' },
+            { id: 'advancedShowPeaks', prop: 'showPeaks' },
+            { id: 'advancedReflexFit', prop: 'reflexFit' }
+        ];
+        
+        toggles.forEach(({ id, prop }) => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    if (this.officialAudioMotion) {
+                        this.officialAudioMotion[prop] = e.target.checked;
+                    }
+                });
+            }
+        });
+        
+        // All sliders with real-time updates
+        const sliders = [
+            { id: 'advancedSmoothing', prop: 'smoothing', valueId: 'advancedSmoothingValue', format: (v) => v },
+            { id: 'advancedLinearBoost', prop: 'linearBoost', valueId: 'advancedLinearBoostValue', format: (v) => v },
+            { id: 'advancedMinDecibels', prop: 'minDecibels', valueId: 'advancedMinDecibelsValue', format: (v) => v },
+            { id: 'advancedMaxDecibels', prop: 'maxDecibels', valueId: 'advancedMaxDecibelsValue', format: (v) => v },
+            { id: 'advancedFreqMin', prop: 'minFreq', valueId: 'advancedFreqMinValue', format: (v) => v },
+            { id: 'advancedFreqMax', prop: 'maxFreq', valueId: 'advancedFreqMaxValue', format: (v) => v },
+            { id: 'advancedBarSpace', prop: 'barSpace', valueId: 'advancedBarSpaceValue', format: (v) => v },
+            { id: 'advancedRadius', prop: 'radius', valueId: 'advancedRadiusValue', format: (v) => v },
+            { id: 'advancedPeakHoldTime', prop: 'peakHoldTime', valueId: 'advancedPeakHoldTimeValue', format: (v) => v },
+            { id: 'advancedPeakFadeTime', prop: 'peakFadeTime', valueId: 'advancedPeakFadeTimeValue', format: (v) => v },
+            { id: 'advancedReflexRatio', prop: 'reflexRatio', valueId: 'advancedReflexRatioValue', format: (v) => v.toFixed(2) },
+            { id: 'advancedReflexBright', prop: 'reflexBright', valueId: 'advancedReflexBrightValue', format: (v) => v.toFixed(1) }
+        ];
+        
+        sliders.forEach(({ id, prop, valueId, format }) => {
+            const slider = document.getElementById(id);
+            const valueDisplay = document.getElementById(valueId);
+            
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    valueDisplay.textContent = format(value);
+                    
+                    if (this.officialAudioMotion) {
+                        this.officialAudioMotion[prop] = value;
+                    }
+                });
+            }
+        });
+        
+        // Reset button
+        const resetButton = document.getElementById('resetAdvancedControls');
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                this.resetAdvancedControlsToPreset();
+            });
+        }
+    }
+
+    loadAdvancedControlsFromPreset() {
+        if (!this.officialAudioMotion) return;
+        
+        // Get current AudioMotion settings and populate controls
+        const settings = this.officialAudioMotion.getOptions();
+        
+        // Populate dropdowns
+        this.setControlValue('advancedGradient', settings.gradient);
+        this.setControlValue('advancedColorMode', settings.colorMode);
+        this.setControlValue('advancedChannelLayout', settings.channelLayout);
+        this.setControlValue('advancedFftSize', settings.fftSize);
+        
+        // Populate toggles
+        this.setControlValue('advancedRadial', settings.radial);
+        this.setControlValue('advancedRadialInvert', settings.radialInvert);
+        this.setControlValue('advancedRoundBars', settings.roundBars);
+        this.setControlValue('advancedLedBars', settings.ledBars);
+        this.setControlValue('advancedLumiBars', settings.lumiBars);
+        this.setControlValue('advancedAlphaBars', settings.alphaBars);
+        this.setControlValue('advancedSplitGradient', settings.splitGradient);
+        this.setControlValue('advancedShowPeaks', settings.showPeaks);
+        this.setControlValue('advancedReflexFit', settings.reflexFit);
+        
+        // Populate sliders and update their value displays
+        this.setSliderValue('advancedSmoothing', 'advancedSmoothingValue', settings.smoothing);
+        this.setSliderValue('advancedLinearBoost', 'advancedLinearBoostValue', settings.linearBoost);
+        this.setSliderValue('advancedMinDecibels', 'advancedMinDecibelsValue', settings.minDecibels);
+        this.setSliderValue('advancedMaxDecibels', 'advancedMaxDecibelsValue', settings.maxDecibels);
+        this.setSliderValue('advancedFreqMin', 'advancedFreqMinValue', settings.minFreq);
+        this.setSliderValue('advancedFreqMax', 'advancedFreqMaxValue', settings.maxFreq);
+        this.setSliderValue('advancedBarSpace', 'advancedBarSpaceValue', settings.barSpace);
+        this.setSliderValue('advancedRadius', 'advancedRadiusValue', settings.radius);
+        this.setSliderValue('advancedPeakHoldTime', 'advancedPeakHoldTimeValue', settings.peakHoldTime);
+        this.setSliderValue('advancedPeakFadeTime', 'advancedPeakFadeTimeValue', settings.peakFadeTime);
+        this.setSliderValue('advancedReflexRatio', 'advancedReflexRatioValue', settings.reflexRatio, (v) => v.toFixed(2));
+        this.setSliderValue('advancedReflexBright', 'advancedReflexBrightValue', settings.reflexBright, (v) => v.toFixed(1));
+        
+        // Handle conditional Radius control visibility
+        const radiusWrapper = document.getElementById('advancedRadiusWrapper');
+        if (radiusWrapper) {
+            radiusWrapper.style.display = settings.radial ? 'block' : 'none';
+        }
+    }
+
+    setControlValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.checked = value;
+            } else {
+                element.value = value;
+            }
+        }
+    }
+
+    setSliderValue(sliderId, valueId, value, formatter = (v) => v) {
+        const slider = document.getElementById(sliderId);
+        const valueDisplay = document.getElementById(valueId);
+        
+        if (slider) {
+            slider.value = value;
+        }
+        if (valueDisplay) {
+            valueDisplay.textContent = formatter(value);
+        }
+    }
+
+    resetAdvancedControlsToPreset() {
+        // Get the currently active preset and reload its default settings
+        const activePresetBtn = document.querySelector('#headerVisualizerPanel .btn-preset-pro.active');
+        if (activePresetBtn) {
+            const presetIndex = parseInt(activePresetBtn.getAttribute('data-official-preset'));
+            if (this.officialAudioMotionPresets && presetIndex >= 0 && presetIndex < this.officialAudioMotionPresets.length) {
+                // Reapply the preset to reset all settings
+                this.setOfficialAudioMotionPreset(presetIndex);
+                // Reload the controls to reflect the reset values
+                setTimeout(() => {
+                    this.loadAdvancedControlsFromPreset();
+                }, 100);
+            }
+        }
+    }
+    
     initNebulaPresetHandlers() {
         // Preset button handlers
         const presetButtons = [
@@ -21167,7 +21439,7 @@ https://rogueamoeba.com/loopback/
     // Preset Methods
     loadPresets() {
         try {
-            const saved = localStorage.getItem('gitup_presets');
+            const saved = localStorage.getItem('visualizer_presets');
             return saved ? JSON.parse(saved) : [];
         } catch (e) {
             console.error('Error loading presets:', e);
@@ -21373,7 +21645,7 @@ https://rogueamoeba.com/loopback/
 
     savePresets() {
         try {
-            localStorage.setItem('gitup_presets', JSON.stringify(this.savedPresets));
+            localStorage.setItem('visualizer_presets', JSON.stringify(this.savedPresets));
         } catch (e) {
             console.error('Error saving presets:', e);
         }
@@ -21469,6 +21741,90 @@ https://rogueamoeba.com/loopback/
         
         console.log('📋 Extracted Pro config:', config);
         return config;
+    }
+
+    // Clear All Presets Functionality
+    showClearPresetsModal() {
+        const modal = document.getElementById('clearPresetsModal');
+        const cancelBtn = document.getElementById('cancelClearBtn');
+        const confirmBtn = document.getElementById('confirmClearBtn');
+        
+        if (!modal || !cancelBtn || !confirmBtn) {
+            console.error('Clear presets modal elements not found');
+            return;
+        }
+        
+        // Show modal
+        modal.style.display = 'flex';
+        
+        // Set up event listeners (remove any existing ones first)
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        // Cancel button - close modal
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Confirm button - clear presets
+        newConfirmBtn.addEventListener('click', () => {
+            this.clearAllUserPresets();
+            modal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    clearAllUserPresets() {
+        // Preserve "Last Random" presets while clearing user-saved presets
+        const lastRandomPresets = this.savedPresets.filter(p => p.name === 'Last Random');
+        
+        // Clear all user-saved presets but keep "Last Random"
+        this.savedPresets = lastRandomPresets;
+        
+        // Save updated presets array to localStorage
+        this.savePresets();
+        
+        // Update all preset dropdowns
+        const headerSelector = document.getElementById('headerPresetSelector');
+        if (headerSelector) {
+            this.loadPresetOptions(headerSelector);
+        }
+        
+        // Update mixer preset selector if it exists
+        const mixerSelector = document.getElementById('mixerAMPresetSelector');
+        if (mixerSelector) {
+            this.updatePresetSelector();
+        }
+        
+        // Show success message (using error notification system)
+        const errorDiv = document.getElementById('error');
+        const errorText = document.getElementById('error-text');
+        if (errorDiv && errorText) {
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = 'var(--success-color, #10b981)';
+            errorText.textContent = 'User presets cleared successfully';
+            document.getElementById('loading').style.display = 'none';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.background = ''; // Reset background
+            }, 3000);
+
+            errorDiv.onclick = () => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.background = ''; // Reset background
+            };
+        }
+        
+        console.log('🗑️ All user presets cleared');
     }
 
     toggleVisualization() {

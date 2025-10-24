@@ -693,6 +693,7 @@
                                 <button id="headerExportPresetsBtn" title="Export All Presets" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1 1 0%;">Export</button>
                                 <button id="headerImportPresetsBtn" title="Import Presets" style="background: var(--hover-color); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1 1 0%;">Import</button>
                             </div>
+                            <button class="btn-toggle btn-danger" id="clearAllPresetsBtn" title="Clear All User Presets" style="width: 100%; margin-top: 8px;">Clear All Presets</button>
                             <input type="file" id="headerImportPresetsFile" accept=".json" style="display: none;">
                         </div>
                     </div>
@@ -762,6 +763,217 @@
                             <button class="btn-preset btn-preset-pro" data-official-preset="1">Prism</button>
                             <button class="btn-preset btn-preset-pro" data-official-preset="2">Twin Peaks</button>
                             <button class="btn-preset btn-preset-pro" data-official-preset="3">Circus</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Preset Controls -->
+                    <div class="control-group" id="advancedPresetControls" style="display: none;">
+                        <div class="group-label">Advanced Preset Controls</div>
+                        
+                        <!-- Reset Button -->
+                        <div class="preset-buttons">
+                            <button class="btn-preset" id="resetAdvancedControls">Reset to Preset Default</button>
+                        </div>
+                        
+                        <!-- Visual Controls -->
+                        <div class="sub-group-label">Visual</div>
+                        
+                        <!-- Gradient Choice -->
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-label">Gradient</div>
+                            <select id="advancedGradient" class="dropdown-select">
+                                <option value="classic">Classic</option>
+                                <option value="prism">Prism</option>
+                                <option value="rainbow">Rainbow</option>
+                                <option value="orangered">Orange Red</option>
+                                <option value="steelblue">Steel Blue</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="neon">Neon</option>
+                                <option value="aurora">Aurora</option>
+                                <option value="galaxy">Galaxy</option>
+                                <option value="plasma">Plasma</option>
+                                <option value="arctic">Arctic</option>
+                                <option value="desert">Desert</option>
+                                <option value="forest">Forest</option>
+                                <option value="volcano">Volcano</option>
+                                <option value="cosmic">Cosmic</option>
+                                <option value="fire">Fire</option>
+                                <option value="purps">Purps</option>
+                                <option value="la">LA</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Color Mode -->
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-label">Color Mode</div>
+                            <select id="advancedColorMode" class="dropdown-select">
+                                <option value="gradient">Gradient</option>
+                                <option value="bar-index">Bar Index</option>
+                                <option value="bar-level">Bar Level</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Channel Layout -->
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-label">Channel Layout</div>
+                            <select id="advancedChannelLayout" class="dropdown-select">
+                                <option value="single">Single</option>
+                                <option value="dual-combined">Dual Combined</option>
+                                <option value="dual-horizontal">Dual Horizontal</option>
+                                <option value="dual-vertical">Dual Vertical</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Visual Toggles -->
+                        <div class="toggle-group">
+                            <div class="toggle-item">
+                                <label class="toggle-label">Radial</label>
+                                <input type="checkbox" id="advancedRadial" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Radial Invert</label>
+                                <input type="checkbox" id="advancedRadialInvert" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Round Bars</label>
+                                <input type="checkbox" id="advancedRoundBars" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">LED Bars</label>
+                                <input type="checkbox" id="advancedLedBars" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Lumi Bars</label>
+                                <input type="checkbox" id="advancedLumiBars" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Alpha Bars</label>
+                                <input type="checkbox" id="advancedAlphaBars" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Split Gradient</label>
+                                <input type="checkbox" id="advancedSplitGradient" class="toggle-checkbox">
+                            </div>
+                        </div>
+                        
+                        <!-- Audio Processing Controls -->
+                        <div class="sub-group-label">Audio Processing</div>
+                        
+                        <!-- Fidelity (FFT Size) -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Fidelity</div>
+                            <select id="advancedFftSize" class="dropdown-select">
+                                <option value="512">512</option>
+                                <option value="1024">1024</option>
+                                <option value="2048">2048</option>
+                                <option value="4096">4096</option>
+                                <option value="8192">8192</option>
+                                <option value="16384">16384</option>
+                                <option value="32768">32768</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Smoothing -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Smoothing</div>
+                            <input type="range" id="advancedSmoothing" min="0" max="1" step="0.01" value="0.5" class="slider-1">
+                            <span class="slider-1-value" id="advancedSmoothingValue">0.5</span>
+                        </div>
+                        
+                        <!-- Linear Boost -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Linear Boost</div>
+                            <input type="range" id="advancedLinearBoost" min="0.1" max="3" step="0.1" value="1" class="slider-1">
+                            <span class="slider-1-value" id="advancedLinearBoostValue">1.0</span>
+                        </div>
+                        
+                        <!-- Min Decibels -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Min Decibels</div>
+                            <input type="range" id="advancedMinDecibels" min="-100" max="-25" step="1" value="-85" class="slider-1">
+                            <span class="slider-1-value" id="advancedMinDecibelsValue">-85</span>
+                        </div>
+                        
+                        <!-- Max Decibels -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Max Decibels</div>
+                            <input type="range" id="advancedMaxDecibels" min="-25" max="0" step="1" value="-25" class="slider-1">
+                            <span class="slider-1-value" id="advancedMaxDecibelsValue">-25</span>
+                        </div>
+                        
+                        <!-- Frequency Range Min -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Frequency Min (Hz)</div>
+                            <input type="range" id="advancedFreqMin" min="20" max="1000" step="10" value="20" class="slider-1">
+                            <span class="slider-1-value" id="advancedFreqMinValue">20</span>
+                        </div>
+                        
+                        <!-- Frequency Range Max -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Frequency Max (Hz)</div>
+                            <input type="range" id="advancedFreqMax" min="1000" max="22000" step="100" value="22000" class="slider-1">
+                            <span class="slider-1-value" id="advancedFreqMaxValue">22000</span>
+                        </div>
+                        
+                        <!-- Layout & Spacing -->
+                        <div class="sub-group-label">Layout & Spacing</div>
+                        
+                        <!-- Bar Space -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Bar Space</div>
+                            <input type="range" id="advancedBarSpace" min="0" max="2" step="0.1" value="0.1" class="slider-1">
+                            <span class="slider-1-value" id="advancedBarSpaceValue">0.1</span>
+                        </div>
+                        
+                        <!-- Radius (conditional on Radial) -->
+                        <div class="slider-1-wrapper" id="advancedRadiusWrapper" style="display: none;">
+                            <div class="slider-label">Radius</div>
+                            <input type="range" id="advancedRadius" min="0.1" max="1" step="0.01" value="0.3" class="slider-1">
+                            <span class="slider-1-value" id="advancedRadiusValue">0.3</span>
+                        </div>
+                        
+                        <!-- Peak & Reflection Controls -->
+                        <div class="sub-group-label">Peaks & Reflections</div>
+                        
+                        <!-- Show Peaks Toggle -->
+                        <div class="toggle-group">
+                            <div class="toggle-item">
+                                <label class="toggle-label">Show Peaks</label>
+                                <input type="checkbox" id="advancedShowPeaks" class="toggle-checkbox">
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-label">Reflex Fit</label>
+                                <input type="checkbox" id="advancedReflexFit" class="toggle-checkbox">
+                            </div>
+                        </div>
+                        
+                        <!-- Peak Hold Time -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Peak Hold Time (ms)</div>
+                            <input type="range" id="advancedPeakHoldTime" min="0" max="5000" step="100" value="500" class="slider-1">
+                            <span class="slider-1-value" id="advancedPeakHoldTimeValue">500</span>
+                        </div>
+                        
+                        <!-- Peak Fade Time -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Peak Fade Time (ms)</div>
+                            <input type="range" id="advancedPeakFadeTime" min="0" max="5000" step="100" value="750" class="slider-1">
+                            <span class="slider-1-value" id="advancedPeakFadeTimeValue">750</span>
+                        </div>
+                        
+                        <!-- Reflex Ratio -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Reflex Ratio</div>
+                            <input type="range" id="advancedReflexRatio" min="0" max="1" step="0.01" value="0" class="slider-1">
+                            <span class="slider-1-value" id="advancedReflexRatioValue">0.0</span>
+                        </div>
+                        
+                        <!-- Reflex Bright -->
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Reflex Bright</div>
+                            <input type="range" id="advancedReflexBright" min="0" max="2" step="0.01" value="1" class="slider-1">
+                            <span class="slider-1-value" id="advancedReflexBrightValue">1.0</span>
                         </div>
                     </div>
                 </div>
@@ -1328,6 +1540,19 @@
 </div>
 
 <!-- Learning Analytics Dashboard Modal -->
+<!-- Clear Presets Confirmation Modal -->
+<div class="clear-presets-modal" id="clearPresetsModal" style="display: none;">
+    <div class="clear-presets-modal-content">
+        <div class="clear-presets-modal-message">
+            This will permanently delete these presets. You may want to export the list first.
+        </div>
+        <div class="clear-presets-modal-buttons">
+            <button class="btn-secondary" id="cancelClearBtn">Cancel</button>
+            <button class="btn-danger" id="confirmClearBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
 <div class="learning-analytics-modal" id="learningAnalyticsModal" style="display: none;">
     <div class="analytics-modal-content">
         <div class="analytics-modal-header">
