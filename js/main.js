@@ -10903,6 +10903,19 @@ class GitItUpVisualizer {
 
     async init() {
         try {
+            // Set initial loading state
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+            }
+            
+            // Set track title to loading message
+            const trackTitle = document.getElementById('trackTitle');
+            if (trackTitle) {
+                trackTitle.textContent = 'Tracks Loading...';
+            }
+            
             this.setupEventListeners();
             this.setupFloatingPanelResizeHandler();
             this.loadPlaylist();
@@ -10965,6 +10978,17 @@ class GitItUpVisualizer {
         } catch (error) {
             console.error('Initialization error:', error);
             this.showError('Failed to initialize audio visualizer: ' + error.message);
+            
+            // Show error state
+            const trackTitle = document.getElementById('trackTitle');
+            if (trackTitle) {
+                trackTitle.textContent = 'Initialization failed';
+            }
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+            }
         }
     }
 
@@ -10974,11 +10998,109 @@ class GitItUpVisualizer {
         
         if (this.playlist.length === 0) {
             console.warn('No tracks in playlist to initialize');
+            
+            // No tracks available - show appropriate message
+            const trackTitle = document.getElementById('trackTitle');
+            if (trackTitle) {
+                trackTitle.textContent = 'No tracks available';
+            }
+            
+            // Keep play button disabled with 50% opacity
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+            }
             return;
         }
         
-        await this.preloadTrack(0);
-        this.audioInitialized = true;
+        // Don't try to initialize immediately - wait for playlist manager to provide valid URLs
+        // The tryInitializeFirstTrack() method will be called when tracks become available
+        this.audioInitialized = false;
+    }
+
+    async tryInitializeFirstTrack() {
+        // Only try if we haven't initialized yet and have tracks with valid URLs
+        if (this.audioInitialized !== false || this.playlist.length === 0) {
+            return;
+        }
+        
+        // Check if we have at least one track with a valid URL
+        const validTracks = this.playlist.filter(track => 
+            track.url && (track.url.startsWith('blob:') || track.url.startsWith('http'))
+        );
+        
+        if (validTracks.length === 0) {
+            console.log('⏳ No valid track URLs yet, waiting...');
+            return;
+        }
+        
+        console.log(`🎵 Found ${validTracks.length} valid tracks, initializing first track...`);
+        
+        // Add a small delay to ensure blob URLs are fully ready
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        try {
+            await this.preloadTrack(0);
+            this.audioInitialized = true;
+            
+            // Enable play button after successful audio initialization
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) {
+                playBtn.disabled = false;
+                playBtn.style.opacity = '1.0';
+                console.log('✅ Play button enabled after track URLs became available');
+            }
+        } catch (error) {
+            console.error('Failed to initialize first track:', error);
+            
+            // Keep play button disabled on error
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.style.opacity = '0.5';
+            }
+            const trackTitle = document.getElementById('trackTitle');
+            if (trackTitle) {
+                trackTitle.textContent = 'Failed to load initial track';
+            }
+        }
+    }
+
+    async waitForValidTrackURLs() {
+        const maxWaitTime = 15000; // Maximum 15 seconds
+        const checkInterval = 500; // Check every 500ms
+        let elapsed = 0;
+        
+        console.log('⏳ Waiting for tracks to have valid URLs...');
+        
+        while (elapsed < maxWaitTime) {
+            // Check if we have at least one track with a valid URL
+            const validTracks = this.playlist.filter(track => 
+                track.url && (track.url.startsWith('blob:') || track.url.startsWith('http'))
+            );
+            
+            if (validTracks.length > 0) {
+                console.log(`✅ Found ${validTracks.length} tracks with valid URLs`);
+                return;
+            }
+            
+            // Update track title to show waiting status
+            const trackTitle = document.getElementById('trackTitle');
+            if (trackTitle) {
+                const dots = '.'.repeat((elapsed / 500) % 4);
+                trackTitle.textContent = `Scanning tracks${dots}`;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            elapsed += checkInterval;
+        }
+        
+        console.warn('⚠️ Timeout waiting for valid track URLs');
+        const trackTitle = document.getElementById('trackTitle');
+        if (trackTitle) {
+            trackTitle.textContent = 'No playable tracks found';
+        }
     }
 
     async initAudioMotion() {
@@ -16129,8 +16251,10 @@ class GitItUpVisualizer {
             return;
         }
         
-        // Clear current playing track when loading new playlist (unless preserving state)
-        if (!this._preservePlayingState) {
+        // Clear current playing track only during initial playlist loading, not during background updates
+        // Don't clear if we already have a loaded track and this is just a background rescan update
+        const hasLoadedTrack = this.audio && this.audio.src && this.audio.src !== location.origin + '/';
+        if (!hasLoadedTrack && !this._preservePlayingState) {
             if (this.audio) {
                 this.audio.pause();
                 this.audio.src = '';
@@ -16196,6 +16320,9 @@ class GitItUpVisualizer {
             }
         }
         // console.log(`Playable tracks: ${playableTracks.length}/${this.playlist.length}`);
+        
+        // Try to initialize first track if we haven't already and now have valid URLs
+        this.tryInitializeFirstTrack();
     }
     
     playTrackById(trackId) {
@@ -26240,6 +26367,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 });
 
                 this.updatePlaylistDropdown();
+                
+                // Try to initialize first track if we haven't already and now have valid URLs
+                this.tryInitializeFirstTrack();
             }
 
             async preloadTrack(index) {
@@ -26275,24 +26405,51 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.audio.src = track.url;
                     this.audio.volume = this.volume;
 
-                    console.log(`Loading track ${index}: "${track.name}" from ${track.url.substring(0, 50)}...`);
+                console.log(`Loading track ${index}: "${track.name}" from ${track.url.substring(0, 50)}...`);
 
-                    await new Promise((resolve, reject) => {
-                        this.audio.addEventListener('canplay', resolve, {once: true});
-                        this.audio.addEventListener('error', (e) => {
+                await new Promise((resolve, reject) => {
+                        const onCanPlay = () => {
+                            clearTimeout(timeoutId);
+                            resolve();
+                        };
+                        const onError = (e) => {
+                            clearTimeout(timeoutId);
                             console.error('Audio loading error:', e);
+                            console.error('Audio element state:', {
+                                src: this.audio.src,
+                                readyState: this.audio.readyState,
+                                networkState: this.audio.networkState,
+                                error: this.audio.error
+                            });
                             reject(new Error(`Failed to load audio: ${e.type}`));
-                        }, {once: true});
-                        setTimeout(() => {
-                            console.warn('Audio loading timeout after 5 seconds');
-                            reject(new Error('Audio loading timeout'));
-                        }, 5000);
+                        };
+                        
+                        this.audio.addEventListener('canplay', onCanPlay, {once: true});
+                        this.audio.addEventListener('error', onError, {once: true});
+                        
+                        // Increase timeout to 10 seconds and add better logging
+                        const timeoutId = setTimeout(() => {
+                            this.audio.removeEventListener('canplay', onCanPlay);
+                            this.audio.removeEventListener('error', onError);
+                            console.warn(`Audio loading timeout after 10 seconds for track: ${track.name}`);
+                            // Don't reject on timeout - let it continue and try to play
+                            resolve();
+                        }, 10000);
+                        
+                        // Start loading the audio
+                        this.audio.load();
                     });
 
                     this.audio.addEventListener('timeupdate', () => this.updateProgress());
                     this.audio.addEventListener('ended', () => this.handleTrackEnd());
                     this.audio.addEventListener('error', (e) => {
                         console.error('Audio playback error:', e);
+                        console.error('Audio error details:', {
+                            src: this.audio.src,
+                            error: this.audio.error,
+                            networkState: this.audio.networkState,
+                            readyState: this.audio.readyState
+                        });
                         this.showError('Failed to load audio track');
                     });
 
@@ -26307,11 +26464,30 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.updateTrackInfo();
                     this.updatePlaylistDropdown();
                     
+                    // Enable play button after successful track loading
+                    const playBtn = document.getElementById('playBtn');
+                    if (playBtn) {
+                        playBtn.disabled = false;
+                        playBtn.style.opacity = '1.0';
+                        console.log('✅ Play button enabled in preloadTrack for track:', track.name);
+                    }
+                    
                     console.log(`✅ Successfully loaded track ${index}: "${track.name}"`);
 
                 } catch (error) {
                     console.error('Failed to preload track:', error);
                     this.showError('Failed to load track: ' + error.message);
+                    
+                    // Disable play button on error
+                    const playBtn = document.getElementById('playBtn');
+                    if (playBtn) {
+                        playBtn.disabled = true;
+                        playBtn.style.opacity = '0.5';
+                    }
+                    const trackTitle = document.getElementById('trackTitle');
+                    if (trackTitle) {
+                        trackTitle.textContent = 'Failed to load track';
+                    }
                 }
             }
 
