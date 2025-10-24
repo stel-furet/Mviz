@@ -10997,7 +10997,7 @@ class GitItUpVisualizer {
         await new Promise(resolve => setTimeout(resolve, 100));
         
         if (this.playlist.length === 0) {
-            console.warn('No tracks in playlist to initialize');
+            // No tracks in playlist to initialize
             
             // No tracks available - show appropriate message
             const trackTitle = document.getElementById('trackTitle');
@@ -11031,25 +11031,38 @@ class GitItUpVisualizer {
         );
         
         if (validTracks.length === 0) {
-            console.log('⏳ No valid track URLs yet, waiting...');
+            // No valid track URLs yet, waiting...
             return;
         }
         
-        console.log(`🎵 Found ${validTracks.length} valid tracks, initializing first track...`);
+        // Found valid tracks, initializing first track...
         
         // Add a small delay to ensure blob URLs are fully ready
         await new Promise(resolve => setTimeout(resolve, 50));
         
         try {
-            await this.preloadTrack(0);
+            // Find the first track with a valid URL
+            const firstValidTrackIndex = this.playlist.findIndex(track => 
+                track.url && (track.url.startsWith('blob:') || track.url.startsWith('http'))
+            );
+            
+            if (firstValidTrackIndex === -1) {
+                // No valid tracks found
+                return;
+            }
+            
+            await this.preloadTrack(firstValidTrackIndex);
             this.audioInitialized = true;
+            
+            // Update current track index to match the loaded track
+            this.currentTrackIndex = firstValidTrackIndex;
             
             // Enable play button after successful audio initialization
             const playBtn = document.getElementById('playBtn');
             if (playBtn) {
                 playBtn.disabled = false;
                 playBtn.style.opacity = '1.0';
-                console.log('✅ Play button enabled after track URLs became available');
+                // Play button enabled after track URLs became available
             }
         } catch (error) {
             console.error('Failed to initialize first track:', error);
@@ -16278,7 +16291,7 @@ class GitItUpVisualizer {
             if (track.url) {
                 // console.log(`Track "${track.title}" has URL: ${track.url.substring(0, 50)}...`);
             } else {
-                console.warn(`Track "${track.title}" has no URL - needs rescan`);
+                // Track has no URL - needs rescan
             }
             
             return visualizerTrack;
@@ -25803,31 +25816,32 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             }
 
             detectEnergy() {
-                // Check for data array from either regular or Pro AudioMotion
-                let dataArray = null;
+                let energy = 0;
+                
                 if (this.useOfficialAudioMotion && this.officialAudioMotion) {
-                    // For Pro visualizations, get data from official AudioMotion
+                    // For Pro visualizations, use official AudioMotion's getEnergy method
                     try {
-                        dataArray = this.officialAudioMotion.getFrequencyData();
+                        // Get bass energy (20-250 Hz) which is similar to our previous calculation
+                        energy = this.officialAudioMotion.getEnergy('bass');
+                        if (energy === null || energy === undefined) {
+                            energy = 0;
+                        }
                     } catch (e) {
-                        console.log('Energy detection: No Pro AudioMotion data available');
-                        return;
+                        // Silent fallback - energy stays 0
+                        energy = 0;
                     }
                 } else if (this.audioMotion && this.audioMotion.dataArray) {
-                    // For regular visualizations, use custom AudioMotion
-                    dataArray = this.audioMotion.dataArray;
+                    // For regular visualizations, use custom AudioMotion data array
+                    const dataArray = this.audioMotion.dataArray;
+                    const bassEnd = Math.min(Math.floor(dataArray.length * 0.1), dataArray.length);
+                    for (let i = 0; i < bassEnd; i++) {
+                        energy += dataArray[i];
+                    }
+                    energy = energy / bassEnd / 255;
                 } else {
-                    console.log('Energy detection: No audioMotion or dataArray available');
+                    // No audio data available
                     return;
                 }
-
-                let energy = 0;
-
-                const bassEnd = Math.min(Math.floor(dataArray.length * 0.1), dataArray.length);
-                for (let i = 0; i < bassEnd; i++) {
-                    energy += dataArray[i];
-                }
-                energy = energy / bassEnd / 255;
 
                 this.energyHistory.push(energy);
                 if (this.energyHistory.length > 10) {
@@ -25859,9 +25873,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }%`;
                     const hue = 120 - (this.currentEnergy * 120);
                     footerEnergyFill.style.background = `hsl(${hue}, 100%, 50%)`;
-                    console.log(`Energy: ${this.currentEnergy.toFixed(3)}, Width: ${(this.currentEnergy * 100).toFixed(1)}%`);
-                } else {
-                    console.log('Footer energy fill not found');
                 }
                 
                 // Update mixer energy indicator
@@ -26380,7 +26391,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 
                 const track = this.playlist[index];
                 if (!track || !track.url) {
-                    console.warn(`Track at index ${index} has no URL:`, track);
+                    // Track at index has no URL
                     this.showError('Track has no valid URL - may need rescan');
                     return;
                 }
@@ -26405,7 +26416,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.audio.src = track.url;
                     this.audio.volume = this.volume;
 
-                console.log(`Loading track ${index}: "${track.name}" from ${track.url.substring(0, 50)}...`);
+                // Loading track...
 
                 await new Promise((resolve, reject) => {
                         const onCanPlay = () => {
@@ -26466,10 +26477,10 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     if (playBtn) {
                         playBtn.disabled = false;
                         playBtn.style.opacity = '1.0';
-                        console.log('✅ Play button enabled in preloadTrack for track:', track.name);
+                        // Play button enabled in preloadTrack
                     }
                     
-                    console.log(`✅ Successfully loaded track ${index}: "${track.name}"`);
+                    // Successfully loaded track
 
                 } catch (error) {
                     console.error('Failed to preload track:', error);
@@ -26510,6 +26521,13 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
             async play() {
                 if (!this.audio) {
                     await this.initializeFirstTrack();
+                    
+                    // Check if audio was successfully initialized
+                    if (!this.audio) {
+                        this.showError('No audio track available to play');
+                        return;
+                    }
+                    
                     document.getElementById('fsPlayBtn').innerHTML = '⏸';
                 }
 

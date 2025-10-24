@@ -19,7 +19,7 @@ class PlaylistManager {
         if (this.currentPlaylist && this.currentPlaylist.tracks && this.currentPlaylist.tracks.length > 0) {
             // Delay to ensure UI is ready
             setTimeout(() => {
-                console.log('Auto-displaying cached playlist...');
+                // Auto-displaying cached playlist...
                 this.displayPlaylist();
                 this.visualizer.updatePlaylistFromManager(this.currentPlaylist);
                 
@@ -306,7 +306,7 @@ class PlaylistManager {
     
     async startBackgroundRescan() {
         try {
-            console.log('🔄 Starting background rescan...');
+            // Starting background rescan...
             
             // Try to load stored folder handle
             const storedHandle = await this.loadFolderHandle();
@@ -341,7 +341,7 @@ class PlaylistManager {
             
             // Scan folder in background
             const files = await this.scanDirectoryForAudioFiles(storedHandle);
-            console.log(`Background scan found ${files.length} files`);
+            // Background scan found files
             
             // Process files progressively
             await this.processFilesProgressively(files);
@@ -1027,10 +1027,10 @@ class PlaylistManager {
     }
     
     displayPlaylist() {
-        console.log('=== displayPlaylist called ===');
-        console.log('currentPlaylist exists:', !!this.currentPlaylist);
-        console.log('tracks exist:', !!this.currentPlaylist?.tracks);
-        console.log('tracks length:', this.currentPlaylist?.tracks?.length || 0);
+        // displayPlaylist called
+        // currentPlaylist exists
+        // tracks exist
+        // tracks length check
         
         // Ensure dropdown content is populated first
         this.ensureDropdownContent();
@@ -1041,34 +1041,34 @@ class PlaylistManager {
             return;
         }
         
-        console.log('Updating playlist stats...');
+        // Updating playlist stats...
         // Update stats
         this.updatePlaylistStats();
         
-        console.log('Preparing tracks for display...');
+        // Preparing tracks for display...
         // Use current order if user has customized it, otherwise sort alphabetically
         let tracksToDisplay;
         if (this.currentPlaylist.hasCustomOrder) {
             console.log('Using custom track order');
             tracksToDisplay = this.currentPlaylist.tracks;
         } else {
-            console.log('Using alphabetical sort');
+            // Using alphabetical sort
             tracksToDisplay = this.sortTracksForDisplay(this.currentPlaylist.tracks);
         }
-        console.log('Tracks to display:', tracksToDisplay.length);
+        // Tracks to display count
         
-        console.log('Rendering track list...');
+        // Rendering track list...
         // Display tracks
         this.renderTrackList(tracksToDisplay);
         
-        console.log('Updating track dropdown...');
+        // Updating track dropdown...
         // Update dropdown for backward compatibility
         this.updateTrackDropdown();
         
         // Update header playlist directly
         this.updateHeaderPlaylist();
         
-        console.log('✅ displayPlaylist completed');
+        // displayPlaylist completed
     }
     
     ensureDropdownContent() {
@@ -1076,10 +1076,10 @@ class PlaylistManager {
         const tracksContainer = document.getElementById('playlistTracks');
         const hasNewContent = dropdown && dropdown.querySelector('.playlist-actions-dropdown');
         
-        console.log('Checking dropdown content:');
-        console.log('- Dropdown exists:', !!dropdown);
-        console.log('- TracksContainer exists:', !!tracksContainer);
-        console.log('- Has new content:', !!hasNewContent);
+        // Checking dropdown content
+        // Dropdown exists check
+        // TracksContainer exists check
+        // Has new content check
         
         // Check for playlist actions to confirm it's our new content
         const hasPlaylistActions = dropdown && dropdown.innerHTML.includes('playlist-actions-dropdown');
@@ -1421,7 +1421,7 @@ class PlaylistManager {
     renderTrackList(tracks) {
         console.log('=== renderTrackList called ===');
         const tracksContainer = document.getElementById('playlistTracks');
-        console.log('tracksContainer found:', !!tracksContainer);
+        // tracksContainer found check
         
         if (!tracksContainer) {
             // console.error('playlistTracks container not found!');
@@ -1783,7 +1783,7 @@ class PlaylistManager {
     
     updateTrackDropdown() {
         // Playlist is now embedded - no dropdown button to update
-        console.log('Playlist is embedded - no dropdown button to update');
+        // Playlist is embedded - no dropdown button to update
     }
     
     playTrack(trackId) {

@@ -321,7 +321,7 @@ class SpectrumAnalyzer {
 
             this.connectedElement = audioElement;
             this.isConnected = true;
-            console.log('Audio connected successfully with channelLayout:', this.channelLayout);
+            // Audio connected successfully
         } catch (error) {
             console.error('Failed to connect audio:', error);
             this.isConnected = false;
@@ -496,9 +496,9 @@ class SpectrumAnalyzer {
             // Fallback: generate basic audio features from main audio analyzer
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
-                console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                // Generated basic audio features (disabled viz)
             } else if (!audioFeatures) {
-                console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                // No audio data available (disabled viz)
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
@@ -508,7 +508,7 @@ class SpectrumAnalyzer {
                 if (basicFeatures.energy > 0) {
                     audioFeatures = basicFeatures;
                     if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
-                        console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                        // Using basic audio features instead (disabled viz)
                     }
                 }
             }
@@ -537,16 +537,16 @@ class SpectrumAnalyzer {
                 // Fallback: generate basic audio features from main audio analyzer
                 if (!audioFeatures && this.analyser && this.dataArray) {
                     audioFeatures = this.generateBasicAudioFeatures();
-                    console.log('🔍 Generated basic audio features (disabled viz):', audioFeatures);
+                    // Generated basic audio features (disabled viz)
                 } else if (!audioFeatures) {
-                    console.log('🔍 No audio data available (disabled viz) - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
+                    // No audio data available (disabled viz)
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
                     console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;
-                        console.log('🔍 Using basic audio features instead (disabled viz):', audioFeatures);
+                        // Using basic audio features instead (disabled viz)
                     }
                 }
                 

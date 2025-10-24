@@ -94,6 +94,34 @@
     }], ['steelblue', {
       bgColor: '#222c35',
       colorStops: ['SteelBlue']
+    }], ['sunset', {
+      colorStops: ['#8B0000', '#FF4500', '#FFA500', '#FFD700', '#FF69B4']
+    }], ['ocean', {
+      colorStops: ['#000080', '#0000CD', '#00CED1', '#00FFFF', '#E0FFFF']
+    }], ['neon', {
+      colorStops: ['#FF00FF', '#00FFFF', '#00FF00', '#FFFF00', '#FF0080']
+    }], ['aurora', {
+      colorStops: ['#00FF00', '#0080FF', '#8000FF', '#FF00C0']
+    }], ['galaxy', {
+      colorStops: ['#1a0033', '#4B0082', '#0000FF', '#00FFFF', '#FFFFFF']
+    }], ['plasma', {
+      colorStops: ['#4B0082', '#FF00FF', '#DC143C', '#FF4500']
+    }], ['arctic', {
+      colorStops: ['#FFFFFF', '#E6F3FF', '#87CEEB', '#4682B4', '#191970']
+    }], ['desert', {
+      colorStops: ['#8B4513', '#CD853F', '#DEB887', '#F5DEB3', '#FFF8DC']
+    }], ['forest', {
+      colorStops: ['#013220', '#228B22', '#32CD32', '#ADFF2F']
+    }], ['volcano', {
+      colorStops: ['#000000', '#8B0000', '#FF4500', '#FFA500', '#FFFF00']
+    }], ['cosmic', {
+      colorStops: ['#000000', '#4B0082', '#0000FF', '#00FFFF', '#FFFFFF']
+    }], ['fire', {
+      colorStops: ['#8B0000', '#DC143C', '#FF4500', '#FFA500', '#FFFF00', '#FFFFFF']
+    }], ['purps', {
+      colorStops: ['#3E1E68', '#5D2F77', '#E45A92', '#FFACAC']
+    }], ['la', {
+      colorStops: ['#492B7B', '#301551', '#ED8A0A', '#F7D914']
     }]];
 
   // settings defaults
