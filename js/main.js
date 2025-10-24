@@ -26453,12 +26453,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         this.showError('Failed to load audio track');
                     });
 
-                    if (this.audioMotion) {
-                        this.audioMotion.connectInput(this.audio);
-                        
-                        // Reconnect official AudioMotion if it needs connection
-                        this.reconnectOfficialAudioMotion();
-                    }
+                    // Don't connect audio input immediately - wait until play is pressed
+                    // This prevents waiting animations from stopping prematurely
+                    // Audio will be connected in play() method when user starts playback
 
                     this.currentTrackIndex = index;
                     this.updateTrackInfo();
@@ -26517,6 +26514,14 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 }
 
                 try {
+                    // Connect audio to analyzers when play is pressed (not during preload)
+                    if (this.audioMotion && !this.audioMotion.isConnected) {
+                        this.audioMotion.connectInput(this.audio);
+                        
+                        // Reconnect official AudioMotion if it needs connection
+                        this.reconnectOfficialAudioMotion();
+                    }
+                    
                     if (this.audioMotion && this.audioMotion.audioCtx) {
                         if (this.audioMotion.audioCtx.state === 'suspended') {
                             await this.audioMotion.audioCtx.resume();
