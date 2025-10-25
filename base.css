@@ -207,6 +207,16 @@ body {
     color: white;
 }
 
+/* Special case for visualization buttons - use info-color for active state */
+#headerInfiniteZoomBtn.active,
+#headerBlobsBtn.active,
+#headerWebGLBtn.active,
+#headerFluidDynamicsBtn.active,
+#headerNebulaBtn.active {
+    background: var(--info-color);
+    color: white;
+}
+
 /* Special case for Kaleidoscope panel buttons - use info-color for active state */
 #headerKaleidoscopeVideoBtn.active,
 #headerKaleidoscopeVizBtn.active,
@@ -367,7 +377,7 @@ body {
 }
 
 .btn-toggle.active .webgl-btn-text {
-    color: var(--primary-bg);
+    color: white;
 }
 
 /* Nebula Button Text */
@@ -382,7 +392,7 @@ body {
 }
 
 .btn-toggle.active .nebula-btn-text {
-    color: var(--primary-bg);
+    color: white;
 }
 
 
