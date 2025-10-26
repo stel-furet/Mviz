@@ -180,10 +180,14 @@
             this.displayId = urlParams.get('displayId') || '1';
             
             // Update window title to show display ID
-            document.title = `MV Pro Display ${this.displayId}`;
+            document.title = `Freque Display ${this.displayId}`;
             
             // Create unique BroadcastChannel for this display
-            this.channel = new BroadcastChannel(`mvpro-live-display-${this.displayId}`);
+            this.channel = new BroadcastChannel(`freque-live-display-${this.displayId}`);
+            
+            // Create dedicated settings channel
+            this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${this.displayId}`);
+            
             this.isConnected = false;
             this.displaySettings = {}; // Store display settings
             this.pendingIceCandidates = []; // Queue for ICE candidates received before remote description
@@ -193,6 +197,7 @@
         }
 
         init() {
+            // Main channel for WebRTC communication
             this.channel.onmessage = async (event) => {
                 const {type, data} = event.data;
 
@@ -203,9 +208,6 @@
                     case 'ice-candidate':
                         await this.handleIceCandidate(data);
                         break;
-                    case 'display-settings':
-                        this.applyDisplaySettings(data);
-                        break;
                     case 'close':
                         this.close();
                         break;
@@ -214,6 +216,17 @@
                         break;
                     case 'prepare-reconnect':
                         this.prepareForReconnection(data);
+                        break;
+                }
+            };
+
+            // Settings channel for display configuration
+            this.settingsChannel.onmessage = async (event) => {
+                const {type, data} = event.data;
+
+                switch (type) {
+                    case 'display-settings':
+                        this.applyDisplaySettings(data);
                         break;
                 }
             };
@@ -689,6 +702,15 @@
                 this.pc.close();
                 this.pc = null;
             }
+            
+            // Close BroadcastChannels
+            if (this.channel) {
+                this.channel.close();
+            }
+            if (this.settingsChannel) {
+                this.settingsChannel.close();
+            }
+            
             this.video.srcObject = null;
             this.video.style.filter = 'none';
             this.video.style.opacity = '1';

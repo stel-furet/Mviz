@@ -80,12 +80,12 @@ class PlaylistManager {
         ctx.lineWidth = 2;
         ctx.strokeRect(1, 1, 58, 58);
         
-        // Simple "V" for Vizzy
+        // Simple "F" for Freque
         ctx.fillStyle = '#404040';
         ctx.font = 'bold 24px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('V', 30, 30);
+        ctx.fillText('F', 30, 30);
         
         // Convert to JPG data URL
         return canvas.toDataURL('image/jpeg', 0.8);
@@ -232,7 +232,7 @@ class PlaylistManager {
     async initializeIndexedDB() {
         try {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('VizzyPlaylistDB', 1);
+                const request = indexedDB.open('FrequePlaylistDB', 1);
                 
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => resolve(request.result);
@@ -547,7 +547,7 @@ class PlaylistManager {
     
     loadCachedPlaylist() {
         try {
-            const cached = localStorage.getItem('vizzy_current_playlist');
+            const cached = localStorage.getItem('freque_current_playlist');
             if (cached) {
                 this.currentPlaylist = JSON.parse(cached);
                 // console.log('Loaded cached playlist:', this.currentPlaylist.tracks?.length || 0, 'tracks');
@@ -596,11 +596,11 @@ class PlaylistManager {
                 };
                 
                 // Save current playlist
-                localStorage.setItem('vizzy_current_playlist', JSON.stringify(serializablePlaylist));
+                localStorage.setItem('freque_current_playlist', JSON.stringify(serializablePlaylist));
                 
                 // Save to playlist cache with folder hash
                 const folderHash = this.generateFolderHash(this.currentPlaylist.folderPath);
-                const cacheKey = `vizzy_playlist_cache_${folderHash}`;
+                const cacheKey = `freque_playlist_cache_${folderHash}`;
                 localStorage.setItem(cacheKey, JSON.stringify(serializablePlaylist));
                 
                 // Update cache index
@@ -622,7 +622,7 @@ class PlaylistManager {
     updateCacheIndex(folderHash, folderPath) {
         try {
             let cacheIndex = {};
-            const existing = localStorage.getItem('vizzy_playlist_cache_index');
+            const existing = localStorage.getItem('freque_playlist_cache_index');
             if (existing) {
                 cacheIndex = JSON.parse(existing);
             }
@@ -633,7 +633,7 @@ class PlaylistManager {
                 trackCount: this.currentPlaylist.tracks?.length || 0
             };
             
-            localStorage.setItem('vizzy_playlist_cache_index', JSON.stringify(cacheIndex));
+            localStorage.setItem('freque_playlist_cache_index', JSON.stringify(cacheIndex));
         } catch (error) {
             console.error('Error updating cache index:', error);
         }
@@ -642,7 +642,7 @@ class PlaylistManager {
     loadCachedPlaylistByFolder(folderPath) {
         try {
             const folderHash = this.generateFolderHash(folderPath);
-            const cacheKey = `vizzy_playlist_cache_${folderHash}`;
+            const cacheKey = `freque_playlist_cache_${folderHash}`;
             const cached = localStorage.getItem(cacheKey);
             
             if (cached) {
@@ -1892,7 +1892,7 @@ class PlaylistManager {
                     const fileHandle = await window.showSaveFilePicker({
                         suggestedName: suggestedName,
                         types: [{
-                            description: 'Vizzy Playlist Files',
+                            description: 'Freque Playlist Files',
                             accept: {
                                 'application/json': ['.json']
                             }

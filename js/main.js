@@ -1623,7 +1623,7 @@ class RecordManager {
         this.frameRate = 30;
         this.videoQuality = 'auto';
         this.audioQuality = 'auto';
-        this.customFilename = 'Vizzy_Recording';
+        this.customFilename = 'Freque_Recording';
         this.matchVisualizationAspect = true;
         this.recordFormat = 'mp4'; // Default to MP4 if supported
         
@@ -1717,7 +1717,7 @@ class RecordManager {
     
     loadSettings() {
         try {
-            const saved = localStorage.getItem('gitup_record_settings');
+            const saved = localStorage.getItem('freque_record_settings');
             if (saved) {
                 const settings = JSON.parse(saved);
                 this.resolution = settings.resolution || '1080p';
@@ -1725,7 +1725,7 @@ class RecordManager {
                 this.frameRate = settings.frameRate || 30;
                 this.videoQuality = settings.videoQuality || 'auto';
                 this.audioQuality = settings.audioQuality || 'auto';
-                this.customFilename = settings.customFilename || 'Vizzy_Recording';
+                this.customFilename = settings.customFilename || 'Freque_Recording';
                 this.saveLocation = settings.saveLocation || null;
                 this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
                 this.recordFormat = settings.recordFormat || 'mp4';
@@ -1755,7 +1755,7 @@ class RecordManager {
                 matchVisualizationAspect: this.matchVisualizationAspect,
                 recordFormat: this.recordFormat
             };
-            localStorage.setItem('gitup_record_settings', JSON.stringify(settings));
+            localStorage.setItem('freque_record_settings', JSON.stringify(settings));
         } catch (e) {
             console.error('Error saving recording settings:', e);
         }
@@ -1857,7 +1857,7 @@ class RecordManager {
         if (filenameInput) {
             filenameInput.value = this.customFilename;
             filenameInput.addEventListener('input', (e) => {
-                this.customFilename = e.target.value || 'Vizzy_Recording';
+                this.customFilename = e.target.value || 'Freque_Recording';
                 this.saveSettings();
             });
         }
@@ -7822,8 +7822,8 @@ class LiveDisplayManager {
         this.channel = null; // Will be set by setChannel() method
         
         // Create a dedicated channel for settings
-        this.settingsChannel = new BroadcastChannel(`mvpro-live-display-settings-${displayId}`);
-        console.log(`DEBUG LiveDisplayManager: Created settings channel for ${displayId}: mvpro-live-display-settings-${displayId}`);
+        this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${displayId}`);
+        console.log(`DEBUG LiveDisplayManager: Created settings channel for ${displayId}: freque-live-display-settings-${displayId}`);
         
         this.hasOffered = false;
         this.displayReady = false; // Track if display window is ready
@@ -7960,7 +7960,7 @@ class LiveDisplayManager {
         // IDENTICAL to RecordManager methods
         loadSettings() {
             try {
-                const saved = localStorage.getItem(`mvpro_live_display_settings_${this.displayId}`);
+                const saved = localStorage.getItem(`freque_live_display_settings_${this.displayId}`);
                 if (saved) {
                     const settings = JSON.parse(saved);
                     this.resolution = settings.resolution || '1080p';
@@ -7987,7 +7987,7 @@ class LiveDisplayManager {
                 customFilename: this.customFilename,
                 matchVisualizationAspect: this.matchVisualizationAspect
             };
-            localStorage.setItem(`mvpro_live_display_settings_${this.displayId}`, JSON.stringify(settings));
+            localStorage.setItem(`freque_live_display_settings_${this.displayId}`, JSON.stringify(settings));
         } catch (e) {
             console.error('Error saving live display settings:', e);
         }
@@ -8956,7 +8956,7 @@ class StreamManager {
         this.visualizer = visualizer;
         this.pc = null;
         this.stream = null;
-        this.channel = new BroadcastChannel('gitup-live-display');
+        this.channel = new BroadcastChannel('freque-live-display');
         this.displayWindow = null;
         this.isStreaming = false;
         this.captureCanvas = null;
@@ -9005,7 +9005,7 @@ class StreamManager {
     }
 
     loadDisplaySettings() {
-        const saved = localStorage.getItem('gitup_display_settings');
+        const saved = localStorage.getItem('freque_display_settings');
         return saved ? JSON.parse(saved) : {
             presentationMode: 'fit', // Default to Fit mode
             aspectRatio: '4:3',  // Default to 4:3 aspect ratio
@@ -9024,7 +9024,7 @@ class StreamManager {
     }
 
     saveDisplaySettings() {
-        localStorage.setItem('gitup_display_settings', JSON.stringify(this.displaySettings));
+        localStorage.setItem('freque_display_settings', JSON.stringify(this.displaySettings));
     }
 
     updateDisplaySettings(settings) {
@@ -9179,7 +9179,7 @@ class StreamManager {
         const left = window.screen.width - width - 50;
         const top = 50;
 
-        this.displayWindow = window.open('display.html', 'GitItUp Live Display', `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`);
+        this.displayWindow = window.open('display.html', 'Freque Live Display', `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`);
 
         if (!this.displayWindow) {
             alert('Please allow pop-ups to open the display window');
@@ -10016,8 +10016,8 @@ async function testLiveDisplayManager() {
     }
 }
 
-// GitItUp Visualizer Class with Audio Input and Morph Support
-class GitItUpVisualizer {
+// Freque Visualizer Class with Audio Input and Morph Support
+class FrequeVisualizer {
     constructor() {
         this.audio = null;
         this.audioMotion = null;
@@ -18427,7 +18427,7 @@ To capture system audio on Mac:
 
 5. Set this Multi-Output as system output
 
-6. In GitItUp, select "BlackHole 2ch" as input
+6. In Freque, select "BlackHole 2ch" as input
 
 This routes system audio to both speakers and visualizer.
 
@@ -21706,7 +21706,7 @@ https://rogueamoeba.com/loopback/
     // Background Image Methods
     loadBackgroundImage() {
         try {
-            const saved = localStorage.getItem('gitup_background_image');
+            const saved = localStorage.getItem('freque_background_image');
             if (saved) {
                 const data = JSON.parse(saved);
                 this.backgroundImage = data.imageData;
@@ -21739,7 +21739,7 @@ https://rogueamoeba.com/loopback/
                 fileName: this.backgroundImageFileName,
                 fileSize: this.backgroundImageFileSize
             };
-            localStorage.setItem('gitup_background_image', JSON.stringify(data));
+            localStorage.setItem('freque_background_image', JSON.stringify(data));
         } catch (e) {
             console.error('Error saving background image:', e);
         }
@@ -21756,7 +21756,7 @@ https://rogueamoeba.com/loopback/
         this.backgroundImageFileName = '';
         this.backgroundImageFileSize = 0;
         this.cachedBackgroundImage = null; // Clear cached image
-        localStorage.removeItem('gitup_background_image');
+        localStorage.removeItem('freque_background_image');
     }
 
     drawBackgroundImage(ctx, canvasWidth, canvasHeight) {
@@ -22953,7 +22953,7 @@ https://rogueamoeba.com/loopback/
     // Background Color Methods
     loadBackgroundColor() {
         try {
-            const saved = localStorage.getItem('gitup_bgcolor');
+            const saved = localStorage.getItem('freque_bgcolor');
             if (saved) {
                 this.backgroundColor = saved;
                 const picker = document.getElementById('bgColorPicker');
@@ -22972,7 +22972,7 @@ https://rogueamoeba.com/loopback/
 
     saveBackgroundColor() {
         try {
-            localStorage.setItem('gitup_bgcolor', this.backgroundColor);
+            localStorage.setItem('freque_bgcolor', this.backgroundColor);
         } catch (e) {
             console.error('Error saving background color:', e);
         }
@@ -27393,7 +27393,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-window.visualizer = new GitItUpVisualizer();
+window.visualizer = new FrequeVisualizer();
 
 // Initialize Multi-Display Manager (isolated system)
 window.multiDisplayManager = new MultiDisplayManager(window.visualizer);
@@ -27596,7 +27596,7 @@ window.testLearningAnalytics = () => {
 }
 
 // Apply Default Preset - restore initial app settings
-GitItUpVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
+FrequeVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
     // Set color scheme to default (Vibrant)
     const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
     if (colorSchemeDropdown) {
@@ -27680,7 +27680,7 @@ GitItUpVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
 };
 
 // Apply Ambient Preset - purple scheme, all sliders minimum
-GitItUpVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
+FrequeVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
         // Set color scheme to Jerry (purple)
         const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
         if (colorSchemeDropdown) {
@@ -27750,7 +27750,7 @@ GitItUpVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
     }
 
 // Apply Metal Preset - fire scheme, all sliders maximum
-GitItUpVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
+FrequeVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
         // Set color scheme to Fire (red/orange/yellow)
         const colorSchemeDropdown = document.getElementById('headerFluidDynamicsColorScheme');
         if (colorSchemeDropdown) {
@@ -27820,7 +27820,7 @@ GitItUpVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
     };
 
 // Apply Random Preset - randomize all fluid settings
-GitItUpVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
+FrequeVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
     // Generate random number of colors (3-7 slots)
     const numColors = Math.floor(Math.random() * 5) + 3; // 3-7 colors
     const randomColors = [];
@@ -27905,7 +27905,7 @@ GitItUpVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
 };
 
 // Fluid Preset Management Methods
-GitItUpVisualizer.prototype.loadFluidPresets = function() {
+FrequeVisualizer.prototype.loadFluidPresets = function() {
     try {
         const saved = localStorage.getItem('MVpro_fluid_presets');
         return saved ? JSON.parse(saved) : [];
@@ -27915,7 +27915,7 @@ GitItUpVisualizer.prototype.loadFluidPresets = function() {
     }
 };
 
-GitItUpVisualizer.prototype.saveFluidPresets = function() {
+FrequeVisualizer.prototype.saveFluidPresets = function() {
     try {
         localStorage.setItem('MVpro_fluid_presets', JSON.stringify(this.savedFluidPresets));
     } catch (e) {
@@ -27923,7 +27923,7 @@ GitItUpVisualizer.prototype.saveFluidPresets = function() {
     }
 };
 
-GitItUpVisualizer.prototype.getCurrentFluidConfig = function() {
+FrequeVisualizer.prototype.getCurrentFluidConfig = function() {
     const config = {};
     
     // Get current color scheme
@@ -27964,7 +27964,7 @@ GitItUpVisualizer.prototype.getCurrentFluidConfig = function() {
     return config;
 };
 
-GitItUpVisualizer.prototype.saveCurrentFluidPreset = function() {
+FrequeVisualizer.prototype.saveCurrentFluidPreset = function() {
     const name = prompt('Enter preset name:', `Fluid Preset ${this.savedFluidPresets.length + 1}`);
     if (!name) return;
     
@@ -27984,7 +27984,7 @@ GitItUpVisualizer.prototype.saveCurrentFluidPreset = function() {
     console.log(`💾 Saved fluid preset: ${name}`);
 };
 
-GitItUpVisualizer.prototype.loadFluidPreset = function(index) {
+FrequeVisualizer.prototype.loadFluidPreset = function(index) {
     if (index < 0 || index >= this.savedFluidPresets.length) return;
     
     const preset = this.savedFluidPresets[index];
@@ -28089,7 +28089,7 @@ GitItUpVisualizer.prototype.loadFluidPreset = function(index) {
     console.log(`📂 Loaded fluid preset: ${preset.name}`);
 };
 
-GitItUpVisualizer.prototype.updateFluidPresetSelector = function() {
+FrequeVisualizer.prototype.updateFluidPresetSelector = function() {
     const selector = document.getElementById('headerFluidDynamicsPresetSelector');
     if (!selector) return;
     
@@ -28107,7 +28107,7 @@ GitItUpVisualizer.prototype.updateFluidPresetSelector = function() {
     }
 };
 
-GitItUpVisualizer.prototype.exportFluidPresets = function() {
+FrequeVisualizer.prototype.exportFluidPresets = function() {
     try {
         const dataStr = JSON.stringify(this.savedFluidPresets, null, 2);
         const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -28126,7 +28126,7 @@ GitItUpVisualizer.prototype.exportFluidPresets = function() {
     }
 };
 
-GitItUpVisualizer.prototype.importFluidPresets = function(file) {
+FrequeVisualizer.prototype.importFluidPresets = function(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
@@ -28894,7 +28894,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========================================
 
 // Update mixer display mode buttons
-GitItUpVisualizer.prototype.updateMixerDisplay1ModeButtons = function(activeMode) {
+FrequeVisualizer.prototype.updateMixerDisplay1ModeButtons = function(activeMode) {
     const modes = ['fit', 'fill', 'stretch', 'original'];
     modes.forEach(mode => {
         const btn = document.getElementById(`mixerDisplay1Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
@@ -28908,7 +28908,7 @@ GitItUpVisualizer.prototype.updateMixerDisplay1ModeButtons = function(activeMode
     });
 };
 
-GitItUpVisualizer.prototype.updateMixerDisplay2ModeButtons = function(activeMode) {
+FrequeVisualizer.prototype.updateMixerDisplay2ModeButtons = function(activeMode) {
     const modes = ['fit', 'fill', 'stretch', 'original'];
     modes.forEach(mode => {
         const btn = document.getElementById(`mixerDisplay2Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
@@ -28922,7 +28922,7 @@ GitItUpVisualizer.prototype.updateMixerDisplay2ModeButtons = function(activeMode
     });
 };
 
-GitItUpVisualizer.prototype.updateMixerDisplay3ModeButtons = function(activeMode) {
+FrequeVisualizer.prototype.updateMixerDisplay3ModeButtons = function(activeMode) {
     const modes = ['fit', 'fill', 'stretch', 'original'];
     modes.forEach(mode => {
         const btn = document.getElementById(`mixerDisplay3Mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);

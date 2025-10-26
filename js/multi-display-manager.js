@@ -1043,12 +1043,12 @@ class DisplayInstance {
         this.isConnected = false;
         
         // Create BroadcastChannel for this display
-        this.channel = new BroadcastChannel(`mvpro-live-display-${displayId}`);
-        console.log(`DEBUG DisplayInstance ${displayId}: Created BroadcastChannel: mvpro-live-display-${displayId}`);
+        this.channel = new BroadcastChannel(`freque-live-display-${displayId}`);
+        console.log(`DEBUG DisplayInstance ${displayId}: Created BroadcastChannel: freque-live-display-${displayId}`);
         
         // Create a dedicated channel for settings
-        this.settingsChannel = new BroadcastChannel(`mvpro-live-display-settings-${displayId}`);
-        console.log(`DEBUG DisplayInstance ${displayId}: Created settings channel: mvpro-live-display-settings-${displayId}`);
+        this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${displayId}`);
+        console.log(`DEBUG DisplayInstance ${displayId}: Created settings channel: freque-live-display-settings-${displayId}`);
         
         // Share the channel with the LiveDisplayManager
         if (this.displayManager) {
@@ -1061,7 +1061,7 @@ class DisplayInstance {
     
     // Load display-specific settings
     loadDisplaySettings() {
-        const saved = localStorage.getItem(`mvpro_display_${this.displayId}_settings`);
+        const saved = localStorage.getItem(`freque_display_${this.displayId}_settings`);
         const defaults = {
             captureVideo: true,
             captureVisualization: true,
@@ -1093,7 +1093,7 @@ class DisplayInstance {
     
     // Save display-specific settings
     saveDisplaySettings() {
-        localStorage.setItem(`mvpro_display_${this.displayId}_settings`, JSON.stringify(this.settings));
+        localStorage.setItem(`freque_display_${this.displayId}_settings`, JSON.stringify(this.settings));
     }
     
     // Open display window
@@ -1105,7 +1105,7 @@ class DisplayInstance {
         
         this.window = window.open(
             `Display.html?displayId=${this.displayId}`, 
-            `MVPro_Display_${this.displayId}`, 
+            `Freque_Display_${this.displayId}`, 
             `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
         );
         

@@ -4,7 +4,7 @@ function initializeThemeSystem() {
     if (!themeSelector) return;
 
     // Load saved theme or default to steel-gray
-    const savedTheme = localStorage.getItem('vizzy-theme') || 'steel-gray';
+    const savedTheme = localStorage.getItem('freque-theme') || 'steel-gray';
     themeSelector.value = savedTheme;
     applyTheme(savedTheme);
 
@@ -12,7 +12,7 @@ function initializeThemeSystem() {
     themeSelector.addEventListener('change', (e) => {
         const selectedTheme = e.target.value;
         applyTheme(selectedTheme);
-        localStorage.setItem('vizzy-theme', selectedTheme);
+        localStorage.setItem('freque-theme', selectedTheme);
     });
 }
 

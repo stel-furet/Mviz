@@ -138,7 +138,7 @@ class SpectrumAnalyzer {
 
         // Save to localStorage using existing method
         try {
-            localStorage.setItem('gitup_bgcolor', this.backgroundColor);
+            localStorage.setItem('freque_bgcolor', this.backgroundColor);
         } catch (e) {
             console.error('Error saving background color:', e);
         }
