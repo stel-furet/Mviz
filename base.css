@@ -1779,7 +1779,7 @@ html body .slider-2-wrapper .slider-2-value {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    z-index: 10000;
+    z-index: 15000;
     overflow-y: auto;
     overflow-x: hidden;
     display: none;
@@ -2168,6 +2168,41 @@ html body .slider-2-wrapper .slider-2-value {
 #footerDisplaySettingsBtn, 
 #footerDisplaySettingsPanel {
     display: none !important;
+}
+
+/* Recording Area Overlay */
+.recording-area-overlay {
+    position: absolute;
+    border: 2px solid #00ff00;
+    background: transparent;
+    cursor: move;
+    z-index: 24;
+    font-size: 10px;
+    color: #00ff00;
+    pointer-events: auto;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.recording-area-overlay:hover {
+    border-color: #00cc00;
+}
+
+.recording-area-overlay .dimensions-text {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-family: monospace;
+    font-size: 9px;
+    line-height: 1;
+}
+
+/* Ensure footer recording settings panel is always accessible */
+#footerRecordSettingsPanel {
+    z-index: 20000 !important;
 }
 
 

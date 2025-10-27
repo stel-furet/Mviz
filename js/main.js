@@ -1630,6 +1630,12 @@ class RecordManager {
         this.customAudioBitrate = 320; // kbps
         this.customCodec = 'auto';
         
+        // Recording area settings
+        this.aspectRatio = 'window'; // Default to current behavior
+        this.showRecordingArea = false;
+        this.recordingAreaOverlay = null;
+        this.cropArea = { x: 0, y: 0, width: 0, height: 0 };
+        
         // Resolution presets
         this.resolutionPresets = {
             'canvas': { width: 0, height: 0 }, // Will be set dynamically
@@ -1683,6 +1689,21 @@ class RecordManager {
         // console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
         this.initializeUI();
         this.updateFileExtensionDisplay();
+        
+        // Ensure overlay starts hidden by default
+        this.forceHideRecordingAreaOverlay();
+        
+        // Initialize recording area overlay if needed
+        if (this.showRecordingArea) {
+            setTimeout(() => this.updateRecordingAreaOverlay(), 100);
+        }
+        
+        // Handle window resize to update overlay position
+        window.addEventListener('resize', () => {
+            if (this.showRecordingArea) {
+                setTimeout(() => this.updateRecordingAreaOverlay(), 100);
+            }
+        });
     }
     
     detectSupportedFormats() {
@@ -1835,9 +1856,17 @@ class RecordManager {
     
     loadSettings() {
         try {
+            // TEMPORARY: Clear bad settings for debugging
+            localStorage.removeItem('freque_record_settings');
+            console.log('🎬 Cleared localStorage settings for debugging');
+            
             const saved = localStorage.getItem('freque_record_settings');
+            console.log('🎬 Loading settings from localStorage:', saved);
+            
             if (saved) {
                 const settings = JSON.parse(saved);
+                console.log('🎬 Parsed settings:', settings);
+                
                 this.qualityPreset = settings.qualityPreset || 'professional';
                 this.frameRate = settings.frameRate || 30;
                 this.customFilename = settings.customFilename || 'Freque_Recording';
@@ -1851,12 +1880,16 @@ class RecordManager {
                 this.customAudioBitrate = settings.customAudioBitrate || 320;
                 this.customCodec = settings.customCodec || 'auto';
                 
-                // console.log('Loaded recording settings:', {
-                //     resolution: this.resolution,
-                //     aspectRatio: this.aspectRatio,
-                //     frameRate: this.frameRate,
-                //     matchVisualizationAspect: this.matchVisualizationAspect
-                // });
+                // Recording area settings - FORCE DEFAULTS FOR NOW
+                this.aspectRatio = 'window'; // Force default
+                this.showRecordingArea = false; // Force default
+                
+                console.log('🎬 Final recording area settings:', {
+                    aspectRatio: this.aspectRatio,
+                    showRecordingArea: this.showRecordingArea
+                });
+            } else {
+                console.log('🎬 No saved settings found, using defaults');
             }
         } catch (e) {
             console.error('Error loading recording settings:', e);
@@ -1877,7 +1910,11 @@ class RecordManager {
                 customResolution: this.customResolution,
                 customVideoBitrate: this.customVideoBitrate,
                 customAudioBitrate: this.customAudioBitrate,
-                customCodec: this.customCodec
+                customCodec: this.customCodec,
+                
+                // Recording area settings
+                aspectRatio: this.aspectRatio,
+                showRecordingArea: this.showRecordingArea
             };
             localStorage.setItem('freque_record_settings', JSON.stringify(settings));
         } catch (e) {
@@ -6980,6 +7017,9 @@ class RecordManager {
             this.updateTimer();
             this.timerInterval = setInterval(() => this.updateTimer(), 100);
             
+            // Update crop area from overlay before creating canvas
+            this.updateCropAreaFromOverlay();
+            
             // Create composite canvas
             await this.setupCompositeCanvas();
             
@@ -7058,15 +7098,49 @@ class RecordManager {
         }
     }
     
+    updateCropAreaFromOverlay() {
+        // Get crop area from the recording area overlay
+        if (this.aspectRatio !== 'window' && this.recordingAreaOverlay && this.recordingAreaOverlay.style.display !== 'none') {
+            const overlayRect = this.recordingAreaOverlay.getBoundingClientRect();
+            const containerRect = document.getElementById('visualizationContainer').getBoundingClientRect();
+            
+            // Calculate relative position within the visualization container
+            this.cropArea = {
+                x: Math.round(overlayRect.left - containerRect.left),
+                y: Math.round(overlayRect.top - containerRect.top),
+                width: Math.round(overlayRect.width),
+                height: Math.round(overlayRect.height)
+            };
+            
+            console.log('🎬 Updated crop area from overlay:', this.cropArea);
+        } else {
+            this.cropArea = null;
+            console.log('🎬 No crop area - recording full window');
+        }
+    }
+    
     async setupCompositeCanvas() {
         const dimensions = this.getRecordingDimensions();
         
-        this.compositeCanvas = document.createElement('canvas');
-        this.compositeCanvas.width = dimensions.width;
-        this.compositeCanvas.height = dimensions.height;
-        this.compositeCtx = this.compositeCanvas.getContext('2d');
+        // Create full-size composite canvas for rendering
+        this.fullCompositeCanvas = document.createElement('canvas');
+        this.fullCompositeCanvas.width = dimensions.width;
+        this.fullCompositeCanvas.height = dimensions.height;
+        this.fullCompositeCtx = this.fullCompositeCanvas.getContext('2d');
         
-        console.log(`Created composite canvas: ${dimensions.width}x${dimensions.height}`);
+        // Create cropped output canvas if recording area is enabled
+        if (this.aspectRatio !== 'window' && this.cropArea) {
+            this.compositeCanvas = document.createElement('canvas');
+            this.compositeCanvas.width = this.cropArea.width;
+            this.compositeCanvas.height = this.cropArea.height;
+            this.compositeCtx = this.compositeCanvas.getContext('2d');
+            console.log(`🎬 Created cropped composite canvas: ${this.cropArea.width}x${this.cropArea.height} from full ${dimensions.width}x${dimensions.height}`);
+        } else {
+            // Use full canvas as output canvas
+            this.compositeCanvas = this.fullCompositeCanvas;
+            this.compositeCtx = this.fullCompositeCtx;
+            console.log(`🎬 Created full composite canvas: ${dimensions.width}x${dimensions.height}`);
+        }
     }
     
     startCompositing() {
@@ -7082,16 +7156,19 @@ class RecordManager {
     compositeFrame() {
         if (!this.compositeCtx) return;
         
-        const { width, height } = this.compositeCanvas;
+        // Always render to full canvas first
+        const renderCtx = this.fullCompositeCtx || this.compositeCtx;
+        const renderCanvas = this.fullCompositeCanvas || this.compositeCanvas;
+        const { width, height } = renderCanvas;
         
         // Clear canvas with black background
-        this.compositeCtx.fillStyle = '#000000';
-        this.compositeCtx.fillRect(0, 0, width, height);
+        renderCtx.fillStyle = '#000000';
+        renderCtx.fillRect(0, 0, width, height);
         
         // Draw background image if available and enabled
         if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
             console.log('🎥 RecordManager: Drawing background image in composite');
-            this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
+            this.visualizer.drawBackgroundImage(renderCtx, width, height);
         } else {
             console.log('🎥 RecordManager: Background image skipped -', {
                 hasImage: !!this.visualizer.backgroundImage,
@@ -7167,29 +7244,29 @@ class RecordManager {
                 // Draw kaleidoscope video canvas
                 const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
                 if (kaleidoscopeOpacity > 0) {
-                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                    this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
+                    renderCtx.globalAlpha = kaleidoscopeOpacity;
+                    renderCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    renderCtx.globalAlpha = 1;
                 }
             } else {
                 // Draw regular video with effects using shared dimensions
                 const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                 if (opacity > 0) {
-                    this.compositeCtx.globalAlpha = opacity;
-                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
+                    renderCtx.globalAlpha = opacity;
+                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight, renderCtx);
+                    renderCtx.globalAlpha = 1;
                 }
             }
             
             // Draw visualization using full canvas dimensions (not letterboxed like video)
             console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
-            this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+            renderCtx.drawImage(sourceCanvas, 0, 0, width, height);
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
             if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                 if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
+                    renderCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
                 }
             }
             
@@ -7312,6 +7389,26 @@ class RecordManager {
                     console.log('🎥 RecordManager: Skipping Nebula - captured by Kaleidoscope (no video)');
                 }
             }
+        }
+        
+        // Apply cropping if recording area is enabled
+        this.applyCropping();
+    }
+    
+    applyCropping() {
+        // If we have separate canvases, crop from full to output canvas
+        if (this.fullCompositeCanvas && this.fullCompositeCanvas !== this.compositeCanvas && this.cropArea) {
+            console.log('🎬 Applying crop:', this.cropArea);
+            
+            // Clear the output canvas
+            this.compositeCtx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+            
+            // Draw the cropped portion from full canvas to output canvas
+            this.compositeCtx.drawImage(
+                this.fullCompositeCanvas,
+                this.cropArea.x, this.cropArea.y, this.cropArea.width, this.cropArea.height, // Source
+                0, 0, this.compositeCanvas.width, this.compositeCanvas.height // Destination
+            );
         }
     }
     
@@ -7449,13 +7546,16 @@ class RecordManager {
         }
     }
     
-    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight) {
+    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight, ctx = null) {
         const video = this.visualizer.videoElement;
         
         if (!video || video.readyState < 2) return;
         
+        // Use provided context or default to compositeCtx
+        const renderCtx = ctx || this.compositeCtx;
+        
         // Apply video effects directly to the video element
-        this.compositeCtx.save();
+        renderCtx.save();
         
         // Build filter string
         const filters = [];
@@ -7858,6 +7958,195 @@ class RecordManager {
             return null;
         }
     }
+
+    /**
+     * Recording Area Overlay Methods
+     */
+    calculateRecordingAreaDimensions() {
+        if (this.aspectRatio === 'window') {
+            // Use current window/canvas size - no overlay needed
+            return null;
+        }
+        
+        // Debug logging
+        console.log('🎬 Calculating recording area:', {
+            aspectRatio: this.aspectRatio,
+            showRecordingArea: this.showRecordingArea
+        });
+        
+        // Get the main visualization canvas
+        const canvas = this.visualizer.audioMotion?.canvas;
+        if (!canvas) {
+            console.warn('🎬 No canvas found for recording area');
+            return null;
+        }
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const canvasWidth = canvasRect.width;
+        const canvasHeight = canvasRect.height;
+        
+        // Parse aspect ratio
+        let targetAspect;
+        switch (this.aspectRatio) {
+            case '16:9': targetAspect = 16/9; break;
+            case '9:16': targetAspect = 9/16; break;
+            case '1:1': targetAspect = 1; break;
+            case '4:3': targetAspect = 4/3; break;
+            default: return null;
+        }
+        
+        // Always fit vertically, crop horizontally as requested
+        const height = canvasHeight;
+        const width = height * targetAspect;
+        
+        // Center horizontally
+        const x = (canvasWidth - width) / 2;
+        const y = 0;
+        
+        return {
+            x: Math.max(0, x),
+            y: y,
+            width: Math.min(width, canvasWidth),
+            height: height,
+            canvasRect: canvasRect
+        };
+    }
+
+    updateRecordingAreaOverlay() {
+        console.log('🎬 updateRecordingAreaOverlay called:', {
+            showRecordingArea: this.showRecordingArea,
+            aspectRatio: this.aspectRatio
+        });
+        
+        if (!this.showRecordingArea || this.aspectRatio === 'window') {
+            console.log('🎬 Hiding overlay - showRecordingArea:', this.showRecordingArea, 'aspectRatio:', this.aspectRatio);
+            this.hideRecordingAreaOverlay();
+            return;
+        }
+        
+        const dimensions = this.calculateRecordingAreaDimensions();
+        if (!dimensions) {
+            this.hideRecordingAreaOverlay();
+            return;
+        }
+        
+        // Create overlay if it doesn't exist
+        if (!this.recordingAreaOverlay) {
+            this.recordingAreaOverlay = document.createElement('div');
+            this.recordingAreaOverlay.className = 'recording-area-overlay';
+            this.recordingAreaOverlay.innerHTML = '<div class="dimensions-text"></div>';
+            document.body.appendChild(this.recordingAreaOverlay);
+            
+            // Add drag functionality
+            this.addDragFunctionality();
+        }
+        
+        // Position the overlay
+        const overlay = this.recordingAreaOverlay;
+        overlay.style.left = (dimensions.canvasRect.left + dimensions.x) + 'px';
+        overlay.style.top = (dimensions.canvasRect.top + dimensions.y) + 'px';
+        overlay.style.width = dimensions.width + 'px';
+        overlay.style.height = dimensions.height + 'px';
+        overlay.style.display = 'block';
+        
+        // Update dimensions text
+        const dimensionsText = overlay.querySelector('.dimensions-text');
+        if (dimensionsText) {
+            dimensionsText.textContent = `${Math.round(dimensions.width)}×${Math.round(dimensions.height)}`;
+        }
+        
+        // Store current crop area
+        this.cropArea = {
+            x: dimensions.x,
+            y: dimensions.y,
+            width: dimensions.width,
+            height: dimensions.height
+        };
+    }
+
+    toggleRecordingAreaOverlay(show) {
+        this.showRecordingArea = show;
+        if (show) {
+            this.updateRecordingAreaOverlay();
+        } else {
+            this.hideRecordingAreaOverlay();
+        }
+    }
+
+    hideRecordingAreaOverlay() {
+        console.log('🎬 hideRecordingAreaOverlay called, overlay exists:', !!this.recordingAreaOverlay);
+        if (this.recordingAreaOverlay) {
+            this.recordingAreaOverlay.style.display = 'none';
+            console.log('🎬 Overlay hidden');
+        }
+    }
+
+    forceHideRecordingAreaOverlay() {
+        // Force remove any existing overlay
+        const existingOverlay = document.querySelector('.recording-area-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+            console.log('🎬 Removed existing overlay from DOM');
+        }
+        this.recordingAreaOverlay = null;
+    }
+
+    centerRecordingArea() {
+        // Recalculate and update overlay position
+        this.updateRecordingAreaOverlay();
+    }
+
+    addDragFunctionality() {
+        if (!this.recordingAreaOverlay) return;
+        
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        this.recordingAreaOverlay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(this.recordingAreaOverlay.style.left);
+            startTop = parseInt(this.recordingAreaOverlay.style.top);
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            const newLeft = startLeft + deltaX;
+            const newTop = startTop + deltaY;
+            
+            // Get canvas bounds for constraint
+            const canvas = this.visualizer.audioMotion?.canvas;
+            if (!canvas) return;
+            
+            const canvasRect = canvas.getBoundingClientRect();
+            const overlayWidth = parseInt(this.recordingAreaOverlay.style.width);
+            const overlayHeight = parseInt(this.recordingAreaOverlay.style.height);
+            
+            // Constrain to canvas bounds
+            const constrainedLeft = Math.max(canvasRect.left, 
+                Math.min(newLeft, canvasRect.right - overlayWidth));
+            const constrainedTop = Math.max(canvasRect.top, 
+                Math.min(newTop, canvasRect.bottom - overlayHeight));
+            
+            this.recordingAreaOverlay.style.left = constrainedLeft + 'px';
+            this.recordingAreaOverlay.style.top = constrainedTop + 'px';
+            
+            // Update crop area
+            this.cropArea.x = constrainedLeft - canvasRect.left;
+            this.cropArea.y = constrainedTop - canvasRect.top;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+    }
     
     updateTimer() {
         if (!this.isRecording || !this.recordingStartTime) return;
@@ -8029,7 +8318,6 @@ class RecordManager {
         URL.revokeObjectURL(url);
         
         console.log(`Recording downloaded as ${filename}`);
-        alert(`Recording saved to Downloads folder as ${filename}`);
     }
 }
 
@@ -12421,6 +12709,9 @@ class FrequeVisualizer {
         // Initialize UI state
         this.toggleCustomRecordingGroup(this.recordManager.qualityPreset === 'custom');
         
+        // Aspect ratio and recording area controls
+        this.initializeRecordingAreaControls();
+        
         // Update compatibility indicator after a brief delay to ensure RecordManager is ready
         setTimeout(() => {
             this.updateCodecCompatibility();
@@ -12483,6 +12774,89 @@ class FrequeVisualizer {
         }
     }
 
+    initializeRecordingAreaControls() {
+        console.log('🎬 Initializing recording area controls...');
+        
+        // Aspect ratio select
+        const aspectRatioSelect = document.getElementById('footerRecordAspectRatioSelect');
+        if (aspectRatioSelect) {
+            console.log('🎬 Found aspect ratio select, setting value to:', this.recordManager.aspectRatio);
+            aspectRatioSelect.value = this.recordManager.aspectRatio;
+            aspectRatioSelect.addEventListener('change', (e) => {
+                console.log('🎬 Aspect ratio changed to:', e.target.value);
+                this.recordManager.aspectRatio = e.target.value;
+                this.recordManager.saveSettings();
+                this.recordManager.updateRecordingAreaOverlay();
+            });
+        } else {
+            console.error('🎬 Aspect ratio select not found!');
+        }
+        
+        // Show recording area toggle
+        const showAreaToggle = document.getElementById('showRecordingAreaToggle');
+        if (showAreaToggle) {
+            console.log('🎬 Found show area toggle, setting checked to:', this.recordManager.showRecordingArea);
+            showAreaToggle.checked = this.recordManager.showRecordingArea;
+            showAreaToggle.addEventListener('change', (e) => {
+                console.log('🎬 Show recording area toggled to:', e.target.checked);
+                this.recordManager.showRecordingArea = e.target.checked;
+                this.recordManager.saveSettings();
+                this.recordManager.toggleRecordingAreaOverlay(e.target.checked);
+            });
+        } else {
+            console.error('🎬 Show area toggle not found!');
+        }
+        
+        // Center recording area button
+        const centerAreaBtn = document.getElementById('centerRecordingAreaBtn');
+        if (centerAreaBtn) {
+            console.log('🎬 Found center area button');
+            centerAreaBtn.addEventListener('click', () => {
+                console.log('🎬 Center recording area clicked');
+                this.recordManager.centerRecordingArea();
+            });
+        } else {
+            console.error('🎬 Center area button not found!');
+        }
+        
+        // Filename input (from second method)
+        const footerFilenameInput = document.getElementById('footerRecordFilenameInput');
+        if (footerFilenameInput) {
+            console.log('🎬 Found filename input');
+            footerFilenameInput.value = this.recordManager.customFilename;
+            footerFilenameInput.addEventListener('input', (e) => {
+                this.recordManager.customFilename = e.target.value;
+                this.recordManager.saveSettings();
+            });
+        } else {
+            console.error('🎬 Filename input not found!');
+        }
+        
+        // Choose location button (from second method)
+        const footerChooseLocationBtn = document.getElementById('footerRecordChooseLocationBtn');
+        if (footerChooseLocationBtn) {
+            console.log('🎬 Found choose location button');
+            footerChooseLocationBtn.addEventListener('click', async () => {
+                try {
+                    const dirHandle = await window.showDirectoryPicker();
+                    this.recordManager.saveLocation = dirHandle;
+                    
+                    // Update location display
+                    const locationDisplay = document.getElementById('footerRecordFileLocation');
+                    if (locationDisplay) {
+                        locationDisplay.textContent = `📁 ${dirHandle.name}`;
+                    }
+                    
+                    this.recordManager.saveSettings();
+                } catch (error) {
+                    console.log('Directory selection cancelled or failed:', error);
+                }
+            });
+        } else {
+            console.error('🎬 Choose location button not found!');
+        }
+    }
+
 
     /**
      * Update codec compatibility indicator
@@ -12520,43 +12894,6 @@ class FrequeVisualizer {
         }
     }
 
-    initializeFooterRecordControls() {
-        // Filename input (exact same as sidebar)
-        const footerFilenameInput = document.getElementById('footerRecordFilenameInput');
-        if (footerFilenameInput) {
-            footerFilenameInput.value = this.recordManager.customFilename;
-            footerFilenameInput.addEventListener('input', (e) => {
-                this.recordManager.customFilename = e.target.value;
-                this.recordManager.saveSettings();
-                
-                // Footer controls work independently (sidebar sync removed)
-            });
-        }
-        
-        // Choose location button (exact same as sidebar)
-        const footerChooseLocationBtn = document.getElementById('footerRecordChooseLocationBtn');
-        if (footerChooseLocationBtn) {
-            footerChooseLocationBtn.addEventListener('click', async () => {
-                try {
-                    const dirHandle = await window.showDirectoryPicker();
-                    this.recordManager.saveLocation = dirHandle;
-                    
-                    // Update location display
-                    const locationDisplay = document.getElementById('footerRecordFileLocation');
-                    if (locationDisplay) {
-                        locationDisplay.textContent = `📁 ${dirHandle.name}`;
-                    }
-                    
-                    // Footer controls work independently (sidebar sync removed)
-                    
-                    this.recordManager.saveSettings();
-                } catch (error) {
-                    console.log('Directory selection cancelled or failed:', error);
-                }
-            });
-        }
-        
-    }
 
     updateAspectRatioToMatchVideo() {
         // Calculate video aspect ratio and select closest matching button
@@ -23396,6 +23733,12 @@ https://rogueamoeba.com/loopback/
     // Position a single floating panel relative to its button
     positionFloatingPanel(panel, button) {
         const buttonRect = button.getBoundingClientRect();
+        
+        // Special z-index for footer record settings panel
+        if (button.id === 'footerRecordSettingsBtn') {
+            panel.style.zIndex = '25000';
+            console.log('🎬 Set footer record settings panel z-index to 25000');
+        }
         
         // Special positioning for right-aligned panels
         if (button.id === 'footerAutopilotSettingsBtn' || button.id === 'mixerBtn') {

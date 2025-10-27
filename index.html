@@ -2049,6 +2049,25 @@
                 </select>
             </div>
 
+            <!-- Aspect Ratio Settings -->
+            <div class="control-group">
+                <div class="group-label">Recording Area</div>
+                <select id="footerRecordAspectRatioSelect" class="select">
+                    <option value="window" selected>Window Size (Current)</option>
+                    <option value="16:9">16:9 (Widescreen)</option>
+                    <option value="9:16">9:16 (Vertical/Mobile)</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:3">4:3 (Classic)</option>
+                </select>
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showRecordingAreaToggle">
+                        Show Recording Area
+                    </label>
+                    <button class="btn-secondary" id="centerRecordingAreaBtn">Center</button>
+                </div>
+            </div>
+
             <!-- Custom Recording Settings (hidden by default) -->
             <div class="control-group" id="customRecordingGroup" style="display: none;">
                 <div class="group-label">Custom Settings</div>
