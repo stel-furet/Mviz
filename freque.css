@@ -804,7 +804,10 @@
             z-index: 1000;
             max-width: 90%;
             width: 400px;
+            max-height: 80vh;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .info-popup.gradient-mode {
@@ -877,6 +880,34 @@
             text-align: center;
             margin-right: 12px;
             border: 1px solid var(--border-color);
+        }
+
+        .info-content-scrollable {
+            overflow-y: auto;
+            max-height: 200px;
+            padding-right: 10px;
+            margin: 10px 0;
+            text-align: left;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .info-content-scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .info-content-scrollable::-webkit-scrollbar-track {
+            background: var(--secondary-bg);
+            border-radius: 4px;
+        }
+
+        .info-content-scrollable::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .info-content-scrollable::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
         }
 
         .popup-overlay {
@@ -2820,8 +2851,6 @@
             max-width: 200px;
             min-width: 150px;
             margin-left: 10px;
-        }
-
             overflow: hidden;
             text-overflow: ellipsis;
             color: var(--accent-color);
@@ -3607,8 +3636,6 @@
             opacity: 0.7;
         }
 
-        }
-
         .artist-name {
             font-weight: 600;
             color: var(--text-primary);
@@ -3662,8 +3689,6 @@
         .track-info {
             flex: 1;
             min-width: 0;
-        }
-
         }
 
         .track-details {
@@ -4528,3 +4553,60 @@
                 font-size: 11px;
             }
         }
+
+/* Compatibility indicator */
+.compatibility-indicator {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.compatibility-status.excellent {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.compatibility-status.good {
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196F3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.compatibility-status.limited {
+    background: rgba(255, 193, 7, 0.15);
+    color: #FFC107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.compatibility-status.poor {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.compatibility-status.checking {
+    background: rgba(158, 158, 158, 0.15);
+    color: #9E9E9E;
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+/* Custom bitrate controls */
+#customBitrateGroup {
+    margin-top: 10px;
+}
+
+#customBitrateSlider {
+    width: 100%;
+    margin: 8px 0;
+}
+
+#customBitrateValue {
+    color: var(--accent-color);
+    font-weight: 500;
+    font-size: 14px;
+}

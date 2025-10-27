@@ -1617,15 +1617,18 @@ class RecordManager {
         this.animationFrame = null;
         this.saveLocation = null;
         
-        // Recording settings
-        this.resolution = '1080p';
-        this.aspectRatio = '16:9';
+        // Recording settings - Unified Quality System
+        this.qualityPreset = 'professional'; // Default to professional quality
         this.frameRate = 30;
-        this.videoQuality = 'auto';
-        this.audioQuality = 'auto';
         this.customFilename = 'Freque_Recording';
         this.matchVisualizationAspect = true;
-        this.recordFormat = 'mp4'; // Default to MP4 if supported
+        this.recordFormat = 'mp4'; // MP4 only for professional compatibility
+        
+        // Custom settings (only used when qualityPreset = 'custom')
+        this.customResolution = '1080p';
+        this.customVideoBitrate = 15; // Mbps
+        this.customAudioBitrate = 320; // kbps
+        this.customCodec = 'auto';
         
         // Resolution presets
         this.resolutionPresets = {
@@ -1635,21 +1638,44 @@ class RecordManager {
             '4k': { width: 3840, height: 2160 }
         };
         
-        // Quality presets
-        this.videoQualityPresets = {
-            'auto': 5000000,        // 5 Mbps
-            'high': 8000000,         // 8 Mbps  
-            'medium': 3000000,       // 3 Mbps
-            'low': 1500000,          // 1.5 Mbps
-            '4k': 80000000,          // 80 Mbps (NEW)
-            '4k-ultra': 120000000    // 120 Mbps (NEW)
-        };
-        
-        this.audioQualityPresets = {
-            'auto': 192000, // 192 kbps
-            'high': 320000, // 320 kbps
-            'medium': 192000, // 192 kbps
-            'low': 128000 // 128 kbps
+        // Unified Quality Presets
+        this.qualityPresets = {
+            'web-hd': {
+                resolution: '1080p',
+                videoBitrate: 6000000, // 6 Mbps
+                audioBitrate: 192000, // 192 kbps
+                codec: 'h264-baseline'
+            },
+            'professional': {
+                resolution: '1080p',
+                videoBitrate: 15000000, // 15 Mbps
+                audioBitrate: 320000, // 320 kbps
+                codec: 'h264-main'
+            },
+            'broadcast': {
+                resolution: '1080p',
+                videoBitrate: 25000000, // 25 Mbps
+                audioBitrate: 512000, // 512 kbps
+                codec: 'h264-high'
+            },
+            'cinema-4k': {
+                resolution: '4k',
+                videoBitrate: 50000000, // 50 Mbps
+                audioBitrate: 512000, // 512 kbps
+                codec: 'h264-high'
+            },
+            'master-4k': {
+                resolution: '4k',
+                videoBitrate: 80000000, // 80 Mbps
+                audioBitrate: 1024000, // 1024 kbps
+                codec: 'h264-high'
+            },
+            'archive-4k': {
+                resolution: '4k',
+                videoBitrate: 120000000, // 120 Mbps
+                audioBitrate: 1024000, // 1024 kbps
+                codec: 'h264-high'
+            }
         };
         
         this.loadSettings();
@@ -1670,7 +1696,11 @@ class RecordManager {
         
         console.log('🎬 Recording format support:', {
             MP4: this.supportsMP4,
-            WebM: this.supportsWebM
+            WebM: this.supportsWebM,
+            'video/mp4;codecs=h264,aac': MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac'),
+            'video/mp4': MediaRecorder.isTypeSupported('video/mp4'),
+            'video/webm;codecs=vp9,opus': MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus'),
+            'video/webm': MediaRecorder.isTypeSupported('video/webm')
         });
         
         // If MP4 is not supported, fallback to WebM
@@ -1679,6 +1709,7 @@ class RecordManager {
             console.log('🎬 MP4 not supported, falling back to WebM');
         }
     }
+    
     
     showFormatFallbackMessage() {
         // Create a temporary notification
@@ -1706,12 +1737,99 @@ class RecordManager {
         }, 4000);
     }
     
+    
+    /**
+     * Professional codec selection for maximum Adobe compatibility
+     */
+    selectOptimalCodec() {
+        // Professional H.264 codecs in order of preference for Adobe apps
+        const codecOptions = {
+            'h264-high': [
+                'video/mp4; codecs="avc1.64001F,mp4a.40.2"', // H.264 High Profile Level 3.1
+                'video/mp4; codecs="avc1.640028,mp4a.40.2"', // H.264 High Profile Level 4.0
+                'video/mp4; codecs="h264,aac"'
+            ],
+            'h264-main': [
+                'video/mp4; codecs="avc1.4D401E,mp4a.40.2"', // H.264 Main Profile Level 3.0
+                'video/mp4; codecs="avc1.4D401F,mp4a.40.2"', // H.264 Main Profile Level 3.1
+                'video/mp4; codecs="avc1.4D4028,mp4a.40.2"', // H.264 Main Profile Level 4.0
+                'video/mp4; codecs="h264,aac"'
+            ],
+            'h264-baseline': [
+                'video/mp4; codecs="avc1.42E01E,mp4a.40.2"', // H.264 Baseline Profile Level 3.0
+                'video/mp4; codecs="avc1.42E01F,mp4a.40.2"', // H.264 Baseline Profile Level 3.1
+                'video/mp4; codecs="h264,aac"'
+            ],
+            'auto': [
+                // Try best codecs first
+                'video/mp4; codecs="avc1.4D4028,mp4a.40.2"', // H.264 Main Profile Level 4.0
+                'video/mp4; codecs="avc1.64001F,mp4a.40.2"', // H.264 High Profile Level 3.1
+                'video/mp4; codecs="avc1.42E01E,mp4a.40.2"', // H.264 Baseline Profile Level 3.0
+                'video/mp4; codecs="h264,aac"',
+                'video/mp4' // Generic fallback
+            ]
+        };
+
+        // Get codec preference from current settings
+        const settings = this.getRecordingSettings();
+        const targetCodec = settings.codec || 'auto';
+        const codecs = codecOptions[targetCodec] || codecOptions['auto'];
+        
+        for (const codec of codecs) {
+            if (MediaRecorder.isTypeSupported(codec)) {
+                console.log(`✅ Selected codec: ${codec}`);
+                return {
+                    mimeType: codec,
+                    profile: targetCodec,
+                    compatibility: this.getCompatibilityRating(codec)
+                };
+            }
+        }
+
+        // If no MP4 codecs work, show error
+        throw new Error('No compatible MP4 codecs found. Please update your browser for professional video recording.');
+    }
+
+    /**
+     * Get recording settings from unified quality preset or custom settings
+     */
+    getRecordingSettings() {
+        if (this.qualityPreset === 'custom') {
+            return {
+                resolution: this.customResolution,
+                videoBitrate: this.customVideoBitrate * 1000000, // Convert Mbps to bps
+                audioBitrate: this.customAudioBitrate * 1000, // Convert kbps to bps
+                codec: this.customCodec
+            };
+        } else {
+            const preset = this.qualityPresets[this.qualityPreset];
+            if (!preset) {
+                throw new Error(`Unknown quality preset: ${this.qualityPreset}`);
+            }
+            return preset;
+        }
+    }
+
+    /**
+     * Get compatibility rating for codec
+     */
+    getCompatibilityRating(codec) {
+        if (codec.includes('avc1.64') || codec.includes('avc1.4D4028')) {
+            return { level: 'excellent', text: '🎬 Excellent - QuickTime & Adobe Compatible' };
+        } else if (codec.includes('avc1.4D') || codec.includes('h264,aac')) {
+            return { level: 'good', text: '✅ Good - Professional Software Compatible' };
+        } else if (codec.includes('avc1.42')) {
+            return { level: 'good', text: '✅ Good - Maximum Compatibility' };
+        } else {
+            return { level: 'limited', text: '⚠️ Limited - Basic MP4 Support' };
+        }
+    }
+
     updateFileExtensionDisplay() {
-        // Update the file extension display in the UI
-        const extension = this.recordFormat === 'mp4' ? '.mp4' : '.webm';
+        // Always MP4 for professional compatibility
         const extensionElement = document.getElementById('footerRecordFileExtension');
         if (extensionElement) {
-            extensionElement.textContent = extension;
+            extensionElement.textContent = '.mp4';
         }
     }
     
@@ -1720,15 +1838,18 @@ class RecordManager {
             const saved = localStorage.getItem('freque_record_settings');
             if (saved) {
                 const settings = JSON.parse(saved);
-                this.resolution = settings.resolution || '1080p';
-                this.aspectRatio = settings.aspectRatio || '16:9';
+                this.qualityPreset = settings.qualityPreset || 'professional';
                 this.frameRate = settings.frameRate || 30;
-                this.videoQuality = settings.videoQuality || 'auto';
-                this.audioQuality = settings.audioQuality || 'auto';
                 this.customFilename = settings.customFilename || 'Freque_Recording';
                 this.saveLocation = settings.saveLocation || null;
                 this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
-                this.recordFormat = settings.recordFormat || 'mp4';
+                this.recordFormat = 'mp4'; // Always MP4 for professional compatibility
+                
+                // Custom settings
+                this.customResolution = settings.customResolution || '1080p';
+                this.customVideoBitrate = settings.customVideoBitrate || 15;
+                this.customAudioBitrate = settings.customAudioBitrate || 320;
+                this.customCodec = settings.customCodec || 'auto';
                 
                 // console.log('Loaded recording settings:', {
                 //     resolution: this.resolution,
@@ -1745,15 +1866,18 @@ class RecordManager {
     saveSettings() {
         try {
             const settings = {
-                resolution: this.resolution,
-                aspectRatio: this.aspectRatio,
+                qualityPreset: this.qualityPreset,
                 frameRate: this.frameRate,
-                videoQuality: this.videoQuality,
-                audioQuality: this.audioQuality,
                 customFilename: this.customFilename,
                 saveLocation: this.saveLocation,
                 matchVisualizationAspect: this.matchVisualizationAspect,
-                recordFormat: this.recordFormat
+                recordFormat: this.recordFormat,
+                
+                // Custom settings
+                customResolution: this.customResolution,
+                customVideoBitrate: this.customVideoBitrate,
+                customAudioBitrate: this.customAudioBitrate,
+                customCodec: this.customCodec
             };
             localStorage.setItem('freque_record_settings', JSON.stringify(settings));
         } catch (e) {
@@ -6721,7 +6845,11 @@ class RecordManager {
     getRecordingDimensions() {
         let targetWidth, targetHeight;
         
-        if (this.resolution === 'canvas') {
+        // Get resolution from current recording settings
+        const settings = this.getRecordingSettings();
+        const resolution = settings.resolution;
+        
+        if (resolution === 'canvas') {
             // Use current canvas dimensions
             const canvas = this.visualizer.audioMotion?.canvas;
             if (canvas) {
@@ -6732,9 +6860,15 @@ class RecordManager {
                 targetHeight = 1080;
             }
         } else {
-            const preset = this.resolutionPresets[this.resolution];
-            targetWidth = preset.width;
-            targetHeight = preset.height;
+            const preset = this.resolutionPresets[resolution];
+            if (preset) {
+                targetWidth = preset.width;
+                targetHeight = preset.height;
+            } else {
+                // Fallback to 1080p
+                targetWidth = 1920;
+                targetHeight = 1080;
+            }
         }
         
         console.log(`Recording dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
@@ -6791,8 +6925,9 @@ class RecordManager {
     
     estimateFileSize() {
         const dimensions = this.getRecordingDimensions();
-        const videoBitrate = this.videoQualityPresets[this.videoQuality] || 5000000;
-        const audioBitrate = this.audioQualityPresets[this.audioQuality] || 192000;
+        const settings = this.getRecordingSettings();
+        const videoBitrate = settings.videoBitrate;
+        const audioBitrate = settings.audioBitrate;
         
         // Calculate total bitrate and convert to MB per minute
         const totalBitrate = videoBitrate + audioBitrate;
@@ -6867,39 +7002,40 @@ class RecordManager {
                 audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
             }
             
-            // Setup MediaRecorder with dynamic format
-            let mimeType;
-            let actualFormat = this.recordFormat;
+            // Professional codec selection for Adobe compatibility
+            const recordingSettings = this.getRecordingSettings();
+            const codecInfo = this.selectOptimalCodec();
+            const canvasRect = this.compositeCanvas.getBoundingClientRect();
+            const videoBitrate = recordingSettings.videoBitrate;
+            const audioBitrate = recordingSettings.audioBitrate;
             
-            if (this.recordFormat === 'mp4' && this.supportsMP4) {
-                // Try MP4 with H.264 + AAC first, then fallback to generic MP4
-                if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac')) {
-                    mimeType = 'video/mp4;codecs=h264,aac';
-                } else {
-                    mimeType = 'video/mp4';
-                }
-            } else {
-                // Fallback to WebM
-                mimeType = 'video/webm;codecs=vp9,opus';
-                actualFormat = 'webm';
-                
-                if (this.recordFormat === 'mp4') {
-                    console.warn('🎬 MP4 not supported, recording in WebM format');
-                    // Show user notification
-                    this.showFormatFallbackMessage();
-                }
+            console.log('🎬 === PROFESSIONAL RECORDING SETUP ===');
+            console.log('🎬 Quality preset:', this.qualityPreset);
+            console.log('🎬 Selected codec:', codecInfo.mimeType);
+            console.log('🎬 Profile:', codecInfo.profile);
+            console.log('🎬 Compatibility:', codecInfo.compatibility.text);
+            console.log('🎬 Video bitrate:', (videoBitrate / 1000000).toFixed(1) + ' Mbps');
+            console.log('🎬 Audio bitrate:', (audioBitrate / 1000).toFixed(0) + ' kbps');
+            console.log('🎬 Target resolution:', recordingSettings.resolution);
+            console.log('🎬 Canvas size:', `${canvasRect.width}x${canvasRect.height}`);
+            
+            // Create MediaRecorder with professional settings
+            const mediaRecorderOptions = {
+                mimeType: codecInfo.mimeType,
+                videoBitsPerSecond: videoBitrate,
+                audioBitsPerSecond: audioBitrate
+            };
+            
+            // Add keyframe interval for better scrubbing (every 2 seconds)
+            if (this.frameRate) {
+                mediaRecorderOptions.videoKeyFrameIntervalDuration = 2000; // 2 seconds
             }
             
-            console.log('🎬 Recording with MIME type:', mimeType);
-            const videoBitrate = this.videoQualityPresets[this.videoQuality];
+            this.mediaRecorder = new MediaRecorder(combinedStream, mediaRecorderOptions);
             
-            this.mediaRecorder = new MediaRecorder(combinedStream, {
-                mimeType: mimeType,
-                videoBitsPerSecond: videoBitrate
-            });
-            
-            // Store the actual format being used for saving
-            this.actualRecordFormat = actualFormat;
+            // Store the actual format being used for saving (always MP4)
+            this.actualRecordFormat = 'mp4';
+            console.log('🎬 Stored actualRecordFormat:', this.actualRecordFormat);
             
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
@@ -7599,6 +7735,30 @@ class RecordManager {
                 return null;
             }
             
+            // SAFE FIX: Ensure audio is connected to AudioMotion before recording
+            if (this.visualizer.audio && this.visualizer.audio.src) {
+                console.log('🎬 Checking audio connection for recording...');
+                try {
+                    // Check if audio is already connected by looking for existing source
+                    const hasExistingConnection = audioMotion._sources && 
+                        audioMotion._sources.some(source => 
+                            source.mediaElement === this.visualizer.audio
+                        );
+                    
+                    if (!hasExistingConnection && !audioMotion.isConnected) {
+                        console.log('🎬 Connecting audio to AudioMotion for recording...');
+                        audioMotion.connectInput(this.visualizer.audio);
+                        audioMotion.isConnected = true;
+                        // Give it a moment to establish the connection
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    } else {
+                        console.log('🎬 Audio already connected to AudioMotion');
+                    }
+                } catch (e) {
+                    console.error('🎬 Error connecting audio to AudioMotion:', e);
+                }
+            }
+            
             const audioCtx = audioMotion.audioCtx;
             const destination = audioCtx.createMediaStreamDestination();
             
@@ -7618,6 +7778,8 @@ class RecordManager {
                 } catch (e) {
                     console.error('Error connecting AudioMotion source:', e);
                 }
+            } else {
+                console.warn('🎬 AudioMotion.source is null - audio may not be connected yet');
             }
             
             // Also connect video audio if available (can be simultaneous with playlist)
@@ -7637,18 +7799,58 @@ class RecordManager {
                 return destination.stream;
             }
             
-            // Fallback: try to capture from the current audio element
+            // Fallback: try to capture from the current audio element directly
             if (this.visualizer.audio && this.visualizer.audio.src) {
-                console.log('Capturing audio from media element');
-                const source = this.visualizer.audio._audioSourceNode;
-                if (source) {
+                console.log('🎬 Fallback: Capturing audio from media element');
+                try {
+                    // Try to get or create an audio source node
+                    let source = this.visualizer.audio._audioSourceNode;
+                    if (!source) {
+                        console.log('🎬 Creating new MediaElementAudioSourceNode for recording');
+                        source = audioCtx.createMediaElementAudioSourceNode(this.visualizer.audio);
+                        this.visualizer.audio._audioSourceNode = source;
+                    }
+                    
                     source.connect(gainNode);
                     gainNode.connect(destination);
+                    hasAudioSource = true;
+                    console.log('🎬 Successfully connected audio element to recording');
                     return destination.stream;
+                } catch (e) {
+                    console.error('🎬 Error connecting audio element:', e);
                 }
             }
             
-            console.warn('No audio source found for recording');
+            // Final fallback: create a silent audio track to prevent recording errors
+            if (!hasAudioSource) {
+                console.warn('🎬 No audio source found - creating silent audio track for recording');
+                try {
+                    // Create a silent audio source
+                    const oscillator = audioCtx.createOscillator();
+                    const silentGain = audioCtx.createGain();
+                    silentGain.gain.value = 0; // Silent
+                    
+                    oscillator.connect(silentGain);
+                    silentGain.connect(destination);
+                    oscillator.start();
+                    
+                    // Stop the oscillator after a short time to avoid continuous generation
+                    setTimeout(() => {
+                        try {
+                            oscillator.stop();
+                        } catch (e) {
+                            // Ignore stop errors
+                        }
+                    }, 100);
+                    
+                    console.log('🎬 Created silent audio track for recording');
+                    return destination.stream;
+                } catch (e) {
+                    console.error('🎬 Error creating silent audio track:', e);
+                }
+            }
+            
+            console.warn('🎬 All audio capture methods failed');
             return null;
             
         } catch (err) {
@@ -7723,41 +7925,70 @@ class RecordManager {
     }
     
     async saveRecording() {
-        console.log('saveRecording called, recordedChunks:', this.recordedChunks.length);
+        console.log('🎬 === SAVE RECORDING DEBUG ===');
+        console.log('🎬 Recorded chunks:', this.recordedChunks.length);
+        
         if (this.recordedChunks.length === 0) {
             console.warn('No recorded data to save');
             return;
         }
         
         try {
-            // Use the actual format that was recorded
-            const format = this.actualRecordFormat || this.recordFormat;
-            const mimeType = format === 'mp4' ? 'video/mp4' : 'video/webm';
-            const extension = format === 'mp4' ? '.mp4' : '.webm';
+            // Determine actual format from the blob type, not just settings
+            const blobType = this.recordedChunks[0]?.type || 'video/webm';
+            let actualFormat = blobType.includes('mp4') ? 'mp4' : 'webm';
             
-            const blob = new Blob(this.recordedChunks, { type: mimeType });
-            console.log('Blob created, size:', blob.size, 'bytes, format:', format);
+            // Use the detected format
+            const format = actualFormat;
+            const mimeType = blobType;
+            let extension = format === 'mp4' ? '.mp4' : '.webm';
+            
+            console.log('🎬 Detected format from blob:', {
+                blobType: blobType,
+                detectedFormat: actualFormat,
+                selectedFormat: this.recordFormat,
+                extension: extension
+            });
+            
+            let blob = new Blob(this.recordedChunks, { type: mimeType });
+            console.log('🎬 Original blob:', {
+                size: blob.size + ' bytes',
+                sizeInMB: (blob.size / 1024 / 1024).toFixed(2) + ' MB',
+                type: blob.type,
+                format: format
+            });
+            
+            const finalBlob = blob;
+            
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const filename = `${this.customFilename}_${timestamp}${extension}`;
-            console.log('Attempting to save as:', filename);
+            
+            console.log('🎬 === FINAL SAVE INFO ===');
+            console.log('🎬 Final blob:', {
+                size: finalBlob.size + ' bytes',
+                sizeInMB: (finalBlob.size / 1024 / 1024).toFixed(2) + ' MB',
+                type: finalBlob.type
+            });
+            console.log('🎬 Filename:', filename);
+            console.log('🎬 Extension:', extension);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
                 // Save to chosen directory
                 try {
                     const fileHandle = await this.directoryHandle.getFileHandle(filename, { create: true });
                     const writable = await fileHandle.createWritable();
-                    await writable.write(blob);
+                    await writable.write(finalBlob);
                     await writable.close();
                     
                     console.log(`Recording saved to ${this.saveLocation}/${filename}`);
                     alert(`Recording saved successfully to ${this.saveLocation}/${filename}`);
                 } catch (err) {
                     console.error('Error saving to chosen directory:', err);
-                    this.fallbackDownload(blob, filename);
+                    this.fallbackDownload(finalBlob, filename);
                 }
             } else {
                 // Fallback to downloads folder
-                this.fallbackDownload(blob, filename);
+                this.fallbackDownload(finalBlob, filename);
             }
             
         } catch (err) {
@@ -10700,9 +10931,9 @@ class FrequeVisualizer {
 
         // Official AudioMotion Presets (using official library)
         this.officialAudioMotionPresets = [
-            // 0 - Fluid Pro (using official audioMotion)
+            // 0 - Fluid (using official audioMotion)
             {
-                name: 'Fluid Pro',
+                name: 'Fluid',
                 useOfficial: true,
                 config: {
                     alphaBars: false,
@@ -10758,9 +10989,9 @@ class FrequeVisualizer {
                     weightingFilter: 'D'
                 }
             },
-            // 1 - Prism Pro (using official audioMotion)
+            // 1 - Prism (using official audioMotion)
             {
-                name: 'Prism Pro',
+                name: 'Prism',
                 useOfficial: true,
                 config: {
                     alphaBars: false,
@@ -10816,9 +11047,9 @@ class FrequeVisualizer {
                     weightingFilter: 'D'
                 }
             },
-            // 2 - Twin Peaks Pro (using official audioMotion)
+            // 2 - Twin Peaks (using official audioMotion)
             {
-                name: 'Twin Peaks Pro',
+                name: 'Twin Peaks',
                 useOfficial: true,
                 config: {
                     alphaBars: false,
@@ -10875,9 +11106,9 @@ class FrequeVisualizer {
                     weightingFilter: "D"
                 }
             },
-            // 3 - Circus Pro (using official audioMotion)
+            // 3 - Circus (using official audioMotion)
             {
-                name: 'Circus Pro',
+                name: 'Circus',
                 useOfficial: true,
                 config: {
                     alphaBars: false,
@@ -10972,6 +11203,13 @@ class FrequeVisualizer {
 
             this.streamManager = new StreamManager(this);
             this.recordManager = new RecordManager(this);
+            
+            // Update codec compatibility indicator now that RecordManager is ready
+            setTimeout(() => {
+                if (typeof this.updateCodecCompatibility === 'function') {
+                    this.updateCodecCompatibility();
+                }
+            }, 200);
             
             // Phase 1: Test LiveDisplayManager
             this.liveDisplayManager = new LiveDisplayManager(this, 'test');
@@ -12147,75 +12385,142 @@ class FrequeVisualizer {
     }
 
     initializeFooterRecordControls() {
-        // Connect footer record controls to existing RecordManager functionality
+        // Connect footer record controls to unified quality system
         console.log('Initializing footer record controls, recordManager:', !!this.recordManager);
         if (!this.recordManager) {
             console.error('RecordManager not available for footer controls');
             return;
         }
         
-        // Resolution select (exact same as sidebar)
-        const footerResolutionSelect = document.getElementById('footerRecordResolutionSelect');
-        if (footerResolutionSelect) {
-            footerResolutionSelect.value = this.recordManager.resolution;
-            footerResolutionSelect.addEventListener('change', (e) => {
-                this.recordManager.resolution = e.target.value;
-                this.recordManager.updateUI();
+        // Unified Quality Preset select
+        const footerQualityPresetSelect = document.getElementById('footerRecordQualityPresetSelect');
+        if (footerQualityPresetSelect) {
+            footerQualityPresetSelect.value = this.recordManager.qualityPreset;
+            footerQualityPresetSelect.addEventListener('change', (e) => {
+                this.recordManager.qualityPreset = e.target.value;
                 this.recordManager.saveSettings();
-                
-                // Footer controls work independently (sidebar sync removed)
+                this.toggleCustomRecordingGroup(e.target.value === 'custom');
+                this.updateCodecCompatibility();
+                console.log('🎬 Quality preset changed to:', e.target.value);
             });
         }
         
-        // Frame rate select (exact same as sidebar)
+        // Frame rate select
         const footerFrameRateSelect = document.getElementById('footerRecordFrameRateSelect');
         if (footerFrameRateSelect) {
             footerFrameRateSelect.value = this.recordManager.frameRate.toString();
             footerFrameRateSelect.addEventListener('change', (e) => {
                 this.recordManager.frameRate = parseInt(e.target.value);
-                this.recordManager.updateUI();
                 this.recordManager.saveSettings();
             });
         }
         
-        // Video quality select (exact same as sidebar)
-        const footerVideoQualitySelect = document.getElementById('footerRecordVideoQualitySelect');
-        if (footerVideoQualitySelect) {
-            footerVideoQualitySelect.value = this.recordManager.videoQuality;
-            footerVideoQualitySelect.addEventListener('change', (e) => {
-                this.recordManager.videoQuality = e.target.value;
-                this.recordManager.updateUI();
+        // Custom settings (only visible when qualityPreset = 'custom')
+        this.initializeCustomRecordingControls();
+        
+        // Initialize UI state
+        this.toggleCustomRecordingGroup(this.recordManager.qualityPreset === 'custom');
+        
+        // Update compatibility indicator after a brief delay to ensure RecordManager is ready
+        setTimeout(() => {
+            this.updateCodecCompatibility();
+        }, 100);
+    }
+
+    initializeCustomRecordingControls() {
+        // Custom resolution select
+        const footerResolutionSelect = document.getElementById('footerRecordResolutionSelect');
+        if (footerResolutionSelect) {
+            footerResolutionSelect.value = this.recordManager.customResolution;
+            footerResolutionSelect.addEventListener('change', (e) => {
+                this.recordManager.customResolution = e.target.value;
                 this.recordManager.saveSettings();
-                
-                // Footer controls work independently (sidebar sync removed)
+                this.updateCodecCompatibility();
             });
         }
         
-        // Audio quality select (exact same as sidebar)
+        // Custom video bitrate slider
+        const customVideoBitrateSlider = document.getElementById('customVideoBitrateSlider');
+        const customVideoBitrateValue = document.getElementById('customVideoBitrateValue');
+        if (customVideoBitrateSlider && customVideoBitrateValue) {
+            customVideoBitrateSlider.value = this.recordManager.customVideoBitrate;
+            customVideoBitrateValue.textContent = this.recordManager.customVideoBitrate + ' Mbps';
+            
+            customVideoBitrateSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                this.recordManager.customVideoBitrate = value;
+                customVideoBitrateValue.textContent = value + ' Mbps';
+                this.recordManager.saveSettings();
+            });
+        }
+        
+        // Custom audio quality select
         const footerAudioQualitySelect = document.getElementById('footerRecordAudioQualitySelect');
         if (footerAudioQualitySelect) {
-            footerAudioQualitySelect.value = this.recordManager.audioQuality;
+            footerAudioQualitySelect.value = this.recordManager.customAudioBitrate.toString();
             footerAudioQualitySelect.addEventListener('change', (e) => {
-                this.recordManager.audioQuality = e.target.value;
-                this.recordManager.updateUI();
+                this.recordManager.customAudioBitrate = parseInt(e.target.value);
                 this.recordManager.saveSettings();
-                
-                // Footer controls work independently (sidebar sync removed)
             });
         }
         
-        // Format select (new MP4/WebM dropdown)
-        const footerFormatSelect = document.getElementById('footerRecordFormatSelect');
-        if (footerFormatSelect) {
-            footerFormatSelect.value = this.recordManager.recordFormat;
-            footerFormatSelect.addEventListener('change', (e) => {
-                this.recordManager.recordFormat = e.target.value;
-                this.recordManager.updateFileExtensionDisplay();
+        // Custom codec select
+        const footerCodecSelect = document.getElementById('footerRecordCodecSelect');
+        if (footerCodecSelect) {
+            footerCodecSelect.value = this.recordManager.customCodec;
+            footerCodecSelect.addEventListener('change', (e) => {
+                this.recordManager.customCodec = e.target.value;
                 this.recordManager.saveSettings();
-                console.log('🎬 Record format changed to:', e.target.value);
+                this.updateCodecCompatibility();
             });
         }
-        
+    }
+
+    toggleCustomRecordingGroup(show) {
+        const customGroup = document.getElementById('customRecordingGroup');
+        if (customGroup) {
+            customGroup.style.display = show ? 'block' : 'none';
+        }
+    }
+
+
+    /**
+     * Update codec compatibility indicator
+     */
+    updateCodecCompatibility() {
+        const compatibilityStatus = document.getElementById('compatibilityStatus');
+        if (!compatibilityStatus) {
+            console.warn('Compatibility status element not found');
+            return;
+        }
+
+        try {
+            // Check if recordManager exists and has the method
+            if (!this.recordManager || typeof this.recordManager.selectOptimalCodec !== 'function') {
+                console.warn('RecordManager not ready for codec selection');
+                compatibilityStatus.textContent = '⚡ Initializing...';
+                compatibilityStatus.className = 'compatibility-status checking';
+                return;
+            }
+
+            const codecInfo = this.recordManager.selectOptimalCodec();
+            const compatibility = codecInfo.compatibility;
+            
+            console.log('🎬 Codec compatibility updated:', compatibility.text);
+            
+            // Update text and styling
+            compatibilityStatus.textContent = compatibility.text;
+            compatibilityStatus.className = `compatibility-status ${compatibility.level}`;
+            
+        } catch (error) {
+            console.error('Error checking codec compatibility:', error);
+            // No compatible codecs found
+            compatibilityStatus.textContent = '❌ No Compatible Codecs - Update Browser';
+            compatibilityStatus.className = 'compatibility-status poor';
+        }
+    }
+
+    initializeFooterRecordControls() {
         // Filename input (exact same as sidebar)
         const footerFilenameInput = document.getElementById('footerRecordFilenameInput');
         if (footerFilenameInput) {
@@ -21947,7 +22252,7 @@ https://rogueamoeba.com/loopback/
         }
 
         const preset = {
-            name: name || `Pro Preset ${this.savedPresets.length + 1}`,
+            name: name || `Advanced Preset ${this.savedPresets.length + 1}`,
             timestamp: Date.now(),
             config: this.getCurrentProConfig(),
             useOfficial: true  // Flag to identify Pro presets

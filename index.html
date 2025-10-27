@@ -48,7 +48,9 @@
     <script src="js/nebula-visualization.js"></script>
     <!-- Official AudioMotion Analyzer v4.5.1 (Local) -->
     <script src="js/audiomotion-analyzer.js"></script>
-    <script src="js/main.js"></script>
+    
+    
+    <script src="js/main.js?v=20251027"></script>
 </head>
 <body>
 <header class="header">
@@ -65,9 +67,6 @@
             <div class="input-controls" id="input-controls">
                 <button class="btn-square" id="footerLiveColorBtn" title="Background Color">
                     <span class="color-icon">C</span>
-                </button>
-                <button class="btn-square" id="footerLiveBackgroundBtn" title="Background Image">
-                    <span class="background-icon">B</span>
                 </button>
                 <button class="btn-square" id="footerLiveVideoBtn" title="Live Video Input">
                     <span class="video-icon">V</span>
@@ -1429,7 +1428,7 @@
 <div class="info-popup" id="infoPopup">
     <h3>Freque Music Visualizer</h3>
     <p>Created by Stel Furet</p>
-    <p>Try selecting the Mirror Wave then Radial Spectrum for a cool effect!</p>
+    
     
     <h4>Keyboard Shortcuts</h4>
     <div class="keyboard-shortcuts">
@@ -1442,6 +1441,26 @@
         <div class="shortcut-row"><span class="key">C</span> - Peek Mode (Mixer Open)</div>
         <div class="shortcut-row"><span class="key">Esc</span> - Exit Fullscreen/Close Panels</div>
         <div class="shortcut-row"><span class="key">Ctrl+U</span> - Toggle Debug Panel</div>
+    </div>
+    
+    <div class="info-content-scrollable">
+        <h4>Audio Visualization</h4>
+        <p>Audio visualization powered by <a href="https://github.com/hvianna/audioMotion-analyzer" target="_blank">audioMotion-analyzer</a></p>
+        <p><small>audioMotion-analyzer is licensed under AGPL v3.0 - <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">View License</a></small></p>
+        
+        <h4>Video Compatibility</h4>
+        
+        <h4>3D Graphics & Visualizations</h4>
+        <p>3D graphics powered by <a href="https://threejs.org/" target="_blank">Three.js</a> - WebGL-based visualizations (Nebula, Supernova effects)</p>
+        <p><small>Three.js is licensed under MIT License - <a href="https://github.com/mrdoob/three.js/blob/dev/LICENSE" target="_blank">View License</a></small></p>
+        
+        <h4>Fluid Dynamics</h4>
+        <p>Fluid dynamics powered by <a href="https://github.com/PavelDoGreat/WebGL-Fluid-Simulation" target="_blank">WebGL Fluid Simulation</a> by Pavel Dobryakov</p>
+        <p><small>WebGL Fluid Simulation is licensed under MIT License - <a href="https://github.com/PavelDoGreat/WebGL-Fluid-Simulation/blob/master/LICENSE" target="_blank">View License</a></small></p>
+        
+        <h4>Audio Metadata</h4>
+        <p>Audio file metadata powered by <a href="https://github.com/Borewit/music-metadata-browser" target="_blank">music-metadata-browser</a></p>
+        <p><small>music-metadata-browser is licensed under MIT License - <a href="https://github.com/Borewit/music-metadata-browser/blob/master/LICENSE.txt" target="_blank">View License</a></small></p>
     </div>
     
     <button onclick="closeInfoPopup()">Close</button>
@@ -2014,30 +2033,48 @@
 
             <!-- Recording Settings -->
             <div class="control-group">
-                <div class="group-label">Recording Settings</div>
-                <select id="footerRecordResolutionSelect" class="select">
-                    <option value="canvas">Canvas Size</option>
-                    <option value="720p">720p (1280×720)</option>
-                    <option value="1080p" selected>1080p (1920×1080)</option>
-                    <option value="4k">4K (3840×2160)</option>
+                <div class="group-label">Recording Quality</div>
+                <select id="footerRecordQualityPresetSelect" class="select">
+                    <option value="web-hd">Web HD (1080p, 6 Mbps, 192k audio, H.264 Baseline)</option>
+                    <option value="professional" selected>Professional (1080p, 15 Mbps, 320k audio, H.264 Main)</option>
+                    <option value="broadcast">Broadcast (1080p, 25 Mbps, 512k audio, H.264 High)</option>
+                    <option value="cinema-4k">Cinema 4K (4K, 50 Mbps, 512k audio, H.264 High)</option>
+                    <option value="master-4k">Master 4K (4K, 80 Mbps, 1024k audio, H.264 High)</option>
+                    <option value="archive-4k">Archive 4K (4K, 120 Mbps, 1024k audio, H.264 High)</option>
+                    <option value="custom">Custom (user-defined settings)</option>
                 </select>
                 <select id="footerRecordFrameRateSelect" class="select">
                     <option value="30" selected>30 FPS</option>
                     <option value="60">60 FPS</option>
                 </select>
-                <select id="footerRecordVideoQualitySelect" class="select">
-                    <option value="auto" selected>Auto</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                    <option value="4k">4K</option>
-                    <option value="4k-ultra">4K Ultra</option>
+            </div>
+
+            <!-- Custom Recording Settings (hidden by default) -->
+            <div class="control-group" id="customRecordingGroup" style="display: none;">
+                <div class="group-label">Custom Settings</div>
+                <select id="footerRecordResolutionSelect" class="select">
+                    <option value="720p">720p (1280×720)</option>
+                    <option value="1080p" selected>1080p (1920×1080)</option>
+                    <option value="4k">4K (3840×2160)</option>
+                    <option value="canvas">Canvas Size</option>
                 </select>
+                <div class="control-group">
+                    <label>Video Bitrate (Mbps)</label>
+                    <input type="range" id="customVideoBitrateSlider" min="1" max="150" value="15" step="1" class="slider">
+                    <span id="customVideoBitrateValue">15 Mbps</span>
+                </div>
                 <select id="footerRecordAudioQualitySelect" class="select">
-                    <option value="auto" selected>Auto</option>
-                    <option value="high">High (320 kbps)</option>
-                    <option value="medium">Medium (192 kbps)</option>
-                    <option value="low">Low (128 kbps)</option>
+                    <option value="128">128 kbps</option>
+                    <option value="192">192 kbps</option>
+                    <option value="320" selected>320 kbps</option>
+                    <option value="512">512 kbps</option>
+                    <option value="1024">1024 kbps</option>
+                </select>
+                <select id="footerRecordCodecSelect" class="select">
+                    <option value="auto" selected>Auto (Best Available)</option>
+                    <option value="h264-high">H.264 High Profile</option>
+                    <option value="h264-main">H.264 Main Profile</option>
+                    <option value="h264-baseline">H.264 Baseline Profile</option>
                 </select>
             </div>
 
@@ -2048,10 +2085,9 @@
                     📥 Downloads folder
                 </div>
                 <button class="btn-secondary" id="footerRecordChooseLocationBtn">Choose Location</button>
-                <select id="footerRecordFormatSelect" class="select">
-                    <option value="mp4">Format: MP4</option>
-                    <option value="webm">Format: WebM</option>
-                </select>
+                <div class="compatibility-indicator" id="codecCompatibilityIndicator">
+                    <span class="compatibility-status" id="compatibilityStatus">⚡ Checking compatibility...</span>
+                </div>
                 <div class="input-container">
                     <label>Filename</label>
                     <input type="text" id="footerRecordFilenameInput" placeholder="Freque_Recording" class="control-input">
