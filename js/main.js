@@ -1614,6 +1614,9 @@ class RecordManager {
         this.timerInterval = null;
         this.compositeCanvas = null;
         this.compositeCtx = null;
+        this.cropCanvas = null;
+        this.cropCtx = null;
+        this.shouldCrop = false;
         this.animationFrame = null;
         this.saveLocation = null;
         
@@ -7017,11 +7020,11 @@ class RecordManager {
             this.updateTimer();
             this.timerInterval = setInterval(() => this.updateTimer(), 100);
             
-            // Update crop area from overlay before creating canvas
-            this.updateCropAreaFromOverlay();
-            
             // Create composite canvas
             await this.setupCompositeCanvas();
+            
+            // Setup crop canvas if needed
+            this.setupCropCanvas();
             
             // Start compositing to ensure first frame is ready
             this.startCompositing();
@@ -7029,8 +7032,11 @@ class RecordManager {
             // Wait a moment for the first frame to be drawn (ensures Nebula and other visualizations are ready)
             await new Promise(resolve => setTimeout(resolve, 150));
             
-            // Get video stream
-            const videoStream = this.compositeCanvas.captureStream(this.frameRate);
+            // Get video stream from appropriate canvas
+            const sourceCanvas = this.shouldCrop ? this.cropCanvas : this.compositeCanvas;
+            const videoStream = sourceCanvas.captureStream(this.frameRate);
+            
+            console.log(`🎬 Using ${this.shouldCrop ? 'crop' : 'composite'} canvas for recording: ${sourceCanvas.width}x${sourceCanvas.height}`);
             
             // Get audio stream
             const audioStream = await this.getAudioStream();
@@ -7098,49 +7104,35 @@ class RecordManager {
         }
     }
     
-    updateCropAreaFromOverlay() {
-        // Get crop area from the recording area overlay
-        if (this.aspectRatio !== 'window' && this.recordingAreaOverlay && this.recordingAreaOverlay.style.display !== 'none') {
-            const overlayRect = this.recordingAreaOverlay.getBoundingClientRect();
-            const containerRect = document.getElementById('visualizationContainer').getBoundingClientRect();
-            
-            // Calculate relative position within the visualization container
-            this.cropArea = {
-                x: Math.round(overlayRect.left - containerRect.left),
-                y: Math.round(overlayRect.top - containerRect.top),
-                width: Math.round(overlayRect.width),
-                height: Math.round(overlayRect.height)
-            };
-            
-            console.log('🎬 Updated crop area from overlay:', this.cropArea);
-        } else {
-            this.cropArea = null;
-            console.log('🎬 No crop area - recording full window');
-        }
-    }
-    
     async setupCompositeCanvas() {
         const dimensions = this.getRecordingDimensions();
         
-        // Create full-size composite canvas for rendering
-        this.fullCompositeCanvas = document.createElement('canvas');
-        this.fullCompositeCanvas.width = dimensions.width;
-        this.fullCompositeCanvas.height = dimensions.height;
-        this.fullCompositeCtx = this.fullCompositeCanvas.getContext('2d');
+        this.compositeCanvas = document.createElement('canvas');
+        this.compositeCanvas.width = dimensions.width;
+        this.compositeCanvas.height = dimensions.height;
+        this.compositeCtx = this.compositeCanvas.getContext('2d');
         
-        // Create cropped output canvas if recording area is enabled
-        if (this.aspectRatio !== 'window' && this.cropArea) {
-            this.compositeCanvas = document.createElement('canvas');
-            this.compositeCanvas.width = this.cropArea.width;
-            this.compositeCanvas.height = this.cropArea.height;
-            this.compositeCtx = this.compositeCanvas.getContext('2d');
-            console.log(`🎬 Created cropped composite canvas: ${this.cropArea.width}x${this.cropArea.height} from full ${dimensions.width}x${dimensions.height}`);
-        } else {
-            // Use full canvas as output canvas
-            this.compositeCanvas = this.fullCompositeCanvas;
-            this.compositeCtx = this.fullCompositeCtx;
-            console.log(`🎬 Created full composite canvas: ${dimensions.width}x${dimensions.height}`);
+        console.log(`Created composite canvas: ${dimensions.width}x${dimensions.height}`);
+    }
+    
+    setupCropCanvas() {
+        // Check if we should crop based on recording area settings
+        this.shouldCrop = this.showRecordingArea && 
+                         this.cropArea.width > 0 && 
+                         this.cropArea.height > 0;
+        
+        if (!this.shouldCrop) {
+            console.log('🎬 No cropping needed - using full composite canvas');
+            return;
         }
+        
+        // Create crop canvas with crop dimensions
+        this.cropCanvas = document.createElement('canvas');
+        this.cropCanvas.width = this.cropArea.width;
+        this.cropCanvas.height = this.cropArea.height;
+        this.cropCtx = this.cropCanvas.getContext('2d');
+        
+        console.log(`🎬 Created crop canvas: ${this.cropArea.width}x${this.cropArea.height} at (${this.cropArea.x}, ${this.cropArea.y})`);
     }
     
     startCompositing() {
@@ -7156,19 +7148,16 @@ class RecordManager {
     compositeFrame() {
         if (!this.compositeCtx) return;
         
-        // Always render to full canvas first
-        const renderCtx = this.fullCompositeCtx || this.compositeCtx;
-        const renderCanvas = this.fullCompositeCanvas || this.compositeCanvas;
-        const { width, height } = renderCanvas;
+        const { width, height } = this.compositeCanvas;
         
         // Clear canvas with black background
-        renderCtx.fillStyle = '#000000';
-        renderCtx.fillRect(0, 0, width, height);
+        this.compositeCtx.fillStyle = '#000000';
+        this.compositeCtx.fillRect(0, 0, width, height);
         
         // Draw background image if available and enabled
         if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
             console.log('🎥 RecordManager: Drawing background image in composite');
-            this.visualizer.drawBackgroundImage(renderCtx, width, height);
+            this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
         } else {
             console.log('🎥 RecordManager: Background image skipped -', {
                 hasImage: !!this.visualizer.backgroundImage,
@@ -7244,29 +7233,29 @@ class RecordManager {
                 // Draw kaleidoscope video canvas
                 const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
                 if (kaleidoscopeOpacity > 0) {
-                    renderCtx.globalAlpha = kaleidoscopeOpacity;
-                    renderCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    renderCtx.globalAlpha = 1;
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                    this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
                 }
             } else {
                 // Draw regular video with effects using shared dimensions
                 const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                 if (opacity > 0) {
-                    renderCtx.globalAlpha = opacity;
-                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight, renderCtx);
-                    renderCtx.globalAlpha = 1;
+                    this.compositeCtx.globalAlpha = opacity;
+                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
                 }
             }
             
             // Draw visualization using full canvas dimensions (not letterboxed like video)
             console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
-            renderCtx.drawImage(sourceCanvas, 0, 0, width, height);
+            this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
             if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
                 if (shouldDrawSeparately) {
-                    renderCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
+                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
                 }
             }
             
@@ -7391,25 +7380,50 @@ class RecordManager {
             }
         }
         
-        // Apply cropping if recording area is enabled
-        this.applyCropping();
+        // Update crop canvas if cropping is enabled
+        this.updateCropCanvas();
     }
     
-    applyCropping() {
-        // If we have separate canvases, crop from full to output canvas
-        if (this.fullCompositeCanvas && this.fullCompositeCanvas !== this.compositeCanvas && this.cropArea) {
-            console.log('🎬 Applying crop:', this.cropArea);
-            
-            // Clear the output canvas
-            this.compositeCtx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
-            
-            // Draw the cropped portion from full canvas to output canvas
-            this.compositeCtx.drawImage(
-                this.fullCompositeCanvas,
-                this.cropArea.x, this.cropArea.y, this.cropArea.width, this.cropArea.height, // Source
-                0, 0, this.compositeCanvas.width, this.compositeCanvas.height // Destination
-            );
+    updateCropCanvas() {
+        if (!this.shouldCrop || !this.cropCanvas || !this.compositeCanvas) {
+            return;
         }
+        
+        // Clear crop canvas
+        this.cropCtx.fillStyle = '#000000';
+        this.cropCtx.fillRect(0, 0, this.cropCanvas.width, this.cropCanvas.height);
+        
+        // Convert screen coordinates to canvas pixel coordinates
+        const canvas = this.visualizer.audioMotion?.canvas;
+        if (!canvas) {
+            console.warn('🎬 No canvas found for coordinate conversion');
+            return;
+        }
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const scaleX = this.compositeCanvas.width / canvasRect.width;
+        const scaleY = this.compositeCanvas.height / canvasRect.height;
+        
+        // Convert crop area from screen coordinates to canvas pixel coordinates
+        const cropX = this.cropArea.x * scaleX;
+        const cropY = this.cropArea.y * scaleY;
+        const cropWidth = this.cropArea.width * scaleX;
+        const cropHeight = this.cropArea.height * scaleY;
+        
+        console.log('🎬 Crop conversion:', {
+            screen: { x: this.cropArea.x, y: this.cropArea.y, w: this.cropArea.width, h: this.cropArea.height },
+            canvas: { x: cropX, y: cropY, w: cropWidth, h: cropHeight },
+            scale: { x: scaleX, y: scaleY },
+            compositeSize: { w: this.compositeCanvas.width, h: this.compositeCanvas.height },
+            screenSize: { w: canvasRect.width, h: canvasRect.height }
+        });
+        
+        // Copy cropped region from composite canvas to crop canvas
+        this.cropCtx.drawImage(
+            this.compositeCanvas,
+            cropX, cropY, cropWidth, cropHeight,
+            0, 0, this.cropCanvas.width, this.cropCanvas.height
+        );
     }
     
     drawScaledVideo() {
@@ -7546,16 +7560,13 @@ class RecordManager {
         }
     }
     
-    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight, ctx = null) {
+    drawVideoWithProperLetterboxing(drawX, drawY, drawWidth, drawHeight) {
         const video = this.visualizer.videoElement;
         
         if (!video || video.readyState < 2) return;
         
-        // Use provided context or default to compositeCtx
-        const renderCtx = ctx || this.compositeCtx;
-        
         // Apply video effects directly to the video element
-        renderCtx.save();
+        this.compositeCtx.save();
         
         // Build filter string
         const filters = [];
@@ -8197,6 +8208,9 @@ class RecordManager {
         this.tempVideoCtx = null;
         this.compositeCanvas = null;
         this.compositeCtx = null;
+        this.cropCanvas = null;
+        this.cropCtx = null;
+        this.shouldCrop = false;
         
         // Update UI - both sidebar and footer buttons
         const recordBtns = document.querySelectorAll('#recordBtn');
@@ -8318,6 +8332,7 @@ class RecordManager {
         URL.revokeObjectURL(url);
         
         console.log(`Recording downloaded as ${filename}`);
+        alert(`Recording saved to Downloads folder as ${filename}`);
     }
 }
 
