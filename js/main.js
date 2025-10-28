@@ -6858,7 +6858,7 @@ class RecordManager {
         const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
         }
-        console.log('=========================')
+        // console.log('=========================')
         
         const currentAspect = targetWidth / targetHeight;
         
@@ -7107,8 +7107,8 @@ class RecordManager {
                 sharedDrawX = 0;
                 sharedDrawY = (height - sharedDrawHeight) / 2;
             
-            console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
-            console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
+            // console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            // console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
             
             // Draw video background with shared dimensions
             if (this.visualizer.kaleidoscopeEnabled && 
@@ -7134,7 +7134,7 @@ class RecordManager {
             }
             
             // Draw visualization using full canvas dimensions (not letterboxed like video)
-            console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
+            // console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
             this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
@@ -7759,7 +7759,7 @@ class RecordManager {
                 try {
                     this.visualizer.videoAudioGain.connect(gainNode);
                     hasAudioSource = true;
-                    console.log('Connected video audio to recording');
+                    // console.log('Connected video audio to recording');
                 } catch (e) {
                     console.error('Error connecting video audio:', e);
                 }
@@ -8676,7 +8676,7 @@ class LiveDisplayManager {
                     // Apply background knockout (screen blend mode)
                     if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
                         this.compositeCtx.globalCompositeOperation = 'screen';
-                        console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
+                        // console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
                     }
                     
                     this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
@@ -8745,7 +8745,7 @@ class LiveDisplayManager {
                     // Apply background knockout (screen blend mode)
                     if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
                         this.compositeCtx.globalCompositeOperation = 'screen';
-                        console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
+                        // console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
                     }
                     
                     this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
@@ -9718,7 +9718,7 @@ class StreamManager {
 
                 // Layer 0: Background Image (if available and enabled)
                 if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
-                    console.log('📡 StreamManager Layer 0: Drawing background image');
+                    // console.log('📡 StreamManager Layer 0: Drawing background image');
                     this.visualizer.drawBackgroundImage(this.captureCtx, this.captureCanvas.width, this.captureCanvas.height);
                 } else {
                     // console.log('📡 StreamManager Layer 0: Background image skipped -', {
@@ -11842,7 +11842,7 @@ class FrequeVisualizer {
         btn.classList.toggle('active');
         btn.textContent = `Mirror Background: ${isActive ? 'Off' : 'On'}`;
         
-        console.log(`Display ${displayId}: Mirror background ${isActive ? 'disabled' : 'enabled'}`);
+        // console.log(`Display ${displayId}: Mirror background ${isActive ? 'disabled' : 'enabled'}`);
     }
 
     applyDisplayPreset(displayId, preset) {
@@ -13250,7 +13250,7 @@ class FrequeVisualizer {
         // Refresh stats if camera is already active
         // console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
         if (this.videoMode === 'camera' && this.cameraInfo) {
-            console.log('Refreshing camera stats for reopened panel...');
+            // console.log('Refreshing camera stats for reopened panel...');
             // Small delay to ensure DOM is ready
             setTimeout(() => {
                 this.updateCameraStats();
@@ -16119,12 +16119,12 @@ class FrequeVisualizer {
                 }
             }
             
-            console.log('Video audio connected to AudioMotion with gain control');
+            // console.log('Video audio connected to AudioMotion with gain control');
             
             // Set isConnected flag so regular AM visualizations can access audio data
             if (this.audioMotion) {
                 this.audioMotion.isConnected = true;
-                console.log('🔗 Set audioMotion.isConnected = true for video audio');
+                // console.log('🔗 Set audioMotion.isConnected = true for video audio');
             }
             
             // Reconnect official AudioMotion if it needs connection
@@ -16936,7 +16936,7 @@ class FrequeVisualizer {
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => {
                         track.stop();
-                        console.log('Stopped video track:', track.label);
+                        // console.log('Stopped video track:', track.label);
                     });
                     this.videoStream = null;
                 }
@@ -17359,7 +17359,7 @@ class FrequeVisualizer {
 
     async startVideoFile(file) {
         try {
-            console.log('startVideoFile called with file:', file.name);
+            // console.log('startVideoFile called with file:', file.name);
             
             // Check if we're switching sources
             const isSourceSwitch = this.videoElement && (this.videoStream || this.videoFile);
@@ -17387,7 +17387,7 @@ class FrequeVisualizer {
 
             // Get container reference
             const container = document.getElementById('visualizationContainer');
-            console.log('Container found:', !!container);
+            // console.log('Container found:', !!container);
 
             // Create backdrop if needed
             if (!document.getElementById('videoBackdrop')) {
@@ -17434,7 +17434,7 @@ class FrequeVisualizer {
                 container.insertBefore(this.videoElement, backdrop.nextSibling);
                 console.log('Video element inserted into container');
             } else {
-                console.log('Reusing existing video element...');
+                // console.log('Reusing existing video element...');
                 // Update settings for existing element
                 this.videoElement.muted = false; // Keep unmuted, control via gain node
                 this.videoElement.loop = this.videoFileLoop;
@@ -17518,7 +17518,7 @@ class FrequeVisualizer {
             }
 
             // Wait for metadata and play
-            console.log('Setting up video loading...');
+            // console.log('Setting up video loading...');
             await new Promise((resolve, reject) => {
                 let resolved = false;
                 const timeout = setTimeout(() => {
@@ -17571,8 +17571,8 @@ class FrequeVisualizer {
             // Update UI
             this.videoMode = 'file';
             // console.log('Video file loaded successfully, setting mode to:', this.videoMode);
-            console.log('Video element opacity:', this.videoElement.style.opacity);
-            console.log('Video element display:', this.videoElement.style.display);
+            // console.log('Video element opacity:', this.videoElement.style.opacity);
+            // console.log('Video element display:', this.videoElement.style.display);
             this.updateVideoToggleState();
             
             // Now detect video file info after mode is set
@@ -17606,7 +17606,7 @@ class FrequeVisualizer {
                 this.streamManager.reconfigureCapture();
             }
 
-            console.log('Video file started:', file.name);
+            // console.log('Video file started:', file.name);
             
             // Debug video visibility after a short delay
             setTimeout(() => {
@@ -17628,44 +17628,44 @@ class FrequeVisualizer {
         const mainArea = document.querySelector('.main-area');
         const visualizer = document.getElementById('visualizer');
         
-        console.log('=== VIDEO DEBUG INFO ===');
+        // console.log('=== VIDEO DEBUG INFO ===');
         // console.log('Video Mode:', this.videoMode);
-        console.log('Video Element exists:', !!videoElement);
+        // console.log('Video Element exists:', !!videoElement);
         
         if (videoElement) {
             const rect = videoElement.getBoundingClientRect();
             const computedStyle = window.getComputedStyle(videoElement);
             
-            console.log('Video Element:');
-            console.log('  - Position:', computedStyle.position);
-            console.log('  - Z-index:', computedStyle.zIndex);
-            console.log('  - Opacity:', computedStyle.opacity);
-            console.log('  - Display:', computedStyle.display);
-            console.log('  - Width:', computedStyle.width);
-            console.log('  - Height:', computedStyle.height);
-            console.log('  - Filter:', computedStyle.filter);
-            console.log('  - BoundingRect:', rect);
-            console.log('  - Src:', videoElement.src);
-            console.log('  - ReadyState:', videoElement.readyState);
-            console.log('  - Paused:', videoElement.paused);
-            console.log('  - Current Time:', videoElement.currentTime);
+            // console.log('Video Element:');
+            // console.log('  - Position:', computedStyle.position);
+            // console.log('  - Z-index:', computedStyle.zIndex);
+            // console.log('  - Opacity:', computedStyle.opacity);
+            // console.log('  - Display:', computedStyle.display);
+            // console.log('  - Width:', computedStyle.width);
+            // console.log('  - Height:', computedStyle.height);
+            // console.log('  - Filter:', computedStyle.filter);
+            // console.log('  - BoundingRect:', rect);
+            // console.log('  - Src:', videoElement.src);
+            // console.log('  - ReadyState:', videoElement.readyState);
+            // console.log('  - Paused:', videoElement.paused);
+            // console.log('  - Current Time:', videoElement.currentTime);
         }
         
-        console.log('\nContainer backgrounds:');
-        console.log('  - Visualization Container BG:', container.style.backgroundColor);
-        console.log('  - Main Area BG:', mainArea.style.backgroundColor);
-        console.log('  - Visualizer BG:', visualizer.style.backgroundColor);
+        // console.log('\nContainer backgrounds:');
+        // console.log('  - Visualization Container BG:', container.style.backgroundColor);
+        // console.log('  - Main Area BG:', mainArea.style.backgroundColor);
+        // console.log('  - Visualizer BG:', visualizer.style.backgroundColor);
         
-        console.log('\nAudioMotion Canvas:');
+        // console.log('\nAudioMotion Canvas:');
         if (this.audioMotion && this.audioMotion.canvas) {
             const canvasStyle = window.getComputedStyle(this.audioMotion.canvas);
-            console.log('  - Z-index:', canvasStyle.zIndex);
-            console.log('  - Position:', canvasStyle.position);
-            console.log('  - Visibility:', canvasStyle.visibility);
-            console.log('  - Display:', canvasStyle.display);
+            // console.log('  - Z-index:', canvasStyle.zIndex);
+            // console.log('  - Position:', canvasStyle.position);
+            // console.log('  - Visibility:', canvasStyle.visibility);
+            // console.log('  - Display:', canvasStyle.display);
         }
         
-        console.log('=== END DEBUG INFO ===');
+        // console.log('=== END DEBUG INFO ===');
     }
 
     detectVideoFileInfo() {
@@ -17678,7 +17678,7 @@ class FrequeVisualizer {
                 loop: this.videoFileLoop
             };
 
-            console.log('📹 Video File Info:', videoInfo);
+            // console.log('📹 Video File Info:', videoInfo);
 
             // Update stats if needed - with small delay to ensure DOM is ready
             setTimeout(() => {
@@ -17696,19 +17696,19 @@ class FrequeVisualizer {
             document.getElementById('mixerCameraStatsContainer')
         ].filter(Boolean);
         
-        console.log('Video file stats containers found:', {
-            sidebar: !!document.getElementById('cameraStatsContainer'),
-            header: !!document.getElementById('headerCameraStatsContainer'),
-            mixer: !!document.getElementById('mixerCameraStatsContainer'),
-            total: statsContainers.length
-        });
+        // console.log('Video file stats containers found:', {
+        //     sidebar: !!document.getElementById('cameraStatsContainer'),
+        //     header: !!document.getElementById('headerCameraStatsContainer'),
+        //     mixer: !!document.getElementById('mixerCameraStatsContainer'),
+        //     total: statsContainers.length
+        // });
         
         if (statsContainers.length === 0) {
             console.log('No video file stats containers found - video panel may be closed');
             return;
         }
         
-        console.log(`Updating video file stats in ${statsContainers.length} container(s)`);
+        // console.log(`Updating video file stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
         if (statsContainer && videoInfo) {
@@ -17811,7 +17811,7 @@ class FrequeVisualizer {
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => {
                         track.stop();
-                        console.log('Stopped video track:', track.label);
+                        // console.log('Stopped video track:', track.label);
                     });
                     this.videoStream = null;
                 }
@@ -21530,7 +21530,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVideoCanvas.classList.remove('pulse-active');
         }
         
-        console.log('Applied filters to kaleidoscope canvas:', this.kaleidoscopeVideoCanvas.style.filter);
+        // console.log('Applied filters to kaleidoscope canvas:', this.kaleidoscopeVideoCanvas.style.filter);
     }
 
     applyKaleidoscopeEffect() {
@@ -21593,10 +21593,10 @@ https://rogueamoeba.com/loopback/
 
             if (this.captureVideoElement && this.captureVideoElement.readyState >= 2) {
                 videoSource = this.captureVideoElement;
-                console.log('Using captureVideoElement for kaleidoscope');
+                // console.log('Using captureVideoElement for kaleidoscope');
             } else if (this.videoElement && this.videoElement.readyState >= 2) {
                 videoSource = this.videoElement;
-                console.log('Using videoElement for kaleidoscope');
+                // console.log('Using videoElement for kaleidoscope');
             } else {
                 console.warn('No video source ready for kaleidoscope');
             }
@@ -21605,7 +21605,7 @@ https://rogueamoeba.com/loopback/
                 this.kaleidoscopeVideoCanvas.style.display = 'block';
                 this.kaleidoscopeVideoCtx.clearRect(0, 0, width, height);
 
-                console.log('Drawing video kaleidoscope with', this.kaleidoscopeSegments, 'segments');
+                // console.log('Drawing video kaleidoscope with', this.kaleidoscopeSegments, 'segments');
                 
                 // Apply video filters to kaleidoscope canvas
                 this.applyFiltersToKaleidoscopeContext();
@@ -21689,9 +21689,9 @@ https://rogueamoeba.com/loopback/
                     this.videoElement.style.opacity = '0';
                 }
 
-                console.log('Video kaleidoscope drawn successfully');
+                // console.log('Video kaleidoscope drawn successfully');
             } else {
-                console.warn('Video source not ready for kaleidoscope');
+                // console.warn('Video source not ready for kaleidoscope');
             }
         } else {
             this.kaleidoscopeVideoCanvas.style.display = 'none';
@@ -25842,10 +25842,10 @@ https://rogueamoeba.com/loopback/
             videoFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files?.[0];
                 if (file && file.type.startsWith('video/')) {
-                    console.log('Selected video file:', file.name, file.type);
+                    // console.log('Selected video file:', file.name, file.type);
                     await this.startVideoFile(file);
                     // Header controls only (sidebar removed)
-                    console.log('Video file loaded - header controls only');
+                    // console.log('Video file loaded - header controls only');
                     // Reset file input for reselection
                     e.target.value = '';
                 } else if (file) {
@@ -27867,7 +27867,7 @@ window.debugBackgroundImage = function() {
 
 // Global function to test background image loading
 window.testBackgroundImage = function() {
-    console.log('🧪 Testing background image functionality...');
+    // console.log('🧪 Testing background image functionality...');
     if (window.visualizer) {
         console.log('Current state:', {
             hasImage: !!window.visualizer.backgroundImage,
