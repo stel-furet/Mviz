@@ -14355,11 +14355,11 @@ class FrequeVisualizer {
         
         if (fileInfo && fileName && fileSize && imagePreview) {
             if (this.backgroundImage && this.backgroundImageFileName) {
-                console.log('🖼️ Updating background panel file info:', {
-                    fileName: this.backgroundImageFileName,
-                    fileSize: this.backgroundImageFileSize,
-                    hasImage: !!this.backgroundImage
-                });
+                // console.log('🖼️ Updating background panel file info:', {
+                //     fileName: this.backgroundImageFileName,
+                //     fileSize: this.backgroundImageFileSize,
+                //     hasImage: !!this.backgroundImage
+                // });
                 
                 fileInfo.style.display = 'block';
                 fileName.textContent = this.backgroundImageFileName;
@@ -14368,7 +14368,7 @@ class FrequeVisualizer {
                 // Create preview image
                 const img = new Image();
                 img.onload = () => {
-                    console.log('🖼️ Image loaded successfully for preview');
+                    // console.log('🖼️ Image loaded successfully for preview');
                     imagePreview.innerHTML = '';
                     imagePreview.appendChild(img);
                 };
@@ -14377,16 +14377,16 @@ class FrequeVisualizer {
                 };
                 img.src = this.backgroundImage;
             } else {
-                console.log('🖼️ No background image, hiding file info');
+                // console.log('🖼️ No background image, hiding file info');
                 fileInfo.style.display = 'none';
             }
         } else {
-            console.log('🖼️ Missing file info elements:', {
-                fileInfo: !!fileInfo,
-                fileName: !!fileName,
-                fileSize: !!fileSize,
-                imagePreview: !!imagePreview
-            });
+            // console.log('🖼️ Missing file info elements:', {
+            //     fileInfo: !!fileInfo,
+            //     fileName: !!fileName,
+            //     fileSize: !!fileSize,
+            //     imagePreview: !!imagePreview
+            // });
         }
         
         // Update size buttons
