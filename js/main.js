@@ -17969,7 +17969,7 @@ class FrequeVisualizer {
                 this.streamManager.channel.postMessage({type: 'display-settings', data: this.streamManager.displaySettings});
             }
             
-            console.log(`Applied ${preset} preset:`, settings);
+            // console.log(`Applied ${preset} preset:`, settings);
         }
     }
 
@@ -18646,6 +18646,9 @@ class FrequeVisualizer {
                     await this.audioMotion.audioCtx.resume();
                 }
 
+                // CRITICAL FIX: Disconnect video audio to give live audio priority
+                this.disconnectVideoAudio();
+
                 this.audioMotion.disconnectInput();
 
                 this.streamSource = this.audioMotion.audioCtx.createMediaStreamSource(this.audioStream);
@@ -18758,6 +18761,9 @@ class FrequeVisualizer {
         document.getElementById('prevBtn').disabled = false;
 
         if (this.audio && this.audioMotion) {
+            // CRITICAL FIX: Disconnect video audio to give playlist priority
+            this.disconnectVideoAudio();
+            
             this.audioMotion.connectInput(this.audio);
             this.updateTrackInfo();
             
@@ -20377,10 +20383,10 @@ https://rogueamoeba.com/loopback/
                 // Save state
                 localStorage.setItem(storageKey, (!wasExpanded).toString());
                 
-                console.log('📋 Preset section toggled:', {
-                    section: targetId,
-                    expanded: !wasExpanded
-                });
+                // console.log('📋 Preset section toggled:', {
+                //     section: targetId,
+                //     expanded: !wasExpanded
+                // });
             };
             
             // Store handler reference and add listener
@@ -25078,11 +25084,13 @@ https://rogueamoeba.com/loopback/
         }
 
 
-        // Kaleidoscope preset buttons
-        document.querySelectorAll('.btn-preset[data-preset]').forEach(btn => {
+        // Kaleidoscope preset buttons - use specific selectors to avoid conflicts with other preset types
+        document.querySelectorAll('#headerKaleidoscopePanel .btn-preset[data-preset], #mixerKaleidoscopePresets .btn-preset[data-preset]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const presetIndex = parseInt(e.target.dataset.preset);
+                if (!isNaN(presetIndex) && this.kaleidoscopePresets[presetIndex]) {
                 this.applyKaleidoscopePreset(this.kaleidoscopePresets[presetIndex]);
+                }
             });
         });
 

@@ -1541,7 +1541,7 @@ class NebulaVisualization {
         if (this.settings.knockoutBackground) {
             // Apply blend mode to make dark areas transparent
             this.canvas.style.mixBlendMode = 'screen';
-            console.log('🌌 Nebula background knockout enabled (screen blend mode)');
+            // console.log('🌌 Nebula background knockout enabled (screen blend mode)');
         } else {
             // Reset to normal blending
             this.canvas.style.mixBlendMode = 'normal';

@@ -93,6 +93,19 @@
 - **Suspected Cause**: DisplayInstance not properly cleaning up BroadcastChannel references when display window is closed, causing attempts to send messages to closed channels
 - **Status**: Reported, needs investigation
 
+### 16. **Advanced AM Visualization Window Resize Jumping**
+- **Issue**: Advanced AudioMotion visualizations jump around the screen when window is resized
+- **Occurs**: During window resize operations with Advanced AM viz active
+- **Suspected Cause**: Advanced AM viz positioning/scaling logic differs from regular AM viz implementation
+- **Fix Approach**: Compare with regular AM viz resize handling for proper implementation
+- **Status**: Reported, needs investigation
+
+### 17. **Missing Wait Animations for AM Visualizations**
+- **Issue**: Wait animations should play for all AM visualizations when no audio is present
+- **Occurs**: When record button is hit, when audio is muted on file video, when transporter audio is muted
+- **Expected Behavior**: All AM visualizations should show waiting/idle animations during audio silence
+- **Status**: Reported, needs implementation
+
 ---
 
 # COMPLETE TODO LIST - BUG FIXES & ENHANCEMENTS
@@ -134,6 +147,10 @@
 24. **Fix: Kaleidoscope preset application error - TypeError when accessing 'segments' property of undefined kaleidoscope configuration object**
 25. **Fix: Playlist Export Function Broken - Playlist export functionality is not working properly**
 26. **Fix: BroadcastChannel Closed Error in Multi-Display System - InvalidStateError when trying to send messages to closed display windows after opening/closing display windows**
+27. **Fix: Advanced AM Visualization Window Resize Jumping - Advanced AudioMotion visualizations jump around screen during window resize (compare with regular AM viz implementation)**
+28. **Add: Wait Animations for All AM Visualizations - Implement waiting/idle animations when no audio is present (record button, muted video audio, muted transporter)**
+29. **Enhance: Edit Official AM Library for Full Color Morphing - Modify AudioMotion library to allow full and smooth color morphing capabilities**
+30. **Research: Audio Loopback Requirements - Check if BlackHole/Loopback are really needed for audio capture and update documentation accordingly**
 
 ## 🔊 Audio Controls
 27. ✅ **COMPLETED: Speaker icon in transport needs to function as a mute button** - Implemented mute/unmute functionality with SVG icon state changes
