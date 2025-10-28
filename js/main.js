@@ -1859,17 +1859,12 @@ class RecordManager {
     
     loadSettings() {
         try {
-            // TEMPORARY: Clear bad settings for debugging
-            localStorage.removeItem('freque_record_settings');
-            console.log('🎬 Cleared localStorage settings for debugging');
-            
             const saved = localStorage.getItem('freque_record_settings');
-            console.log('🎬 Loading settings from localStorage:', saved);
             
             if (saved) {
                 const settings = JSON.parse(saved);
-                console.log('🎬 Parsed settings:', settings);
                 
+                // Core recording settings
                 this.qualityPreset = settings.qualityPreset || 'professional';
                 this.frameRate = settings.frameRate || 30;
                 this.customFilename = settings.customFilename || 'Freque_Recording';
@@ -1883,16 +1878,9 @@ class RecordManager {
                 this.customAudioBitrate = settings.customAudioBitrate || 320;
                 this.customCodec = settings.customCodec || 'auto';
                 
-                // Recording area settings - FORCE DEFAULTS FOR NOW
-                this.aspectRatio = 'window'; // Force default
-                this.showRecordingArea = false; // Force default
-                
-                console.log('🎬 Final recording area settings:', {
-                    aspectRatio: this.aspectRatio,
-                    showRecordingArea: this.showRecordingArea
-                });
-            } else {
-                console.log('🎬 No saved settings found, using defaults');
+                // Recording area settings
+                this.aspectRatio = settings.aspectRatio || 'window';
+                this.showRecordingArea = settings.showRecordingArea || false;
             }
         } catch (e) {
             console.error('Error loading recording settings:', e);
@@ -6890,12 +6878,13 @@ class RecordManager {
         const resolution = settings.resolution;
         
         if (resolution === 'canvas') {
-            // Use current canvas dimensions
+            // Use current canvas dimensions with validation
             const canvas = this.visualizer.audioMotion?.canvas;
-            if (canvas) {
+            if (canvas && canvas.width > 0 && canvas.height > 0) {
                 targetWidth = canvas.width;
                 targetHeight = canvas.height;
             } else {
+                // Canvas not ready or invalid dimensions - fallback to 1080p
                 targetWidth = 1920;
                 targetHeight = 1080;
             }
@@ -7036,7 +7025,6 @@ class RecordManager {
             const sourceCanvas = this.shouldCrop ? this.cropCanvas : this.compositeCanvas;
             const videoStream = sourceCanvas.captureStream(this.frameRate);
             
-            console.log(`🎬 Using ${this.shouldCrop ? 'crop' : 'composite'} canvas for recording: ${sourceCanvas.width}x${sourceCanvas.height}`);
             
             // Get audio stream
             const audioStream = await this.getAudioStream();
@@ -7122,7 +7110,6 @@ class RecordManager {
                          this.cropArea.height > 0;
         
         if (!this.shouldCrop) {
-            console.log('🎬 No cropping needed - using full composite canvas');
             return;
         }
         
@@ -7132,7 +7119,6 @@ class RecordManager {
         this.cropCanvas.height = this.cropArea.height;
         this.cropCtx = this.cropCanvas.getContext('2d');
         
-        console.log(`🎬 Created crop canvas: ${this.cropArea.width}x${this.cropArea.height} at (${this.cropArea.x}, ${this.cropArea.y})`);
     }
     
     startCompositing() {
@@ -7396,7 +7382,6 @@ class RecordManager {
         // Convert screen coordinates to canvas pixel coordinates
         const canvas = this.visualizer.audioMotion?.canvas;
         if (!canvas) {
-            console.warn('🎬 No canvas found for coordinate conversion');
             return;
         }
         
@@ -7410,13 +7395,6 @@ class RecordManager {
         const cropWidth = this.cropArea.width * scaleX;
         const cropHeight = this.cropArea.height * scaleY;
         
-        console.log('🎬 Crop conversion:', {
-            screen: { x: this.cropArea.x, y: this.cropArea.y, w: this.cropArea.width, h: this.cropArea.height },
-            canvas: { x: cropX, y: cropY, w: cropWidth, h: cropHeight },
-            scale: { x: scaleX, y: scaleY },
-            compositeSize: { w: this.compositeCanvas.width, h: this.compositeCanvas.height },
-            screenSize: { w: canvasRect.width, h: canvasRect.height }
-        });
         
         // Copy cropped region from composite canvas to crop canvas
         this.cropCtx.drawImage(
@@ -7979,16 +7957,10 @@ class RecordManager {
             return null;
         }
         
-        // Debug logging
-        console.log('🎬 Calculating recording area:', {
-            aspectRatio: this.aspectRatio,
-            showRecordingArea: this.showRecordingArea
-        });
         
         // Get the main visualization canvas
         const canvas = this.visualizer.audioMotion?.canvas;
         if (!canvas) {
-            console.warn('🎬 No canvas found for recording area');
             return null;
         }
         
@@ -8024,13 +7996,8 @@ class RecordManager {
     }
 
     updateRecordingAreaOverlay() {
-        console.log('🎬 updateRecordingAreaOverlay called:', {
-            showRecordingArea: this.showRecordingArea,
-            aspectRatio: this.aspectRatio
-        });
         
         if (!this.showRecordingArea || this.aspectRatio === 'window') {
-            console.log('🎬 Hiding overlay - showRecordingArea:', this.showRecordingArea, 'aspectRatio:', this.aspectRatio);
             this.hideRecordingAreaOverlay();
             return;
         }
@@ -8085,10 +8052,8 @@ class RecordManager {
     }
 
     hideRecordingAreaOverlay() {
-        console.log('🎬 hideRecordingAreaOverlay called, overlay exists:', !!this.recordingAreaOverlay);
         if (this.recordingAreaOverlay) {
             this.recordingAreaOverlay.style.display = 'none';
-            console.log('🎬 Overlay hidden');
         }
     }
 
@@ -8097,7 +8062,6 @@ class RecordManager {
         const existingOverlay = document.querySelector('.recording-area-overlay');
         if (existingOverlay) {
             existingOverlay.remove();
-            console.log('🎬 Removed existing overlay from DOM');
         }
         this.recordingAreaOverlay = null;
     }
@@ -8625,16 +8589,17 @@ class LiveDisplayManager {
         console.log(`DEBUG LiveDisplay ${this.displayId}: Getting dimensions for resolution: ${resolution}`);
         
         if (resolution === 'canvas') {
-            // Use current canvas dimensions
+            // Use current canvas dimensions with validation
             const canvas = this.visualizer.audioMotion?.canvas;
-            if (canvas) {
+            if (canvas && canvas.width > 0 && canvas.height > 0) {
                 targetWidth = canvas.width;
                 targetHeight = canvas.height;
                 console.log(`DEBUG LiveDisplay ${this.displayId}: Using canvas dimensions: ${targetWidth}x${targetHeight}`);
             } else {
+                // Canvas not ready or invalid dimensions - fallback to 1080p
                 targetWidth = 1920;
                 targetHeight = 1080;
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Canvas not found, using default: ${targetWidth}x${targetHeight}`);
+                console.log(`DEBUG LiveDisplay ${this.displayId}: Canvas not ready, using default: ${targetWidth}x${targetHeight}`);
             }
         } else {
             const preset = this.resolutionPresets[resolution];
@@ -12703,7 +12668,6 @@ class FrequeVisualizer {
                 this.recordManager.saveSettings();
                 this.toggleCustomRecordingGroup(e.target.value === 'custom');
                 this.updateCodecCompatibility();
-                console.log('🎬 Quality preset changed to:', e.target.value);
             });
         }
         
@@ -12789,67 +12753,50 @@ class FrequeVisualizer {
     }
 
     initializeRecordingAreaControls() {
-        console.log('🎬 Initializing recording area controls...');
         
         // Aspect ratio select
         const aspectRatioSelect = document.getElementById('footerRecordAspectRatioSelect');
         if (aspectRatioSelect) {
-            console.log('🎬 Found aspect ratio select, setting value to:', this.recordManager.aspectRatio);
             aspectRatioSelect.value = this.recordManager.aspectRatio;
             aspectRatioSelect.addEventListener('change', (e) => {
-                console.log('🎬 Aspect ratio changed to:', e.target.value);
                 this.recordManager.aspectRatio = e.target.value;
                 this.recordManager.saveSettings();
                 this.recordManager.updateRecordingAreaOverlay();
             });
-        } else {
-            console.error('🎬 Aspect ratio select not found!');
         }
         
         // Show recording area toggle
         const showAreaToggle = document.getElementById('showRecordingAreaToggle');
         if (showAreaToggle) {
-            console.log('🎬 Found show area toggle, setting checked to:', this.recordManager.showRecordingArea);
             showAreaToggle.checked = this.recordManager.showRecordingArea;
             showAreaToggle.addEventListener('change', (e) => {
-                console.log('🎬 Show recording area toggled to:', e.target.checked);
                 this.recordManager.showRecordingArea = e.target.checked;
                 this.recordManager.saveSettings();
                 this.recordManager.toggleRecordingAreaOverlay(e.target.checked);
             });
-        } else {
-            console.error('🎬 Show area toggle not found!');
         }
         
         // Center recording area button
         const centerAreaBtn = document.getElementById('centerRecordingAreaBtn');
         if (centerAreaBtn) {
-            console.log('🎬 Found center area button');
             centerAreaBtn.addEventListener('click', () => {
-                console.log('🎬 Center recording area clicked');
                 this.recordManager.centerRecordingArea();
             });
-        } else {
-            console.error('🎬 Center area button not found!');
         }
         
         // Filename input (from second method)
         const footerFilenameInput = document.getElementById('footerRecordFilenameInput');
         if (footerFilenameInput) {
-            console.log('🎬 Found filename input');
             footerFilenameInput.value = this.recordManager.customFilename;
             footerFilenameInput.addEventListener('input', (e) => {
                 this.recordManager.customFilename = e.target.value;
                 this.recordManager.saveSettings();
             });
-        } else {
-            console.error('🎬 Filename input not found!');
         }
         
         // Choose location button (from second method)
         const footerChooseLocationBtn = document.getElementById('footerRecordChooseLocationBtn');
         if (footerChooseLocationBtn) {
-            console.log('🎬 Found choose location button');
             footerChooseLocationBtn.addEventListener('click', async () => {
                 try {
                     const dirHandle = await window.showDirectoryPicker();
@@ -12866,8 +12813,6 @@ class FrequeVisualizer {
                     console.log('Directory selection cancelled or failed:', error);
                 }
             });
-        } else {
-            console.error('🎬 Choose location button not found!');
         }
     }
 
@@ -23751,7 +23696,6 @@ https://rogueamoeba.com/loopback/
         // Special z-index for footer record settings panel
         if (button.id === 'footerRecordSettingsBtn') {
             panel.style.zIndex = '25000';
-            console.log('🎬 Set footer record settings panel z-index to 25000');
         }
         
         // Special positioning for right-aligned panels
