@@ -8332,7 +8332,6 @@ class RecordManager {
         URL.revokeObjectURL(url);
         
         console.log(`Recording downloaded as ${filename}`);
-        alert(`Recording saved to Downloads folder as ${filename}`);
     }
 }
 
