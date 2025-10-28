@@ -751,8 +751,8 @@
         }
 
         .logo h1 {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 100;
             color: var(--accent-color);
         }
 

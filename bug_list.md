@@ -58,6 +58,41 @@
 - **Reproduction**: 1) Start live camera video 2) Switch to file video 3) Switch back to camera - camera goes black after fade
 - **Status**: Reported, needs investigation
 
+## 🎮 WebGL System Issues
+
+### 12. **WebGL Mixer Function Errors**
+- **Issue**: Multiple function call errors when interacting with WebGL visualization controls
+- **Errors**: 
+  - `this.updateMixerStarfallToggle is not a function`
+  - `this.updateMixerStarfallColorSchemeSelect is not a function`
+  - `this.updateMixerStarfallParticleCountSlider is not a function`
+  - `this.updateMixerStarfallParticleSizeSlider is not a function`
+  - `this.updateMixerStarfallSpeedSlider is not a function`
+  - `this.updateMixerStarfallGravitySlider is not a function`
+  - `this.updateMixerStarfallSaturationSlider is not a function`
+  - `this.updateMixerStarfallTwinkleSlider is not a function`
+  - `this.updateMixerStarfallStarPercentageSlider is not a function`
+  - `this.updateMixerStarfallAudioReactivitySlider is not a function`
+- **Occurs**: When enabling/disabling WebGL, changing color schemes, or adjusting any WebGL control sliders
+- **Suspected Cause**: Missing mixer synchronization functions for WebGL/Starfall controls
+- **Status**: Reported, needs investigation
+
+### 13. **Kaleidoscope Preset Application Error**
+- **Issue**: TypeError when applying kaleidoscope presets
+- **Error**: `Uncaught TypeError: Cannot read properties of undefined (reading 'segments')`
+- **Location**: `FrequeVisualizer.applyKaleidoscopePreset (main.js:21434:44)`
+- **Occurs**: When clicking kaleidoscope preset buttons or during visualization mode changes
+- **Suspected Cause**: Undefined kaleidoscope configuration object when trying to access segments property
+- **Status**: Reported, needs investigation
+
+### 15. **BroadcastChannel Closed Error in Multi-Display System**
+- **Issue**: InvalidStateError when trying to send messages to closed display windows
+- **Error**: `Uncaught InvalidStateError: Failed to execute 'postMessage' on 'BroadcastChannel': Channel is closed`
+- **Location**: `DisplayInstance.updateSettings (multi-display-manager.js:1160:34)`
+- **Occurs**: After opening and closing any display window (e.g., Display 1), then toggling video controls or other settings
+- **Suspected Cause**: DisplayInstance not properly cleaning up BroadcastChannel references when display window is closed, causing attempts to send messages to closed channels
+- **Status**: Reported, needs investigation
+
 ---
 
 # COMPLETE TODO LIST - BUG FIXES & ENHANCEMENTS
@@ -91,20 +126,32 @@
 
 ## 🏷️ Branding & Cleanup
 18. ✅ **COMPLETED: Rename app everywhere to FREQUE, remove all MVPro, Vizzy, GitItUp references** - Complete rebranding including header logo, meta tags, preset names, localStorage keys, BroadcastChannels
-19. **Remove: All console messages and debug code**
+19. **Remove: All console messages and debug code from the app**
 20. ✅ **COMPLETED: Remove the Pro suffix from the Advanced AM Viz button labels** - Updated preset names: Fluid, Prism, Twin Peaks, Circus
+21. **Add: New UI colors and color scheme options ⭐ NEW**
+22. **Fix: Footer Live Background button not found - B button disappeared when renaming application elements to FREQUE**
+23. **Fix: WebGL mixer function errors - Multiple missing mixer synchronization functions for WebGL/Starfall controls (updateMixerStarfallToggle, updateMixerStarfallColorSchemeSelect, and 8 other slider update functions)**
+24. **Fix: Kaleidoscope preset application error - TypeError when accessing 'segments' property of undefined kaleidoscope configuration object**
+25. **Fix: Playlist Export Function Broken - Playlist export functionality is not working properly**
+26. **Fix: BroadcastChannel Closed Error in Multi-Display System - InvalidStateError when trying to send messages to closed display windows after opening/closing display windows**
 
 ## 🔊 Audio Controls
-21. ✅ **COMPLETED: Speaker icon in transport needs to function as a mute button** - Implemented mute/unmute functionality with SVG icon state changes
+27. ✅ **COMPLETED: Speaker icon in transport needs to function as a mute button** - Implemented mute/unmute functionality with SVG icon state changes
+
+## 📂 Playlist System Issues
+
+### 14. **Playlist Export Function Broken**
+- **Issue**: Playlist export functionality is not working properly
+- **Status**: Reported, needs investigation
 
 ## 🔄 Preset System Issues
-22. ✅ **COMPLETED: Last Random not visible until app restarted** - Fixed preset dropdown updates after random preset creation
-23. ✅ **COMPLETED: After loading preset list from file, app must be restarted before it is visible** - Fixed preset import visibility with immediate dropdown updates
+28. ✅ **COMPLETED: Last Random not visible until app restarted** - Fixed preset dropdown updates after random preset creation
+29. ✅ **COMPLETED: After loading preset list from file, app must be restarted before it is visible** - Fixed preset import visibility with immediate dropdown updates
 
 ## 🎨 Visualization Button Issues
-24. ✅ **COMPLETED: Visualization button active state color** - Set IZ, Blobs, Starfall, Fluidity, Nebula buttons to use info-color (blue) when active
-25. ✅ **COMPLETED: Infinite Zoom, Fluidity blue highlight turns off when viz toggled OFF** - Fixed button state persistence
-26. ✅ **COMPLETED: Blobs label shows "On/Off" text** - Removed "On/Off" from Blobs button label
-27. ✅ **COMPLETED: Starfall label color needs to be white when active** - Fixed text color for active state
-28. ✅ **COMPLETED: Fluidity button blue color changes back when panel closed** - Fixed state persistence on panel close
-29. ✅ **COMPLETED: Nebula button blue color controlled by button click instead of ON/OFF toggle** - Fixed to be controlled by visualization state only
+30. ✅ **COMPLETED: Visualization button active state color** - Set IZ, Blobs, Starfall, Fluidity, Nebula buttons to use info-color (blue) when active
+31. ✅ **COMPLETED: Infinite Zoom, Fluidity blue highlight turns off when viz toggled OFF** - Fixed button state persistence
+32. ✅ **COMPLETED: Blobs label shows "On/Off" text** - Removed "On/Off" from Blobs button label
+33. ✅ **COMPLETED: Starfall label color needs to be white when active** - Fixed text color for active state
+34. ✅ **COMPLETED: Fluidity button blue color changes back when panel closed** - Fixed state persistence on panel close
+35. ✅ **COMPLETED: Nebula button blue color controlled by button click instead of ON/OFF toggle** - Fixed to be controlled by visualization state only

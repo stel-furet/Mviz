@@ -502,7 +502,7 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
-                    console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
@@ -542,7 +542,7 @@ class SpectrumAnalyzer {
                     // No audio data available (disabled viz)
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
-                    console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
+                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;

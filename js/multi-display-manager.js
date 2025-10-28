@@ -12,7 +12,7 @@ class MultiDisplayManager {
     }
     
     init() {
-        console.log('🎯 MultiDisplayManager: Initializing with LiveDisplayManager integration');
+        // console.log('🎯 MultiDisplayManager: Initializing with LiveDisplayManager integration');
         this.setupDisplayButtons();
         this.setupSettingsPanels();
         
@@ -22,7 +22,7 @@ class MultiDisplayManager {
 
     // Initialize mixer control synchronization
     initializeMixerControls() {
-        console.log('🔧 Initializing mixer controls...');
+        // console.log('🔧 Initializing mixer controls...');
         
         // Initialize all mixer control synchronization immediately
         // Background controls
@@ -304,12 +304,10 @@ class MultiDisplayManager {
     
     // Toggle display window (create/close)
     toggleDisplay(displayId) {
-        console.log(`DEBUG MultiDisplayManager: Toggling display ${displayId}`);
         const display = this.displays.get(displayId);
         const displayManager = this.displayManagers.get(displayId);
         
         if (display && display.window && !display.window.closed) {
-            console.log(`DEBUG MultiDisplayManager: Closing existing display ${displayId}`);
             // Close existing display
             if (displayManager) {
                 displayManager.stopStreaming();
@@ -319,7 +317,6 @@ class MultiDisplayManager {
             this.displayManagers.delete(displayId);
             this.updateDisplayButton(displayId, false);
         } else {
-            console.log(`DEBUG MultiDisplayManager: Creating new display ${displayId}`);
             // Create new display with LiveDisplayManager
             const newDisplay = this.createDisplay(displayId);
             
@@ -327,14 +324,10 @@ class MultiDisplayManager {
                 this.updateDisplayButton(displayId, true);
                 // Start streaming with LiveDisplayManager
                 setTimeout(() => {
-                    console.log(`DEBUG MultiDisplayManager: Starting streaming for display ${displayId}`);
                     const manager = this.displayManagers.get(displayId);
                     if (manager) {
-                        console.log(`DEBUG MultiDisplayManager: Found manager for display ${displayId}:`, manager);
-                        console.log(`DEBUG MultiDisplayManager: Manager channel:`, manager.channel);
                         newDisplay.startStream(); // Use newDisplay.startStream() instead of manager.startStreaming()
                     } else {
-                        console.error(`DEBUG MultiDisplayManager: No manager found for display ${displayId}`);
                     }
                 }, 1000);
             } else {
@@ -346,16 +339,13 @@ class MultiDisplayManager {
     
     // Create new display with LiveDisplayManager
     createDisplay(displayId) {
-        console.log(`DEBUG MultiDisplayManager: Creating new display for ID ${displayId}`);
         
         // Create LiveDisplayManager for this display
         const displayManager = new LiveDisplayManager(this.visualizer, displayId);
-        console.log(`DEBUG MultiDisplayManager: Created LiveDisplayManager for ID ${displayId}:`, displayManager);
         this.displayManagers.set(displayId, displayManager);
         
         // Create DisplayInstance for window management
         const display = new DisplayInstance(displayId, this.visualizer, displayManager);
-        console.log(`DEBUG MultiDisplayManager: Created DisplayInstance for ID ${displayId}:`, display);
         this.displays.set(displayId, display);
         
         return display;
@@ -391,12 +381,10 @@ class MultiDisplayManager {
     
     // Update display settings
     updateDisplaySettings(displayId, settings) {
-        console.log(`DEBUG MultiDisplayManager: Updating settings for Display ${displayId}:`, settings);
         const display = this.displays.get(displayId);
         if (display) {
             display.updateSettings(settings);
         } else {
-            console.error(`DEBUG MultiDisplayManager: No display found for ID ${displayId}`);
         }
     }
     
@@ -658,7 +646,7 @@ class MultiDisplayManager {
                 mixerBlobsOpacityValue.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer Blobs opacity slider not found for update');
+            // console.error('❌ Mixer Blobs opacity slider not found for update');
         }
     }
 
@@ -1034,7 +1022,6 @@ class MultiDisplayManager {
  */
 class DisplayInstance {
     constructor(displayId, visualizer, displayManager = null) {
-        console.log(`DEBUG DisplayInstance: Constructor called with displayId: ${displayId}`);
         this.displayId = displayId;
         this.visualizer = visualizer;
         this.displayManager = displayManager; // LiveDisplayManager instance
@@ -1044,18 +1031,18 @@ class DisplayInstance {
         
         // Create BroadcastChannel for this display
         this.channel = new BroadcastChannel(`freque-live-display-${displayId}`);
-        console.log(`DEBUG DisplayInstance ${displayId}: Created BroadcastChannel: freque-live-display-${displayId}`);
+        // console.log(`DEBUG DisplayInstance ${displayId}: Created BroadcastChannel: freque-live-display-${displayId}`);
         
         // Create a dedicated channel for settings
         this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${displayId}`);
-        console.log(`DEBUG DisplayInstance ${displayId}: Created settings channel: freque-live-display-settings-${displayId}`);
+        // console.log(`DEBUG DisplayInstance ${displayId}: Created settings channel: freque-live-display-settings-${displayId}`);
         
         // Share the channel with the LiveDisplayManager
         if (this.displayManager) {
-            console.log(`DEBUG DisplayInstance ${displayId}: Sharing channel with LiveDisplayManager`);
+            // console.log(`DEBUG DisplayInstance ${displayId}: Sharing channel with LiveDisplayManager`);
             this.displayManager.setChannel(this.channel);
         } else {
-            console.error(`DEBUG DisplayInstance ${displayId}: No LiveDisplayManager to share channel with`);
+            // console.error(`DEBUG DisplayInstance ${displayId}: No LiveDisplayManager to share channel with`);
         }
     }
     
@@ -1084,7 +1071,7 @@ class DisplayInstance {
             const parsedSettings = JSON.parse(saved);
             // Merge with defaults to ensure new properties are added
             const mergedSettings = { ...defaults, ...parsedSettings };
-            console.log(`DEBUG DisplayInstance ${this.displayId}: Merged settings:`, mergedSettings);
+            // console.log(`DEBUG DisplayInstance ${this.displayId}: Merged settings:`, mergedSettings);
             return mergedSettings;
         }
         
@@ -1118,7 +1105,7 @@ class DisplayInstance {
         const checkWindow = setInterval(() => {
             if (this.window && this.window.closed) {
                 clearInterval(checkWindow);
-                console.log(`Display ${this.displayId} window was closed manually`);
+                // console.log(`Display ${this.displayId} window was closed manually`);
                 this.close();
             }
         }, 1000);
@@ -1130,15 +1117,15 @@ class DisplayInstance {
     startStream() {
         if (!this.window) return;
         
-        console.log(`DEBUG DisplayInstance ${this.displayId}: Starting stream`);
+        // console.log(`DEBUG DisplayInstance ${this.displayId}: Starting stream`);
         
         // Delegate to LiveDisplayManager
         if (this.displayManager) {
-            console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings before streaming:`, this.settings);
+            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings before streaming:`, this.settings);
             
         // Send initial settings via dedicated settings channel
         if (this.settingsChannel) {
-            console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings via settings channel`);
+            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings via settings channel`);
             this.settingsChannel.postMessage({
                 type: 'display-settings',
                 data: this.settings
@@ -1154,25 +1141,25 @@ class DisplayInstance {
     
     // Update settings for this specific display
     updateSettings(settings) {
-        console.log(`DEBUG DisplayInstance ${this.displayId}: Updating settings:`, settings);
-        console.log(`DEBUG DisplayInstance ${this.displayId}: Current settings:`, this.settings);
+        // console.log(`DEBUG DisplayInstance ${this.displayId}: Updating settings:`, settings);
+        // console.log(`DEBUG DisplayInstance ${this.displayId}: Current settings:`, this.settings);
         
         this.settings = { ...this.settings, ...settings };
         this.saveDisplaySettings();
         
-        console.log(`DEBUG DisplayInstance ${this.displayId}: New settings:`, this.settings);
+        // console.log(`DEBUG DisplayInstance ${this.displayId}: New settings:`, this.settings);
         
         // Send settings via dedicated settings channel
         if (this.settingsChannel) {
-            console.log(`DEBUG DisplayInstance ${this.displayId}: Sending settings via settings channel`);
+            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending settings via settings channel`);
             const message = {
                 type: 'display-settings', 
                 data: this.settings
             };
-            console.log(`DEBUG DisplayInstance ${this.displayId}: Message to send:`, message);
+            // console.log(`DEBUG DisplayInstance ${this.displayId}: Message to send:`, message);
             this.settingsChannel.postMessage(message);
         } else {
-            console.error(`DEBUG DisplayInstance ${this.displayId}: Cannot send settings - no settings channel available`);
+            // console.error(`DEBUG DisplayInstance ${this.displayId}: Cannot send settings - no settings channel available`);
         }
     }
     
@@ -1199,6 +1186,6 @@ class DisplayInstance {
         this.window = null;
         this.isConnected = false;
         
-        console.log(`Display ${this.displayId}: Closed`);
+        // console.log(`Display ${this.displayId}: Closed`);
     }
 }

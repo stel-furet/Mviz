@@ -77,7 +77,7 @@ class BlobsVisualization {
         };
         this.lastCorruptionLog = 0;
         
-        console.log('🔵 Blobs Visualization initialized');
+        // console.log('🔵 Blobs Visualization initialized');
     }
     
     initialize() {
@@ -107,7 +107,7 @@ class BlobsVisualization {
             container.appendChild(this.canvas);
             this.resize();
             this.isInitialized = true;
-            console.log('🔥 Liquid Fire canvas created and added to container');
+            // console.log('🔥 Liquid Fire canvas created and added to container');
         } else {
             console.error('🔥 Liquid Fire: visualizationContainer not found!');
         }
@@ -115,7 +115,7 @@ class BlobsVisualization {
     
     resize() {
         if (!this.canvas) {
-            console.error('🔵 Blobs: Canvas not available for resize!');
+            // console.error('🔵 Blobs: Canvas not available for resize!');
             return;
         }
         
@@ -147,7 +147,7 @@ class BlobsVisualization {
         
         this.setCanvasDimensions(newWidth, newHeight, oldWidth, oldHeight);
         
-        console.log('🔵 Blobs canvas resized to:', newWidth, 'x', newHeight);
+        // console.log('🔵 Blobs canvas resized to:', newWidth, 'x', newHeight);
     }
     
     setCanvasDimensions(width, height, oldWidth = null, oldHeight = null) {
@@ -194,13 +194,13 @@ class BlobsVisualization {
                     particle.swirlRadius *= Math.min(scaleX, scaleY);
                 }
             });
-            console.log(`🔵 Blobs: Scaled ${this.particles.length} particles for new canvas size`);
+            // console.log(`🔵 Blobs: Scaled ${this.particles.length} particles for new canvas size`);
         }
         
         // Initialize heat distortion grid
         this.initHeatDistortion();
         
-        console.log('🔵 Blobs canvas dimensions set:', width, 'x', height, 'Context valid:', !!this.ctx);
+        // console.log('🔵 Blobs canvas dimensions set:', width, 'x', height, 'Context valid:', !!this.ctx);
     }
     
     interceptCanvasContext() {
@@ -238,7 +238,7 @@ class BlobsVisualization {
             return originalRect.apply(this.ctx, args);
         };
         
-        console.log('🔵 Blobs: Canvas context interceptor installed');
+        // console.log('🔵 Blobs: Canvas context interceptor installed');
     }
     
     initHeatDistortion() {
@@ -285,7 +285,7 @@ class BlobsVisualization {
         if (!this.animationRunning) {
             this.animationRunning = true;
             this.animate();
-            console.log('🔵 Blobs animation loop started');
+            // console.log('🔵 Blobs animation loop started');
         }
         
         // Debug: Check canvas visibility
@@ -323,7 +323,7 @@ class BlobsVisualization {
             this.canvas.style.zIndex = '10';
             this.canvas.style.pointerEvents = 'none';
             
-            console.log('🔵 Blobs: Canvas visibility forced');
+            // console.log('🔵 Blobs: Canvas visibility forced');
             return true;
             
         } catch (error) {
@@ -365,7 +365,7 @@ class BlobsVisualization {
             canvasClientHeight: this.canvas.clientHeight
         };
         
-        console.log('🔵 Blobs visualization started - FULL VISIBILITY DEBUG:', visibilityInfo);
+        // console.log('🔵 Blobs visualization started - FULL VISIBILITY DEBUG:', visibilityInfo);
         
         // Check for common visibility issues
         if (computedStyle.display === 'none') {
@@ -419,7 +419,7 @@ class BlobsVisualization {
         
         if (issues.length > 0) {
             console.warn('🔵 Blobs: Canvas visibility issues detected:', issues);
-            console.log('🔵 Blobs: Attempting to fix visibility...');
+                // console.log('🔵 Blobs: Attempting to fix visibility...');
             this.ensureCanvasVisible();
             return false;
         }
@@ -486,12 +486,12 @@ class BlobsVisualization {
         
         // Final validation
         const isValid = this.canvas.width > 0 && this.canvas.height > 0 && !!this.ctx;
-        console.log('🔵 Blobs canvas validation:', {
-            width: this.canvas.width,
-            height: this.canvas.height,
-            contextValid: !!this.ctx,
-            overallValid: isValid
-        });
+        // console.log('🔵 Blobs canvas validation:', {
+        //     width: this.canvas.width,
+        //     height: this.canvas.height,
+        //     contextValid: !!this.ctx,
+        //     overallValid: isValid
+        // });
         
         return isValid;
     }
@@ -524,7 +524,7 @@ class BlobsVisualization {
                 this.resize();
             }
             
-            console.log('🔵 Blobs: Canvas context recovery successful');
+            // console.log('🔵 Blobs: Canvas context recovery successful');
             return true;
             
         } catch (error) {
@@ -547,7 +547,7 @@ class BlobsVisualization {
         
         // Don't stop the animation loop - just mark as inactive
         // The animation loop will continue but skip rendering
-        console.log('🔵 Blobs visualization stopped (animation loop continues)');
+        // console.log('🔵 Blobs visualization stopped (animation loop continues)');
     }
     
     generateInitialParticles() {
@@ -556,20 +556,20 @@ class BlobsVisualization {
         for (let i = 0; i < initialCount; i++) {
             this.addParticle();
         }
-        console.log('🔵 Blobs: Generated', this.particles.length, 'initial particles');
+        // console.log('🔵 Blobs: Generated', this.particles.length, 'initial particles');
         
         // Debug: Log first particle details
         if (this.particles.length > 0) {
             const firstParticle = this.particles[0];
-            console.log('🔵 Blobs: First particle details:', {
-                x: firstParticle.x.toFixed(1),
-                y: firstParticle.y.toFixed(1),
-                life: firstParticle.life.toFixed(3),
-                decay: firstParticle.decay.toFixed(6),
-                size: firstParticle.size.toFixed(1),
-                canvasWidth: this.canvas.width,
-                canvasHeight: this.canvas.height
-            });
+            // console.log('🔵 Blobs: First particle details:', {
+            //     x: firstParticle.x.toFixed(1),
+            //     y: firstParticle.y.toFixed(1),
+            //     life: firstParticle.life.toFixed(3),
+            //     decay: firstParticle.decay.toFixed(6),
+            //     size: firstParticle.size.toFixed(1),
+            //     canvasWidth: this.canvas.width,
+            //     canvasHeight: this.canvas.height
+            // });
         }
     }
     
@@ -703,14 +703,14 @@ class BlobsVisualization {
             
             // Debug: Log why particle was removed
             if (Math.random() < 0.01) { // 1% chance to log
-                console.log('🔵 Blobs: Particle removed:', {
-                    life: particle.life.toFixed(3),
-                    x: particle.x.toFixed(1),
-                    y: particle.y.toFixed(1),
-                    canvasWidth: this.canvas.width,
-                    canvasHeight: this.canvas.height,
-                    reason: particle.life <= 0 ? 'life_expired' : 'off_screen'
-                });
+                // console.log('🔵 Blobs: Particle removed:', {
+                //     life: particle.life.toFixed(3),
+                //     x: particle.x.toFixed(1),
+                //     y: particle.y.toFixed(1),
+                //     canvasWidth: this.canvas.width,
+                //     canvasHeight: this.canvas.height,
+                //     reason: particle.life <= 0 ? 'life_expired' : 'off_screen'
+                // });
             }
             return false;
         }
@@ -926,38 +926,38 @@ class BlobsVisualization {
                 // Log corruption summary every 5 seconds instead of every occurrence
                 const now = Date.now();
                 if (now - this.lastCorruptionLog > 5000) { // 5 seconds
-                    console.warn('🔵 Blobs: Context corruption summary (last 5s):', {
-                        mainParticle: this.corruptionCounts.mainParticle,
-                        sparkle: this.corruptionCounts.sparkle,
-                        streak: this.corruptionCounts.streak,
-                        latestCorruption: {
-                            operation: 'MAIN_PARTICLE',
-                            particle: { x: particle.x.toFixed(2), y: particle.y.toFixed(2), size: size.toFixed(2), alpha: alpha.toFixed(3) },
-                            corruptedProperties: corruptedProperties
-                        }
-                    });
+                    // console.warn('🔵 Blobs: Context corruption summary (last 5s):', {
+                    //     mainParticle: this.corruptionCounts.mainParticle,
+                    //     sparkle: this.corruptionCounts.sparkle,
+                    //     streak: this.corruptionCounts.streak,
+                    //     latestCorruption: {
+                    //         operation: 'MAIN_PARTICLE',
+                    //         particle: { x: particle.x.toFixed(2), y: particle.y.toFixed(2), size: size.toFixed(2), alpha: alpha.toFixed(3) },
+                    //         corruptedProperties: corruptedProperties
+                    //     }
+                    // });
                     
                     // EXPANDED CORRUPTION DETAILS - Show exactly what's corrupted
                     if (corruptedProperties.length > 0) {
-                        console.warn('🔵 Blobs: DETAILED corruption analysis:', {
-                            operation: 'MAIN_PARTICLE',
-                            corruptedProperties: corruptedProperties.map(cp => ({
-                                property: cp.property,
-                                before: cp.before,
-                                after: cp.after,
-                                changed: cp.before !== cp.after
-                            }))
-                        });
+                        // console.warn('🔵 Blobs: DETAILED corruption analysis:', {
+                        //     operation: 'MAIN_PARTICLE',
+                        //     corruptedProperties: corruptedProperties.map(cp => ({
+                        //         property: cp.property,
+                        //         before: cp.before,
+                        //         after: cp.after,
+                        //         changed: cp.before !== cp.after
+                        //     }))
+                        // });
                         
                         // INDIVIDUAL PROPERTY ANALYSIS - Show each corrupted property separately
                         corruptedProperties.forEach((cp, index) => {
-                            console.warn(`🔵 Blobs: CORRUPTED PROPERTY ${index + 1}:`, {
-                                property: cp.property,
-                                before: cp.before,
-                                after: cp.after,
-                                type: typeof cp.before,
-                                changed: cp.before !== cp.after
-                            });
+                            // console.warn(`🔵 Blobs: CORRUPTED PROPERTY ${index + 1}:`, {
+                            //     property: cp.property,
+                            //     before: cp.before,
+                            //     after: cp.after,
+                            //     type: typeof cp.before,
+                            //     changed: cp.before !== cp.after
+                            // });
                         });
                     }
                     
@@ -991,15 +991,15 @@ class BlobsVisualization {
             
             // DEBUG: Add particle ID for tracking
             if (Math.random() < 0.01) { // Log 1% of particles for debugging
-                console.log('🔵 Blobs: Particle rendered:', {
-                    id: particle.id || 'unknown',
-                    x: particle.x.toFixed(2),
-                    y: particle.y.toFixed(2),
-                    size: size.toFixed(2),
-                    alpha: alpha.toFixed(3),
-                    life: particle.life.toFixed(3),
-                    heat: particle.heat.toFixed(3)
-                });
+                // console.log('🔵 Blobs: Particle rendered:', {
+                //     id: particle.id || 'unknown',
+                //     x: particle.x.toFixed(2),
+                //     y: particle.y.toFixed(2),
+                //     size: size.toFixed(2),
+                //     alpha: alpha.toFixed(3),
+                //     life: particle.life.toFixed(3),
+                //     heat: particle.heat.toFixed(3)
+                // });
             }
             
             // Add plasma streaks for cosmic effect with context isolation
@@ -1055,7 +1055,7 @@ class BlobsVisualization {
                     console.error('🔵 Blobs: Failed to recreate canvas context!');
                     return;
                 }
-                console.log('🔵 Blobs: Canvas context recreated successfully');
+                // console.log('🔵 Blobs: Canvas context recreated successfully');
             } else {
                 console.error('🔵 Blobs: Canvas not available for context recreation!');
                 return;
@@ -1099,14 +1099,14 @@ class BlobsVisualization {
         
         // Debug: Log particle count info occasionally
         if (Math.random() < 0.01) { // 1% chance to log
-            console.log('🔵 Blobs: Particle count info:', {
-                current: this.particles.length,
-                target: this.particleCount,
-                energy: energy.toFixed(2),
-                maxParticles: this.maxParticles,
-                timeSinceLastGeneration: currentTime - this.lastParticleTime,
-                generationRate: this.particleGenerationRate
-            });
+            // console.log('🔵 Blobs: Particle count info:', {
+            //     current: this.particles.length,
+            //     target: this.particleCount,
+            //     energy: energy.toFixed(2),
+            //     maxParticles: this.maxParticles,
+            //     timeSinceLastGeneration: currentTime - this.lastParticleTime,
+            //     generationRate: this.particleGenerationRate
+            // });
         }
         
         // Smooth particle generation - add/remove gradually instead of in batches
@@ -1132,17 +1132,17 @@ class BlobsVisualization {
             
             // Debug: Log particle addition
             if (Math.random() < 0.1) { // 10% chance to log
-                console.log('🔵 Blobs: Added new particle, total:', this.particles.length, 'target:', this.particleCount);
+                // console.log('🔵 Blobs: Added new particle, total:', this.particles.length, 'target:', this.particleCount);
             }
         } else {
             // Debug: Why isn't the time condition met?
             if (Math.random() < 0.01) { // 1% chance to log
-                console.log('🔵 Blobs: Time condition not met:', {
-                    timeSinceLastGeneration: timeSinceLastGeneration.toFixed(1),
-                    timeThreshold: timeThreshold.toFixed(1),
-                    energy: energy.toFixed(2),
-                    generationRate: this.particleGenerationRate
-                });
+                // console.log('🔵 Blobs: Time condition not met:', {
+                //     timeSinceLastGeneration: timeSinceLastGeneration.toFixed(1),
+                //     timeThreshold: timeThreshold.toFixed(1),
+                //     energy: energy.toFixed(2),
+                //     generationRate: this.particleGenerationRate
+                // });
             }
         }
         
@@ -1152,7 +1152,7 @@ class BlobsVisualization {
             for (let i = 0; i < emergencyParticles; i++) {
                 this.addParticle();
             }
-            console.log('🔵 Blobs: Emergency particle generation, added', emergencyParticles, 'particles, total:', this.particles.length);
+            // console.log('🔵 Blobs: Emergency particle generation, added', emergencyParticles, 'particles, total:', this.particles.length);
         }
         
         // FORCE CONTINUOUS GENERATION - Always ensure we have particles
@@ -1162,7 +1162,7 @@ class BlobsVisualization {
             for (let i = 0; i < initialParticles; i++) {
                 this.addParticle();
             }
-            console.log('🔵 Blobs: FORCED particle generation - no particles found, added', initialParticles, 'particles');
+            // console.log('🔵 Blobs: FORCED particle generation - no particles found, added', initialParticles, 'particles');
         }
         
         // SIMPLE FALLBACK GENERATION - Add particles every 200ms regardless of other conditions
@@ -1170,7 +1170,7 @@ class BlobsVisualization {
             // ALWAYS ADD PARTICLES - ignore target count
             this.addParticle();
             this.lastParticleTime = currentTime;
-            console.log('🔵 Blobs: Fallback generation - added particle, total:', this.particles.length);
+            // console.log('🔵 Blobs: Fallback generation - added particle, total:', this.particles.length);
         }
         
         // Clear canvas to transparent for proper compositing - with error handling
@@ -1219,12 +1219,12 @@ class BlobsVisualization {
             
             // Debug: Log particle removal info occasionally
             if (removedParticles > 0 && Math.random() < 0.1) { // 10% chance to log when particles are removed
-                console.log('🔵 Blobs: Particles removed this frame:', {
-                    removed: removedParticles,
-                    rendered: renderedParticles,
-                    totalBefore: this.particles.length + removedParticles,
-                    totalAfter: this.particles.length
-                });
+                // console.log('🔵 Blobs: Particles removed this frame:', {
+                //     removed: removedParticles,
+                //     rendered: renderedParticles,
+                //     totalBefore: this.particles.length + removedParticles,
+                //     totalAfter: this.particles.length
+                // });
             }
         } catch (error) {
             console.error('🔵 Blobs: Particle rendering error:', error);
@@ -1234,12 +1234,12 @@ class BlobsVisualization {
         
         // Debug: Log rendering info occasionally
         if (Math.random() < 0.01) { // 1% chance to log
-            console.log('🔥 Liquid Fire render:', {
-                particles: this.particles.length,
-                rendered: renderedParticles,
-                energy: energy.toFixed(2),
-                canvasSize: `${this.canvas.width}x${this.canvas.height}`
-            });
+            // console.log('🔥 Liquid Fire render:', {
+            //     particles: this.particles.length,
+            //     rendered: renderedParticles,
+            //     energy: energy.toFixed(2),
+            //     canvasSize: `${this.canvas.width}x${this.canvas.height}`
+            // });
         }
         
         // Render heat distortion
@@ -1293,7 +1293,7 @@ class BlobsVisualization {
         } else {
             // Debug: Log when animation loop continues but blobs are inactive
             if (Math.random() < 0.01) { // 1% chance to log
-                console.log('🔵 Blobs animation loop running but inactive - waiting for activation');
+                // console.log('🔵 Blobs animation loop running but inactive - waiting for activation');
             }
         }
         
@@ -1368,17 +1368,17 @@ class BlobsVisualization {
             particle.size = Math.max(this.minSize, Math.min(this.maxSize, particle.size));
         });
         
-        console.log('🔵 Blobs max size set to:', this.maxSize.toFixed(1), 'px (slider:', clampedValue, ') updated', this.particles.length, 'existing particles');
+        // console.log('🔵 Blobs max size set to:', this.maxSize.toFixed(1), 'px (slider:', clampedValue, ') updated', this.particles.length, 'existing particles');
     }
     
     setDecayMultiplier(multiplier) {
         this.decayMultiplier = Math.max(0.1, Math.min(10, multiplier));
-        console.log('🔵 Blobs decay multiplier set to:', this.decayMultiplier);
+        // console.log('🔵 Blobs decay multiplier set to:', this.decayMultiplier);
     }
     
     setAgitate(value) {
         this.agitate = Math.max(0.1, Math.min(5.0, value));
-        console.log('🔵 Blobs agitate set to:', this.agitate);
+        // console.log('🔵 Blobs agitate set to:', this.agitate);
     }
     
     setDensity(count) {
@@ -1398,7 +1398,7 @@ class BlobsVisualization {
             this.particles.splice(0, particlesToRemove);
         }
         
-        console.log('🔵 Blobs density set to:', this.density, 'particles, current count:', this.particles.length);
+        // console.log('🔵 Blobs density set to:', this.density, 'particles, current count:', this.particles.length);
     }
     
     // Legacy settings for compatibility

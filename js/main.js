@@ -11,7 +11,6 @@ class ParameterController {
         this.lastUserAdjustment = null;
         this.adjustmentThreshold = 0.1; // Minimum change to consider significant
         
-        console.log('🎛️ Parameter Controller initialized with user feedback learning');
     }
     
     applyParameterChanges(recommendations) {
@@ -30,7 +29,6 @@ class ParameterController {
             // Record parameter change
             this.recordParameterChange(recommendations);
             
-            console.log('🎛️ Parameters applied:', vizParams);
         } catch (error) {
             console.error('Error applying parameters:', error);
         }
@@ -101,11 +99,9 @@ class ParameterController {
         // Apply video effects to the video element
         const videoElement = this.visualizer.videoElement;
         if (!videoElement) {
-            console.log('🎬 Video element not found, skipping video effects');
             return;
         }
         
-        console.log('🎬 Applying video effects:', videoParams);
         let filterString = '';
         
         // Apply color effects
@@ -150,7 +146,6 @@ class ParameterController {
         }
         
         videoElement.style.filter = filterString.trim();
-        console.log('🎬 Applied filter string:', filterString.trim());
     }
     
     recordParameterChange(recommendations) {
@@ -195,7 +190,7 @@ class ParameterController {
         // Learn from this adjustment
         this.learnFromUserAdjustment(adjustment);
         
-        console.log(`👤 User adjusted ${parameterName}: ${oldValue.toFixed(3)} → ${newValue.toFixed(3)}`);
+        // console.log(`👤 User adjusted ${parameterName}: ${oldValue.toFixed(3)} → ${newValue.toFixed(3)}`);
     }
     
     // Learn from user adjustments
@@ -309,7 +304,7 @@ class ParameterController {
         // Learn from feedback
         this.learnFromFeedback(feedbackEntry);
         
-        console.log(`👤 User feedback: ${feedback}`, context);
+        // console.log(`👤 User feedback: ${feedback}`, context);
     }
     
     // Learn from user feedback
@@ -361,7 +356,6 @@ class GenreDetector {
         this.detectionHistory = [];
         this.genreConfidence = {};
         
-        console.log('🎵 Genre Detector initialized');
     }
     
     detectGenre(audioFeatures) {
@@ -514,7 +508,6 @@ class GenreDetector {
         let bestScore = 0;
         
         // Debug logging
-        console.log('🎵 Genre Scores:', genreScores);
         
         for (const [genre, score] of Object.entries(genreScores)) {
             if (score > bestScore) {
@@ -523,7 +516,6 @@ class GenreDetector {
             }
         }
         
-        console.log(`🎵 Selected Genre: ${bestGenre} (confidence: ${bestScore.toFixed(3)})`);
         
         return {
             genre: bestGenre,
@@ -568,19 +560,16 @@ class HarmonicAnalyzer {
         this.noteFrequencies = this.generateNoteFrequencies();
         this.chordPatterns = this.initializeChordPatterns();
         
-        console.log('🎼 Harmonic Analyzer initialized');
     }
     
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
         this.analyzeHarmonics();
-        console.log('🎼 Harmonic analysis started');
     }
     
     stop() {
         this.isRunning = false;
-        console.log('🎼 Harmonic analysis stopped');
     }
     
     analyzeHarmonics() {
@@ -840,19 +829,16 @@ class StructureDetector {
             'outro': { energy: 'decreasing', tempo: 'decreasing', duration: 'short' }
         };
         
-        console.log('🏗️ Structure Detector initialized');
     }
     
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
         this.detectStructure();
-        console.log('🏗️ Structure detection started');
     }
     
     stop() {
         this.isRunning = false;
-        console.log('🏗️ Structure detection stopped');
     }
     
     detectStructure() {
@@ -942,7 +928,6 @@ class StructureDetector {
             this.sectionStartTime = Date.now();
             this.sectionDuration = 0;
             
-            console.log(`🏗️ Section detected: ${bestSection} (confidence: ${confidence.toFixed(2)})`);
         }
         
         this.sectionDuration = Date.now() - this.sectionStartTime;
@@ -1019,7 +1004,6 @@ class AudioAnalyzer {
         this.harmonicAnalyzer = new HarmonicAnalyzer(this);
         this.structureDetector = new StructureDetector(this);
         
-        console.log('🎵 Enhanced Audio Analyzer initialized');
     }
     
     start() {
@@ -1027,18 +1011,12 @@ class AudioAnalyzer {
         this.isRunning = true;
         
         // Debug the audioMotion connection
-        console.log('🔍 AudioMotion debug:', {
-            audioMotion: !!this.audioMotion,
-            analyser: !!(this.audioMotion && this.audioMotion.analyser),
-            frequencyBinCount: this.audioMotion?.analyser?.frequencyBinCount
-        });
         
         // Start enhanced analysis components
         this.harmonicAnalyzer.start();
         this.structureDetector.start();
         
         this.analyze();
-        console.log('🎵 Enhanced audio analysis started');
     }
     
     stop() {
@@ -1052,7 +1030,6 @@ class AudioAnalyzer {
         this.harmonicAnalyzer.stop();
         this.structureDetector.stop();
         
-        console.log('🎵 Enhanced audio analysis stopped');
     }
     
     analyze() {
@@ -1072,17 +1049,14 @@ class AudioAnalyzer {
                     const key = this.harmonicAnalyzer.getCurrentKey();
                     const section = this.structureDetector.getCurrentSection();
                     
-                    console.log(`🎵 Enhanced Analysis: Energy=${this.currentEnergy.toFixed(3)}, Beat=${this.beatDetected}, Tempo=${this.currentTempo}, Freq=${this.dominantFreq}`);
-                    console.log(`🎼 Harmonic: Chord=${chord || 'none'}, Key=${key || 'none'}`);
-                    console.log(`🏗️ Structure: Section=${section}, Duration=${this.structureDetector.getSectionDuration()}ms`);
                 }
             } else {
                 // Debug: Check why audio data isn't available
                 if (this.analysisFrame && this.analysisFrame % 300 === 0) { // Every 5 seconds
-                    console.warn('⚠️ AudioMotion or analyser not available:', {
-                        audioMotion: !!this.audioMotion,
-                        analyser: !!(this.audioMotion && this.audioMotion.analyser)
-                    });
+                    // console.warn('⚠️ AudioMotion or analyser not available:', {
+                    //     audioMotion: !!this.audioMotion,
+                    //     analyser: !!(this.audioMotion && this.audioMotion.analyser)
+                    // });
                 }
             }
         } catch (error) {
@@ -1191,7 +1165,6 @@ class AudioAnalyzer {
                 
                 // Log beat detection for debugging (every 4 beats)
                 if (this.beatHistory.length % 4 === 0) {
-                    console.log(`🥁 Beat detected - Energy: ${energyIncrease.toFixed(2)}, Flux: ${this.spectralFlux.toFixed(3)}, BPM: ${this.currentTempo}`);
                 }
             }
         }
@@ -1312,14 +1285,12 @@ class DecisionEngine {
             { id: 6, name: 'Mirror', energy: 'medium', tempo: 'any' }
         ];
         
-        console.log('🧠 Decision Engine initialized');
     }
     
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
         this.makeDecisions();
-        console.log('🧠 Decision Engine started');
     }
     
     stop() {
@@ -1328,7 +1299,6 @@ class DecisionEngine {
             cancelAnimationFrame(this.decisionFrame);
             this.decisionFrame = null;
         }
-        console.log('🧠 Decision Engine stopped');
     }
     
     makeDecisions() {
@@ -1358,28 +1328,15 @@ class DecisionEngine {
         const energyTrend = this.audioAnalyzer.getEnergyTrend();
         const tempo = this.audioAnalyzer.getTempo();
         
-        // Debug logging
-        console.log('🎯 Visualization Change Evaluation:', {
-            energy: energy?.toFixed(3),
-            beat: beat,
-            dominantFreq: dominantFreq,
-            energyTrend: energyTrend?.toFixed(3),
-            tempo: tempo,
-            currentMode: this.visualizer.currentMode,
-            scope: this.autopilot.scope
-        });
         
         // For specific scopes (radial, energy), only switch if not already in the correct mode
         if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
             const expectedMode = this.autopilot.scope === 'radial' ? 4 : 5;
-            console.log(`🎯 Scope check: Current mode ${this.visualizer.currentMode}, Expected mode ${expectedMode} for scope ${this.autopilot.scope}`);
             if (this.visualizer.currentMode !== expectedMode) {
-                console.log(`🎯 Scope enforcement: Switching to ${this.autopilot.scope} mode (${expectedMode})`);
                 this.applyModeChange(expectedMode);
                 this.autopilot.recordModeChange(expectedMode);
                 this.lastDecision = Date.now();
             } else {
-                console.log(`🎯 Scope enforcement: Already in correct mode ${expectedMode} for scope ${this.autopilot.scope}`);
             }
             return; // Don't run normal decision logic for specific scopes
         }
@@ -1392,13 +1349,6 @@ class DecisionEngine {
                            this.shouldSwitchMode(targetMode, energy) &&
                            (beat || energy > 0.1 || Math.random() < 0.1); // More responsive switching
         
-        console.log('🎯 Switch Decision:', {
-            shouldSwitch: shouldSwitch,
-            beat: beat,
-            targetMode: targetMode,
-            currentMode: this.visualizer.currentMode,
-            shouldSwitchMode: this.shouldSwitchMode(targetMode, energy)
-        });
         
         if (shouldSwitch) {
             this.applyModeChange(targetMode);
@@ -1406,8 +1356,8 @@ class DecisionEngine {
             this.lastDecision = Date.now();
             
             // Log detailed switch reasoning
-            console.log(`🎨 Autopilot: ${this.getModeName(this.visualizer.currentMode)} → ${this.getModeName(targetMode)}`);
-            console.log(`   Energy: ${energy.toFixed(2)}, Freq: ${dominantFreq}, BPM: ${tempo}, Trend: ${energyTrend.toFixed(3)}`);
+            // console.log(`🎨 Autopilot: ${this.getModeName(this.visualizer.currentMode)} → ${this.getModeName(targetMode)}`);
+            // console.log(`   Energy: ${energy.toFixed(2)}, Freq: ${dominantFreq}, BPM: ${tempo}, Trend: ${energyTrend.toFixed(3)}`);
             
             // Evaluate additional automation
             this.evaluateColorSchemeChange(energy, dominantFreq);
@@ -1419,7 +1369,6 @@ class DecisionEngine {
         // Get available modes based on scope setting
         const availableModes = this.autopilot.modeGroups[this.autopilot.scope];
         
-        console.log(`🎯 Scope: ${this.autopilot.scope}, Available modes:`, availableModes);
         
         // Get enhanced audio features including harmonic and structure analysis
         const audioFeatures = this.audioAnalyzer.getCurrentFeatures();
@@ -1533,7 +1482,6 @@ class DecisionEngine {
     }
     
     applyModeChange(targetMode) {
-        console.log(`🎯 applyModeChange called: ${this.visualizer.currentMode} → ${targetMode}`);
         const timing = this.autopilot.changeTiming;
         
         switch (timing) {
@@ -1572,19 +1520,19 @@ class DecisionEngine {
         if (dominantFreq === 'bass' && energy > 0.15) {
             // Bass-heavy = darker schemes
             this.visualizer.setColorScheme('metal');
-            console.log('🎨 Color: Bass-heavy → Metal');
+            // console.log('🎨 Color: Bass-heavy → Metal');
         } else if (dominantFreq === 'treble' && energy > 0.15) {
             // Treble-heavy = brighter schemes  
             this.visualizer.setColorScheme('psychedelic');
-            console.log('🎨 Color: Treble-heavy → Psychedelic');
+            // console.log('🎨 Color: Treble-heavy → Psychedelic');
         } else if (energy > 0.2) {
             // Medium energy = vibrant schemes
             this.visualizer.setColorScheme('luigi');
-            console.log('🎨 Color: Medium energy → Luigi');
+            // console.log('🎨 Color: Medium energy → Luigi');
         } else {
             // Low energy = calm schemes
             this.visualizer.setColorScheme('earthtones');
-            console.log('🎨 Color: Low energy → Earthtones');
+            // console.log('🎨 Color: Low energy → Earthtones');
         }
     }
     
@@ -1592,10 +1540,10 @@ class DecisionEngine {
         // Auto-activate kaleidoscope for high energy sections
         if (energy > 0.8 && beat && !this.visualizer.kaleidoscopeEnabled) {
             this.visualizer.toggleKaleidoscope();
-            console.log('🔮 Autopilot activated kaleidoscope (high energy)');
+            // console.log('🔮 Autopilot activated kaleidoscope (high energy)');
         } else if (energy < 0.4 && this.visualizer.kaleidoscopeEnabled) {
             this.visualizer.toggleKaleidoscope();
-            console.log('🔮 Autopilot deactivated kaleidoscope (low energy)');
+            // console.log('🔮 Autopilot deactivated kaleidoscope (low energy)');
         }
     }
 }
@@ -1718,19 +1666,10 @@ class RecordManager {
         this.supportsWebM = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ||
                            MediaRecorder.isTypeSupported('video/webm');
         
-        console.log('🎬 Recording format support:', {
-            MP4: this.supportsMP4,
-            WebM: this.supportsWebM,
-            'video/mp4;codecs=h264,aac': MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac'),
-            'video/mp4': MediaRecorder.isTypeSupported('video/mp4'),
-            'video/webm;codecs=vp9,opus': MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus'),
-            'video/webm': MediaRecorder.isTypeSupported('video/webm')
-        });
         
         // If MP4 is not supported, fallback to WebM
         if (!this.supportsMP4 && this.recordFormat === 'mp4') {
             this.recordFormat = 'webm';
-            console.log('🎬 MP4 not supported, falling back to WebM');
         }
     }
     
@@ -1801,7 +1740,6 @@ class RecordManager {
         
         for (const codec of codecs) {
             if (MediaRecorder.isTypeSupported(codec)) {
-                console.log(`✅ Selected codec: ${codec}`);
                 return {
                     mimeType: codec,
                     profile: targetCodec,
@@ -1848,7 +1786,7 @@ class RecordManager {
             return { level: 'limited', text: '⚠️ Limited - Basic MP4 Support' };
         }
     }
-
+    
     updateFileExtensionDisplay() {
         // Always MP4 for professional compatibility
         const extensionElement = document.getElementById('footerRecordFileExtension');
@@ -1883,7 +1821,6 @@ class RecordManager {
                 this.showRecordingArea = settings.showRecordingArea || false;
             }
         } catch (e) {
-            console.error('Error loading recording settings:', e);
         }
     }
     
@@ -1909,7 +1846,6 @@ class RecordManager {
             };
             localStorage.setItem('freque_record_settings', JSON.stringify(settings));
         } catch (e) {
-            console.error('Error saving recording settings:', e);
         }
     }
     
@@ -1976,7 +1912,6 @@ class RecordManager {
             frameRateSelect.value = this.frameRate.toString();
             frameRateSelect.addEventListener('change', (e) => {
                 this.frameRate = parseInt(e.target.value);
-                console.log('Frame rate changed to:', this.frameRate);
                 this.updateUI();
                 this.saveSettings();
             });
@@ -2146,7 +2081,7 @@ class RecordManager {
             // Header button toggles background image ON/OFF
             backgroundImgBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('🔘 Header Background IMG button clicked - toggling background image');
+                // console.log('🔘 Header Background IMG button clicked - toggling background image');
                 
                 if (this.visualizer) {
                     // Toggle background image enabled state
@@ -2158,11 +2093,11 @@ class RecordManager {
                     this.updateMixerBackgroundToggleButton();
                     this.visualizer.updateFooterBackgroundButton();
                     
-                    console.log('🔘 Header background toggle changed to:', this.visualizer.backgroundImageEnabled);
+                    // console.log('🔘 Header background toggle changed to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
-                        console.log('🔄 Forcing visualization redraw after header background toggle');
+                        // console.log('🔄 Forcing visualization redraw after header background toggle');
                         this.visualizer.audioMotion.draw();
                     }
                 }
@@ -2182,29 +2117,29 @@ class RecordManager {
         const mixerBackgroundImageFile = document.getElementById('mixerBackgroundImageFile');
         
         if (mixerBackgroundSelect && mixerBackgroundImageFile) {
-            console.log('✅ Mixer background select button found, adding event listener');
+            // // console.log('✅ Mixer background select button found, adding event listener');
             mixerBackgroundSelect.addEventListener('click', () => {
-                console.log('🖱️ Mixer background select button clicked');
+                // console.log('🖱️ Mixer background select button clicked');
                 mixerBackgroundImageFile.click();
             });
         } else {
-            console.error('❌ Mixer background select elements not found:', {
-                button: !!mixerBackgroundSelect,
-                fileInput: !!mixerBackgroundImageFile
-            });
+            // // console.error('❌ Mixer background select elements not found:', {
+            //     button: !!mixerBackgroundSelect,
+            //     fileInput: !!mixerBackgroundImageFile
+            // });
         }
 
         // Mixer background toggle button
         const mixerBackgroundToggle = document.getElementById('mixerBackgroundToggle');
         if (mixerBackgroundToggle) {
-            console.log('✅ Mixer background toggle button found, adding event listener');
+            // // console.log('✅ Mixer background toggle button found, adding event listener');
             mixerBackgroundToggle.addEventListener('click', () => {
-                console.log('🖱️ Mixer background toggle button clicked');
+                // console.log('🖱️ Mixer background toggle button clicked');
                 if (this.visualizer) {
-                    console.log('🔘 Mixer background toggle - current state:', {
-                        enabled: this.visualizer.backgroundImageEnabled,
-                        hasImage: !!this.visualizer.backgroundImage
-                    });
+                    // console.log('🔘 Mixer background toggle - current state:', {
+                    //     enabled: this.visualizer.backgroundImageEnabled,
+                    //     hasImage: !!this.visualizer.backgroundImage
+                    // });
                     
                     // Toggle background image enabled state
                     this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
@@ -2215,23 +2150,23 @@ class RecordManager {
                     this.updateBackgroundToggleButton(); // Update header toggle too
                     this.visualizer.updateFooterBackgroundButton(); // Update footer button
                     
-                    console.log('🔘 Mixer background toggle changed to:', this.visualizer.backgroundImageEnabled);
+                    // console.log('🔘 Mixer background toggle changed to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
-                        console.log('🔄 Forcing visualization redraw after mixer background toggle');
+                        // console.log('🔄 Forcing visualization redraw after mixer background toggle');
                         this.visualizer.audioMotion.draw();
                     }
                 }
             });
         } else {
-            console.error('❌ Mixer background toggle button not found');
+            // // console.error('❌ Mixer background toggle button not found');
         }
 
         // Mixer background opacity slider (custom JS slider)
         const mixerBackgroundOpacity = document.getElementById('mixerBackgroundOpacity');
         if (mixerBackgroundOpacity) {
-            console.log('✅ Mixer background opacity slider found, initializing custom slider');
+            // // console.log('✅ Mixer background opacity slider found, initializing custom slider');
             this.mixerOpacitySlider = this.initializeVerticalSlider(mixerBackgroundOpacity, (value) => {
                 if (this.visualizer) {
                     this.visualizer.backgroundImageOpacity = value;
@@ -2254,13 +2189,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer background opacity slider not found');
+            // // console.error('❌ Mixer background opacity slider not found');
         }
 
         // Mixer background sizing buttons
         const mixerSizingButtons = document.querySelectorAll('#mixerBackgroundSizeFit, #mixerBackgroundSizeFill, #mixerBackgroundSizeStretch, #mixerBackgroundSizeOriginal');
         if (mixerSizingButtons.length > 0) {
-            console.log('✅ Mixer background sizing buttons found, adding event listeners');
+            // // console.log('✅ Mixer background sizing buttons found, adding event listeners');
             mixerSizingButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const size = button.getAttribute('data-size');
@@ -2282,13 +2217,13 @@ class RecordManager {
                 });
             });
         } else {
-            console.error('❌ Mixer background sizing buttons not found');
+            // // console.error('❌ Mixer background sizing buttons not found');
         }
 
         // Mixer background saturation slider
         const mixerBackgroundSaturation = document.getElementById('mixerBackgroundSaturation');
         if (mixerBackgroundSaturation) {
-            console.log('✅ Mixer background saturation slider found, adding event listener');
+            // // console.log('✅ Mixer background saturation slider found, adding event listener');
             mixerBackgroundSaturation.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundSaturation.value);
                 
@@ -2305,13 +2240,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer background saturation slider not found');
+            // // console.error('❌ Mixer background saturation slider not found');
         }
 
         // Mixer background posterization slider
         const mixerBackgroundPosterize = document.getElementById('mixerBackgroundPosterize');
         if (mixerBackgroundPosterize) {
-            console.log('✅ Mixer background posterize slider found, adding event listener');
+            // // console.log('✅ Mixer background posterize slider found, adding event listener');
             mixerBackgroundPosterize.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundPosterize.value);
                 
@@ -2328,13 +2263,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer background posterize slider not found');
+            // // console.error('❌ Mixer background posterize slider not found');
         }
 
         // Mixer background contrast slider
         const mixerBackgroundContrast = document.getElementById('mixerBackgroundContrast');
         if (mixerBackgroundContrast) {
-            console.log('✅ Mixer background contrast slider found, adding event listener');
+            // // console.log('✅ Mixer background contrast slider found, adding event listener');
             mixerBackgroundContrast.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundContrast.value);
                 
@@ -2351,31 +2286,31 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer background contrast slider not found');
+            // // console.error('❌ Mixer background contrast slider not found');
         }
 
         // Mixer video toggle button
         const mixerVideoToggle = document.getElementById('mixerVideoToggle');
         if (mixerVideoToggle) {
-            console.log('✅ Mixer video toggle button found, adding event listener');
+            // // console.log('✅ Mixer video toggle button found, adding event listener');
             mixerVideoToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer video toggle clicked - current state:', this.visualizer.videoMode);
+                    // console.log('🔘 Mixer video toggle clicked - current state:', this.visualizer.videoMode);
                     
                     // Toggle video state
                     this.visualizer.toggleVideoPlayback();
                     
-                    console.log('🔘 Mixer video toggle changed to:', this.visualizer.videoMode);
+                    // console.log('🔘 Mixer video toggle changed to:', this.visualizer.videoMode);
                 }
             });
         } else {
-            console.error('❌ Mixer video toggle button not found');
+            // // console.error('❌ Mixer video toggle button not found');
         }
 
         // Mixer video opacity slider (custom JS slider)
         const mixerVideoOpacity = document.getElementById('mixerVideoOpacity');
         if (mixerVideoOpacity) {
-            console.log('✅ Mixer video opacity slider found, initializing custom slider');
+            // // console.log('✅ Mixer video opacity slider found, initializing custom slider');
             this.mixerVideoOpacitySlider = this.initializeVerticalSlider(mixerVideoOpacity, (value) => {
                 if (this.visualizer) {
                     this.visualizer.setVideoOpacity(value / 100);
@@ -2389,27 +2324,27 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video opacity slider not found');
+            // // console.error('❌ Mixer video opacity slider not found');
         }
 
         // Mixer video source select dropdown (cameras + file)
         const mixerVideoCameraSelect = document.getElementById('mixerVideoCameraSelect');
         if (mixerVideoCameraSelect) {
-            console.log('✅ Mixer video source select found, adding event listener');
+            // // console.log('✅ Mixer video source select found, adding event listener');
             mixerVideoCameraSelect.addEventListener('change', (e) => {
                 const value = e.target.value;
-                console.log('📹 Mixer video source changed to:', value);
+                // console.log('📹 Mixer video source changed to:', value);
                 
                 if (value === 'file') {
                     // File selection - trigger file picker (allow replacement of current file)
-                    console.log('📁 Mixer video file selection triggered');
+                    // console.log('📁 Mixer video file selection triggered');
                 const videoFileInput = document.getElementById('videoFileInput');
                 if (videoFileInput) {
                         // Reset the input value to allow selecting the same file again
                         videoFileInput.value = '';
                     videoFileInput.click();
                 } else {
-                    console.error('❌ Video file input not found');
+                    // console.error('❌ Video file input not found');
                 }
                 } else if (value && this.visualizer) {
                     // Camera device ID - use existing camera selection logic
@@ -2420,17 +2355,17 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video source select not found');
+            // // console.error('❌ Mixer video source select not found');
         }
 
         // Mixer video preset buttons
         const mixerVideoPresetButtons = document.querySelectorAll('#mixerVideoPresetNormal, #mixerVideoPresetDreamy, #mixerVideoPresetNoir, #mixerVideoPresetCyberpunk, #mixerVideoPresetVintage, #mixerVideoPresetRetroTv, #mixerVideoPresetUnderwater, #mixerVideoPresetInfrared, #mixerVideoPresetAcid, #mixerVideoPresetThermal, #mixerVideoPresetMatrix, #mixerVideoPresetGlitch');
         if (mixerVideoPresetButtons.length > 0) {
-            console.log('✅ Mixer video preset buttons found:', mixerVideoPresetButtons.length);
+            // // console.log('✅ Mixer video preset buttons found:', mixerVideoPresetButtons.length);
             mixerVideoPresetButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const preset = button.getAttribute('data-preset');
-                    console.log('🎨 Mixer video preset clicked:', preset);
+                    // console.log('🎨 Mixer video preset clicked:', preset);
                     
                     if (this.visualizer && preset) {
                         // Use existing video preset logic
@@ -2440,23 +2375,23 @@ class RecordManager {
                         mixerVideoPresetButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
                         
-                        console.log('🎨 Video preset applied:', preset);
+                        // console.log('🎨 Video preset applied:', preset);
                     } else {
-                        console.error('❌ Visualizer or preset not found:', {
-                            visualizer: !!this.visualizer,
-                            preset: preset
-                        });
+                        // console.error('❌ Visualizer or preset not found:', {
+                        //     visualizer: !!this.visualizer,
+                        //     preset: preset
+                        // });
                     }
                 });
             });
         } else {
-            console.error('❌ Mixer video preset buttons not found');
+            // // console.error('❌ Mixer video preset buttons not found');
         }
 
         // Mixer video brightness slider
         const mixerVideoBrightness = document.getElementById('mixerVideoBrightness');
         if (mixerVideoBrightness) {
-            console.log('✅ Mixer video brightness slider found, adding event listener');
+            // // console.log('✅ Mixer video brightness slider found, adding event listener');
             mixerVideoBrightness.addEventListener('input', () => {
                 const value = parseInt(mixerVideoBrightness.value);
                 
@@ -2473,13 +2408,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video brightness slider not found');
+            // // console.error('❌ Mixer video brightness slider not found');
         }
 
         // Mixer video contrast slider
         const mixerVideoContrast = document.getElementById('mixerVideoContrast');
         if (mixerVideoContrast) {
-            console.log('✅ Mixer video contrast slider found, adding event listener');
+            // // console.log('✅ Mixer video contrast slider found, adding event listener');
             mixerVideoContrast.addEventListener('input', () => {
                 const value = parseInt(mixerVideoContrast.value);
                 
@@ -2496,13 +2431,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video contrast slider not found');
+            // // console.error('❌ Mixer video contrast slider not found');
         }
 
         // Mixer video saturation slider
         const mixerVideoSaturation = document.getElementById('mixerVideoSaturation');
         if (mixerVideoSaturation) {
-            console.log('✅ Mixer video saturation slider found, adding event listener');
+            // // console.log('✅ Mixer video saturation slider found, adding event listener');
             mixerVideoSaturation.addEventListener('input', () => {
                 const value = parseInt(mixerVideoSaturation.value);
                 
@@ -2519,13 +2454,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video saturation slider not found');
+            // // console.error('❌ Mixer video saturation slider not found');
         }
 
         // Mixer video hue rotation slider
         const mixerVideoHueRotate = document.getElementById('mixerVideoHueRotate');
         if (mixerVideoHueRotate) {
-            console.log('✅ Mixer video hue rotation slider found, adding event listener');
+            // // console.log('✅ Mixer video hue rotation slider found, adding event listener');
             mixerVideoHueRotate.addEventListener('input', () => {
                 const value = parseInt(mixerVideoHueRotate.value);
                 
@@ -2542,13 +2477,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video hue rotation slider not found');
+            // // console.error('❌ Mixer video hue rotation slider not found');
         }
 
         // Mixer video grayscale slider
         const mixerVideoGrayscale = document.getElementById('mixerVideoGrayscale');
         if (mixerVideoGrayscale) {
-            console.log('✅ Mixer video grayscale slider found, adding event listener');
+            // // console.log('✅ Mixer video grayscale slider found, adding event listener');
             mixerVideoGrayscale.addEventListener('input', () => {
                 const value = parseInt(mixerVideoGrayscale.value);
                 
@@ -2565,13 +2500,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video grayscale slider not found');
+            // // console.error('❌ Mixer video grayscale slider not found');
         }
 
         // Mixer video fade time slider
         const mixerVideoFadeTime = document.getElementById('mixerVideoFadeTime');
         if (mixerVideoFadeTime) {
-            console.log('✅ Mixer video fade time slider found, adding event listener');
+            // // console.log('✅ Mixer video fade time slider found, adding event listener');
             mixerVideoFadeTime.addEventListener('input', () => {
                 const value = parseFloat(mixerVideoFadeTime.value);
                 
@@ -2587,13 +2522,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video fade time slider not found');
+            // // console.error('❌ Mixer video fade time slider not found');
         }
 
         // Mixer video sepia slider
         const mixerVideoSepia = document.getElementById('mixerVideoSepia');
         if (mixerVideoSepia) {
-            console.log('✅ Mixer video sepia slider found, adding event listener');
+            // // console.log('✅ Mixer video sepia slider found, adding event listener');
             mixerVideoSepia.addEventListener('input', () => {
                 const value = parseInt(mixerVideoSepia.value);
                 
@@ -2610,13 +2545,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video sepia slider not found');
+            // // console.error('❌ Mixer video sepia slider not found');
         }
 
         // Mixer video blur slider
         const mixerVideoBlur = document.getElementById('mixerVideoBlur');
         if (mixerVideoBlur) {
-            console.log('✅ Mixer video blur slider found, adding event listener');
+            // // console.log('✅ Mixer video blur slider found, adding event listener');
             mixerVideoBlur.addEventListener('input', () => {
                 const value = parseInt(mixerVideoBlur.value);
                 
@@ -2633,13 +2568,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video blur slider not found');
+            // // console.error('❌ Mixer video blur slider not found');
         }
 
         // Mixer video vignette slider
         const mixerVideoVignette = document.getElementById('mixerVideoVignette');
         if (mixerVideoVignette) {
-            console.log('✅ Mixer video vignette slider found, adding event listener');
+            // // console.log('✅ Mixer video vignette slider found, adding event listener');
             mixerVideoVignette.addEventListener('input', () => {
                 const value = parseInt(mixerVideoVignette.value);
                 
@@ -2656,13 +2591,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video vignette slider not found');
+            // // console.error('❌ Mixer video vignette slider not found');
         }
 
         // Mixer video posterize slider
         const mixerVideoPosterize = document.getElementById('mixerVideoPosterize');
         if (mixerVideoPosterize) {
-            console.log('✅ Mixer video posterize slider found, adding event listener');
+            // // console.log('✅ Mixer video posterize slider found, adding event listener');
             mixerVideoPosterize.addEventListener('input', () => {
                 const value = parseInt(mixerVideoPosterize.value);
                 
@@ -2679,19 +2614,19 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video posterize slider not found');
+            // // console.error('❌ Mixer video posterize slider not found');
         }
 
         // Mixer video invert toggle button
         const mixerVideoInvert = document.getElementById('mixerVideoInvert');
         if (mixerVideoInvert) {
-            console.log('✅ Mixer video invert toggle found, adding event listener');
+            // // console.log('✅ Mixer video invert toggle found, adding event listener');
             mixerVideoInvert.addEventListener('click', () => {
                 if (this.visualizer) {
                     this.visualizer.videoInvert = !this.visualizer.videoInvert;
                     this.visualizer.applyVideoFilters();
                     
-                    console.log('🔘 Mixer video invert toggled to:', this.visualizer.videoInvert);
+                    // console.log('🔘 Mixer video invert toggled to:', this.visualizer.videoInvert);
                     
                     // Update button text and state
                     const effectText = mixerVideoInvert.querySelector('.effect-text');
@@ -2703,13 +2638,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video invert toggle not found');
+            // // console.error('❌ Mixer video invert toggle not found');
         }
 
         // Mixer video mirror toggle button (duplicate header implementation exactly)
         const mixerVideoMirror = document.getElementById('mixerVideoMirror');
         if (mixerVideoMirror) {
-            console.log('✅ Mixer video mirror toggle found, adding event listener');
+            // // console.log('✅ Mixer video mirror toggle found, adding event listener');
             mixerVideoMirror.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2717,7 +2652,7 @@ class RecordManager {
                     // Use cycleVideoMirror() method exactly like header
                     this.visualizer.cycleVideoMirror();
                     
-                    console.log('🔘 Mixer video mirror cycled to:', this.visualizer.videoMirror);
+                    // console.log('🔘 Mixer video mirror cycled to:', this.visualizer.videoMirror);
                     
                     // Update button text exactly like header implementation
                     const effectText = mixerVideoMirror.querySelector('.effect-text');
@@ -2731,13 +2666,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video mirror toggle not found');
+            // // console.error('❌ Mixer video mirror toggle not found');
         }
 
         // Mixer video pulse toggle button (duplicate header implementation exactly)
         const mixerVideoPulse = document.getElementById('mixerVideoPulse');
         if (mixerVideoPulse) {
-            console.log('✅ Mixer video pulse toggle found, adding event listener');
+            // // console.log('✅ Mixer video pulse toggle found, adding event listener');
             mixerVideoPulse.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2745,7 +2680,7 @@ class RecordManager {
                     // Use toggleVideoPulse() method exactly like header
                     this.visualizer.toggleVideoPulse();
                     
-                    console.log('🔘 Mixer video pulse toggled to:', this.visualizer.videoPulse);
+                    // console.log('🔘 Mixer video pulse toggled to:', this.visualizer.videoPulse);
                     
                     // Update button text exactly like header implementation
                     const effectText = mixerVideoPulse.querySelector('.effect-text');
@@ -2763,13 +2698,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video pulse toggle not found');
+            // // console.error('❌ Mixer video pulse toggle not found');
         }
 
         // Mixer video pulse rate slider (duplicate header implementation exactly)
         const mixerVideoPulseRate = document.getElementById('mixerVideoPulseRate');
         if (mixerVideoPulseRate) {
-            console.log('✅ Mixer video pulse rate slider found, adding event listener');
+            // // console.log('✅ Mixer video pulse rate slider found, adding event listener');
             mixerVideoPulseRate.addEventListener('input', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2778,7 +2713,7 @@ class RecordManager {
                     // Use setVideoPulseRate() method exactly like header
                     this.visualizer.setVideoPulseRate(value);
                     
-                    console.log('🔘 Mixer video pulse rate set to:', value);
+                    // console.log('🔘 Mixer video pulse rate set to:', value);
                     
                     // Update display value
                     const mixerVideoPulseRateValue = document.getElementById('mixerVideoPulseRateValue');
@@ -2789,13 +2724,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer video pulse rate slider not found');
+            // // console.error('❌ Mixer video pulse rate slider not found');
         }
 
         // Mixer video file loop button (syncs with header)
         const mixerVideoFileLoopBtn = document.getElementById('mixerVideoFileLoopBtn');
         if (mixerVideoFileLoopBtn) {
-            console.log('✅ Mixer video file loop button found, adding event listener');
+            // // console.log('✅ Mixer video file loop button found, adding event listener');
             mixerVideoFileLoopBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2814,17 +2749,17 @@ class RecordManager {
                     }
                     this.updateHeaderVideoFileButtons();
                     
-                    console.log('🔘 Mixer video file loop toggled to:', this.visualizer.videoFileLoop);
+                    // console.log('🔘 Mixer video file loop toggled to:', this.visualizer.videoFileLoop);
                 }
             });
         } else {
-            console.error('❌ Mixer video file loop button not found');
+            // // console.error('❌ Mixer video file loop button not found');
         }
 
         // Mixer video file mute button (syncs with header)
         const mixerVideoFileMuteBtn = document.getElementById('mixerVideoFileMuteBtn');
         if (mixerVideoFileMuteBtn) {
-            console.log('✅ Mixer video file mute button found, adding event listener');
+            // // console.log('✅ Mixer video file mute button found, adding event listener');
             mixerVideoFileMuteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2835,7 +2770,7 @@ class RecordManager {
                     // Update audio gain node
                     if (this.visualizer.videoAudioGain) {
                         this.visualizer.videoAudioGain.gain.value = this.visualizer.videoFileMuted ? 0 : this.visualizer.volume;
-                        console.log('Video audio gain set to:', this.visualizer.videoFileMuted ? 0 : this.visualizer.volume);
+                        // console.log('Video audio gain set to:', this.visualizer.videoFileMuted ? 0 : this.visualizer.volume);
                     }
                     
                     // Update both mixer and header buttons
@@ -2844,22 +2779,22 @@ class RecordManager {
                     }
                     this.updateHeaderVideoFileButtons();
                     
-                    console.log('🔘 Mixer video file mute toggled to:', this.visualizer.videoFileMuted);
+                    // console.log('🔘 Mixer video file mute toggled to:', this.visualizer.videoFileMuted);
                 }
             });
         } else {
-            console.error('❌ Mixer video file mute button not found');
+            // // console.error('❌ Mixer video file mute button not found');
         }
 
         // Mixer video file delete button
         const mixerVideoFileDeleteBtn = document.getElementById('mixerVideoFileDeleteBtn');
         if (mixerVideoFileDeleteBtn) {
-            console.log('✅ Mixer video file delete button found, adding event listener');
+            // // console.log('✅ Mixer video file delete button found, adding event listener');
             mixerVideoFileDeleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    console.log('🗑️ Clearing video file from mixer');
+                    // console.log('🗑️ Clearing video file from mixer');
                     
                     // Stop and clear the video file
                     this.visualizer.stopVideoInput();
@@ -2895,27 +2830,27 @@ class RecordManager {
                         }
                     }
                     
-                    console.log('✅ Video file cleared successfully');
+                    // console.log('✅ Video file cleared successfully');
                 }
             });
         } else {
-            console.error('❌ Mixer video file delete button not found');
+            // // console.error('❌ Mixer video file delete button not found');
         }
 
         // Mixer video clear input button
         const mixerVideoClearInputBtn = document.getElementById('mixerVideoClearInputBtn');
         if (mixerVideoClearInputBtn) {
-            console.log('✅ Mixer video clear input button found, adding event listener');
+            // // console.log('✅ Mixer video clear input button found, adding event listener');
             mixerVideoClearInputBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    console.log('🗑️ Clearing video input from mixer');
+                    // console.log('🗑️ Clearing video input from mixer');
                     this.visualizer.clearVideoInput();
                 }
             });
         } else {
-            console.error('❌ Mixer video clear input button not found');
+            // // console.error('❌ Mixer video clear input button not found');
         }
 
         // ========== AUDIO INPUT CHANNEL ==========
@@ -2923,10 +2858,10 @@ class RecordManager {
         // Mixer audio toggle button
         const mixerAudioToggle = document.getElementById('mixerAudioToggle');
         if (mixerAudioToggle) {
-            console.log('✅ Mixer audio toggle button found, adding event listener');
+            // console.log('✅ Mixer audio toggle button found, adding event listener');
             mixerAudioToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer audio toggle clicked - current state:', this.visualizer.liveAudioEnabled);
+                    // console.log('🔘 Mixer audio toggle clicked - current state:', this.visualizer.liveAudioEnabled);
                     
                     // Toggle live audio state
                     this.visualizer.toggleLiveAudio();
@@ -2934,46 +2869,46 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAudioToggle();
                     
-                    console.log('🔘 Mixer audio toggle changed to:', this.visualizer.liveAudioEnabled);
+                    // console.log('🔘 Mixer audio toggle changed to:', this.visualizer.liveAudioEnabled);
                 }
             });
         } else {
-            console.error('❌ Mixer audio toggle button not found');
+            // console.error('❌ Mixer audio toggle button not found');
         }
 
         // Mixer audio device select dropdown
         const mixerAudioDeviceSelect = document.getElementById('mixerAudioDeviceSelect');
         if (mixerAudioDeviceSelect) {
-            console.log('✅ Mixer audio device select found, adding event listener');
+            // console.log('✅ Mixer audio device select found, adding event listener');
             mixerAudioDeviceSelect.addEventListener('change', (e) => {
                 const deviceId = e.target.value;
-                console.log('🎤 Mixer audio device changed to:', deviceId);
+                // console.log('🎤 Mixer audio device changed to:', deviceId);
                 
                 if (deviceId && this.visualizer) {
                     // Select the audio device
                     this.visualizer.selectAudioDevice(deviceId);
                     
-                    console.log('🎤 Mixer audio device selected:', deviceId);
+                    // console.log('🎤 Mixer audio device selected:', deviceId);
                 }
             });
         } else {
-            console.error('❌ Mixer audio device select not found');
+            // console.error('❌ Mixer audio device select not found');
         }
 
         // Mixer audio clear input button
         const mixerAudioClearInputBtn = document.getElementById('mixerAudioClearInputBtn');
         if (mixerAudioClearInputBtn) {
-            console.log('✅ Mixer audio clear input button found, adding event listener');
+            // console.log('✅ Mixer audio clear input button found, adding event listener');
             mixerAudioClearInputBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    console.log('🗑️ Clearing audio input from mixer');
+                    // console.log('🗑️ Clearing audio input from mixer');
                     this.visualizer.clearAudioInput();
                 }
             });
         } else {
-            console.error('❌ Mixer audio clear input button not found');
+            // console.error('❌ Mixer audio clear input button not found');
         }
 
         // ========== AM VISUALIZER CHANNEL ==========
@@ -2981,10 +2916,10 @@ class RecordManager {
         // Mixer AM toggle button
         const mixerAMToggle = document.getElementById('mixerAMToggle');
         if (mixerAMToggle) {
-            console.log('✅ Mixer AM toggle button found, adding event listener');
+            // console.log('✅ Mixer AM toggle button found, adding event listener');
             mixerAMToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer AM toggle clicked - current state:', this.visualizer.visualizationEnabled);
+                    // console.log('🔘 Mixer AM toggle clicked - current state:', this.visualizer.visualizationEnabled);
                     
                     // Toggle AM visualization state
                     this.visualizer.toggleVisualization();
@@ -2992,17 +2927,17 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAMToggle();
                     
-                    console.log('🔘 Mixer AM toggle changed to:', this.visualizer.visualizationEnabled);
+                    // console.log('🔘 Mixer AM toggle changed to:', this.visualizer.visualizationEnabled);
                 }
             });
         } else {
-            console.error('❌ Mixer AM toggle button not found');
+            // console.error('❌ Mixer AM toggle button not found');
         }
 
         // Mixer AM opacity slider (restored)
         const mixerAMOpacitySlider = document.getElementById('mixerAMOpacitySlider');
         if (mixerAMOpacitySlider) {
-            console.log('✅ Mixer AM opacity slider found, initializing custom slider');
+            // console.log('✅ Mixer AM opacity slider found, initializing custom slider');
             this.mixerAMOpacitySlider = this.initializeVerticalSlider(mixerAMOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -3018,18 +2953,18 @@ class RecordManager {
                     // Sync with header slider
                     this.updateHeaderAMVisualizationOpacitySlider();
                     
-                    console.log('🎨 Mixer AM opacity changed to:', value, '% (', opacityValue, ')');
+                    // console.log('🎨 Mixer AM opacity changed to:', value, '% (', opacityValue, ')');
                 }
             });
         } else {
-            console.error('❌ Mixer AM opacity slider not found');
+            // console.error('❌ Mixer AM opacity slider not found');
         }
 
         // Header AM Visualization Opacity slider
         const headerAMVisualizationOpacity = document.getElementById('headerAMVisualizationOpacity');
         const headerAMVisualizationOpacityValue = headerAMVisualizationOpacity ? headerAMVisualizationOpacity.nextElementSibling : null;
         if (headerAMVisualizationOpacity && headerAMVisualizationOpacityValue) {
-            console.log('✅ Header AM visualization opacity slider found, adding event listener');
+            // console.log('✅ Header AM visualization opacity slider found, adding event listener');
             headerAMVisualizationOpacity.addEventListener('input', (e) => {
                 if (this.visualizer) {
                     const value = parseInt(e.target.value);
@@ -3040,18 +2975,18 @@ class RecordManager {
                     // Sync with mixer slider
                     this.updateMixerAMOpacitySlider();
                     
-                    console.log('🎨 Header AM visualization opacity changed to:', value, '% (', opacityValue, ')');
+                    // console.log('🎨 Header AM visualization opacity changed to:', value, '% (', opacityValue, ')');
                 }
             });
         } else {
-            console.error('❌ Header AM visualization opacity slider not found');
+            // console.error('❌ Header AM visualization opacity slider not found');
         }
 
         // Header AM Background Opacity slider
         const headerAMBackgroundOpacity = document.getElementById('headerAMBackgroundOpacity');
         const headerAMBackgroundOpacityValue = headerAMBackgroundOpacity ? headerAMBackgroundOpacity.nextElementSibling : null;
         if (headerAMBackgroundOpacity && headerAMBackgroundOpacityValue) {
-            console.log('✅ Header AM background opacity slider found, adding event listener');
+            // console.log('✅ Header AM background opacity slider found, adding event listener');
             headerAMBackgroundOpacity.addEventListener('input', (e) => {
                 if (this.visualizer) {
                     const value = parseInt(e.target.value);
@@ -3070,14 +3005,14 @@ class RecordManager {
                             this.visualizer.officialAudioMotion.bgAlpha = opacityValue;
                             this.visualizer.officialAudioMotion.showBgColor = value > 0;
                         }
-                        console.log('🎨 Background opacity updated directly - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
+                        // console.log('🎨 Background opacity updated directly - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
                     }
                     
                     headerAMBackgroundOpacityValue.textContent = value + '%';
                 }
             });
         } else {
-            console.error('❌ Header AM background opacity slider not found');
+            // console.error('❌ Header AM background opacity slider not found');
         }
 
         // Header AM Preset buttons
@@ -3103,12 +3038,12 @@ class RecordManager {
                         const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro');
                         headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
                         
-                        console.log('🎨 Applied AM preset:', presetIndex, this.visualizer.visualizationModes[presetIndex]);
+                        // console.log('🎨 Applied AM preset:', presetIndex, this.visualizer.visualizationModes[presetIndex]);
                     }
                 });
             });
         } else {
-            console.error('❌ Header AM preset buttons not found');
+            // console.error('❌ Header AM preset buttons not found');
         }
 
         // Header AM Pro Preset buttons (Official AudioMotion)
@@ -3158,10 +3093,10 @@ class RecordManager {
         // Mixer AM Random button
         const mixerAMRandomBtn = document.getElementById('mixerAMRandomBtn');
         if (mixerAMRandomBtn) {
-            console.log('✅ Mixer AM random button found, adding event listener');
+            // console.log('✅ Mixer AM random button found, adding event listener');
             mixerAMRandomBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎲 Mixer AM random button clicked');
+                    // console.log('🎲 Mixer AM random button clicked');
                     
                     // Set random visualization mode
                     this.visualizer.setRandomVisualization();
@@ -3169,20 +3104,20 @@ class RecordManager {
                     // Update mixer dropdown
                     this.updateMixerAMVizModeSelect();
                     
-                    console.log('🎲 Mixer AM random mode set to:', this.visualizer.currentMode);
+                    // console.log('🎲 Mixer AM random mode set to:', this.visualizer.currentMode);
                 }
             });
         } else {
-            console.error('❌ Mixer AM random button not found');
+            // console.error('❌ Mixer AM random button not found');
         }
 
         // Mixer AM Morph button
         const mixerAMMorphBtn = document.getElementById('mixerAMMorphBtn');
         if (mixerAMMorphBtn) {
-            console.log('✅ Mixer AM morph button found, adding event listener');
+            // console.log('✅ Mixer AM morph button found, adding event listener');
             mixerAMMorphBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔄 Mixer AM morph button clicked - current state:', this.visualizer.isMorphing);
+                    // console.log('🔄 Mixer AM morph button clicked - current state:', this.visualizer.isMorphing);
                     
                     // Toggle morph state
                     this.visualizer.toggleMorph();
@@ -3190,21 +3125,21 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAMMorphButton();
                     
-                    console.log('🔄 Mixer AM morph toggled to:', this.visualizer.isMorphing);
+                    // console.log('🔄 Mixer AM morph toggled to:', this.visualizer.isMorphing);
                 }
             });
         } else {
-            console.error('❌ Mixer AM morph button not found');
+            // console.error('❌ Mixer AM morph button not found');
         }
 
         // Mixer AM Morph Speed dropdown
         const mixerAMMorphSpeedSelect = document.getElementById('mixerAMMorphSpeedSelect');
         if (mixerAMMorphSpeedSelect) {
-            console.log('✅ Mixer AM morph speed select found, adding event listener');
+            // console.log('✅ Mixer AM morph speed select found, adding event listener');
             mixerAMMorphSpeedSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const speed = e.target.value;
-                    console.log('⚡ Mixer AM morph speed selected:', speed);
+                    // console.log('⚡ Mixer AM morph speed selected:', speed);
                     
                     // Set morph speed
                     this.visualizer.setMorphSpeed(speed);
@@ -3212,11 +3147,11 @@ class RecordManager {
                     // Update energy container visibility
                     this.updateMixerAMEnergyContainer();
                     
-                    console.log('⚡ Mixer AM morph speed changed to:', speed);
+                    // console.log('⚡ Mixer AM morph speed changed to:', speed);
                 }
             });
         } else {
-            console.error('❌ Mixer AM morph speed select not found');
+            // console.error('❌ Mixer AM morph speed select not found');
         }
 
         // ========== AM PRESET CONTROLS ==========
@@ -3224,11 +3159,11 @@ class RecordManager {
         // Mixer AM Preset Selector
         const mixerAMPresetSelector = document.getElementById('mixerAMPresetSelector');
         if (mixerAMPresetSelector) {
-            console.log('✅ Mixer AM preset selector found, adding event listener');
+            // console.log('✅ Mixer AM preset selector found, adding event listener');
             mixerAMPresetSelector.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.value !== '') {
                     const presetIndex = parseInt(e.target.value);
-                    console.log('📁 Mixer AM preset selected:', presetIndex);
+                    // console.log('📁 Mixer AM preset selected:', presetIndex);
                     
                     // Load preset
                     this.visualizer.loadPreset(presetIndex);
@@ -3236,20 +3171,20 @@ class RecordManager {
                     // Reset dropdown
                     e.target.value = '';
                     
-                    console.log('📁 Mixer AM preset loaded:', presetIndex);
+                    // console.log('📁 Mixer AM preset loaded:', presetIndex);
                 }
             });
         } else {
-            console.error('❌ Mixer AM preset selector not found');
+            // console.error('❌ Mixer AM preset selector not found');
         }
 
         // Mixer AM Save Preset Button
         const mixerAMSavePresetBtn = document.getElementById('mixerAMSavePresetBtn');
         if (mixerAMSavePresetBtn) {
-            console.log('✅ Mixer AM save preset button found, adding event listener');
+            // console.log('✅ Mixer AM save preset button found, adding event listener');
             mixerAMSavePresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('💾 Mixer AM save preset clicked');
+                    // console.log('💾 Mixer AM save preset clicked');
                     
                     // Save current preset
                     const presetName = prompt('Enter preset name:');
@@ -3260,44 +3195,44 @@ class RecordManager {
                     // Update both dropdowns
                     this.updateMixerAMPresetSelector();
                     
-                    console.log('💾 Mixer AM preset saved');
+                    // console.log('💾 Mixer AM preset saved');
                 }
             });
         } else {
-            console.error('❌ Mixer AM save preset button not found');
+            // console.error('❌ Mixer AM save preset button not found');
         }
 
         // Mixer AM Export Presets Button
         const mixerAMExportPresetsBtn = document.getElementById('mixerAMExportPresetsBtn');
         if (mixerAMExportPresetsBtn) {
-            console.log('✅ Mixer AM export presets button found, adding event listener');
+            // console.log('✅ Mixer AM export presets button found, adding event listener');
             mixerAMExportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('📤 Mixer AM export presets clicked');
+                    // console.log('📤 Mixer AM export presets clicked');
                     
                     // Export presets
                     this.visualizer.exportPresets();
                     
-                    console.log('📤 Mixer AM presets exported');
+                    // console.log('📤 Mixer AM presets exported');
                 }
             });
         } else {
-            console.error('❌ Mixer AM export presets button not found');
+            // console.error('❌ Mixer AM export presets button not found');
         }
 
         // Mixer AM Import Presets Button
         const mixerAMImportPresetsBtn = document.getElementById('mixerAMImportPresetsBtn');
         const mixerAMImportPresetsFile = document.getElementById('mixerAMImportPresetsFile');
         if (mixerAMImportPresetsBtn && mixerAMImportPresetsFile) {
-            console.log('✅ Mixer AM import presets button found, adding event listener');
+            // console.log('✅ Mixer AM import presets button found, adding event listener');
             mixerAMImportPresetsBtn.addEventListener('click', () => {
-                console.log('📥 Mixer AM import presets clicked');
+                // console.log('📥 Mixer AM import presets clicked');
                 mixerAMImportPresetsFile.click();
             });
             
             mixerAMImportPresetsFile.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.files.length > 0) {
-                    console.log('📥 Mixer AM import file selected');
+                    // console.log('📥 Mixer AM import file selected');
                     
                     // Import presets
                     this.visualizer.importPresets(e.target.files[0]);
@@ -3305,30 +3240,30 @@ class RecordManager {
                     // Update both dropdowns
                     this.updateMixerAMPresetSelector();
                     
-                    console.log('📥 Mixer AM presets imported');
+                    // console.log('📥 Mixer AM presets imported');
                 }
             });
         } else {
-            console.error('❌ Mixer AM import presets controls not found');
+            // console.error('❌ Mixer AM import presets controls not found');
         }
 
         // Mixer AM Color Scheme Select
         const mixerAMColorSchemeSelect = document.getElementById('mixerAMColorSchemeSelect');
         if (mixerAMColorSchemeSelect) {
-            console.log('✅ Mixer AM color scheme select found, adding event listener');
+            // console.log('✅ Mixer AM color scheme select found, adding event listener');
             mixerAMColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const scheme = e.target.value;
-                    console.log('🎨 Mixer AM color scheme selected:', scheme);
+                    // console.log('🎨 Mixer AM color scheme selected:', scheme);
                     
                     // Set color scheme
                     this.visualizer.setColorScheme(scheme);
                     
-                    console.log('🎨 Mixer AM color scheme changed to:', scheme);
+                    // console.log('🎨 Mixer AM color scheme changed to:', scheme);
                 }
             });
         } else {
-            console.error('❌ Mixer AM color scheme select not found');
+            // console.error('❌ Mixer AM color scheme select not found');
         }
 
         // ========== INFINITE ZOOM CHANNEL ==========
@@ -3336,10 +3271,10 @@ class RecordManager {
         // Mixer Infinite Zoom toggle button
         const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
         if (mixerInfiniteZoomToggle) {
-            console.log('✅ Mixer Infinite Zoom toggle button found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom toggle button found, adding event listener');
             mixerInfiniteZoomToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer Infinite Zoom toggle clicked - current state:', this.visualizer.infiniteZoom ? this.visualizer.infiniteZoom.isActive : false);
+                    // console.log('🔘 Mixer Infinite Zoom toggle clicked - current state:', this.visualizer.infiniteZoom ? this.visualizer.infiniteZoom.isActive : false);
                     
                     // Toggle Infinite Zoom state
                     this.visualizer.toggleInfiniteZoom();
@@ -3350,13 +3285,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Infinite Zoom toggle button not found');
+            // console.error('❌ Mixer Infinite Zoom toggle button not found');
         }
 
         // Mixer Infinite Zoom opacity slider
         const mixerInfiniteZoomOpacitySlider = document.getElementById('mixerInfiniteZoomOpacitySlider');
         if (mixerInfiniteZoomOpacitySlider) {
-            console.log('✅ Mixer Infinite Zoom opacity slider found, initializing custom slider');
+            // console.log('✅ Mixer Infinite Zoom opacity slider found, initializing custom slider');
             this.mixerInfiniteZoomOpacitySlider = this.initializeVerticalSlider(mixerInfiniteZoomOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -3372,13 +3307,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Infinite Zoom opacity slider not found');
+            // console.error('❌ Mixer Infinite Zoom opacity slider not found');
         }
 
         // Mixer Infinite Zoom Shape Select
         const mixerInfiniteZoomShapeSelect = document.getElementById('mixerInfiniteZoomShapeSelect');
         if (mixerInfiniteZoomShapeSelect) {
-            console.log('✅ Mixer Infinite Zoom shape select found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom shape select found, adding event listener');
             mixerInfiniteZoomShapeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const shape = e.target.value;
@@ -3396,7 +3331,7 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Infinite Zoom shape select not found');
+            // console.error('❌ Mixer Infinite Zoom shape select not found');
         }
 
         // ========== INFINITE ZOOM SLIDERS ==========
@@ -3431,7 +3366,7 @@ class RecordManager {
         const mixerInfiniteZoomMinSizeSlider = document.getElementById('mixerInfiniteZoomMinSizeSlider');
         const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
         if (mixerInfiniteZoomMinSizeSlider && mixerInfiniteZoomMinSizeValue) {
-            console.log('✅ Mixer Infinite Zoom min size slider found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom min size slider found, adding event listener');
             mixerInfiniteZoomMinSizeSlider.addEventListener('input', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.target.value);
@@ -3459,7 +3394,7 @@ class RecordManager {
         const mixerInfiniteZoomMaxSizeSlider = document.getElementById('mixerInfiniteZoomMaxSizeSlider');
         const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
         if (mixerInfiniteZoomMaxSizeSlider && mixerInfiniteZoomMaxSizeValue) {
-            console.log('✅ Mixer Infinite Zoom max size slider found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom max size slider found, adding event listener');
             mixerInfiniteZoomMaxSizeSlider.addEventListener('input', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.target.value);
@@ -3487,7 +3422,7 @@ class RecordManager {
         const mixerInfiniteZoomDensitySlider = document.getElementById('mixerInfiniteZoomDensitySlider');
         const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
         if (mixerInfiniteZoomDensitySlider && mixerInfiniteZoomDensityValue) {
-            console.log('✅ Mixer Infinite Zoom density slider found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom density slider found, adding event listener');
             mixerInfiniteZoomDensitySlider.addEventListener('input', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.target.value);
@@ -3519,7 +3454,7 @@ class RecordManager {
         const mixerInfiniteZoomSpeedSlider = document.getElementById('mixerInfiniteZoomSpeedSlider');
         const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
         if (mixerInfiniteZoomSpeedSlider && mixerInfiniteZoomSpeedValue) {
-            console.log('✅ Mixer Infinite Zoom speed slider found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom speed slider found, adding event listener');
             mixerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.target.value);
@@ -3552,7 +3487,7 @@ class RecordManager {
         const mixerInfiniteZoomRotationSlider = document.getElementById('mixerInfiniteZoomRotationSlider');
         const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
         if (mixerInfiniteZoomRotationSlider && mixerInfiniteZoomRotationValue) {
-            console.log('✅ Mixer Infinite Zoom rotation slider found, adding event listener');
+            // console.log('✅ Mixer Infinite Zoom rotation slider found, adding event listener');
             mixerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseFloat(e.target.value);
@@ -3578,10 +3513,10 @@ class RecordManager {
         // Mixer Blobs toggle button
         const mixerBlobsToggle = document.getElementById('mixerBlobsToggle');
         if (mixerBlobsToggle) {
-            console.log('✅ Mixer Blobs toggle button found, adding event listener');
+            // console.log('✅ Mixer Blobs toggle button found, adding event listener');
             mixerBlobsToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer Blobs toggle clicked - current state:', this.visualizer.blobsEnabled);
+                    // console.log('🔘 Mixer Blobs toggle clicked - current state:', this.visualizer.blobsEnabled);
                     
                     // Toggle Blobs state
                     this.visualizer.toggleBlobs();
@@ -3592,13 +3527,13 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Blobs toggle button not found');
+            // console.error('❌ Mixer Blobs toggle button not found');
         }
 
         // Mixer Blobs opacity slider
         const mixerBlobsOpacitySlider = document.getElementById('mixerBlobsOpacitySlider');
         if (mixerBlobsOpacitySlider) {
-            console.log('✅ Mixer Blobs opacity slider found, initializing custom slider');
+            // console.log('✅ Mixer Blobs opacity slider found, initializing custom slider');
             this.mixerBlobsOpacitySlider = this.initializeVerticalSlider(mixerBlobsOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -3614,7 +3549,7 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Blobs opacity slider not found');
+            // console.error('❌ Mixer Blobs opacity slider not found');
         }
 
         // ========== BLOBS CONTROL SLIDERS ==========
@@ -3866,10 +3801,10 @@ class RecordManager {
         // Mixer Starfall toggle button
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle) {
-            console.log('✅ Mixer Starfall toggle button found, adding event listener');
+            // console.log('✅ Mixer Starfall toggle button found, adding event listener');
             mixerStarfallToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer Starfall toggle clicked - current state:', this.visualizer.webglEnabled);
+                    // console.log('🔘 Mixer Starfall toggle clicked - current state:', this.visualizer.webglEnabled);
                     
                     // Toggle Starfall state
                     this.visualizer.toggleWebGL();
@@ -3880,21 +3815,21 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Starfall toggle button not found');
+            // console.error('❌ Mixer Starfall toggle button not found');
         }
 
         // Mixer Starfall opacity slider
         const mixerStarfallOpacitySlider = document.getElementById('mixerStarfallOpacitySlider');
         if (mixerStarfallOpacitySlider) {
-            console.log('✅ Mixer Starfall opacity slider found, initializing');
+            // console.log('✅ Mixer Starfall opacity slider found, initializing');
             this.mixerStarfallOpacitySlider = this.initializeVerticalSlider(mixerStarfallOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    console.log('🎚️ Mixer Starfall opacity changed to:', value);
+                    // console.log('🎚️ Mixer Starfall opacity changed to:', value);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ opacity: value });
                 }
             });
         } else {
-            console.error('❌ Mixer Starfall opacity slider not found');
+            // console.error('❌ Mixer Starfall opacity slider not found');
         }
 
         // ========== STARFALL CONTROL SLIDERS ==========
@@ -3905,12 +3840,12 @@ class RecordManager {
             mixerStarfallColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
                     const scheme = e.target.value;
-                    console.log('🎨 Mixer Starfall color scheme changed to:', scheme);
+                    // console.log('🎨 Mixer Starfall color scheme changed to:', scheme);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
                 }
             });
         } else {
-            console.error('❌ Mixer Starfall color scheme dropdown not found');
+            // console.error('❌ Mixer Starfall color scheme dropdown not found');
         }
 
         // Particle Count Slider
@@ -4022,10 +3957,10 @@ class RecordManager {
         // Mixer Fluidity toggle button
         const mixerFluidityToggle = document.getElementById('mixerFluidityToggle');
         if (mixerFluidityToggle) {
-            console.log('✅ Mixer Fluidity toggle button found, adding event listener');
+            // console.log('✅ Mixer Fluidity toggle button found, adding event listener');
             mixerFluidityToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Mixer Fluidity toggle clicked - current state:', this.visualizer.fluidDynamicsEnabled);
+                    // console.log('🔘 Mixer Fluidity toggle clicked - current state:', this.visualizer.fluidDynamicsEnabled);
                     
                     // Toggle Fluidity state
                     this.visualizer.toggleFluidDynamics();
@@ -4036,23 +3971,23 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Fluidity toggle button not found');
+            // console.error('❌ Mixer Fluidity toggle button not found');
         }
 
         // Mixer Fluidity opacity slider
         const mixerFluidityOpacitySlider = document.getElementById('mixerFluidityOpacitySlider');
         if (mixerFluidityOpacitySlider) {
-            console.log('✅ Mixer Fluidity opacity slider found, initializing');
+            // console.log('✅ Mixer Fluidity opacity slider found, initializing');
             this.mixerFluidityOpacitySlider = this.initializeVerticalSlider(mixerFluidityOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.fluidDynamics) {
-                    console.log('🎚️ Mixer Fluidity opacity changed to:', value);
+                    // console.log('🎚️ Mixer Fluidity opacity changed to:', value);
                     // Convert 0-100 to 0.0-1.0 for fluid dynamics opacity
                     const opacityValue = value / 100;
                     this.visualizer.fluidDynamics.setOpacity(opacityValue);
                 }
             });
         } else {
-            console.error('❌ Mixer Fluidity opacity slider not found');
+            // console.error('❌ Mixer Fluidity opacity slider not found');
         }
 
         // ========== FLUIDITY PRESET CONTROLS ==========
@@ -4062,7 +3997,7 @@ class RecordManager {
         if (mixerFluidityDefaultPresetBtn) {
             mixerFluidityDefaultPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎨 Mixer Fluidity Default preset clicked');
+                    // console.log('🎨 Mixer Fluidity Default preset clicked');
                     // Call the same function as header button
                     const headerBtn = document.getElementById('headerFluidDynamicsDefaultPresetBtn');
                     if (headerBtn) headerBtn.click();
@@ -4074,7 +4009,7 @@ class RecordManager {
         if (mixerFluidityAmbientPresetBtn) {
             mixerFluidityAmbientPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎨 Mixer Fluidity Ambient preset clicked');
+                    // console.log('🎨 Mixer Fluidity Ambient preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsAmbientPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4085,7 +4020,7 @@ class RecordManager {
         if (mixerFluidityMetalPresetBtn) {
             mixerFluidityMetalPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎨 Mixer Fluidity Metal preset clicked');
+                    // console.log('🎨 Mixer Fluidity Metal preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsMetalPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4096,7 +4031,7 @@ class RecordManager {
         if (mixerFluidityRandomPresetBtn) {
             mixerFluidityRandomPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎨 Mixer Fluidity Random preset clicked');
+                    // console.log('🎨 Mixer Fluidity Random preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsRandomPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4108,7 +4043,7 @@ class RecordManager {
         if (mixerFluidityPresetSelector) {
             mixerFluidityPresetSelector.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.value) {
-                    console.log('🎨 Mixer Fluidity user preset selected:', e.target.value);
+                    // console.log('🎨 Mixer Fluidity user preset selected:', e.target.value);
                     // Sync with header dropdown
                     const headerSelector = document.getElementById('headerFluidDynamicsPresetSelector');
                     if (headerSelector) {
@@ -4124,7 +4059,7 @@ class RecordManager {
         if (mixerFluditySavePresetBtn) {
             mixerFluditySavePresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('💾 Mixer Fluidity Save preset clicked');
+                    // console.log('💾 Mixer Fluidity Save preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsSavePresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4135,7 +4070,7 @@ class RecordManager {
         if (mixerFluidityExportPresetsBtn) {
             mixerFluidityExportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('📤 Mixer Fluidity Export presets clicked');
+                    // console.log('📤 Mixer Fluidity Export presets clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsExportPresetsBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4146,7 +4081,7 @@ class RecordManager {
         if (mixerFluidityImportPresetsBtn) {
             mixerFluidityImportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('📥 Mixer Fluidity Import presets clicked');
+                    // console.log('📥 Mixer Fluidity Import presets clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsImportPresetsBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -4161,7 +4096,7 @@ class RecordManager {
             mixerFluidityColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const scheme = e.target.value;
-                    console.log('🎨 Mixer Fluidity color scheme changed to:', scheme);
+                    // console.log('🎨 Mixer Fluidity color scheme changed to:', scheme);
                     // Sync with header dropdown
                     const headerColorScheme = document.getElementById('headerFluidDynamicsColorScheme');
                     if (headerColorScheme) {
@@ -4171,7 +4106,7 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Fluidity color scheme dropdown not found');
+            // console.error('❌ Mixer Fluidity color scheme dropdown not found');
         }
 
         // ========== FLUIDITY CONTROL SLIDERS ==========
@@ -4301,7 +4236,7 @@ class RecordManager {
         if (mixerFluidityBeatReactBtn) {
             mixerFluidityBeatReactBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🎵 Mixer Fluidity Beat React clicked');
+                    // console.log('🎵 Mixer Fluidity Beat React clicked');
                     // Sync with header button
                     const headerBtn = document.getElementById('headerFluidDynamicsBeatReactBtn');
                     if (headerBtn) headerBtn.click();
@@ -4394,10 +4329,10 @@ class RecordManager {
         // Mixer Nebula toggle button
         const mixerNebulaToggle = document.getElementById('mixerNebulaToggle');
         if (mixerNebulaToggle) {
-            console.log('✅ Mixer Nebula toggle button found, adding event listener');
+            // console.log('✅ Mixer Nebula toggle button found, adding event listener');
             mixerNebulaToggle.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaVisualization.enabled);
+                    // console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaVisualization.enabled);
                     
                     // Toggle Nebula state
                     this.visualizer.nebulaVisualization.toggle();
@@ -4417,16 +4352,16 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Nebula toggle button not found');
+            // console.error('❌ Mixer Nebula toggle button not found');
         }
 
         // Mixer Nebula opacity slider
         const mixerNebulaOpacitySlider = document.getElementById('mixerNebulaOpacitySlider');
         if (mixerNebulaOpacitySlider) {
-            console.log('✅ Mixer Nebula opacity slider found, initializing');
+            // console.log('✅ Mixer Nebula opacity slider found, initializing');
             this.mixerNebulaOpacitySlider = this.initializeVerticalSlider(mixerNebulaOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🎚️ Mixer Nebula opacity changed to:', value);
+                    // console.log('🎚️ Mixer Nebula opacity changed to:', value);
                     // Convert 0-100 to 0.0-1.0 for nebula opacity
                     const opacityValue = value / 100;
                     this.visualizer.nebulaVisualization.updateSetting('overallOpacity', opacityValue);
@@ -4441,17 +4376,17 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Nebula opacity slider not found');
+            // console.error('❌ Mixer Nebula opacity slider not found');
         }
 
         // Mixer Nebula color scheme dropdown
         const mixerNebulaColorSchemeSelect = document.getElementById('mixerNebulaColorSchemeSelect');
         if (mixerNebulaColorSchemeSelect) {
-            console.log('✅ Mixer Nebula color scheme select found, adding event listener');
+            // console.log('✅ Mixer Nebula color scheme select found, adding event listener');
             mixerNebulaColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
                     const scheme = e.target.value;
-                    console.log('🎨 Mixer Nebula color scheme changed to:', scheme);
+                    // console.log('🎨 Mixer Nebula color scheme changed to:', scheme);
                     
                     // Apply color scheme by triggering the appropriate header button
                     const headerBtn = document.getElementById(`nebulaPreset${scheme.charAt(0).toUpperCase() + scheme.slice(1)}`);
@@ -4464,7 +4399,7 @@ class RecordManager {
                 }
             });
         } else {
-            console.error('❌ Mixer Nebula color scheme select not found');
+            // console.error('❌ Mixer Nebula color scheme select not found');
         }
 
         // ========== NEBULA PRESET CONTROLS ==========
@@ -4474,7 +4409,7 @@ class RecordManager {
         if (mixerNebulaPresetDefault) {
             mixerNebulaPresetDefault.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🎨 Mixer Nebula Default preset clicked');
+                    // console.log('🎨 Mixer Nebula Default preset clicked');
                     // Reset to default settings
                     this.visualizer.nebulaVisualization.resetToDefaults();
                     this.updateMixerNebulaControlSliders();
@@ -4486,7 +4421,7 @@ class RecordManager {
         if (mixerNebulaPresetCinematic) {
             mixerNebulaPresetCinematic.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🎨 Mixer Nebula Cinematic preset clicked');
+                    // console.log('🎨 Mixer Nebula Cinematic preset clicked');
                     // Apply cinematic preset
                     const cinematicSettings = {
                         cameraDistance: 120,
@@ -4509,7 +4444,7 @@ class RecordManager {
         if (mixerNebulaPresetEnergetic) {
             mixerNebulaPresetEnergetic.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🎨 Mixer Nebula Energetic preset clicked');
+                    // console.log('🎨 Mixer Nebula Energetic preset clicked');
                     // Apply energetic preset
                     const energeticSettings = {
                         filamentDensity: 3.0,
@@ -4533,7 +4468,7 @@ class RecordManager {
         if (mixerNebulaUserPresetSelect) {
             mixerNebulaUserPresetSelect.addEventListener('change', (e) => {
                 if (e.target.value && this.visualizer && this.visualizer.nebulaVisualization) {
-                    console.log('🎨 Mixer Nebula user preset selected:', e.target.value);
+                    // console.log('🎨 Mixer Nebula user preset selected:', e.target.value);
                     this.visualizer.nebulaVisualization.loadPreset(e.target.value);
                     this.updateMixerNebulaControlSliders();
                     e.target.value = ''; // Reset dropdown
@@ -4689,7 +4624,7 @@ class RecordManager {
         // Mixer audio volume slider
         const mixerAudioVolumeSlider = document.getElementById('mixerAudioVolumeSlider');
         if (mixerAudioVolumeSlider) {
-            console.log('✅ Mixer audio volume slider found, initializing custom slider');
+            // console.log('✅ Mixer audio volume slider found, initializing custom slider');
             this.mixerAudioVolumeSlider = this.initializeVerticalSlider(mixerAudioVolumeSlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -4702,23 +4637,23 @@ class RecordManager {
                         valueDisplay.textContent = value;
                     }
                     
-                    console.log('🔊 Mixer audio volume changed to:', value, '% (', volumeValue, ')');
+                    // console.log('🔊 Mixer audio volume changed to:', value, '% (', volumeValue, ')');
                 }
             });
         } else {
-            console.error('❌ Mixer audio volume slider not found');
+            // console.error('❌ Mixer audio volume slider not found');
         }
 
         // Mixer file input handler
         if (mixerBackgroundImageFile) {
             mixerBackgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                console.log('📁 Mixer background image file selected:', {
-                    name: file?.name,
-                    type: file?.type,
-                    size: file?.size,
-                    lastModified: file?.lastModified
-                });
+                // console.log('📁 Mixer background image file selected:', {
+                //     name: file?.name,
+                //     type: file?.type,
+                //     size: file?.size,
+                //     lastModified: file?.lastModified
+                // });
                 
                 if (file) {
                     // Validate file type
@@ -4737,7 +4672,7 @@ class RecordManager {
                     
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        console.log('📁 Mixer background image loaded successfully');
+                        // console.log('📁 Mixer background image loaded successfully');
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -4757,19 +4692,19 @@ class RecordManager {
                             this.updateBackgroundImageUI(); // Update header UI too
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             
-                            console.log('🔄 Updating mixer UI with:', {
-                                fileName: file.name,
-                                fileSize: file.size,
-                                hasImage: !!this.visualizer.backgroundImage
-                            });
+                            // console.log('🔄 Updating mixer UI with:', {
+                            //     fileName: file.name,
+                            //     fileSize: file.size,
+                            //     hasImage: !!this.visualizer.backgroundImage
+                            // });
                         }
                     };
                     reader.onerror = (e) => {
-                        console.error('❌ Error reading mixer background image file:', e);
+                        // console.error('❌ Error reading mixer background image file:', e);
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    console.log('📁 No file selected');
+                    // console.log('📁 No file selected');
                 }
             });
         }
@@ -4778,33 +4713,33 @@ class RecordManager {
         if (backgroundImageFile) {
             backgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                console.log('📁 Background image file selected:', {
-                    name: file?.name,
-                    type: file?.type,
-                    size: file?.size,
-                    sizeMB: file ? (file.size / (1024 * 1024)).toFixed(2) + 'MB' : 'N/A'
-                });
+                // console.log('📁 Background image file selected:', {
+                //     name: file?.name,
+                //     type: file?.type,
+                //     size: file?.size,
+                //     sizeMB: file ? (file.size / (1024 * 1024)).toFixed(2) + 'MB' : 'N/A'
+                // });
                 
                 if (file) {
                     // Validate file type
                     if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-                        console.error('❌ Invalid file type:', file.type);
+                        // console.error('❌ Invalid file type:', file.type);
                         alert('Please select a JPG or PNG image file.');
                         return;
                     }
 
                     // Validate file size (2MB limit)
                     if (file.size > 2 * 1024 * 1024) {
-                        console.error('❌ File too large:', file.size, 'bytes');
+                        // console.error('❌ File too large:', file.size, 'bytes');
                         alert('File size must be less than 2MB.');
                         return;
                     }
 
-                    console.log('✅ File validation passed, reading...');
+                    // console.log('✅ File validation passed, reading...');
                     // Read file as data URL
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        console.log('📖 File read successfully, data URL length:', e.target.result.length);
+                        // console.log('📖 File read successfully, data URL length:', e.target.result.length);
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -4828,11 +4763,11 @@ class RecordManager {
                                 this.visualizer.updateBackgroundPanelStates(backgroundPanel);
                             }
                             
-                            console.log('💾 Background image saved and enabled');
+                            // console.log('💾 Background image saved and enabled');
                         }
                     };
                     reader.onerror = (e) => {
-                        console.error('❌ File read error:', e);
+                        // console.error('❌ File read error:', e);
                     };
                     reader.readAsDataURL(file);
                 }
@@ -4979,17 +4914,17 @@ class RecordManager {
             
             sidebarBackgroundImgBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    console.log('🔘 Sidebar Background IMG button clicked - current state:', {
-                        enabled: this.visualizer.backgroundImageEnabled,
-                        hasImage: !!this.visualizer.backgroundImage
-                    });
+                    // console.log('🔘 Sidebar Background IMG button clicked - current state:', {
+                    //     enabled: this.visualizer.backgroundImageEnabled,
+                    //     hasImage: !!this.visualizer.backgroundImage
+                    // });
                     
                     // Toggle background image enabled state
                     this.visualizer.backgroundImageEnabled = !this.visualizer.backgroundImageEnabled;
                     this.visualizer.saveBackgroundImage();
                     this.updateBackgroundToggleButton(); // Header controls only
                     
-                    console.log('🔘 Sidebar Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
+                    // console.log('🔘 Sidebar Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
@@ -5012,17 +4947,17 @@ class RecordManager {
         if (false) { // Disabled - sidebar removed
             sidebarBackgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                console.log('📁 Sidebar Background image file selected:', {
-                    name: file?.name,
-                    type: file?.type,
-                    size: file?.size,
-                    lastModified: file?.lastModified
-                });
+                // console.log('📁 Sidebar Background image file selected:', {
+                //     name: file?.name,
+                //     type: file?.type,
+                //     size: file?.size,
+                //     lastModified: file?.lastModified
+                // });
                 
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        console.log('📖 Sidebar File read successfully, data URL length:', e.target.result.length);
+                        // console.log('📖 Sidebar File read successfully, data URL length:', e.target.result.length);
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -5032,11 +4967,11 @@ class RecordManager {
                             this.visualizer.saveBackgroundImage();
                             this.updateBackgroundImageUI(); // Header controls only
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
-                            console.log('💾 Sidebar Background image saved and enabled');
+                            // console.log('💾 Sidebar Background image saved and enabled');
                         }
                     };
                     reader.onerror = (e) => {
-                        console.error('❌ Sidebar File read error:', e);
+                        // console.error('❌ Sidebar File read error:', e);
                         this.showError('Failed to read image file');
                     };
                     reader.readAsDataURL(file);
@@ -5235,7 +5170,7 @@ class RecordManager {
     debugBackgroundImageState() {
         if (!this.visualizer) return;
         
-        // console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
+        // // console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
         //     'Image Data': this.visualizer.backgroundImage ? `Present (${this.visualizer.backgroundImage.length} chars)` : 'Missing',
         //     'Enabled': this.visualizer.backgroundImageEnabled,
         //     'Opacity': this.visualizer.backgroundImageOpacity + '%',
@@ -5277,7 +5212,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer background sizing buttons not found for update');
+            // // console.error('❌ Mixer background sizing buttons not found for update');
         }
     }
 
@@ -5401,7 +5336,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer background opacity slider not found for update');
+            // // console.error('❌ Mixer background opacity slider not found for update');
         }
     }
 
@@ -5425,7 +5360,7 @@ class RecordManager {
                 
             }
         } else {
-            console.error('❌ Mixer background toggle button not found for update');
+            // // console.error('❌ Mixer background toggle button not found for update');
         }
     }
 
@@ -5436,16 +5371,16 @@ class RecordManager {
         const mixerBackgroundFileSize = document.getElementById('mixerBackgroundFileSize');
         const mixerBackgroundImagePreview = document.getElementById('mixerBackgroundImagePreview');
 
-        console.log('🔍 Mixer UI elements found:', {
-            fileInfo: !!mixerBackgroundFileInfo,
-            fileName: !!mixerBackgroundFileName,
-            fileSize: !!mixerBackgroundFileSize,
-            imagePreview: !!mixerBackgroundImagePreview
-        });
+        // console.log('🔍 Mixer UI elements found:', {
+        //     fileInfo: !!mixerBackgroundFileInfo,
+        //     fileName: !!mixerBackgroundFileName,
+        //     fileSize: !!mixerBackgroundFileSize,
+        //     imagePreview: !!mixerBackgroundImagePreview
+        // });
 
         if (mixerBackgroundFileInfo && mixerBackgroundFileName && mixerBackgroundFileSize && mixerBackgroundImagePreview) {
             if (this.visualizer && this.visualizer.backgroundImage) {
-                console.log('✅ Showing mixer background file info');
+                // console.log('✅ Showing mixer background file info');
                 mixerBackgroundFileInfo.style.display = 'block';
                 
                 // Display filename and file size
@@ -5453,28 +5388,28 @@ class RecordManager {
                 const fileSize = this.visualizer.backgroundImageFileSize || 0;
                 const fileSizeText = fileSize > 0 ? this.formatFileSize(fileSize) : '';
                 
-                console.log('📝 Setting mixer UI text:', { filename, fileSizeText });
+                // console.log('📝 Setting mixer UI text:', { filename, fileSizeText });
                 mixerBackgroundFileName.textContent = filename;
                 mixerBackgroundFileSize.textContent = fileSizeText;
                 
                 // Create preview image
                 const img = new Image();
                 img.onload = () => {
-                    console.log('🖼️ Mixer preview image loaded, setting background');
+                    // console.log('🖼️ Mixer preview image loaded, setting background');
                     mixerBackgroundImagePreview.style.backgroundImage = `url(${this.visualizer.backgroundImage})`;
                     mixerBackgroundImagePreview.style.backgroundSize = 'cover';
                     mixerBackgroundImagePreview.style.backgroundPosition = 'center';
                 };
                 img.onerror = (e) => {
-                    console.error('❌ Error loading mixer preview image:', e);
+                    // console.error('❌ Error loading mixer preview image:', e);
                 };
                 img.src = this.visualizer.backgroundImage;
             } else {
-                console.log('❌ No background image data, hiding mixer file info');
+                // console.log('❌ No background image data, hiding mixer file info');
                 mixerBackgroundFileInfo.style.display = 'none';
             }
         } else {
-            console.error('❌ Mixer UI elements not found');
+            // console.error('❌ Mixer UI elements not found');
         }
     }
 
@@ -5492,7 +5427,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer background saturation slider not found for update');
+            // // console.error('❌ Mixer background saturation slider not found for update');
         }
     }
 
@@ -5510,7 +5445,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer background posterize slider not found for update');
+            // // console.error('❌ Mixer background posterize slider not found for update');
         }
     }
 
@@ -5528,7 +5463,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer background contrast slider not found for update');
+            // // console.error('❌ Mixer background contrast slider not found for update');
         }
     }
 
@@ -5548,7 +5483,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video opacity slider not found for update');
+            // // console.error('❌ Mixer video opacity slider not found for update');
         }
     }
 
@@ -5567,13 +5502,13 @@ class RecordManager {
                 const activeButton = document.querySelector(`#mixerVideoPreset${activePreset.charAt(0).toUpperCase() + activePreset.slice(1).replace('-', '')}`);
                 if (activeButton) {
                     activeButton.classList.add('active');
-                    console.log('📝 Mixer video preset button activated:', activePreset);
+                    // console.log('📝 Mixer video preset button activated:', activePreset);
                 } else {
                     console.warn('⚠️ Mixer video preset button not found for:', activePreset);
                 }
             }
         } else {
-            console.error('❌ Mixer video preset buttons not found for update');
+            // // console.error('❌ Mixer video preset buttons not found for update');
         }
     }
 
@@ -5591,7 +5526,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video brightness slider not found for update');
+            // // console.error('❌ Mixer video brightness slider not found for update');
         }
     }
 
@@ -5609,7 +5544,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video contrast slider not found for update');
+            // // console.error('❌ Mixer video contrast slider not found for update');
         }
     }
 
@@ -5627,7 +5562,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video saturation slider not found for update');
+            // // console.error('❌ Mixer video saturation slider not found for update');
         }
     }
 
@@ -5645,7 +5580,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video hue rotation slider not found for update');
+            // // console.error('❌ Mixer video hue rotation slider not found for update');
         }
     }
 
@@ -5663,7 +5598,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video grayscale slider not found for update');
+            // // console.error('❌ Mixer video grayscale slider not found for update');
         }
     }
 
@@ -5681,7 +5616,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video fade time slider not found for update');
+            // // console.error('❌ Mixer video fade time slider not found for update');
         }
     }
 
@@ -5699,7 +5634,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video sepia slider not found for update');
+            // // console.error('❌ Mixer video sepia slider not found for update');
         }
     }
 
@@ -5717,7 +5652,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video blur slider not found for update');
+            // // console.error('❌ Mixer video blur slider not found for update');
         }
     }
 
@@ -5735,7 +5670,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video vignette slider not found for update');
+            // // console.error('❌ Mixer video vignette slider not found for update');
         }
     }
 
@@ -5753,7 +5688,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video posterize slider not found for update');
+            // // console.error('❌ Mixer video posterize slider not found for update');
         }
     }
 
@@ -5771,7 +5706,7 @@ class RecordManager {
             mixerVideoInvert.classList.toggle('active', invert);
             
         } else {
-            console.error('❌ Mixer video invert toggle not found for update');
+            // // console.error('❌ Mixer video invert toggle not found for update');
         }
     }
 
@@ -5791,7 +5726,7 @@ class RecordManager {
             mixerVideoMirror.classList.toggle('active', mirror !== 'off');
             
         } else {
-            console.error('❌ Mixer video mirror toggle not found for update');
+            // // console.error('❌ Mixer video mirror toggle not found for update');
         }
     }
 
@@ -5815,7 +5750,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video pulse toggle not found for update');
+            // // console.error('❌ Mixer video pulse toggle not found for update');
         }
     }
 
@@ -5833,7 +5768,7 @@ class RecordManager {
             }
             
         } else {
-            console.error('❌ Mixer video pulse rate slider not found for update');
+            // // console.error('❌ Mixer video pulse rate slider not found for update');
         }
     }
 
@@ -5856,7 +5791,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer audio toggle not found for update');
+            // console.error('❌ Mixer audio toggle not found for update');
         }
     }
 
@@ -5872,7 +5807,7 @@ class RecordManager {
                 valueDisplay.textContent = volumePercent;
             }
         } else {
-            console.error('❌ Mixer audio volume slider not found for update');
+            // console.error('❌ Mixer audio volume slider not found for update');
         }
     }
 
@@ -5905,7 +5840,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer audio device select not found for update');
+            // console.error('❌ Mixer audio device select not found for update');
         }
     }
 
@@ -5928,7 +5863,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer AM toggle not found for update');
+            // console.error('❌ Mixer AM toggle not found for update');
         }
     }
 
@@ -5944,7 +5879,7 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer AM opacity slider not found for update');
+            // console.error('❌ Mixer AM opacity slider not found for update');
         }
     }
 
@@ -5979,7 +5914,7 @@ class RecordManager {
         if (mixerAMVizModeSelect && this.visualizer) {
             mixerAMVizModeSelect.value = this.visualizer.currentMode.toString();
         } else {
-            console.error('❌ Mixer AM viz mode select not found for update');
+            // console.error('❌ Mixer AM viz mode select not found for update');
         }
     }
 
@@ -6000,7 +5935,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer AM morph button not found for update');
+            // console.error('❌ Mixer AM morph button not found for update');
         }
     }
 
@@ -6009,7 +5944,7 @@ class RecordManager {
         if (mixerAMMorphSpeedSelect && this.visualizer) {
             mixerAMMorphSpeedSelect.value = this.visualizer.morphMode;
         } else {
-            console.error('❌ Mixer AM morph speed select not found for update');
+            // console.error('❌ Mixer AM morph speed select not found for update');
         }
     }
 
@@ -6020,7 +5955,7 @@ class RecordManager {
             const isEnergyMode = this.visualizer.morphMode === 'energy';
             mixerAMEnergyContainer.style.display = isEnergyMode ? 'block' : 'none';
             } else {
-            console.error('❌ Mixer AM energy container not found for update');
+            // console.error('❌ Mixer AM energy container not found for update');
         }
     }
 
@@ -6052,7 +5987,7 @@ class RecordManager {
                 });
             }
         } else {
-            console.error('❌ Mixer AM preset selector not found for update');
+            // console.error('❌ Mixer AM preset selector not found for update');
         }
     }
 
@@ -6061,7 +5996,7 @@ class RecordManager {
         if (mixerAMColorSchemeSelect && this.visualizer) {
             mixerAMColorSchemeSelect.value = this.visualizer.currentColorScheme || 'default';
             } else {
-            console.error('❌ Mixer AM color scheme select not found for update');
+            // console.error('❌ Mixer AM color scheme select not found for update');
         }
     }
 
@@ -6084,7 +6019,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer Infinite Zoom toggle not found for update');
+            // console.error('❌ Mixer Infinite Zoom toggle not found for update');
         }
     }
 
@@ -6100,7 +6035,7 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer Infinite Zoom opacity slider not found for update');
+            // console.error('❌ Mixer Infinite Zoom opacity slider not found for update');
         }
     }
 
@@ -6109,7 +6044,7 @@ class RecordManager {
         if (mixerInfiniteZoomShapeSelect && this.visualizer && this.visualizer.infiniteZoom) {
             mixerInfiniteZoomShapeSelect.value = this.visualizer.infiniteZoom.shape || 'circle';
         } else {
-            console.error('❌ Mixer Infinite Zoom shape select not found for update');
+            // console.error('❌ Mixer Infinite Zoom shape select not found for update');
         }
     }
 
@@ -6204,7 +6139,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer Blobs toggle not found for update');
+            // console.error('❌ Mixer Blobs toggle not found for update');
         }
     }
 
@@ -6220,7 +6155,7 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer Blobs opacity slider not found for update');
+            // console.error('❌ Mixer Blobs opacity slider not found for update');
         }
     }
 
@@ -6353,7 +6288,7 @@ class RecordManager {
                 }
             }
         } else {
-            console.error('❌ Mixer Starfall toggle not found for update');
+            // console.error('❌ Mixer Starfall toggle not found for update');
         }
     }
 
@@ -6369,7 +6304,7 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer Starfall opacity slider not found for update');
+            // console.error('❌ Mixer Starfall opacity slider not found for update');
         }
     }
 
@@ -6478,7 +6413,7 @@ class RecordManager {
                 if (toggleText) toggleText.textContent = 'OFF';
             }
         } else {
-            console.error('❌ Mixer Fluidity toggle not found for update');
+            // console.error('❌ Mixer Fluidity toggle not found for update');
         }
     }
 
@@ -6494,7 +6429,7 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            console.error('❌ Mixer Fluidity opacity slider not found for update');
+            // console.error('❌ Mixer Fluidity opacity slider not found for update');
         }
     }
 
@@ -6735,7 +6670,7 @@ class RecordManager {
     }
 
     updateHeaderVideoFileButtons() {
-        console.log('🔄 updateHeaderVideoFileButtons called');
+        // console.log('🔄 updateHeaderVideoFileButtons called');
         
         const headerLoopBtn = document.getElementById('headerVideoFileLoopBtn');
         const headerMuteBtn = document.getElementById('headerVideoFileMuteBtn');
@@ -6751,7 +6686,7 @@ class RecordManager {
             headerMuteBtn.textContent = muted ? 'Muted' : 'Sound';
             headerMuteBtn.classList.toggle('active', muted);
             
-            console.log('📝 Header video file buttons updated:', { loop, muted });
+            // console.log('📝 Header video file buttons updated:', { loop, muted });
         } else {
             console.log('ℹ️ Header video file buttons not found (panel may be closed)');
         }
@@ -6834,26 +6769,26 @@ class RecordManager {
     updateBackgroundOpacity(value) {
         const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
         
-        console.log('🎨 Updating background opacity for all visualization systems:', value + '%');
+        // console.log('🎨 Updating background opacity for all visualization systems:', value + '%');
         
         // Update custom AudioMotion (regular visualizations)
         if (this.audioMotion) {
             this.audioMotion.bgAlpha = opacityValue;
             this.audioMotion.showBgColor = value > 0;
-            console.log('🎨 Updated custom AudioMotion background opacity');
+            // console.log('🎨 Updated custom AudioMotion background opacity');
         }
         
         // Update official AudioMotion (Pro visualizations) if active
         if (this.officialAudioMotion && this.useOfficialAudioMotion) {
             this.officialAudioMotion.bgAlpha = opacityValue;
             this.officialAudioMotion.showBgColor = value > 0;
-            console.log('🎨 Updated official AudioMotion background opacity');
+            // console.log('🎨 Updated official AudioMotion background opacity');
         }
         
         // Future visualization systems can be added here
         // Example: if (this.futureVisualization) { this.futureVisualization.setBackgroundOpacity(opacityValue); }
         
-        console.log('🎨 Background opacity update complete - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
+        // console.log('🎨 Background opacity update complete - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
     }
 
     formatFileSize(bytes) {
@@ -6891,8 +6826,8 @@ class RecordManager {
         } else {
             const preset = this.resolutionPresets[resolution];
             if (preset) {
-                targetWidth = preset.width;
-                targetHeight = preset.height;
+            targetWidth = preset.width;
+            targetHeight = preset.height;
             } else {
                 // Fallback to 1080p
                 targetWidth = 1920;
@@ -6900,22 +6835,17 @@ class RecordManager {
             }
         }
         
-        console.log(`Recording dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
-        console.log(`Current aspect ratio setting: ${this.aspectRatio}`);
-        console.log(`Match visualization aspect: ${this.matchVisualizationAspect}`);
         
         // Determine target aspect ratio
         let targetAspect;
         
         // Debug aspect ratio calculation
-        console.log('=== ASPECT RATIO DEBUG ===');
-        console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
-        console.log('videoMode:', this.visualizer?.videoMode);
-        console.log('videoElement exists:', !!this.visualizer?.videoElement);
+        // console.log('videoMode:', this.visualizer?.videoMode);
+        // console.log('videoElement exists:', !!this.visualizer?.videoElement);
         if (this.visualizer?.videoElement) {
-            console.log('videoWidth:', this.visualizer.videoElement.videoWidth);
-            console.log('videoHeight:', this.visualizer.videoElement.videoHeight);
-            console.log('videoReadyState:', this.visualizer.videoElement.readyState);
+            // console.log('videoWidth:', this.visualizer.videoElement.videoWidth);
+            // console.log('videoHeight:', this.visualizer.videoElement.videoHeight);
+            // console.log('videoReadyState:', this.visualizer.videoElement.readyState);
         }
         
         // Always use window/canvas dimensions for recording - don't force video aspect ratio
@@ -6923,30 +6853,26 @@ class RecordManager {
         const canvas = this.visualizer.audioMotion?.canvas;
         if (canvas) {
             targetAspect = canvas.width / canvas.height;
-            console.log(`✓ Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
         } else {
             // Fallback to manual aspect ratio setting
         const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
-            console.log(`✓ Using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
-        console.log('Final targetAspect:', targetAspect);
         console.log('=========================')
         
         const currentAspect = targetWidth / targetHeight;
         
-        console.log(`Target aspect: ${targetAspect.toFixed(3)}, Current aspect: ${currentAspect.toFixed(3)}`);
         
         if (currentAspect > targetAspect) {
             // Too wide, adjust width
             targetWidth = Math.round(targetHeight * targetAspect);
-            console.log(`Adjusted width to fit aspect ratio: ${targetWidth}x${targetHeight}`);
+            // console.log(`Adjusted width to fit aspect ratio: ${targetWidth}x${targetHeight}`);
         } else if (currentAspect < targetAspect) {
             // Too tall, adjust height
             targetHeight = Math.round(targetWidth / targetAspect);
-            console.log(`Adjusted height to fit aspect ratio: ${targetWidth}x${targetHeight}`);
+            // console.log(`Adjusted height to fit aspect ratio: ${targetWidth}x${targetHeight}`);
         } else {
-            console.log(`Aspect ratio already matches: ${targetWidth}x${targetHeight}`);
+            // console.log(`Aspect ratio already matches: ${targetWidth}x${targetHeight}`);
         }
         
         return { width: targetWidth, height: targetHeight };
@@ -6988,8 +6914,6 @@ class RecordManager {
         if (this.isRecording) return;
         
         try {
-            console.log('Starting recording...');
-            console.log('Current video mirror setting:', this.visualizer.videoMirror);
             this.isRecording = true;
             this.recordingStartTime = Date.now();
             this.recordedChunks = [];
@@ -7043,15 +6967,6 @@ class RecordManager {
             const videoBitrate = recordingSettings.videoBitrate;
             const audioBitrate = recordingSettings.audioBitrate;
             
-            console.log('🎬 === PROFESSIONAL RECORDING SETUP ===');
-            console.log('🎬 Quality preset:', this.qualityPreset);
-            console.log('🎬 Selected codec:', codecInfo.mimeType);
-            console.log('🎬 Profile:', codecInfo.profile);
-            console.log('🎬 Compatibility:', codecInfo.compatibility.text);
-            console.log('🎬 Video bitrate:', (videoBitrate / 1000000).toFixed(1) + ' Mbps');
-            console.log('🎬 Audio bitrate:', (audioBitrate / 1000).toFixed(0) + ' kbps');
-            console.log('🎬 Target resolution:', recordingSettings.resolution);
-            console.log('🎬 Canvas size:', `${canvasRect.width}x${canvasRect.height}`);
             
             // Create MediaRecorder with professional settings
             const mediaRecorderOptions = {
@@ -7069,7 +6984,6 @@ class RecordManager {
             
             // Store the actual format being used for saving (always MP4)
             this.actualRecordFormat = 'mp4';
-            console.log('🎬 Stored actualRecordFormat:', this.actualRecordFormat);
             
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
@@ -7083,10 +6997,8 @@ class RecordManager {
             
             this.mediaRecorder.start(1000); // Record in 1 second chunks
             
-            console.log('Recording started successfully');
             
         } catch (err) {
-            console.error('Error starting recording:', err);
             alert('Failed to start recording: ' + err.message);
             this.stopRecording();
         }
@@ -7100,7 +7012,6 @@ class RecordManager {
         this.compositeCanvas.height = dimensions.height;
         this.compositeCtx = this.compositeCanvas.getContext('2d');
         
-        console.log(`Created composite canvas: ${dimensions.width}x${dimensions.height}`);
     }
     
     setupCropCanvas() {
@@ -7142,22 +7053,13 @@ class RecordManager {
         
         // Draw background image if available and enabled
         if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
-            console.log('🎥 RecordManager: Drawing background image in composite');
             this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
         } else {
-            console.log('🎥 RecordManager: Background image skipped -', {
-                hasImage: !!this.visualizer.backgroundImage,
-                enabled: this.visualizer.backgroundImageEnabled
-            });
         }
         
         // Debug logging for kaleidoscope state
         if (this.visualizer.kaleidoscopeEnabled) {
-            console.log('Kaleidoscope enabled - ApplyToVideo:', this.visualizer.kaleidoscopeApplyToVideo, 
-                       'ApplyToViz:', this.visualizer.kaleidoscopeApplyToViz);
             if (this.visualizer.kaleidoscopeVideoCanvas) {
-                console.log('Kaleidoscope video canvas display:', this.visualizer.kaleidoscopeVideoCanvas.style.display,
-                           'opacity:', this.visualizer.kaleidoscopeVideoCanvas.style.opacity);
             }
         }
         
@@ -7175,7 +7077,6 @@ class RecordManager {
             
             if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
-                console.log('🎥 RecordManager: Using Kaleidoscope viz canvas as source (includes Nebula effects)');
             } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
             } else if (this.visualizer.audioMotion?.canvas) {
@@ -7186,7 +7087,6 @@ class RecordManager {
         }
         
         if (!sourceCanvas) {
-            console.warn('No source canvas found for recording');
             return;
         }
         
@@ -7249,7 +7149,6 @@ class RecordManager {
             if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
                 // Check WebGL support before attempting to draw
                 if (!this.visualizer.webglVisualization.webglSupported) {
-                    console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
                 } else {
                     const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                     if (shouldDrawSeparately) {
@@ -7266,7 +7165,6 @@ class RecordManager {
                     this.compositeCtx.save();
                     const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
                     this.compositeCtx.globalAlpha = fluidOpacity;
-                    console.log('🎥 RecordManager: Drawing Fluid Dynamics with opacity:', fluidOpacity);
                     
                     this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
                     this.compositeCtx.restore();
@@ -7277,7 +7175,6 @@ class RecordManager {
             if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    console.log('🎥 RecordManager: Drawing Nebula visualization in composite (with video)');
                     
                     // Apply Nebula opacity and background knockout settings
                     this.compositeCtx.save();
@@ -7289,13 +7186,11 @@ class RecordManager {
                     // Apply background knockout (screen blend mode)
                     if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
                         this.compositeCtx.globalCompositeOperation = 'screen';
-                        console.log('🎥 RecordManager: Applying Nebula background knockout (screen blend)');
                     }
                     
                     this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
                     this.compositeCtx.restore();
                 } else if (!shouldDrawSeparately) {
-                    console.log('🎥 RecordManager: Skipping Nebula - captured by Kaleidoscope (with video)');
                 }
             }
             
@@ -7315,7 +7210,6 @@ class RecordManager {
             if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
                 // Check WebGL support before attempting to draw
                 if (!this.visualizer.webglVisualization.webglSupported) {
-                    console.warn('🎮 Record: WebGL not supported - skipping WebGL capture');
                 } else {
                     const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
                     if (shouldDrawSeparately) {
@@ -7332,7 +7226,6 @@ class RecordManager {
                     this.compositeCtx.save();
                     const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
                     this.compositeCtx.globalAlpha = fluidOpacity;
-                    console.log('🎥 RecordManager: Drawing Fluid Dynamics with opacity (no video):', fluidOpacity);
                     
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
                     this.compositeCtx.restore();
@@ -7343,7 +7236,6 @@ class RecordManager {
             if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
                 const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
                 if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    console.log('🎥 RecordManager: Drawing Nebula visualization in composite (no video)');
                     
                     // Apply Nebula opacity and background knockout settings
                     this.compositeCtx.save();
@@ -7355,13 +7247,11 @@ class RecordManager {
                     // Apply background knockout (screen blend mode)
                     if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
                         this.compositeCtx.globalCompositeOperation = 'screen';
-                        console.log('🎥 RecordManager: Applying Nebula background knockout (screen blend)');
                     }
                     
                     this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
                     this.compositeCtx.restore();
                 } else if (!shouldDrawSeparately) {
-                    console.log('🎥 RecordManager: Skipping Nebula - captured by Kaleidoscope (no video)');
                 }
             }
         }
@@ -7805,7 +7695,6 @@ class RecordManager {
             drawY = 0;
         }
         
-        console.log(`Drawing visualization: ${drawWidth}x${drawHeight} at ${drawX},${drawY}`);
         this.compositeCtx.drawImage(sourceCanvas, drawX, drawY, drawWidth, drawHeight);
     }
     
@@ -7826,7 +7715,6 @@ class RecordManager {
             
             // SAFE FIX: Ensure audio is connected to AudioMotion before recording
             if (this.visualizer.audio && this.visualizer.audio.src) {
-                console.log('🎬 Checking audio connection for recording...');
                 try {
                     // Check if audio is already connected by looking for existing source
                     const hasExistingConnection = audioMotion._sources && 
@@ -7835,16 +7723,13 @@ class RecordManager {
                         );
                     
                     if (!hasExistingConnection && !audioMotion.isConnected) {
-                        console.log('🎬 Connecting audio to AudioMotion for recording...');
                         audioMotion.connectInput(this.visualizer.audio);
                         audioMotion.isConnected = true;
                         // Give it a moment to establish the connection
                         await new Promise(resolve => setTimeout(resolve, 50));
                     } else {
-                        console.log('🎬 Audio already connected to AudioMotion');
                     }
                 } catch (e) {
-                    console.error('🎬 Error connecting audio to AudioMotion:', e);
                 }
             }
             
@@ -7863,12 +7748,10 @@ class RecordManager {
                 try {
                     audioMotion.source.connect(gainNode);
                     hasAudioSource = true;
-                    console.log('Connected AudioMotion source to recording');
                 } catch (e) {
                     console.error('Error connecting AudioMotion source:', e);
                 }
             } else {
-                console.warn('🎬 AudioMotion.source is null - audio may not be connected yet');
             }
             
             // Also connect video audio if available (can be simultaneous with playlist)
@@ -7884,18 +7767,15 @@ class RecordManager {
             
             if (hasAudioSource) {
                 gainNode.connect(destination);
-                console.log('Audio stream created successfully with all available sources');
                 return destination.stream;
             }
             
             // Fallback: try to capture from the current audio element directly
             if (this.visualizer.audio && this.visualizer.audio.src) {
-                console.log('🎬 Fallback: Capturing audio from media element');
                 try {
                     // Try to get or create an audio source node
                     let source = this.visualizer.audio._audioSourceNode;
                     if (!source) {
-                        console.log('🎬 Creating new MediaElementAudioSourceNode for recording');
                         source = audioCtx.createMediaElementAudioSourceNode(this.visualizer.audio);
                         this.visualizer.audio._audioSourceNode = source;
                     }
@@ -7903,16 +7783,13 @@ class RecordManager {
                     source.connect(gainNode);
                     gainNode.connect(destination);
                     hasAudioSource = true;
-                    console.log('🎬 Successfully connected audio element to recording');
                     return destination.stream;
                 } catch (e) {
-                    console.error('🎬 Error connecting audio element:', e);
                 }
             }
             
             // Final fallback: create a silent audio track to prevent recording errors
             if (!hasAudioSource) {
-                console.warn('🎬 No audio source found - creating silent audio track for recording');
                 try {
                     // Create a silent audio source
                     const oscillator = audioCtx.createOscillator();
@@ -7932,18 +7809,14 @@ class RecordManager {
                         }
                     }, 100);
                     
-                    console.log('🎬 Created silent audio track for recording');
                     return destination.stream;
                 } catch (e) {
-                    console.error('🎬 Error creating silent audio track:', e);
                 }
             }
             
-            console.warn('🎬 All audio capture methods failed');
             return null;
             
         } catch (err) {
-            console.error('Error getting audio stream:', err);
             return null;
         }
     }
@@ -8147,7 +8020,6 @@ class RecordManager {
     stopRecording() {
         if (!this.isRecording) return;
         
-        console.log('Stopping recording...');
         this.isRecording = false;
         
         // Stop timer
@@ -8188,15 +8060,11 @@ class RecordManager {
         recordTimer.textContent = '00:00';
         });
         
-        console.log('Recording stopped');
     }
     
     async saveRecording() {
-        console.log('🎬 === SAVE RECORDING DEBUG ===');
-        console.log('🎬 Recorded chunks:', this.recordedChunks.length);
         
         if (this.recordedChunks.length === 0) {
-            console.warn('No recorded data to save');
             return;
         }
         
@@ -8210,34 +8078,14 @@ class RecordManager {
             const mimeType = blobType;
             let extension = format === 'mp4' ? '.mp4' : '.webm';
             
-            console.log('🎬 Detected format from blob:', {
-                blobType: blobType,
-                detectedFormat: actualFormat,
-                selectedFormat: this.recordFormat,
-                extension: extension
-            });
             
             let blob = new Blob(this.recordedChunks, { type: mimeType });
-            console.log('🎬 Original blob:', {
-                size: blob.size + ' bytes',
-                sizeInMB: (blob.size / 1024 / 1024).toFixed(2) + ' MB',
-                type: blob.type,
-                format: format
-            });
             
             const finalBlob = blob;
             
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const filename = `${this.customFilename}_${timestamp}${extension}`;
             
-            console.log('🎬 === FINAL SAVE INFO ===');
-            console.log('🎬 Final blob:', {
-                size: finalBlob.size + ' bytes',
-                sizeInMB: (finalBlob.size / 1024 / 1024).toFixed(2) + ' MB',
-                type: finalBlob.type
-            });
-            console.log('🎬 Filename:', filename);
-            console.log('🎬 Extension:', extension);
             
             if (this.directoryHandle && 'showDirectoryPicker' in window) {
                 // Save to chosen directory
@@ -8247,7 +8095,6 @@ class RecordManager {
                     await writable.write(finalBlob);
                     await writable.close();
                     
-                    console.log(`Recording saved to ${this.saveLocation}/${filename}`);
                     alert(`Recording saved successfully to ${this.saveLocation}/${filename}`);
                 } catch (err) {
                     console.error('Error saving to chosen directory:', err);
@@ -8259,7 +8106,6 @@ class RecordManager {
             }
             
         } catch (err) {
-            console.error('Error saving recording:', err);
             alert('Error saving recording: ' + err.message);
         }
         
@@ -8268,13 +8114,10 @@ class RecordManager {
     }
     
     fallbackDownload(blob, filename) {
-        console.log('fallbackDownload called with blob size:', blob.size, 'filename:', filename);
         const url = URL.createObjectURL(blob);
-        console.log('Created blob URL:', url);
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
-        console.log('Download link created, triggering click...');
         document.body.appendChild(a);
         
         // Add error handling for download
@@ -8286,7 +8129,6 @@ class RecordManager {
         // Try to trigger download with timeout fallback
         try {
         a.click();
-            console.log('Download click triggered successfully');
         } catch (e) {
             console.error('Error triggering download click:', e);
             alert('Unable to trigger download. Please check your browser settings.');
@@ -8295,7 +8137,6 @@ class RecordManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        console.log(`Recording downloaded as ${filename}`);
     }
 }
 
@@ -8305,7 +8146,6 @@ class RecordManager {
 // LiveDisplayManager - Exact duplicate of RecordManager for streaming
 class LiveDisplayManager {
     constructor(visualizer, displayId = 'main') {
-        console.log(`DEBUG LiveDisplayManager: Constructor called with displayId: ${displayId}`);
         this.visualizer = visualizer;
         this.displayId = displayId;
         this.isStreaming = false;
@@ -8320,7 +8160,6 @@ class LiveDisplayManager {
         
         // Create a dedicated channel for settings
         this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${displayId}`);
-        console.log(`DEBUG LiveDisplayManager: Created settings channel for ${displayId}: freque-live-display-settings-${displayId}`);
         
         this.hasOffered = false;
         this.displayReady = false; // Track if display window is ready
@@ -8339,11 +8178,8 @@ class LiveDisplayManager {
         
         // Set up settings channel message handler
         this.settingsChannel.onmessage = (event) => {
-            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Settings channel received:`, event.data);
             if (event.data && event.data.type === 'display-settings' && event.data.data) {
                 const settings = event.data.data;
-                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Updating settings from settings channel:`, settings);
-                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Current displaySettings before update:`, this.displaySettings);
                 
                 // Update display settings
                 if (settings.captureVideo !== undefined) this.displaySettings.captureVideo = settings.captureVideo;
@@ -8365,31 +8201,26 @@ class LiveDisplayManager {
                 let streamSettingsChanged = false;
                 
                 if (settings.resolution !== undefined && settings.resolution !== this.displaySettings.resolution) {
-                    console.log(`DEBUG LiveDisplay ${this.displayId}: Updating resolution from ${this.displaySettings.resolution} to ${settings.resolution}`);
                     this.displaySettings.resolution = settings.resolution;
                     streamSettingsChanged = true;
                 }
                 
                 if (settings.frameRate !== undefined && settings.frameRate !== this.displaySettings.frameRate) {
-                    console.log(`DEBUG LiveDisplay ${this.displayId}: Updating frameRate from ${this.displaySettings.frameRate} to ${settings.frameRate}`);
                     this.displaySettings.frameRate = settings.frameRate;
                     streamSettingsChanged = true;
                 }
                 
                 if (settings.videoQuality !== undefined && settings.videoQuality !== this.displaySettings.videoQuality) {
-                    console.log(`DEBUG LiveDisplay ${this.displayId}: Updating videoQuality from ${this.displaySettings.videoQuality} to ${settings.videoQuality}`);
                     this.displaySettings.videoQuality = settings.videoQuality;
                     streamSettingsChanged = true;
                 }
                 
                 // Restart streaming if resolution or frameRate changed
                 if (streamSettingsChanged && this.isStreaming) {
-                    console.log(`DEBUG LiveDisplay ${this.displayId}: Stream settings changed, restarting stream...`);
                     // We need to restart the stream to apply the new settings
                     this.restartStream();
                 }
                 
-                console.log(`DEBUG LiveDisplayManager ${this.displayId}: Settings updated to:`, this.displaySettings);
                 
                 // Send updated settings to display window
                 if (this.channel) {
@@ -8469,7 +8300,6 @@ class LiveDisplayManager {
                     this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
                 }
             } catch (e) {
-                console.error('Error loading live display settings:', e);
             }
         }
     
@@ -8486,18 +8316,16 @@ class LiveDisplayManager {
             };
             localStorage.setItem(`freque_live_display_settings_${this.displayId}`, JSON.stringify(settings));
         } catch (e) {
-            console.error('Error saving live display settings:', e);
         }
     }
     
     initializeUI() {
         // No UI initialization needed for independent system
-        console.log(`LiveDisplayManager ${this.displayId} initialized`);
     }
     
     // Set the BroadcastChannel from DisplayInstance
     setChannel(channel) {
-        console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting channel`, channel);
+        // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting channel`, channel);
         this.channel = channel;
         
         // Set up message handler for the channel
@@ -8507,23 +8335,23 @@ class LiveDisplayManager {
     // Set up message handler for the channel
     setupChannelMessageHandler() {
         if (!this.channel) {
-            console.error(`DEBUG LiveDisplayManager ${this.displayId}: Cannot set up message handler - no channel`);
+            // console.error(`DEBUG LiveDisplayManager ${this.displayId}: Cannot set up message handler - no channel`);
             return;
         }
         
-        console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting up channel message handler`);
+        // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting up channel message handler`);
         
         // Handle incoming messages
         this.channel.onmessage = async (event) => {
-            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Raw message event:`, event);
+            // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Raw message event:`, event);
             
             if (!event.data) {
-                console.error(`DEBUG LiveDisplayManager ${this.displayId}: Received empty message event`);
+                // console.error(`DEBUG LiveDisplayManager ${this.displayId}: Received empty message event`);
                 return;
             }
             
             const { type, data } = event.data;
-            console.log(`DEBUG LiveDisplayManager ${this.displayId}: Received message:`, type, data);
+            // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Received message:`, type, data);
             
             switch (type) {
                 case 'answer':
@@ -8533,47 +8361,46 @@ class LiveDisplayManager {
                     await this.handleIceCandidate(data);
                     break;
                 case 'display-ready':
-                    console.log(`LiveDisplay ${this.displayId}: Display window ready`);
+                    // console.log(`LiveDisplay ${this.displayId}: Display window ready`);
                     // Store that display is ready, but only create offer if we're streaming
                     this.displayReady = true;
                     // Only create and send offer if we're already streaming
                     if (this.isStreaming && this.pc) {
-                        console.log(`LiveDisplay ${this.displayId}: Display ready and streaming - creating offer`);
+                        // console.log(`LiveDisplay ${this.displayId}: Display ready and streaming - creating offer`);
                         this.createAndSendOffer();
                     } else {
-                        console.log(`LiveDisplay ${this.displayId}: Display ready but not streaming yet - will create offer when streaming starts`);
+                        // console.log(`LiveDisplay ${this.displayId}: Display ready but not streaming yet - will create offer when streaming starts`);
                     }
                     break;
                 case 'pong':
-                    console.log(`LiveDisplay ${this.displayId}: Pong received`);
+                    // console.log(`LiveDisplay ${this.displayId}: Pong received`);
                     break;
                 case 'display-settings':
                     // Update display settings
                     if (data) {
-                        console.log(`DEBUG LiveDisplay ${this.displayId}: Received display settings:`, data);
-                        console.log(`DEBUG LiveDisplay ${this.displayId}: Current settings:`, this.displaySettings);
+                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Received display settings:`, data);
+                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Current settings:`, this.displaySettings);
                         
                         // Update capture settings
                         if (data.captureVideo !== undefined) {
-                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVideo from ${this.displaySettings.captureVideo} to ${data.captureVideo}`);
+                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVideo from ${this.displaySettings.captureVideo} to ${data.captureVideo}`);
                             this.displaySettings.captureVideo = data.captureVideo;
                         }
                         if (data.captureVisualization !== undefined) {
-                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVisualization from ${this.displaySettings.captureVisualization} to ${data.captureVisualization}`);
+                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVisualization from ${this.displaySettings.captureVisualization} to ${data.captureVisualization}`);
                             this.displaySettings.captureVisualization = data.captureVisualization;
                         }
                         if (data.captureKaleidoscope !== undefined) {
-                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureKaleidoscope from ${this.displaySettings.captureKaleidoscope} to ${data.captureKaleidoscope}`);
                             this.displaySettings.captureKaleidoscope = data.captureKaleidoscope;
                         }
                         if (data.captureInfiniteZoom !== undefined) {
-                            console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureInfiniteZoom from ${this.displaySettings.captureInfiniteZoom} to ${data.captureInfiniteZoom}`);
+                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureInfiniteZoom from ${this.displaySettings.captureInfiniteZoom} to ${data.captureInfiniteZoom}`);
                             this.displaySettings.captureInfiniteZoom = data.captureInfiniteZoom;
                         }
                         
-                        console.log(`DEBUG LiveDisplay ${this.displayId}: Updated settings:`, this.displaySettings);
+                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Updated settings:`, this.displaySettings);
                     } else {
-                        console.error(`DEBUG LiveDisplay ${this.displayId}: Received empty display settings`);
+                        // console.error(`DEBUG LiveDisplay ${this.displayId}: Received empty display settings`);
                     }
                     break;
             }
@@ -8586,7 +8413,7 @@ class LiveDisplayManager {
         
         // Use resolution from displaySettings
         const resolution = this.displaySettings.resolution || '1080p';
-        console.log(`DEBUG LiveDisplay ${this.displayId}: Getting dimensions for resolution: ${resolution}`);
+        // console.log(`DEBUG LiveDisplay ${this.displayId}: Getting dimensions for resolution: ${resolution}`);
         
         if (resolution === 'canvas') {
             // Use current canvas dimensions with validation
@@ -8594,30 +8421,27 @@ class LiveDisplayManager {
             if (canvas && canvas.width > 0 && canvas.height > 0) {
                 targetWidth = canvas.width;
                 targetHeight = canvas.height;
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Using canvas dimensions: ${targetWidth}x${targetHeight}`);
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Using canvas dimensions: ${targetWidth}x${targetHeight}`);
             } else {
                 // Canvas not ready or invalid dimensions - fallback to 1080p
                 targetWidth = 1920;
                 targetHeight = 1080;
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Canvas not ready, using default: ${targetWidth}x${targetHeight}`);
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Canvas not ready, using default: ${targetWidth}x${targetHeight}`);
             }
         } else {
             const preset = this.resolutionPresets[resolution];
             if (preset) {
                 targetWidth = preset.width;
                 targetHeight = preset.height;
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Using preset dimensions for ${resolution}: ${targetWidth}x${targetHeight}`);
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Using preset dimensions for ${resolution}: ${targetWidth}x${targetHeight}`);
             } else {
                 // Default to 1080p if preset not found
                 targetWidth = 1920;
                 targetHeight = 1080;
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Preset not found, using default: ${targetWidth}x${targetHeight}`);
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Preset not found, using default: ${targetWidth}x${targetHeight}`);
             }
         }
         
-        console.log(`LiveDisplay ${this.displayId} dimensions before aspect ratio: ${targetWidth}x${targetHeight}`);
-        console.log(`Current aspect ratio setting: ${this.aspectRatio}`);
-        console.log(`Match visualization aspect: ${this.matchVisualizationAspect}`);
         
         // Determine target aspect ratio
         let targetAspect;
@@ -8627,14 +8451,14 @@ class LiveDisplayManager {
         const canvas = this.visualizer.audioMotion?.canvas;
         if (canvas) {
             targetAspect = canvas.width / canvas.height;
-            console.log(`✓ LiveDisplay ${this.displayId} using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
+            // console.log(`✓ LiveDisplay ${this.displayId} using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
         } else {
             // Fallback to manual aspect ratio setting
             const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
-            console.log(`✓ LiveDisplay ${this.displayId} using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
+            // console.log(`✓ LiveDisplay ${this.displayId} using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
-        console.log(`LiveDisplay ${this.displayId} final targetAspect:`, targetAspect);
+        // console.log(`LiveDisplay ${this.displayId} final targetAspect:`, targetAspect);
         
         // Calculate final dimensions
         const currentAspect = targetWidth / targetHeight;
@@ -8650,7 +8474,6 @@ class LiveDisplayManager {
             }
         }
         
-        console.log(`LiveDisplay ${this.displayId} final dimensions: ${targetWidth}x${targetHeight}`);
         
         return { width: targetWidth, height: targetHeight };
     }
@@ -8664,7 +8487,6 @@ class LiveDisplayManager {
         this.compositeCanvas.height = dimensions.height;
         this.compositeCtx = this.compositeCanvas.getContext('2d');
         
-        console.log(`LiveDisplay ${this.displayId} created composite canvas: ${dimensions.width}x${dimensions.height}`);
     }
     
     // IDENTICAL to RecordManager.startCompositing()
@@ -8692,12 +8514,11 @@ class LiveDisplayManager {
             if (!this.frameCount) this.frameCount = 0;
             this.frameCount++;
             // if (this.frameCount % 60 === 0) {
-            //     console.log(`LiveDisplay ${this.displayId}: Composite frame ${this.frameCount} - Canvas: ${width}x${height}`);
+            //     // console.log(`LiveDisplay ${this.displayId}: Composite frame ${this.frameCount} - Canvas: ${width}x${height}`);
             // }
             
             // Draw background image if available and enabled
             if (this.visualizer.backgroundImage && this.visualizer.backgroundImageEnabled) {
-                console.log(`🎥 LiveDisplay ${this.displayId}: Drawing background image in composite`);
                 this.visualizer.drawBackgroundImage(this.compositeCtx, width, height);
             } else {
                 // console.log(`🎥 LiveDisplay ${this.displayId}: Background image skipped -`, {
@@ -8708,11 +8529,7 @@ class LiveDisplayManager {
         
         // Debug logging for kaleidoscope state
         if (this.visualizer.kaleidoscopeEnabled) {
-            console.log(`LiveDisplay ${this.displayId} Kaleidoscope enabled - ApplyToVideo:`, this.visualizer.kaleidoscopeApplyToVideo, 
-                       'ApplyToViz:', this.visualizer.kaleidoscopeApplyToViz);
             if (this.visualizer.kaleidoscopeVideoCanvas) {
-                console.log(`LiveDisplay ${this.displayId} Kaleidoscope video canvas display:`, this.visualizer.kaleidoscopeVideoCanvas.style.display,
-                           'opacity:', this.visualizer.kaleidoscopeVideoCanvas.style.opacity);
             }
         }
         
@@ -8730,7 +8547,6 @@ class LiveDisplayManager {
             
             if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
-                console.log('🎥 RecordManager: Using Kaleidoscope viz canvas as source (includes Nebula effects)');
             } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
                 sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
             } else if (this.visualizer.audioMotion?.canvas) {
@@ -8767,16 +8583,9 @@ class LiveDisplayManager {
             
             // Log compositing frame with settings (every 60 frames)
             if (!this.frameCount || this.frameCount % 60 === 0) {
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Compositing frame ${this.frameCount} with settings:`, {
-                    captureVideo: this.displaySettings.captureVideo,
-                    captureVisualization: this.displaySettings.captureVisualization,
-                    captureKaleidoscope: this.displaySettings.captureKaleidoscope,
-                    captureInfiniteZoom: this.displaySettings.captureInfiniteZoom,
-                    captureWebGL: this.displaySettings.captureWebGL
-                });
                 
                 // Debug: Check if this.displaySettings is being updated
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Full displaySettings object:`, JSON.stringify(this.displaySettings));
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Full displaySettings object:`, JSON.stringify(this.displaySettings));
             }
             
             // Draw video background with shared dimensions (if capture video is enabled)
@@ -9074,11 +8883,10 @@ class LiveDisplayManager {
         if (this.isStreaming) return;
         
         try {
-            console.log(`LiveDisplay ${this.displayId}: Starting streaming...`);
             
             // Check if channel is available
             if (!this.channel) {
-                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot start streaming - no channel available`);
+                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot start streaming - no channel available`);
                 return;
             }
             
@@ -9096,21 +8904,15 @@ class LiveDisplayManager {
             // Get stream from composite canvas with frame rate from displaySettings
             const frameRate = this.displaySettings.frameRate || 30;
             this.stream = this.compositeCanvas.captureStream(frameRate);
-            console.log(`LiveDisplay ${this.displayId}: Stream created with ${this.stream.getVideoTracks().length} video tracks`);
+            // console.log(`LiveDisplay ${this.displayId}: Stream created with ${this.stream.getVideoTracks().length} video tracks`);
             
             // Debug stream properties
             this.stream.getVideoTracks().forEach((track, index) => {
-                console.log(`LiveDisplay ${this.displayId}: Track ${index}:`, {
-                    kind: track.kind,
-                    enabled: track.enabled,
-                    readyState: track.readyState,
-                    label: track.label
-                });
             });
             
             // Always create a fresh WebRTC connection
             if (this.pc) {
-                console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection`);
+                // console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection`);
                 this.pc.close();
                 this.pc = null;
             }
@@ -9123,7 +8925,7 @@ class LiveDisplayManager {
             this.setupWebRTC();
             
             // Always create and send offer after setup
-            console.log(`LiveDisplay ${this.displayId}: Creating offer after WebRTC setup`);
+            // console.log(`LiveDisplay ${this.displayId}: Creating offer after WebRTC setup`);
             
             // Add a small delay to ensure the WebRTC connection is fully set up
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -9131,10 +8933,10 @@ class LiveDisplayManager {
             // Create and send offer
             await this.createAndSendOffer();
             
-            console.log(`LiveDisplay ${this.displayId}: Streaming started successfully`);
+            // console.log(`LiveDisplay ${this.displayId}: Streaming started successfully`);
             
         } catch (err) {
-            console.error(`LiveDisplay ${this.displayId}: Error starting streaming:`, err);
+            // console.error(`LiveDisplay ${this.displayId}: Error starting streaming:`, err);
             this.stopStreaming();
         }
     }
@@ -9143,7 +8945,7 @@ class LiveDisplayManager {
     setupWebRTC() {
         // Create a new RTCPeerConnection
         if (this.pc) {
-            console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection in setupWebRTC`);
+            // console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection in setupWebRTC`);
             this.pc.close();
         }
         
@@ -9151,39 +8953,38 @@ class LiveDisplayManager {
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         });
         
-        console.log(`LiveDisplay ${this.displayId}: Created new RTCPeerConnection`);
         
         // Add tracks to peer connection if we have a stream
         if (this.stream && this.stream.getTracks().length > 0) {
             this.stream.getTracks().forEach(track => {
                 try {
                     const sender = this.pc.addTrack(track, this.stream);
-                    console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection:`, sender ? 'success' : 'failed');
+                    // console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection:`, sender ? 'success' : 'failed');
                 } catch (err) {
-                    console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection:`, err);
+                    // console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection:`, err);
                 }
             });
         } else {
-            console.error(`LiveDisplay ${this.displayId}: No stream or tracks available to add!`);
+            // console.error(`LiveDisplay ${this.displayId}: No stream or tracks available to add!`);
             
             // If we don't have a stream yet, try to recreate it
             if (!this.stream && this.compositeCanvas) {
                 try {
                     const frameRate = this.displaySettings.frameRate || 30;
                     this.stream = this.compositeCanvas.captureStream(frameRate);
-                    console.log(`LiveDisplay ${this.displayId}: Recreated stream with ${this.stream.getTracks().length} tracks`);
+                    // console.log(`LiveDisplay ${this.displayId}: Recreated stream with ${this.stream.getTracks().length} tracks`);
                     
                     // Now try to add the tracks
                     this.stream.getTracks().forEach(track => {
                         try {
                             const sender = this.pc.addTrack(track, this.stream);
-                            console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection (retry):`, sender ? 'success' : 'failed');
+                            // console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection (retry):`, sender ? 'success' : 'failed');
                         } catch (err) {
-                            console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection (retry):`, err);
+                            // console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection (retry):`, err);
                         }
                     });
                 } catch (err) {
-                    console.error(`LiveDisplay ${this.displayId}: Error recreating stream:`, err);
+                    // console.error(`LiveDisplay ${this.displayId}: Error recreating stream:`, err);
                 }
             }
         }
@@ -9213,13 +9014,13 @@ class LiveDisplayManager {
     async createAndSendOffer() {
         try {
             if (!this.channel) {
-                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot send offer - no channel available`);
+                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot send offer - no channel available`);
                 return;
             }
             
             if (!this.pc) {
-                console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot create offer - no peer connection available`);
-                console.log(`DEBUG LiveDisplay ${this.displayId}: Will create offer when streaming starts`);
+                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot create offer - no peer connection available`);
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Will create offer when streaming starts`);
                 return;
             }
             
@@ -9237,7 +9038,7 @@ class LiveDisplayManager {
                 }
             }
             
-            console.log(`DEBUG LiveDisplay ${this.displayId}: Setting video bitrate to ${bitrate/1000000} Mbps (${videoQuality})`);
+            // console.log(`DEBUG LiveDisplay ${this.displayId}: Setting video bitrate to ${bitrate/1000000} Mbps (${videoQuality})`);
             
             // Create offer with specific codec preferences
             const offerOptions = {
@@ -9252,11 +9053,11 @@ class LiveDisplayManager {
             
             // Get the current description after it's been set
             const currentDescription = this.pc.localDescription;
-            console.log(`LiveDisplay ${this.displayId}: Original SDP set as local description`);
+            // console.log(`LiveDisplay ${this.displayId}: Original SDP set as local description`);
             
             // We'll apply the bitrate setting when sending to the remote peer
             // This avoids the m-line order issue
-            console.log(`LiveDisplay ${this.displayId}: Created offer with bitrate ${bitrate/1000000} Mbps`);
+            // console.log(`LiveDisplay ${this.displayId}: Created offer with bitrate ${bitrate/1000000} Mbps`);
             
             // Send offer to display window - serialize the RTCSessionDescription object
             // Include the bitrate information for the remote peer to apply
@@ -9268,9 +9069,9 @@ class LiveDisplayManager {
                     bitrate: bitrate
                 }
             });
-            console.log(`LiveDisplay ${this.displayId}: Offer sent to display window`);
+            // console.log(`LiveDisplay ${this.displayId}: Offer sent to display window`);
         } catch (error) {
-            console.error(`LiveDisplay ${this.displayId}: Error creating offer:`, error);
+            // console.error(`LiveDisplay ${this.displayId}: Error creating offer:`, error);
         }
     }
     
@@ -9285,15 +9086,15 @@ class LiveDisplayManager {
                 });
                 
                 await this.pc.setRemoteDescription(answer);
-                console.log(`LiveDisplay ${this.displayId}: Answer set`);
+                // console.log(`LiveDisplay ${this.displayId}: Answer set`);
                 
                 // Process any pending ICE candidates
                 this.processPendingIceCandidates();
             } else {
-                console.log(`LiveDisplay ${this.displayId}: Ignoring answer - wrong state: ${this.pc.signalingState}`);
+                // console.log(`LiveDisplay ${this.displayId}: Ignoring answer - wrong state: ${this.pc.signalingState}`);
             }
         } catch (error) {
-            console.error(`LiveDisplay ${this.displayId}: Error handling answer:`, error);
+            // console.error(`LiveDisplay ${this.displayId}: Error handling answer:`, error);
         }
     }
     
@@ -9304,13 +9105,13 @@ class LiveDisplayManager {
             
             if (this.pc.remoteDescription) {
                 await this.pc.addIceCandidate(candidate);
-                console.log(`LiveDisplay ${this.displayId}: ICE candidate added`);
+                // console.log(`LiveDisplay ${this.displayId}: ICE candidate added`);
             } else {
                 this.pendingIceCandidates.push(candidate);
-                console.log(`LiveDisplay ${this.displayId}: ICE candidate queued`);
+                // console.log(`LiveDisplay ${this.displayId}: ICE candidate queued`);
             }
         } catch (error) {
-            console.error(`LiveDisplay ${this.displayId}: Error adding ICE candidate:`, error);
+            // console.error(`LiveDisplay ${this.displayId}: Error adding ICE candidate:`, error);
         }
     }
     
@@ -9327,21 +9128,21 @@ class LiveDisplayManager {
             this.displayWindow = window.open(`Display.html?displayId=${this.displayId}`, `LiveDisplay_${this.displayId}`, windowFeatures);
             
             if (this.displayWindow) {
-                console.log(`LiveDisplay ${this.displayId}: Display window opened`);
+                // console.log(`LiveDisplay ${this.displayId}: Display window opened`);
                 return true;
             } else {
-                console.error(`LiveDisplay ${this.displayId}: Failed to open display window`);
+                // console.error(`LiveDisplay ${this.displayId}: Failed to open display window`);
                 return false;
             }
         } catch (error) {
-            console.error(`LiveDisplay ${this.displayId}: Error opening display window:`, error);
+            // console.error(`LiveDisplay ${this.displayId}: Error opening display window:`, error);
             return false;
         }
     }
     
     // Restart streaming with new settings
     async restartStream() {
-        console.log(`LiveDisplay ${this.displayId}: Restarting stream with new settings...`);
+        // console.log(`LiveDisplay ${this.displayId}: Restarting stream with new settings...`);
         
         // Save display window reference and state
         const displayWindow = this.displayWindow;
@@ -9380,14 +9181,14 @@ class LiveDisplayManager {
         // Start streaming again with new settings
         await this.startStreaming();
         
-        console.log(`LiveDisplay ${this.displayId}: Stream restarted successfully`);
+        // console.log(`LiveDisplay ${this.displayId}: Stream restarted successfully`);
     }
     
     // Internal method to stop streaming with option to keep channels
     async stopStreamingInternal(closeAll = true) {
         if (!this.isStreaming) return;
         
-        console.log(`LiveDisplay ${this.displayId}: Stopping streaming${closeAll ? '' : ' (keeping channels)'}...`);
+        // console.log(`LiveDisplay ${this.displayId}: Stopping streaming${closeAll ? '' : ' (keeping channels)'}...`);
         this.isStreaming = false;
         
         // Stop compositing
@@ -9435,7 +9236,7 @@ class LiveDisplayManager {
             }
         }
         
-        console.log(`LiveDisplay ${this.displayId}: Streaming stopped${closeAll ? '' : ' (keeping channels)'}`);
+        // console.log(`LiveDisplay ${this.displayId}: Streaming stopped${closeAll ? '' : ' (keeping channels)'}`);
     }
     
     // Stop streaming and clean up all resources
@@ -9747,7 +9548,6 @@ class StreamManager {
         this.sendVideoFilters();
 
         // Send initial display settings
-        console.log('🎯 Sending initial display settings:', this.displaySettings);
         this.channel.postMessage({type: 'display-settings', data: this.displaySettings});
 
         try { // Create capture canvas - this will now always create fresh
@@ -9814,7 +9614,7 @@ class StreamManager {
                 console.log('PC Signaling state:', this.pc.signalingState);
                 
                 if (this.pc.connectionState === 'connected') {
-                    console.log('✅ WebRTC connection established successfully!');
+                    // console.log('✅ WebRTC connection established successfully!');
                 } else if (this.pc.connectionState === 'failed') {
                     console.log('❌ Connection failed, may need to restart');
                     this.handleStreamingError(new Error('WebRTC connection failed'));
@@ -9830,7 +9630,7 @@ class StreamManager {
 
                 this.channel.postMessage({type: 'offer', data: offer});
                 this.hasOffered = true;
-                console.log('✅ Offer sent successfully');
+                // console.log('✅ Offer sent successfully');
             } else {
                 console.log('Offer already sent, skipping duplicate');
             }
@@ -9860,39 +9660,33 @@ class StreamManager {
             // Use video input aspect ratio
             const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
             height = Math.round(width / videoAspect);
-            console.log(`🎯 setupCaptureCanvas: Using video aspect ratio: ${this.visualizer.videoElement.videoWidth}x${this.visualizer.videoElement.videoHeight} (${videoAspect.toFixed(3)})`);
         } else {
             // Use canvas aspect ratio (like Record system) - captures whatever is visible
             const canvas = this.visualizer.audioMotion?.canvas;
             if (canvas && canvas.width > 0 && canvas.height > 0) {
                 const canvasAspect = canvas.width / canvas.height;
                 height = Math.round(width / canvasAspect);
-                console.log(`🎯 setupCaptureCanvas: Using canvas aspect ratio: ${canvas.width}x${canvas.height} (${canvasAspect.toFixed(3)})`);
             } else {
                 // Fallback to manual aspect ratio setting
             const [ratioW, ratioH] = this.displaySettings.aspectRatio.split(':').map(Number);
             if (ratioW && ratioH) {
                 const aspectRatio = ratioW / ratioH;
                 height = Math.round(width / aspectRatio);
-                console.log(`🎯 setupCaptureCanvas: Using manual aspect ratio: ${ratioW}:${ratioH} (${aspectRatio.toFixed(3)})`);
             } else {
                 // Fallback to 16:9 if invalid aspect ratio
                 height = Math.round(width * 9 / 16);
-                console.log('🎯 setupCaptureCanvas: Using fallback 16:9 aspect ratio');
                 }
             }
         }
 
         this.captureCanvas.width = width;
         this.captureCanvas.height = height;
-        console.log(`🎯 setupCaptureCanvas: Canvas configured to ${width}x${height}`);
 
         // Store base dimensions for consistent scaling (match actual capture canvas aspect ratio)
         this.baseCaptureWidth = 2560;
         this.baseCaptureHeight = Math.round(2560 * height / width); // Match capture canvas aspect ratio
         this.captureScale = width / this.baseCaptureWidth; // Scale factor for quality enhancement
 
-        console.log('🎯 Base dimensions:', this.baseCaptureWidth, 'x', this.baseCaptureHeight, `(${(this.baseCaptureWidth/this.baseCaptureHeight).toFixed(3)} aspect ratio)`);
         console.log('Capture canvas size:', this.captureCanvas.width, 'x', this.captureCanvas.height, `(${(width/height).toFixed(3)} aspect ratio)`);
         console.log('Capture scale factor:', this.captureScale, 'x for', this.displaySettings.captureResolution + 'px quality');
     }
@@ -9952,25 +9746,25 @@ class StreamManager {
                     
                     // Debug: Log what video elements are available
                     if (frameCount % 60 === 0) { // Log every 60 frames to avoid spam
-                        console.log('Capture debug - videoMode:', this.visualizer.videoMode);
-                        console.log('Available video elements:', {
-                            captureVideoElement: !!this.visualizer.captureVideoElement,
-                            videoElement: !!this.visualizer.videoElement
-                        });
-                        console.log('Selected videoSource:', videoSource ? videoSource.constructor.name : 'none');
-                        if (videoSource) {
-                            console.log('VideoSource details:', {
-                                readyState: videoSource.readyState,
-                                dimensions: videoSource.videoWidth + 'x' + videoSource.videoHeight,
-                                paused: videoSource.paused,
-                                currentTime: videoSource.currentTime
-                            });
-                        }
+                        // console.log('Capture debug - videoMode:', this.visualizer.videoMode);
+                        // console.log('Available video elements:', {
+                        //     captureVideoElement: !!this.visualizer.captureVideoElement,
+                        //     videoElement: !!this.visualizer.videoElement
+                        // });
+                        // console.log('Selected videoSource:', videoSource ? videoSource.constructor.name : 'none');
+                        // if (videoSource) {
+                        //     console.log('VideoSource details:', {
+                        //         readyState: videoSource.readyState,
+                        //         dimensions: videoSource.videoWidth + 'x' + videoSource.videoHeight,
+                        //         paused: videoSource.paused,
+                        //         currentTime: videoSource.currentTime
+                        //     });
+                        // }
                     }
 
                     if (videoSource && videoSource.readyState >= 2) {
                         if (frameCount % 60 === 0) {
-                            console.log('Video source found for capture:', videoSource.constructor.name, 'ready state:', videoSource.readyState, 'dimensions:', videoSource.videoWidth + 'x' + videoSource.videoHeight);
+                            // console.log('Video source found for capture:', videoSource.constructor.name, 'ready state:', videoSource.readyState, 'dimensions:', videoSource.videoWidth + 'x' + videoSource.videoHeight);
                         }
                         // Clear temp canvas
                         this.tempVideoCtx.clearRect(0, 0, this.tempVideoCanvas.width, this.tempVideoCanvas.height);
@@ -10482,10 +10276,10 @@ class StreamManager {
 // Phase 1: Test LiveDisplayManager functionality
 async function testLiveDisplayManager() {
     try {
-        console.log('🧪 Phase 1: Testing LiveDisplayManager...');
+        // console.log('🧪 Phase 1: Testing LiveDisplayManager...');
         
         if (!window.visualizer || !window.visualizer.liveDisplayManager) {
-            console.error('❌ Phase 1: LiveDisplayManager not available');
+            // console.error('❌ Phase 1: LiveDisplayManager not available');
             return;
         }
         
@@ -10493,24 +10287,24 @@ async function testLiveDisplayManager() {
         
         // Test 1: Verify composite canvas creation
         await manager.setupCompositeCanvas();
-        console.log('✅ Test 1: Composite canvas created:', manager.compositeCanvas.width, 'x', manager.compositeCanvas.height);
+        // console.log('✅ Test 1: Composite canvas created:', manager.compositeCanvas.width, 'x', manager.compositeCanvas.height);
         
         // Test 2: Verify streaming capability
         const videoStream = manager.compositeCanvas.captureStream(30);
-        console.log('✅ Test 2: Stream created with tracks:', videoStream.getTracks().length);
+        // console.log('✅ Test 2: Stream created with tracks:', videoStream.getTracks().length);
         
         // Test 3: Verify compositing works
         manager.startCompositing();
-        console.log('✅ Test 3: Compositing started');
+        // console.log('✅ Test 3: Compositing started');
         
         // Stop compositing after 1 second
         setTimeout(() => {
             manager.stopStreaming();
-            console.log('✅ Phase 1: All tests passed - LiveDisplayManager is working correctly');
+            // console.log('✅ Phase 1: All tests passed - LiveDisplayManager is working correctly');
         }, 1000);
         
     } catch (error) {
-        console.error('❌ Phase 1: Test failed:', error);
+        // console.error('❌ Phase 1: Test failed:', error);
     }
 }
 
@@ -11480,7 +11274,7 @@ class FrequeVisualizer {
             
             // Phase 1: Test LiveDisplayManager
             this.liveDisplayManager = new LiveDisplayManager(this, 'test');
-            console.log('✅ Phase 1: LiveDisplayManager created successfully');
+            // console.log('✅ Phase 1: LiveDisplayManager created successfully');
             
             // Test Phase 1 functionality
             testLiveDisplayManager();
@@ -11495,7 +11289,6 @@ class FrequeVisualizer {
             this.nebulaVisualization = null;
             this.nebulaEnabled = false;
             this.nebulaAnimationFrame = null;
-            console.log('🌌 Nebula visualization prepared for initialization');
             
             // Initialize Fluid Dynamics Presets
             this.savedFluidPresets = [];
@@ -11518,7 +11311,6 @@ class FrequeVisualizer {
             await this.initializeFirstTrack();
             this.hideLoading();
         } catch (error) {
-            console.error('Initialization error:', error);
             this.showError('Failed to initialize audio visualizer: ' + error.message);
             
             // Show error state
@@ -11594,7 +11386,7 @@ class FrequeVisualizer {
             }
             
             await this.preloadTrack(firstValidTrackIndex);
-            this.audioInitialized = true;
+        this.audioInitialized = true;
             
             // Update current track index to match the loaded track
             this.currentTrackIndex = firstValidTrackIndex;
@@ -11664,15 +11456,15 @@ class FrequeVisualizer {
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
 
             // Initialize official AudioMotion (new hybrid system)
-            console.log('🔍 Checking for AudioMotionAnalyzer:', typeof AudioMotionAnalyzer);
+            // console.log('🔍 Checking for AudioMotionAnalyzer:', typeof AudioMotionAnalyzer);
             if (typeof AudioMotionAnalyzer !== 'undefined') {
-                console.log('🎵 Official AudioMotion library detected, initializing hybrid system');
+                // console.log('🎵 Official AudioMotion library detected, initializing hybrid system');
                 try {
                     // Use the same audio context AND canvas as the custom analyzer
                     const sharedAudioContext = this.audioMotion.audioCtx;
                     const sharedCanvas = this.audioMotion.canvas;
-                    console.log('🔗 Sharing audio context:', sharedAudioContext);
-                    console.log('🎨 Sharing canvas:', sharedCanvas);
+                    // console.log('🔗 Sharing audio context:', sharedAudioContext);
+                    // console.log('🎨 Sharing canvas:', sharedCanvas);
                     
                     this.officialAudioMotion = new AudioMotionAnalyzer(
                         null, // No container - we're providing the canvas directly
@@ -11688,9 +11480,9 @@ class FrequeVisualizer {
                             canvas: sharedCanvas // Share the same canvas
                         }
                     );
-                    console.log('✅ Official AudioMotion initialized successfully with shared context:', this.officialAudioMotion);
+                    // console.log('✅ Official AudioMotion initialized successfully with shared context:', this.officialAudioMotion);
                 } catch (error) {
-                    console.error('❌ Failed to initialize Official AudioMotion:', error);
+                    // console.error('❌ Failed to initialize Official AudioMotion:', error);
                     this.officialAudioMotion = null;
                 }
             } else {
@@ -11714,7 +11506,7 @@ class FrequeVisualizer {
                     // Auto-resize to match container
                     this.nebulaVisualization.autoResize();
                 }
-                console.log('🌌 Nebula visualization initialized');
+                // console.log('🌌 Nebula visualization initialized');
             } else {
                 console.warn('🌌 NebulaVisualization class not available');
             }
@@ -11722,7 +11514,6 @@ class FrequeVisualizer {
             // console.log('SpectrumAnalyzer initialized successfully');
 
         } catch (error) {
-            console.error('SpectrumAnalyzer initialization error:', error);
             throw error;
         }
     }
@@ -11786,7 +11577,6 @@ class FrequeVisualizer {
         setTimeout(() => {
             const headerPlaylist = document.getElementById('headerPlaylistDropdown');
             if (headerPlaylist && this.playlistManager && this.playlistManager.currentPlaylist && this.playlistManager.currentPlaylist.tracks) {
-                console.log('Audio dropdown opened: updating header playlist with cached data...');
                 this.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
             }
         }, 100);
@@ -11929,7 +11719,7 @@ class FrequeVisualizer {
         // Update button state
         button.classList.add('active');
         
-        console.log('Footer Autopilot settings panel opened');
+        // console.log('Footer Autopilot settings panel opened');
     }
 
     closeFooterAutopilotSettingsPanel() {
@@ -11939,7 +11729,7 @@ class FrequeVisualizer {
         if (panel) panel.style.display = 'none';
         if (button) button.classList.remove('active');
         
-        console.log('Footer Autopilot settings panel closed');
+        // console.log('Footer Autopilot settings panel closed');
     }
 
 
@@ -11952,7 +11742,7 @@ class FrequeVisualizer {
     }
 
     initializeDisplaySettingsPanels() {
-        console.log('Initializing display settings panels...');
+        // console.log('Initializing display settings panels...');
         
         // Initialize display 1 settings
         this.initializeDisplayPanelSettings('display1');
@@ -12023,7 +11813,7 @@ class FrequeVisualizer {
             activeBtn.classList.add('active');
         }
         
-        console.log(`Display ${displayId}: Mode set to ${mode}`);
+        // console.log(`Display ${displayId}: Mode set to ${mode}`);
     }
 
     setDisplaySharpness(displayId, value) {
@@ -12367,7 +12157,7 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.autoColorSchemes;
                     e.target.textContent = `Auto Color Schemes: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
+                    // console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12383,7 +12173,7 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.parameterControlEnabled;
                     e.target.textContent = `Parameter Control: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
+                    // console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12399,7 +12189,7 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.learningEnabled;
                     e.target.textContent = `Learning: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
+                    // console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12435,7 +12225,7 @@ class FrequeVisualizer {
                     };
                     this.aiAutopilot.parameterController.recordUserFeedback('positive', context);
                     this.updateFeedbackStats();
-                    console.log('👍 User liked current settings');
+                    // console.log('👍 User liked current settings');
                 }
             });
         }
@@ -12453,7 +12243,7 @@ class FrequeVisualizer {
                     };
                     this.aiAutopilot.parameterController.recordUserFeedback('negative', context);
                     this.updateFeedbackStats();
-                    console.log('👎 User disliked current settings');
+                    // console.log('👎 User disliked current settings');
                 }
             });
         }
@@ -12469,7 +12259,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.adaptiveTuningEnabled;
                     e.target.textContent = `Adaptive Tuning: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🎯 Adaptive tuning: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12480,21 +12269,14 @@ class FrequeVisualizer {
             footerForceOptimizationBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🎯 Force Optimization button clicked');
                 if (this.aiAutopilot) {
-                    console.log('🎯 AI Autopilot exists:', !!this.aiAutopilot);
                     if (this.aiAutopilot.adaptiveTuning) {
-                        console.log('🎯 Adaptive Tuning exists:', !!this.aiAutopilot.adaptiveTuning);
-                        console.log('🎯 Performance window length:', this.aiAutopilot.adaptiveTuning.performanceWindow.length);
                         
                         // Force optimization regardless of normal conditions
                         this.aiAutopilot.adaptiveTuning.optimizeParameters(true);
-                        console.log('🎯 Forced parameter optimization completed');
                     } else {
-                        console.error('🎯 Adaptive Tuning not available');
                     }
                 } else {
-                    console.error('🎯 AI Autopilot not available');
                 }
             });
         }
@@ -12510,7 +12292,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.predictiveBehaviorEnabled;
                     e.target.textContent = `Predictive Behavior: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🎯 Predictive behavior: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12531,10 +12312,8 @@ class FrequeVisualizer {
                     );
                     
                     if (predictions) {
-                        console.log('🎯 Test prediction result:', predictions);
                         alert(`Prediction: ${predictions.modeChange?.reason || 'No mode change'}\nConfidence: ${Math.round(predictions.confidence * 100)}%`);
                     } else {
-                        console.log('🎯 No prediction available (low confidence)');
                         alert('No prediction available - confidence too low');
                     }
                 }
@@ -12594,7 +12373,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.videoEffectsEnabled;
                     e.target.textContent = `Video Effects: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🎬 Video effects: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -12653,9 +12431,7 @@ class FrequeVisualizer {
 
     initializeFooterRecordControls() {
         // Connect footer record controls to unified quality system
-        console.log('Initializing footer record controls, recordManager:', !!this.recordManager);
         if (!this.recordManager) {
-            console.error('RecordManager not available for footer controls');
             return;
         }
         
@@ -12830,7 +12606,6 @@ class FrequeVisualizer {
         try {
             // Check if recordManager exists and has the method
             if (!this.recordManager || typeof this.recordManager.selectOptimalCodec !== 'function') {
-                console.warn('RecordManager not ready for codec selection');
                 compatibilityStatus.textContent = '⚡ Initializing...';
                 compatibilityStatus.className = 'compatibility-status checking';
                 return;
@@ -12839,7 +12614,6 @@ class FrequeVisualizer {
             const codecInfo = this.recordManager.selectOptimalCodec();
             const compatibility = codecInfo.compatibility;
             
-            console.log('🎬 Codec compatibility updated:', compatibility.text);
             
             // Update text and styling
             compatibilityStatus.textContent = compatibility.text;
@@ -13079,7 +12853,7 @@ class FrequeVisualizer {
             document.addEventListener('click', closeOnOutsideClick);
         }, 100);
 
-        console.log('Custom audio input dropdown created');
+        // console.log('Custom audio input dropdown created');
     }
 
     addPlaylistControlsGroup(container) {
@@ -13116,23 +12890,18 @@ class FrequeVisualizer {
         container.appendChild(controlGroup);
         
         // Force immediate playlist initialization for header
-        console.log('Setting up header playlist...');
         setTimeout(() => {
             const headerPlaylist = document.getElementById('headerPlaylistDropdown');
-            console.log('Header playlist container found:', !!headerPlaylist);
             
             if (headerPlaylist && window.playlistManager) {
-                console.log('Forcing header playlist population...');
                 // Check if playlist manager has a cached playlist
                 if (window.playlistManager.currentPlaylist && window.playlistManager.currentPlaylist.tracks) {
-                    console.log('Found cached playlist, rendering to header...');
                     window.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
                 } else {
                     window.playlistManager.populateHeaderPlaylistDirect(headerPlaylist);
                 }
             } else if (headerPlaylist) {
                 // Fallback: create basic playlist structure immediately
-                console.log('Creating fallback playlist structure...');
                 headerPlaylist.innerHTML = `
                     <div class="playlist-actions-dropdown" style="margin-bottom: 10px;">
                         <button class="btn-primary" style="margin-right: 8px;">Add Folder</button>
@@ -13160,10 +12929,8 @@ class FrequeVisualizer {
                         } else if (window.playlistManager) {
                             window.playlistManager.scanFolder();
                         } else {
-                            console.error('Playlist manager not found!');
                             // Try to initialize it
                             if (window.visualizer) {
-                                console.log('Attempting to access playlist manager through visualizer...');
                                 const pm = window.visualizer.playlistManager;
                                 if (pm && pm.scanFolder) {
                                     pm.scanFolder();
@@ -13210,7 +12977,6 @@ class FrequeVisualizer {
         setTimeout(() => {
             const headerPlaylist = document.getElementById('headerPlaylistDropdown');
             if (headerPlaylist && window.playlistManager && window.playlistManager.currentPlaylist && window.playlistManager.currentPlaylist.tracks) {
-                console.log('Late check: Found cached playlist, updating header...');
                 window.playlistManager.renderHeaderPlaylistContent(headerPlaylist);
             }
         }, 1500);
@@ -13482,7 +13248,7 @@ class FrequeVisualizer {
         dropdown.appendChild(content);
         
         // Refresh stats if camera is already active
-        console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
+        // console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
         if (this.videoMode === 'camera' && this.cameraInfo) {
             console.log('Refreshing camera stats for reopened panel...');
             // Small delay to ensure DOM is ready
@@ -13524,7 +13290,7 @@ class FrequeVisualizer {
             document.addEventListener('click', closeOnOutsideClick);
         }, 100);
 
-        console.log('Custom video input dropdown created');
+        // console.log('Custom video input dropdown created');
     }
 
     addControlGroup(container, groupLabel, sliders) {
@@ -14183,7 +13949,7 @@ class FrequeVisualizer {
         // Footer Morph Button
         const footerMorphBtn = document.getElementById('footerMorphBtn');
         if (footerMorphBtn) {
-            console.log('Initializing footer morph button');
+            // console.log('Initializing footer morph button');
             footerMorphBtn.addEventListener('click', () => {
                 this.toggleMorph();
             });
@@ -14194,7 +13960,7 @@ class FrequeVisualizer {
         // Footer Morph Speed Select
         const footerMorphSpeedSelect = document.getElementById('footerMorphSpeedSelect');
         if (footerMorphSpeedSelect) {
-            console.log('Initializing footer morph speed select');
+            // console.log('Initializing footer morph speed select');
             footerMorphSpeedSelect.addEventListener('change', (e) => {
                 this.setMorphSpeed(e.target.value);
             });
@@ -14485,7 +14251,7 @@ class FrequeVisualizer {
         
         // Also update file info if image already exists
         if (this.backgroundImage && this.backgroundImageFileName) {
-            console.log('🖼️ Background image already exists, updating panel file info');
+            // console.log('🖼️ Background image already exists, updating panel file info');
         this.updateBackgroundPanelStates(panel);
         }
     }
@@ -14607,7 +14373,7 @@ class FrequeVisualizer {
                     imagePreview.appendChild(img);
                 };
                 img.onerror = (e) => {
-                    console.error('❌ Error loading image for preview:', e);
+                    // console.error('❌ Error loading image for preview:', e);
                 };
                 img.src = this.backgroundImage;
             } else {
@@ -14636,7 +14402,7 @@ class FrequeVisualizer {
         this.saveBackgroundImage();
         this.updateFooterBackgroundButton();
         
-        console.log('Background image toggled to:', this.backgroundImageEnabled);
+        // console.log('Background image toggled to:', this.backgroundImageEnabled);
     }
 
     formatFileSize(bytes) {
@@ -14740,13 +14506,13 @@ class FrequeVisualizer {
                 // Connect functionality to static HTML elements
                 this.connectStaticHeaderElements();
                 
-                console.log('🎛️ AM Visualizer panel opened');
+                // console.log('🎛️ AM Visualizer panel opened');
             } else {
                 panel.style.display = 'none';
                 console.log('🎛️ AM Visualizer panel closed');
             }
         } else {
-            console.error('❌ Header visualizer panel not found');
+            // console.error('❌ Header visualizer panel not found');
         }
     }
 
@@ -14785,7 +14551,7 @@ class FrequeVisualizer {
         // Connect dropdown item functionality
         this.connectDropdownItems();
         
-        console.log('🔗 Connected static header elements to functionality');
+        // console.log('🔗 Connected static header elements to functionality');
     }
 
     connectDropdownItems() {
@@ -14848,7 +14614,7 @@ class FrequeVisualizer {
             });
         });
         
-        console.log('🔗 Connected dropdown items functionality');
+        // console.log('🔗 Connected dropdown items functionality');
     }
 
     createPlaylistPanel() {
@@ -15758,7 +15524,7 @@ class FrequeVisualizer {
     }
 
     loadPresetOptions(selectElement) {
-        console.log('Loading preset options, current presets:', this.savedPresets);
+        // console.log('Loading preset options, current presets:', this.savedPresets);
         
         // Clear existing options except the first one
         while (selectElement.children.length > 1) {
@@ -15785,10 +15551,10 @@ class FrequeVisualizer {
                 option.textContent = preset.name || `Preset ${originalIndex + 1}`;
                 
                 selectElement.appendChild(option);
-                console.log('Added option:', option.textContent, 'value:', option.value);
+                // console.log('Added option:', option.textContent, 'value:', option.value);
             });
         } else {
-            console.log('No presets found');
+            // console.log('No presets found');
         }
     }
 
@@ -16041,7 +15807,7 @@ class FrequeVisualizer {
                         console.log('Found audio inputs:', audioInputs);
 
                     } catch (err) {
-                        console.error('getUserMedia error:', err);
+                        // console.error('getUserMedia error:', err);
 
                         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                             this.showError('Microphone blocked. Click the lock icon in the address bar, set Microphone to "Allow", then refresh the page.');
@@ -16086,7 +15852,7 @@ class FrequeVisualizer {
     }
 
     clearAudioInput() {
-        console.log('🗑️ Clearing audio input - resetting to initial state');
+        // console.log('🗑️ Clearing audio input - resetting to initial state');
         
         // Stop any current live audio input
         this.stopLiveInput();
@@ -16125,7 +15891,7 @@ class FrequeVisualizer {
         // Update footer Live Audio button state
         this.updateFooterLiveAudioButton();
         
-        console.log('✅ Audio input cleared successfully');
+        // console.log('✅ Audio input cleared successfully');
     }
 
     async initializeVideoInput() {
@@ -16153,11 +15919,11 @@ class FrequeVisualizer {
 
     updateVideoDeviceList() {
         // Header-only video controls (sidebar removed)
-        console.log('Video device list update - header controls only');
+        // console.log('Video device list update - header controls only');
         
         // Update mixer video camera select dropdown
         if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoCameraSelect) {
-            console.log('Updating mixer video camera select with available devices');
+            // console.log('Updating mixer video camera select with available devices');
             window.multiDisplayManager.updateMixerVideoCameraSelect();
         }
     }
@@ -16178,7 +15944,7 @@ class FrequeVisualizer {
     }
 
     clearVideoInput() {
-        console.log('🗑️ Clearing video input - resetting to initial state');
+        // console.log('🗑️ Clearing video input - resetting to initial state');
         
         // Stop any current video input
         this.stopVideoInput();
@@ -16214,7 +15980,7 @@ class FrequeVisualizer {
         const headerClearBtn = document.getElementById('headerVideoClearInputBtn');
         const mixerClearBtn = document.getElementById('mixerVideoClearInputBtn');
         
-        console.log('✅ Video input cleared successfully');
+        // console.log('✅ Video input cleared successfully');
     }
 
     toggleVideoPlayback() {
@@ -16244,7 +16010,7 @@ class FrequeVisualizer {
             timestamp: Date.now()
         };
         localStorage.setItem('mviz_video_source', JSON.stringify(videoSource));
-        console.log('Video source saved:', videoSource);
+        // console.log('Video source saved:', videoSource);
     }
 
     loadVideoSource() {
@@ -16268,16 +16034,15 @@ class FrequeVisualizer {
     }
 
     updateVisualizationAspectRatio() {
-        console.log('=== updateVisualizationAspectRatio called ===');
-        console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
-        console.log('videoElement exists:', !!this.videoElement);
-        console.log('audioMotion exists:', !!this.audioMotion);
-        console.log('videoMode:', this.videoMode);
+        // console.log('=== updateVisualizationAspectRatio called ===');
+        // console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
+        // console.log('videoElement exists:', !!this.videoElement);
+        // console.log('audioMotion exists:', !!this.audioMotion);
+        // console.log('videoMode:', this.videoMode);
 
         // DISABLED: Don't resize canvas to match video aspect ratio
         // This ensures visualizations render correctly regardless of video presence
-        console.log('✓ Canvas resizing disabled - preserving visualization rendering quality');
-        console.log('✓ Recording will capture whatever is visible in the window');
+        // console.log('✓ Canvas resizing disabled - preserving visualization rendering quality');
         
                 return;
     }
@@ -16293,7 +16058,7 @@ class FrequeVisualizer {
                 const containerWidth = rect.width || 800;
                 const containerHeight = rect.height || 400;
 
-                console.log(`Restoring original canvas dimensions: ${containerWidth}x${containerHeight}`);
+                // console.log(`Restoring original canvas dimensions: ${containerWidth}x${containerHeight}`);
 
                 this.audioMotion.canvas.width = containerWidth;
                 this.audioMotion.canvas.height = containerHeight;
@@ -16380,7 +16145,7 @@ class FrequeVisualizer {
                 this.videoAudioGain.disconnect();
                 this.videoAudioGain = null;
             }
-            console.log('Video audio disconnected');
+            // console.log('Video audio disconnected');
         } catch (error) {
             console.error('Error disconnecting video audio:', error);
         }
@@ -16494,7 +16259,7 @@ class FrequeVisualizer {
             
             footerAutopilotBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('Footer Autopilot button clicked');
+                // console.log('Footer Autopilot button clicked');
                 if (this.aiAutopilot) {
                     if (this.aiAutopilot.isActive) {
                         this.aiAutopilot.deactivate();
@@ -16511,7 +16276,7 @@ class FrequeVisualizer {
         if (footerAutopilotSettingsBtn) {
             footerAutopilotSettingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('Footer Autopilot settings button clicked');
+                // console.log('Footer Autopilot settings button clicked');
                 this.toggleFooterAutopilotSettingsPanel();
             });
         }
@@ -16535,7 +16300,6 @@ class FrequeVisualizer {
                 const scope = e.target.dataset.scope;
                 if (this.aiAutopilot) {
                     this.aiAutopilot.scope = scope;
-                    console.log(`🎯 Autopilot scope set to: ${scope}`);
                     
                     // Update button states
                     document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
@@ -16544,13 +16308,11 @@ class FrequeVisualizer {
                     // If scope is specific (radial, energy), immediately switch to that mode
                     if (scope === 'radial' || scope === 'energy') {
                         const targetMode = scope === 'radial' ? 4 : 5;
-                        console.log(`🎯 Scope change: Immediately switching to mode ${targetMode} (${scope})`);
                         this.setVisualizationMode(targetMode);
                         
                         // Force a decision engine update to respect the new scope
                         setTimeout(() => {
                             if (this.aiAutopilot && this.aiAutopilot.decisionEngine) {
-                                console.log(`🎯 Scope change: Forcing decision engine update for scope ${scope}`);
                                 this.aiAutopilot.decisionEngine.lastDecision = 0; // Reset decision timer
                             }
                         }, 100);
@@ -16567,7 +16329,7 @@ class FrequeVisualizer {
                 const timing = e.target.dataset.timing;
                 if (this.aiAutopilot) {
                     this.aiAutopilot.changeTiming = timing;
-                    console.log(`⏱️ Change timing set to: ${timing}`);
+                    // console.log(`⏱️ Change timing set to: ${timing}`);
                     
                     // Update button states
                     document.querySelectorAll('.timing-btn').forEach(b => b.classList.remove('active'));
@@ -16582,7 +16344,7 @@ class FrequeVisualizer {
                 const sensitivity = e.target.dataset.sensitivity;
                 if (this.aiAutopilot) {
                     this.aiAutopilot.sensitivity = sensitivity;
-                    console.log(`🎚️ Sensitivity set to: ${sensitivity}`);
+                    // console.log(`🎚️ Sensitivity set to: ${sensitivity}`);
                     
                     // Update button states
                     document.querySelectorAll('.sensitivity-btn').forEach(b => b.classList.remove('active'));
@@ -16598,12 +16360,12 @@ class FrequeVisualizer {
                 if (this.aiAutopilot) {
                     if (genre === 'auto') {
                         this.aiAutopilot.manualGenre = null;
-                        console.log(`🎵 Genre detection set to: Auto`);
+                        // console.log(`🎵 Genre detection set to: Auto`);
                     } else {
                         this.aiAutopilot.manualGenre = genre;
                         this.aiAutopilot.currentGenre = genre;
                         this.aiAutopilot.genreConfidence = 1.0;
-                        console.log(`🎵 Manual genre set to: ${genre}`);
+                        // console.log(`🎵 Manual genre set to: ${genre}`);
                     }
                     
                     // Update button states
@@ -16792,10 +16554,10 @@ class FrequeVisualizer {
 
     // Learning Analytics Dashboard Methods
     openLearningAnalyticsDashboard() {
-        console.log('Opening Learning Analytics Dashboard...');
+        // console.log('Opening Learning Analytics Dashboard...');
         const modal = document.getElementById('learningAnalyticsModal');
         if (modal) {
-            console.log('Modal found, setting display to flex');
+            // console.log('Modal found, setting display to flex');
             modal.style.display = 'flex';
             this.updateDashboardAnalytics();
             this.logActivity('Learning Analytics Dashboard opened');
@@ -17022,7 +16784,7 @@ class FrequeVisualizer {
 
     closePlaylistPanel() {
         // Playlist is now embedded - no close functionality needed
-        console.log('Playlist is embedded - no close functionality needed');
+        // console.log('Playlist is embedded - no close functionality needed');
     }
 
     updatePlaylistFromManager(playlist) {
@@ -17106,9 +16868,9 @@ class FrequeVisualizer {
     }
     
     playTrackById(trackId) {
-        console.log('=== playTrackById called ===');
-        console.log('trackId:', trackId);
-        console.log('playlistManager exists:', !!this.playlistManager);
+        // console.log('=== playTrackById called ===');
+        // console.log('trackId:', trackId);
+        // console.log('playlistManager exists:', !!this.playlistManager);
         
         if (!this.playlistManager) {
             console.error('PlaylistManager not available');
@@ -17116,7 +16878,7 @@ class FrequeVisualizer {
         }
         
         const track = this.playlistManager.findTrackById(trackId);
-        console.log('Found track:', track ? `${track.title} by ${track.artist}` : 'null');
+        // console.log('Found track:', track ? `${track.title} by ${track.artist}` : 'null');
         
         if (!track) {
             console.error('Track not found for ID:', trackId);
@@ -17130,17 +16892,17 @@ class FrequeVisualizer {
         }
         
         // Find index in current playlist
-        console.log('Current playlist length:', this.playlist?.length || 0);
-        console.log('Looking for URL:', track.url);
+        // console.log('Current playlist length:', this.playlist?.length || 0);
+        // console.log('Looking for URL:', track.url);
         
         const index = this.playlist.findIndex(t => t.url === track.url);
-        console.log('Found index:', index);
+        // console.log('Found index:', index);
         
         if (index >= 0) {
-            console.log(`Playing track at index ${index}: ${track.title}`);
+            // console.log(`Playing track at index ${index}: ${track.title}`);
             // Use selectTrack to load the track, then force playback
             this.selectTrack(index).then(() => {
-                console.log('Track selected, starting playback...');
+                // console.log('Track selected, starting playback...');
                 this.play(); // Force playback to start
             }).catch(error => {
                 console.error('Error selecting/playing track:', error);
@@ -17153,7 +16915,7 @@ class FrequeVisualizer {
 
     initializeCloseButtonHandler() {
         // Close button removed - playlist is now embedded in sidebar
-        console.log('Playlist is embedded - no close button handler needed');
+        // console.log('Playlist is embedded - no close button handler needed');
     }
 
     async startVideoInput(deviceId) {
@@ -17419,13 +17181,13 @@ class FrequeVisualizer {
 
             // Get actual video dimensions
             const settings = this.videoStream.getVideoTracks()[0].getSettings();
-            console.log(`Video started: ${
-                settings.width
-            }x${
-                settings.height
-            } @ ${
-                settings.frameRate
-            }fps`);
+            // console.log(`Video started: ${
+            //     settings.width
+            // }x${
+            //     settings.height
+            // } @ ${
+            //     settings.frameRate
+            // }fps`);
 
             this.updateDisplayFilters();
 
@@ -17453,7 +17215,7 @@ class FrequeVisualizer {
             this.saveVideoSource('camera', deviceId);
 
             // Header controls only (sidebar removed)
-            console.log('Camera started - header controls only');
+            // console.log('Camera started - header controls only');
 
             // Add cleanup listener for unexpected stream end
             const videoTrack = this.videoStream.getVideoTracks()[0];
@@ -17525,7 +17287,6 @@ class FrequeVisualizer {
                 this.cameraInfo.actualResolution = `${videoElement.videoWidth}x${videoElement.videoHeight}`;
             }
 
-            console.log('🎥 Camera Stream Info:', this.cameraInfo);
 
             // Update stats display if it exists
             this.updateCameraStats();
@@ -17538,20 +17299,20 @@ class FrequeVisualizer {
         const headerContainer = document.getElementById('headerCameraStatsContainer');
         const mixerContainer = document.getElementById('mixerCameraStatsContainer');
         
-        console.log('Stats container check:', {
-            sidebar: !!sidebarContainer,
-            header: !!headerContainer,
-            mixer: !!mixerContainer
-        });
+        // console.log('Stats container check:', {
+        //     sidebar: !!sidebarContainer,
+        //     header: !!headerContainer,
+        //     mixer: !!mixerContainer
+        // });
         
         const statsContainers = [sidebarContainer, headerContainer, mixerContainer].filter(Boolean);
         
         if (statsContainers.length === 0) {
-            console.log('No camera stats containers found - video panel may be closed');
+            // console.log('No camera stats containers found - video panel may be closed');
             return;
         }
         
-        console.log(`Updating camera stats in ${statsContainers.length} container(s)`);
+        // console.log(`Updating camera stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
         if (statsContainer && this.cameraInfo) {
@@ -17768,7 +17529,6 @@ class FrequeVisualizer {
                 }, 10000);
 
                 this.videoElement.onloadedmetadata = () => {
-                    console.log('🎬 Video file metadata loaded, calling detectVideoFileInfo');
                     if (!resolved) {
                         resolved = true;
                         clearTimeout(timeout);
@@ -17810,7 +17570,7 @@ class FrequeVisualizer {
 
             // Update UI
             this.videoMode = 'file';
-            console.log('Video file loaded successfully, setting mode to:', this.videoMode);
+            // console.log('Video file loaded successfully, setting mode to:', this.videoMode);
             console.log('Video element opacity:', this.videoElement.style.opacity);
             console.log('Video element display:', this.videoElement.style.display);
             this.updateVideoToggleState();
@@ -17853,9 +17613,9 @@ class FrequeVisualizer {
                 this.debugVideoVisibility();
             }, 500);
 
-            console.log('✅ Video file started successfully');
+            // console.log('✅ Video file started successfully');
         } catch (error) {
-            console.error('❌ Error starting video file:', error);
+            // console.error('❌ Error starting video file:', error);
             console.error('Error stack:', error.stack);
             this.showError(`Failed to load video: ${error.message}`);
             this.stopVideoInput();
@@ -17869,7 +17629,7 @@ class FrequeVisualizer {
         const visualizer = document.getElementById('visualizer');
         
         console.log('=== VIDEO DEBUG INFO ===');
-        console.log('Video Mode:', this.videoMode);
+        // console.log('Video Mode:', this.videoMode);
         console.log('Video Element exists:', !!videoElement);
         
         if (videoElement) {
@@ -17909,13 +17669,8 @@ class FrequeVisualizer {
     }
 
     detectVideoFileInfo() {
-        console.log('🎬 detectVideoFileInfo called');
-        console.log('🎬 videoElement exists:', !!this.videoElement);
-        console.log('🎬 videoMode:', this.videoMode);
-        console.log('🎬 condition check:', this.videoElement && this.videoMode === 'file');
         
         if (this.videoElement && this.videoMode === 'file') {
-            console.log('🎬 Inside detectVideoFileInfo - creating videoInfo');
             const videoInfo = {
                 name: this.videoFile?.name || 'Unknown',
                 resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
@@ -17927,11 +17682,9 @@ class FrequeVisualizer {
 
             // Update stats if needed - with small delay to ensure DOM is ready
             setTimeout(() => {
-                console.log('🎬 About to call updateVideoFileStats with:', videoInfo);
             this.updateVideoFileStats(videoInfo);
             }, 100);
         } else {
-            console.log('🎬 detectVideoFileInfo condition failed');
         }
     }
 
@@ -18385,7 +18138,7 @@ class FrequeVisualizer {
         // Apply combined filters
         this.videoElement.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
 
-        console.log('Applied filters to LIVE VIDEO (videoElement):', this.videoElement.style.filter);
+        // console.log('Applied filters to LIVE VIDEO (videoElement):', this.videoElement.style.filter);
 
         // Apply vignette overlay
         this.applyVignette();
@@ -19109,7 +18862,6 @@ https://rogueamoeba.com/loopback/
             // Note: bgAlpha and reflex properties excluded as requested
         };
 
-        console.log('🎯 Generated new Pro morph target:', this.morphTargetConfig);
     }
 
     // Preset Methods
@@ -19330,8 +19082,8 @@ https://rogueamoeba.com/loopback/
     }
 
     setVisualizationMode(modeIndex) {
-        console.log(`🎨 setVisualizationMode called: ${this.currentMode} → ${modeIndex}`);
-        console.trace('🎨 setVisualizationMode call stack');
+        // console.log(`🎨 setVisualizationMode called: ${this.currentMode} → ${modeIndex}`);
+        // console.trace('🎨 setVisualizationMode call stack');
         this.currentMode = modeIndex;
 
         if (this.audioMotion && modeIndex >= 0 && modeIndex < this.visualizationModes.length) {
@@ -19341,9 +19093,9 @@ https://rogueamoeba.com/loopback/
             // DON'T apply brightness boost to standard presets - they're already tuned
 
             try {
-                console.log('Setting visualization mode', modeIndex, 'with config:', config);
+                // console.log('Setting visualization mode', modeIndex, 'with config:', config);
                 this.audioMotion.setOptions(config);
-                console.log('Visualization mode applied successfully');
+                // console.log('Visualization mode applied successfully');
             } catch (error) {
                 console.warn(`Could not set visualization mode ${modeIndex}:`, error);
             }
@@ -19436,7 +19188,7 @@ https://rogueamoeba.com/loopback/
         // Sidebar vizModeToggle removed - functionality moved to header
 
         if (this.audioMotion) {
-            console.log('Setting random visualization with config:', randomConfig);
+            // console.log('Setting random visualization with config:', randomConfig);
             this.audioMotion.setOptions(randomConfig);
 
             const preset = {
@@ -19449,7 +19201,7 @@ https://rogueamoeba.com/loopback/
             this.savedPresets = this.savedPresets.filter(p => p.name !== 'Last Random');
             
             // Add new "Last Random" preset
-            this.savedPresets.push(preset);
+                this.savedPresets.push(preset);
 
             this.savePresets();
             this.updatePresetSelector();
@@ -19465,7 +19217,7 @@ https://rogueamoeba.com/loopback/
     // Pro Random Visualization Methods
     setRandomProVisualization() {
         if (!this.officialAudioMotion) {
-            console.error('❌ Official AudioMotion not available for Pro random');
+            // console.error('❌ Official AudioMotion not available for Pro random');
             return;
         }
 
@@ -19488,7 +19240,7 @@ https://rogueamoeba.com/loopback/
         this.savedPresets = this.savedPresets.filter(p => p.name !== 'Last Random');
         
         // Add new "Last Random" preset
-        this.savedPresets.push(preset);
+            this.savedPresets.push(preset);
 
         this.savePresets();
         this.updatePresetSelector();
@@ -19686,18 +19438,18 @@ https://rogueamoeba.com/loopback/
     toggleBlobs() {
         this.blobsEnabled = !this.blobsEnabled;
         
-        console.log('🔵 Blobs toggle:', {
-            enabled: this.blobsEnabled,
-            visualization: !!this.blobsVisualization,
-            canvas: this.blobsVisualization ? this.blobsVisualization.canvas : null
-        });
+        // console.log('🔵 Blobs toggle:', {
+        //     enabled: this.blobsEnabled,
+        //     visualization: !!this.blobsVisualization,
+        //     canvas: this.blobsVisualization ? this.blobsVisualization.canvas : null
+        // });
         
         if (this.blobsEnabled) {
             this.blobsVisualization.start();
-            console.log('🔵 Blobs enabled');
+            // console.log('🔵 Blobs enabled');
         } else {
             this.blobsVisualization.stop();
-            console.log('🔵 Blobs disabled');
+            // console.log('🔵 Blobs disabled');
         }
         
         this.updateBlobsButton();
@@ -19712,16 +19464,16 @@ https://rogueamoeba.com/loopback/
     toggleWebGL() {
         this.webglEnabled = !this.webglEnabled;
         
-        console.log('🎮 WebGL toggle:', {
-            enabled: this.webglEnabled,
-            visualization: !!this.webglVisualization,
-            canvas: this.webglVisualization ? this.webglVisualization.canvas : null
-        });
+        // console.log('🎮 WebGL toggle:', {
+        //     enabled: this.webglEnabled,
+        //     visualization: !!this.webglVisualization,
+        //     canvas: this.webglVisualization ? this.webglVisualization.canvas : null
+        // });
         
         if (this.webglEnabled) {
             if (this.webglVisualization) {
                 this.webglVisualization.start();
-                console.log('🎮 WebGL enabled');
+                // console.log('🎮 WebGL enabled');
             } else {
                 console.error('🎮 WebGL visualization not initialized!');
                 this.webglEnabled = false; // Revert if not initialized
@@ -19729,7 +19481,7 @@ https://rogueamoeba.com/loopback/
         } else {
             if (this.webglVisualization) {
                 this.webglVisualization.stop();
-                console.log('🎮 WebGL disabled');
+                // console.log('🎮 WebGL disabled');
             }
         }
         
@@ -19775,21 +19527,21 @@ https://rogueamoeba.com/loopback/
         const panel = document.getElementById('headerBlobsPanel');
         const btn = document.getElementById('headerBlobsBtn');
         
-        console.log('🔵 toggleHeaderBlobs called', { panel, btn });
+        // console.log('🔵 toggleHeaderBlobs called', { panel, btn });
         
         // Toggle panel visibility
         if (panel) {
             const isVisible = panel.style.display !== 'none';
-            console.log('🔵 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
+            // console.log('🔵 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
             
             if (isVisible) {
                 panel.style.display = 'none';
-                console.log('🔵 Panel hidden');
+                // console.log('🔵 Panel hidden');
             } else {
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
-                console.log('🔵 Positioning panel:', { buttonRect });
+                // console.log('🔵 Positioning panel:', { buttonRect });
                 
                 // Position relative to viewport, then adjust for scroll
                 panel.style.position = 'fixed';
@@ -19798,7 +19550,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.zIndex = '1000';
                 
                 panel.style.display = 'block';
-                console.log('🔵 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
+                // console.log('🔵 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
             }
         } else {
             console.error('🔵 headerBlobsPanel not found!');
@@ -19809,21 +19561,21 @@ https://rogueamoeba.com/loopback/
         const panel = document.getElementById('headerWebGLPanel');
         const btn = document.getElementById('headerWebGLBtn');
         
-        console.log('🎮 toggleHeaderWebGL called', { panel, btn });
+        // console.log('🎮 toggleHeaderWebGL called', { panel, btn });
         
         // Toggle panel visibility
         if (panel) {
             const isVisible = panel.style.display !== 'none';
-            console.log('🎮 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
+            // console.log('🎮 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
             
             if (isVisible) {
                 panel.style.display = 'none';
-                console.log('🎮 Panel hidden');
+                // console.log('🎮 Panel hidden');
             } else {
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
-                console.log('🎮 Positioning panel:', { buttonRect });
+                // console.log('🎮 Positioning panel:', { buttonRect });
                 
                 // Position relative to viewport, then adjust for scroll
                 panel.style.position = 'fixed';
@@ -19832,7 +19584,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.zIndex = '1000';
                 
                 panel.style.display = 'block';
-                console.log('🎮 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
+                // console.log('🎮 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
             }
         } else {
             console.error('🎮 headerWebGLPanel not found!');
@@ -19926,7 +19678,7 @@ https://rogueamoeba.com/loopback/
         // so no particle scaling is needed. The effect is recalculated each frame
         // based on current canvas dimensions and center positions.
         
-        console.log('🔮 Kaleidoscope canvases resized to:', newWidth, 'x', newHeight);
+        // console.log('🔮 Kaleidoscope canvases resized to:', newWidth, 'x', newHeight);
     }
 
     setupBlobsControls() {
@@ -20065,7 +19817,7 @@ https://rogueamoeba.com/loopback/
     }
 
     setupWebGLControls() {
-        console.log('🎮 WebGL: Setting up controls...');
+        // console.log('🎮 WebGL: Setting up controls...');
         
         // Check if WebGL is supported before setting up controls
         if (this.webglVisualization && !this.webglVisualization.webglSupported) {
@@ -20076,7 +19828,7 @@ https://rogueamoeba.com/loopback/
         // Opacity slider
         const opacitySlider = document.getElementById('webglOpacitySlider');
         const opacityValue = document.getElementById('webglOpacityValue');
-        console.log('🎮 WebGL: Opacity slider found:', !!opacitySlider, 'Value element found:', !!opacityValue);
+        // console.log('🎮 WebGL: Opacity slider found:', !!opacitySlider, 'Value element found:', !!opacityValue);
         if (opacitySlider && opacityValue) {
             opacitySlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -20090,15 +19842,15 @@ https://rogueamoeba.com/loopback/
         // Particle Count slider
         const particleCountSlider = document.getElementById('webglParticleCountSlider');
         const particleCountValue = document.getElementById('webglParticleCountValue');
-        console.log('🎮 WebGL: Particle count slider found:', !!particleCountSlider, 'Value element found:', !!particleCountValue);
+        // console.log('🎮 WebGL: Particle count slider found:', !!particleCountSlider, 'Value element found:', !!particleCountValue);
         if (particleCountSlider && particleCountValue) {
             particleCountSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 particleCountValue.textContent = value;
-                console.log('🎮 WebGL: Particle count slider changed to:', value);
+                // console.log('🎮 WebGL: Particle count slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleCount: value });
-                    console.log('🎮 WebGL: Settings updated for particle count:', value);
+                    // console.log('🎮 WebGL: Settings updated for particle count:', value);
                     // Update mixer UI
                     this.updateMixerStarfallParticleCountSlider();
                 } else {
@@ -20112,12 +19864,12 @@ https://rogueamoeba.com/loopback/
         // Particle Size slider
         const particleSizeSlider = document.getElementById('webglParticleSizeSlider');
         const particleSizeValue = document.getElementById('webglParticleSizeValue');
-        console.log('🎮 WebGL: Particle size slider found:', !!particleSizeSlider, 'Value element found:', !!particleSizeValue);
+        // console.log('🎮 WebGL: Particle size slider found:', !!particleSizeSlider, 'Value element found:', !!particleSizeValue);
         if (particleSizeSlider && particleSizeValue) {
             particleSizeSlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 particleSizeValue.textContent = value + 'px';
-                console.log('🎮 WebGL: Particle size slider changed to:', value);
+                // console.log('🎮 WebGL: Particle size slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleSize: value });
                     // Update mixer UI
@@ -20131,7 +19883,7 @@ https://rogueamoeba.com/loopback/
         // Speed slider
         const speedSlider = document.getElementById('webglSpeedSlider');
         const speedValue = document.getElementById('webglSpeedValue');
-        console.log('🎮 WebGL: Speed slider found:', !!speedSlider, 'Value element found:', !!speedValue);
+        // console.log('🎮 WebGL: Speed slider found:', !!speedSlider, 'Value element found:', !!speedValue);
         if (speedSlider && speedValue) {
             speedSlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
@@ -20147,7 +19899,7 @@ https://rogueamoeba.com/loopback/
         // Gravity slider
         const gravitySlider = document.getElementById('webglGravitySlider');
         const gravityValue = document.getElementById('webglGravityValue');
-        console.log('🎮 WebGL: Gravity slider found:', !!gravitySlider, 'Value element found:', !!gravityValue);
+        // console.log('🎮 WebGL: Gravity slider found:', !!gravitySlider, 'Value element found:', !!gravityValue);
         if (gravitySlider && gravityValue) {
             gravitySlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
@@ -20163,7 +19915,7 @@ https://rogueamoeba.com/loopback/
         // Saturation slider
         const saturationSlider = document.getElementById('webglSaturationSlider');
         const saturationValue = document.getElementById('webglSaturationValue');
-        console.log('🎮 WebGL: Saturation slider found:', !!saturationSlider, 'Value element found:', !!saturationValue);
+        // console.log('🎮 WebGL: Saturation slider found:', !!saturationSlider, 'Value element found:', !!saturationValue);
         if (saturationSlider && saturationValue) {
             saturationSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -20178,11 +19930,11 @@ https://rogueamoeba.com/loopback/
 
         // Color scheme dropdown
         const colorSchemeSelect = document.getElementById('webglColorSchemeSelect');
-        console.log('🎮 WebGL: Color scheme dropdown found:', !!colorSchemeSelect);
+        // console.log('🎮 WebGL: Color scheme dropdown found:', !!colorSchemeSelect);
         if (colorSchemeSelect) {
             colorSchemeSelect.addEventListener('change', (e) => {
                 const scheme = e.target.value;
-                console.log('🎮 WebGL: Color scheme changed to:', scheme);
+                // console.log('🎮 WebGL: Color scheme changed to:', scheme);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
                     // Update mixer UI
@@ -20194,7 +19946,7 @@ https://rogueamoeba.com/loopback/
         // Twinkle intensity slider
         const twinkleSlider = document.getElementById('webglTwinkleSlider');
         const twinkleValue = document.getElementById('webglTwinkleValue');
-        console.log('🎮 WebGL: Twinkle slider found:', !!twinkleSlider, 'Value element found:', !!twinkleValue);
+        // console.log('🎮 WebGL: Twinkle slider found:', !!twinkleSlider, 'Value element found:', !!twinkleValue);
         if (twinkleSlider && twinkleValue) {
             twinkleSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -20210,7 +19962,7 @@ https://rogueamoeba.com/loopback/
         // Star percentage slider
         const starPercentageSlider = document.getElementById('webglStarPercentageSlider');
         const starPercentageValue = document.getElementById('webglStarPercentageValue');
-        console.log('🎮 WebGL: Star percentage slider found:', !!starPercentageSlider, 'Value element found:', !!starPercentageValue);
+        // console.log('🎮 WebGL: Star percentage slider found:', !!starPercentageSlider, 'Value element found:', !!starPercentageValue);
         if (starPercentageSlider && starPercentageValue) {
             starPercentageSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -20247,10 +19999,10 @@ https://rogueamoeba.com/loopback/
             beatIntensitySlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 beatIntensityValue.textContent = value + '%';
-                console.log('🎮 WebGL: Beat intensity slider changed to:', value);
+                // console.log('🎮 WebGL: Beat intensity slider changed to:', value);
                 if (this.webglVisualization) {
                     this.webglVisualization.setSettings({ beatIntensity: value });
-                    console.log('🎮 WebGL: Beat intensity settings updated:', value);
+                    // console.log('🎮 WebGL: Beat intensity settings updated:', value);
                 } else {
                     console.warn('🎮 WebGL: Visualization not available for beat intensity update');
                 }
@@ -20264,15 +20016,15 @@ https://rogueamoeba.com/loopback/
         const beatReactControls = document.getElementById('webglBeatReactControls');
         if (beatReactBtn) {
             beatReactBtn.addEventListener('click', () => {
-                console.log('🥁 Beat React button clicked');
+                // console.log('🥁 Beat React button clicked');
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     const currentState = this.webglVisualization.currentVisualization.beatReact;
-                    console.log('🥁 Beat React current state:', currentState);
+                    // console.log('🥁 Beat React current state:', currentState);
                     
                     this.webglVisualization.currentVisualization.beatReact = !currentState;
                     const newState = this.webglVisualization.currentVisualization.beatReact;
                     
-                    console.log('🥁 Beat React toggled to:', newState);
+                    // console.log('🥁 Beat React toggled to:', newState);
                     beatReactBtn.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
                     beatReactBtn.classList.toggle('active', newState);
                     
@@ -20582,7 +20334,7 @@ https://rogueamoeba.com/loopback/
     }
 
     setupCollapsiblePresets() {
-        console.log('🔧 Setting up collapsible preset sections');
+        // console.log('🔧 Setting up collapsible preset sections');
         
         const collapsibleHeaders = document.querySelectorAll('.mixer-panel-floating .collapsible-header');
         
@@ -20635,10 +20387,10 @@ https://rogueamoeba.com/loopback/
             header._collapsibleHandler = clickHandler;
             header.addEventListener('click', clickHandler);
             
-            console.log('✅ Collapsible preset section initialized:', {
-                targetId: targetId,
-                expanded: isExpanded
-            });
+            // console.log('✅ Collapsible preset section initialized:', {
+            //     targetId: targetId,
+            //     expanded: isExpanded
+            // });
         });
     }
 
@@ -20756,7 +20508,7 @@ https://rogueamoeba.com/loopback/
         }
         
         this.updateNebulaButtons();
-        console.log('🌌 Nebula toggled:', this.nebulaEnabled);
+        // console.log('🌌 Nebula toggled:', this.nebulaEnabled);
     }
 
     initNebulaControlHandlers() {
@@ -20849,18 +20601,18 @@ https://rogueamoeba.com/loopback/
     
     // Advanced Preset Controls Setup and Management
     setupAdvancedPresetControls() {
-        console.log('🎛️ Setting up Advanced Preset Controls...');
+        // console.log('🎛️ Setting up Advanced Preset Controls...');
         
         // Show/hide controls when Pro presets are active
         const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
         const advancedControls = document.getElementById('advancedPresetControls');
         
-        console.log('🎛️ Found Pro preset buttons:', headerAMProPresetButtons.length);
-        console.log('🎛️ Found advanced controls container:', !!advancedControls);
+        // console.log('🎛️ Found Pro preset buttons:', headerAMProPresetButtons.length);
+        // console.log('🎛️ Found advanced controls container:', !!advancedControls);
         
         if (advancedControls) {
-            console.log('🎛️ Advanced controls current display:', advancedControls.style.display);
-            console.log('🎛️ Advanced controls parent:', advancedControls.parentElement?.id);
+            // console.log('🎛️ Advanced controls current display:', advancedControls.style.display);
+            // console.log('🎛️ Advanced controls parent:', advancedControls.parentElement?.id);
         }
         
         if (!advancedControls) {
@@ -20870,11 +20622,11 @@ https://rogueamoeba.com/loopback/
         
         // Show controls when Pro preset is clicked
         headerAMProPresetButtons.forEach((button, index) => {
-            console.log(`🎛️ Adding click listener to Pro preset button ${index}:`, button.textContent);
+            // console.log(`🎛️ Adding click listener to Pro preset button ${index}:`, button.textContent);
             button.addEventListener('click', () => {
-                console.log('🎛️ Pro preset button clicked, showing advanced controls');
+                // console.log('🎛️ Pro preset button clicked, showing advanced controls');
                 advancedControls.style.display = 'block';
-                console.log('🎛️ Advanced controls display after setting:', advancedControls.style.display);
+                // console.log('🎛️ Advanced controls display after setting:', advancedControls.style.display);
                 setTimeout(() => this.loadAdvancedControlsFromPreset(), 100);
             });
         });
@@ -21121,7 +20873,7 @@ https://rogueamoeba.com/loopback/
                         
                         // Debug logging for color preset
                         if (button.preset === 'color') {
-                            console.log('🎨 Color preset toggled:', !currentState, 'audioPresets.color:', this.nebulaVisualization.settings.audioPresets.color);
+                            // console.log('🎨 Color preset toggled:', !currentState, 'audioPresets.color:', this.nebulaVisualization.settings.audioPresets.color);
                         }
                         
                         // Special handling for color preset toggle
@@ -21221,7 +20973,7 @@ https://rogueamoeba.com/loopback/
     
     applyNebulaColorPreset(presetName) {
         if (!this.nebulaVisualization) {
-            console.warn('🎨 Cannot apply color preset - nebula visualization not available');
+            // console.warn('🎨 Cannot apply color preset - nebula visualization not available');
             return;
         }
         
@@ -21237,7 +20989,7 @@ https://rogueamoeba.com/loopback/
         
         const preset = presets[presetName];
         if (!preset) {
-            console.warn('🎨 Unknown preset:', presetName);
+            // console.warn('🎨 Unknown preset:', presetName);
             return;
         }
         
@@ -21316,7 +21068,7 @@ https://rogueamoeba.com/loopback/
                     console.log('📥 Nebula presets imported from UI');
                 } catch (error) {
                     alert('Error importing presets: ' + error);
-                    console.error('❌ Nebula preset import error:', error);
+                    // console.error('❌ Nebula preset import error:', error);
                 }
                 
                 // Reset file input
@@ -21347,7 +21099,7 @@ https://rogueamoeba.com/loopback/
             });
         }
         
-        console.log('🔄 Nebula preset dropdown updated:', this.nebulaVisualization.savedPresets.length, 'presets');
+        // console.log('🔄 Nebula preset dropdown updated:', this.nebulaVisualization.savedPresets.length, 'presets');
     }
     
     updateNebulaUIFromSettings() {
@@ -21389,7 +21141,7 @@ https://rogueamoeba.com/loopback/
             this.updateNebulaPresetButton(preset, document.getElementById(`headerNebula${preset.charAt(0).toUpperCase() + preset.slice(1)}PresetBtn`));
         });
         
-        console.log('🔄 Nebula UI updated from settings');
+        // console.log('🔄 Nebula UI updated from settings');
     }
     
     updateNebulaSliderValue(sliderId, value, displayValue) {
@@ -21690,7 +21442,7 @@ https://rogueamoeba.com/loopback/
         const segmentsSlider = document.getElementById('kaleidoscopeSegments');
         if (!segmentsSlider) {
             // Kaleidoscope panel is not open, skip UI updates
-            console.log('🔄 Kaleidoscope preset applied but panel not open - skipping UI updates');
+            // console.log('🔄 Kaleidoscope preset applied but panel not open - skipping UI updates');
             return;
         }
         
@@ -21787,15 +21539,15 @@ https://rogueamoeba.com/loopback/
             return;
         }
 
-        console.log('Applying kaleidoscope effect:', {
-            videoMode: this.videoMode,
-            applyToVideo: this.kaleidoscopeApplyToVideo,
-            applyToViz: this.kaleidoscopeApplyToViz,
-            videoElement: !!this.videoElement,
-            captureVideoElement: !!this.captureVideoElement,
-            videoReady: this.videoElement ?. readyState,
-            captureReady: this.captureVideoElement ?. readyState
-        });
+        // console.log('Applying kaleidoscope effect:', {
+        //     videoMode: this.videoMode,
+        //     applyToVideo: this.kaleidoscopeApplyToVideo,
+        //     applyToViz: this.kaleidoscopeApplyToViz,
+        //     videoElement: !!this.videoElement,
+        //     captureVideoElement: !!this.captureVideoElement,
+        //     videoReady: this.videoElement ?. readyState,
+        //     captureReady: this.captureVideoElement ?. readyState
+        // });
 
         let width = this.kaleidoscopeVideoCanvas.width;
         let height = this.kaleidoscopeVideoCanvas.height;
@@ -21960,7 +21712,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVizCanvas.style.display = 'block';
             this.kaleidoscopeVizCtx.clearRect(0, 0, width, height);
 
-            console.log('Drawing viz kaleidoscope');
+            // console.log('Drawing viz kaleidoscope');
 
             // Hide the original visualization canvas when kaleidoscope is active
             if (this.audioMotion && this.audioMotion.canvas) {
@@ -22115,7 +21867,7 @@ https://rogueamoeba.com/loopback/
                 }
             }
 
-            console.log('Viz kaleidoscope drawn successfully');
+            // console.log('Viz kaleidoscope drawn successfully');
         } else {
             this.kaleidoscopeVizCanvas.style.display = 'none';
             // Show the original visualization canvas when kaleidoscope is not active
@@ -22361,7 +22113,7 @@ https://rogueamoeba.com/loopback/
     }
 
     drawBackgroundImage(ctx, canvasWidth, canvasHeight) {
-        // console.log('🎨 drawBackgroundImage called:', {
+        // // console.log('🎨 drawBackgroundImage called:', {
         //     hasImage: !!this.backgroundImage,
         //     enabled: this.backgroundImageEnabled,
         //     opacity: this.backgroundImageOpacity,
@@ -22371,7 +22123,7 @@ https://rogueamoeba.com/loopback/
         // });
 
         if (!this.backgroundImage || !this.backgroundImageEnabled) {
-            console.log('❌ Background image not drawn - missing image or disabled');
+            // console.log('❌ Background image not drawn - missing image or disabled');
             return;
         }
 
@@ -22379,13 +22131,13 @@ https://rogueamoeba.com/loopback/
         if (!this.cachedBackgroundImage) {
             this.cachedBackgroundImage = new Image();
             this.cachedBackgroundImage.onload = () => {
-                console.log('🖼️ Background image cached:', {
-                    imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
-                    dataUrlLength: this.backgroundImage.length
-                });
+                // console.log('🖼️ Background image cached:', {
+                //     imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
+                //     dataUrlLength: this.backgroundImage.length
+                // });
             };
             this.cachedBackgroundImage.onerror = (e) => {
-                console.error('❌ Background image failed to load:', e);
+                // console.error('❌ Background image failed to load:', e);
                 this.cachedBackgroundImage = null;
             };
             this.cachedBackgroundImage.src = this.backgroundImage;
@@ -22489,14 +22241,14 @@ https://rogueamoeba.com/loopback/
             // Apply all filters
             if (filters.length > 0) {
                 ctx.filter = filters.join(' ');
-                // console.log('🎨 Applied background image filters:', ctx.filter);
+                // // console.log('🎨 Applied background image filters:', ctx.filter);
             }
             
             ctx.drawImage(this.cachedBackgroundImage, drawX, drawY, drawWidth, drawHeight);
-            // console.log('✅ Background image drawn successfully');
+            // // console.log('✅ Background image drawn successfully');
             ctx.restore();
         } else {
-            console.log('⏳ Background image not ready yet, skipping draw');
+            // console.log('⏳ Background image not ready yet, skipping draw');
         }
     }
 
@@ -22536,14 +22288,14 @@ https://rogueamoeba.com/loopback/
                 this.loadPresetOptions(headerSelector);
             }
         } else {
-            console.error('❌ No active visualization system to save');
+            // console.error('❌ No active visualization system to save');
         }
     }
 
     // Pro Preset Saving Methods
     saveCurrentProAsPreset(name) {
         if (!this.officialAudioMotion) {
-            console.error('❌ Official AudioMotion not available for Pro preset saving');
+            // console.error('❌ Official AudioMotion not available for Pro preset saving');
             return;
         }
 
@@ -22687,11 +22439,11 @@ https://rogueamoeba.com/loopback/
     toggleVisualization() {
         this.visualizationEnabled = !this.visualizationEnabled;
 
-        console.log('🔄 AM Visualization toggled:', {
-            enabled: this.visualizationEnabled,
-            backgroundImageEnabled: this.backgroundImageEnabled,
-            hasBackgroundImage: !!this.backgroundImage
-        });
+        // console.log('🔄 AM Visualization toggled:', {
+        //     enabled: this.visualizationEnabled,
+        //     backgroundImageEnabled: this.backgroundImageEnabled,
+        //     hasBackgroundImage: !!this.backgroundImage
+        // });
 
         // Sidebar vizToggleBtn removed - functionality moved to header
 
@@ -22705,7 +22457,7 @@ https://rogueamoeba.com/loopback/
             if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                 this.audioMotion.animate();
             } else { // Stop main visualization but keep animation loop for Infinite Zoom
-                console.log('🔄 Forcing visualization redraw after AM toggle');
+                // console.log('🔄 Forcing visualization redraw after AM toggle');
                 this.audioMotion.draw();
                 // Don't cancel animation frame - let it continue for Infinite Zoom
                 // The animation loop will handle skipping main visualization when disabled
@@ -22742,7 +22494,7 @@ https://rogueamoeba.com/loopback/
             window.multiDisplayManager.updateHeaderAMVisualizationOpacitySlider();
         }
         
-        console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
+        // console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
     }
 
     // Set Official AudioMotion Preset (Hybrid System)
@@ -22986,11 +22738,11 @@ https://rogueamoeba.com/loopback/
     // Check if Official AudioMotion is available
     isOfficialAudioMotionAvailable() {
         const available = typeof AudioMotionAnalyzer !== 'undefined' && this.officialAudioMotion !== null;
-        console.log('🔍 Official AudioMotion availability check:', {
-            libraryLoaded: typeof AudioMotionAnalyzer !== 'undefined',
-            instanceCreated: !!this.officialAudioMotion,
-            available: available
-        });
+        // console.log('🔍 Official AudioMotion availability check:', {
+        //     libraryLoaded: typeof AudioMotionAnalyzer !== 'undefined',
+        //     instanceCreated: !!this.officialAudioMotion,
+        //     available: available
+        // });
         return available;
     }
 
@@ -23029,7 +22781,7 @@ https://rogueamoeba.com/loopback/
             window.multiDisplayManager.updateMixerInfiniteZoomOpacitySlider();
         }
         
-        console.log('🎨 Infinite Zoom opacity set to:', this.infiniteZoomOpacity);
+        // console.log('🎨 Infinite Zoom opacity set to:', this.infiniteZoomOpacity);
     }
 
     getCurrentConfig() {
@@ -23143,7 +22895,7 @@ https://rogueamoeba.com/loopback/
     // Pro Preset Loading Methods
     loadProPreset(preset) {
         if (!this.officialAudioMotion) {
-            console.error('❌ Official AudioMotion not available for Pro preset loading');
+            // console.error('❌ Official AudioMotion not available for Pro preset loading');
             return;
         }
         
@@ -23179,7 +22931,7 @@ https://rogueamoeba.com/loopback/
         
         // Initialize official AudioMotion if needed
         if (!this.officialAudioMotion) {
-            console.log('🔄 Initializing official AudioMotion for preset loading...');
+            // console.log('🔄 Initializing official AudioMotion for preset loading...');
             // Use existing initialization logic
             this.initAudioMotion();
         }
@@ -23192,7 +22944,7 @@ https://rogueamoeba.com/loopback/
             // Reconnect audio sources
             this.reconnectOfficialAudioMotion();
             
-            console.log('🔄 Switched to official AudioMotion for preset loading');
+            // console.log('🔄 Switched to official AudioMotion for preset loading');
         }
     }
 
@@ -24359,7 +24111,7 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.shape = e.target.value;
                     this.infiniteZoom.updateObjectShapes();
-                    console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
+                    // console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
                 }
             });
         }
@@ -24371,7 +24123,7 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.shape = e.target.value;
                     this.infiniteZoom.updateObjectShapes();
-                    console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
+                    // console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
                     
                     // Update mixer shape select
                     if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomShapeSelect) {
@@ -24509,7 +24261,7 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.rotationSpeed = value;
                     this.infiniteZoom.baseRotationSpeed = value;
-                    console.log('🔍 Rotation slider changed to:', value, 'Base:', this.infiniteZoom.baseRotationSpeed);
+                    // console.log('🔍 Rotation slider changed to:', value, 'Base:', this.infiniteZoom.baseRotationSpeed);
                 }
             });
         }
@@ -24536,7 +24288,7 @@ https://rogueamoeba.com/loopback/
                 infiniteZoomSensitivityValue.textContent = value + '%';
                 if (this.infiniteZoom) {
                     this.infiniteZoom.sensitivity = value / 100; // Convert 0-100 to 0-1
-                    console.log('🔍 Sensitivity changed to:', this.infiniteZoom.sensitivity);
+                    // console.log('🔍 Sensitivity changed to:', this.infiniteZoom.sensitivity);
                 }
             });
         }
@@ -24549,7 +24301,7 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.beatReact = !this.infiniteZoom.beatReact;
                     infiniteZoomBeatReactBtn.textContent = `Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`;
                     infiniteZoomBeatReactBtn.classList.toggle('active', this.infiniteZoom.beatReact);
-                    console.log('🔍 Beat React toggled to:', this.infiniteZoom.beatReact);
+                    // console.log('🔍 Beat React toggled to:', this.infiniteZoom.beatReact);
                     
                     // Show/hide beat reaction controls
                     const controls = document.getElementById('infiniteZoomBeatReactControls');
@@ -24618,7 +24370,7 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.beatRotation = !this.infiniteZoom.beatRotation;
                     infiniteZoomBeatRotationBtn.textContent = `Beat Rotation: ${this.infiniteZoom.beatRotation ? 'On' : 'Off'}`;
                     infiniteZoomBeatRotationBtn.classList.toggle('active', this.infiniteZoom.beatRotation);
-                    console.log('🔍 Beat Rotation toggled to:', this.infiniteZoom.beatRotation);
+                    // console.log('🔍 Beat Rotation toggled to:', this.infiniteZoom.beatRotation);
                 }
             });
         }
@@ -24715,13 +24467,13 @@ https://rogueamoeba.com/loopback/
 
         const headerInfiniteZoomSpeedSlider = document.getElementById('headerInfiniteZoomSpeedSlider');
         const headerInfiniteZoomSpeedValue = document.getElementById('headerInfiniteZoomSpeedValue');
-        console.log('Speed slider found:', !!headerInfiniteZoomSpeedSlider, 'Speed value found:', !!headerInfiniteZoomSpeedValue);
-        console.log('Speed slider element:', headerInfiniteZoomSpeedSlider);
-        console.log('Speed value element:', headerInfiniteZoomSpeedValue);
+        // console.log('Speed slider found:', !!headerInfiniteZoomSpeedSlider, 'Speed value found:', !!headerInfiniteZoomSpeedValue);
+        // console.log('Speed slider element:', headerInfiniteZoomSpeedSlider);
+        // console.log('Speed value element:', headerInfiniteZoomSpeedValue);
         if (headerInfiniteZoomSpeedSlider && headerInfiniteZoomSpeedValue) {
-            console.log('Setting up Speed slider event listener');
+            // console.log('Setting up Speed slider event listener');
             headerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
-                console.log('Speed slider input event triggered:', e.target.value);
+                // console.log('Speed slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomSpeedValue.textContent = value;
                 if (this.infiniteZoom) {
@@ -24743,20 +24495,20 @@ https://rogueamoeba.com/loopback/
                     window.multiDisplayManager.updateMixerInfiniteZoomSpeedSlider();
                 }
             });
-            console.log('Speed slider event listener attached successfully');
+            // console.log('Speed slider event listener attached successfully');
         } else {
             console.error('Speed slider or value element not found!');
         }
 
         const headerInfiniteZoomRotationSlider = document.getElementById('headerInfiniteZoomRotationSlider');
         const headerInfiniteZoomRotationValue = document.getElementById('headerInfiniteZoomRotationValue');
-        console.log('Rotation slider found:', !!headerInfiniteZoomRotationSlider, 'Rotation value found:', !!headerInfiniteZoomRotationValue);
-        console.log('Rotation slider element:', headerInfiniteZoomRotationSlider);
-        console.log('Rotation value element:', headerInfiniteZoomRotationValue);
+        // console.log('Rotation slider found:', !!headerInfiniteZoomRotationSlider, 'Rotation value found:', !!headerInfiniteZoomRotationValue);
+        // console.log('Rotation slider element:', headerInfiniteZoomRotationSlider);
+        // console.log('Rotation value element:', headerInfiniteZoomRotationValue);
         if (headerInfiniteZoomRotationSlider && headerInfiniteZoomRotationValue) {
-            console.log('Setting up Rotation slider event listener');
+            // console.log('Setting up Rotation slider event listener');
             headerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
-                console.log('Rotation slider input event triggered:', e.target.value);
+                // console.log('Rotation slider input event triggered:', e.target.value);
                 const value = parseFloat(e.target.value);
                 headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
                 if (this.infiniteZoom) {
@@ -24769,20 +24521,20 @@ https://rogueamoeba.com/loopback/
                     window.multiDisplayManager.updateMixerInfiniteZoomRotationSlider();
                 }
             });
-            console.log('Rotation slider event listener attached successfully');
+            // console.log('Rotation slider event listener attached successfully');
         } else {
             console.error('Rotation slider or value element not found!');
         }
 
         const headerInfiniteZoomOpacitySlider = document.getElementById('headerInfiniteZoomOpacitySlider');
         const headerInfiniteZoomOpacityValue = document.getElementById('headerInfiniteZoomOpacityValue');
-        console.log('Opacity slider found:', !!headerInfiniteZoomOpacitySlider, 'Opacity value found:', !!headerInfiniteZoomOpacityValue);
-        console.log('Opacity slider element:', headerInfiniteZoomOpacitySlider);
-        console.log('Opacity value element:', headerInfiniteZoomOpacityValue);
+        // console.log('Opacity slider found:', !!headerInfiniteZoomOpacitySlider, 'Opacity value found:', !!headerInfiniteZoomOpacityValue);
+        // console.log('Opacity slider element:', headerInfiniteZoomOpacitySlider);
+        // console.log('Opacity value element:', headerInfiniteZoomOpacityValue);
         if (headerInfiniteZoomOpacitySlider && headerInfiniteZoomOpacityValue) {
-            console.log('Setting up Opacity slider event listener');
+            // console.log('Setting up Opacity slider event listener');
             headerInfiniteZoomOpacitySlider.addEventListener('input', (e) => {
-                console.log('Opacity slider input event triggered:', e.target.value);
+                // console.log('Opacity slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomOpacityValue.textContent = value + '%';
                 if (this.infiniteZoom) {
@@ -24793,7 +24545,7 @@ https://rogueamoeba.com/loopback/
                     });
                 }
             });
-            console.log('Opacity slider event listener attached successfully');
+            // console.log('Opacity slider event listener attached successfully');
         } else {
             console.error('Opacity slider or value element not found!');
         }
@@ -24911,14 +24663,14 @@ https://rogueamoeba.com/loopback/
         // Fluid Dynamics Viscosity slider
         const fluidDynamicsViscositySlider = document.getElementById('headerFluidDynamicsViscositySlider');
         const fluidDynamicsViscosityValue = document.getElementById('headerFluidDynamicsViscosityValue');
-        console.log('🌊 Looking for viscosity slider:', !!fluidDynamicsViscositySlider, !!fluidDynamicsViscosityValue);
+        // console.log('🌊 Looking for viscosity slider:', !!fluidDynamicsViscositySlider, !!fluidDynamicsViscosityValue);
         if (fluidDynamicsViscositySlider && fluidDynamicsViscosityValue) {
-            console.log('🌊 Attaching viscosity slider event listener');
+            // console.log('🌊 Attaching viscosity slider event listener');
             fluidDynamicsViscositySlider.addEventListener('input', (e) => {
-                console.log('🌊 Viscosity slider moved to:', e.target.value);
+                // console.log('🌊 Viscosity slider moved to:', e.target.value);
                 const value = parseFloat(e.target.value);
                 fluidDynamicsViscosityValue.textContent = value.toFixed(1);
-                console.log('🌊 Fluid Dynamics object:', !!this.fluidDynamics, 'updateConfig method:', !!this.fluidDynamics?.updateConfig);
+                // console.log('🌊 Fluid Dynamics object:', !!this.fluidDynamics, 'updateConfig method:', !!this.fluidDynamics?.updateConfig);
                 if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
                     this.fluidDynamics.updateConfig({ VELOCITY_DISSIPATION: value });
                 } else {
@@ -25894,7 +25646,7 @@ https://rogueamoeba.com/loopback/
                     this.updateVisualizationAspectRatio();
                 }
                 
-                console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
+                // console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
             });
         }
 
@@ -25903,7 +25655,7 @@ https://rogueamoeba.com/loopback/
         document.querySelectorAll('.btn-preset:not([data-target="fileBrowser"])').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const preset = e.target.dataset.preset;
-                console.log('Applying LIVE VIDEO preset:', preset);
+                // console.log('Applying LIVE VIDEO preset:', preset);
                 this.applyVideoPreset(preset);
             });
         });
@@ -26121,10 +25873,10 @@ https://rogueamoeba.com/loopback/
             footerLiveAudioBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Live Audio button clicked');
+                // console.log('Footer Live Audio button clicked');
                 
                 // Always show audio input menu (panel)
-                this.showAudioInputMenu();
+                    this.showAudioInputMenu();
             });
         } else {
             console.error('Footer Live Audio button not found');
@@ -26137,7 +25889,7 @@ https://rogueamoeba.com/loopback/
             footerLiveVideoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Live Video button clicked');
+                // console.log('Footer Live Video button clicked');
                 
                 // Always show video settings panel
                     this.showVideoInputMenu();
@@ -26153,7 +25905,7 @@ https://rogueamoeba.com/loopback/
             footerLiveColorBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Live Color button clicked');
+                // console.log('Footer Live Color button clicked');
                 
                 // Show color picker
                 this.showColorPicker();
@@ -26169,13 +25921,13 @@ https://rogueamoeba.com/loopback/
             footerLiveBackgroundBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Live Background button clicked - opening background panel');
+                // console.log('Footer Live Background button clicked - opening background panel');
                 
                 // Only show background image selection panel (no toggle functionality)
                 this.showBackgroundImageSelection();
             });
         } else {
-            console.error('Footer Live Background button not found');
+            // console.error('Footer Live Background button not found');
         }
 
         // Footer Playlist button
@@ -26185,7 +25937,7 @@ https://rogueamoeba.com/loopback/
             footerPlaylistBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Playlist button clicked');
+                // console.log('Footer Playlist button clicked');
                 
                 // Show playlist panel
                 this.showPlaylistPanel();
@@ -26201,7 +25953,7 @@ https://rogueamoeba.com/loopback/
             footerVisualizerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Visualizer button clicked');
+                // console.log('Footer Visualizer button clicked');
                 
                 // Always show the visualizer panel (like A and V buttons)
                 this.showVisualizerPanel();
@@ -26217,7 +25969,7 @@ https://rogueamoeba.com/loopback/
             footerVisualizerToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Visualizer Toggle button clicked');
+                // console.log('Footer Visualizer Toggle button clicked');
                 
                 // Toggle visualization ON/OFF
                 this.toggleVisualization();
@@ -26233,7 +25985,7 @@ https://rogueamoeba.com/loopback/
             footerVisualizerRandomBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Footer Visualizer Random button clicked');
+                // console.log('Footer Visualizer Random button clicked');
                 
                 // Set random visualization mode
                 this.setRandomVisualization();
@@ -26925,7 +26677,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
             startProMorphing() {
                 if (!this.officialAudioMotion) {
-                    console.error('❌ Official AudioMotion not available for Pro morphing');
+                    // console.error('❌ Official AudioMotion not available for Pro morphing');
                     return;
                 }
 
@@ -26989,7 +26741,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.updateProMorph();
                 }, 50);
 
-                console.log('🎨 Started Pro morphing with config:', this.morphStartConfig);
+                // console.log('🎨 Started Pro morphing with config:', this.morphStartConfig);
             }
 
             stopMorphing() {
@@ -27057,11 +26809,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 } else if (this.audioMotion && this.audioMotion.dataArray) {
                     // For regular visualizations, use custom AudioMotion data array
                     const dataArray = this.audioMotion.dataArray;
-                    const bassEnd = Math.min(Math.floor(dataArray.length * 0.1), dataArray.length);
-                    for (let i = 0; i < bassEnd; i++) {
-                        energy += dataArray[i];
-                    }
-                    energy = energy / bassEnd / 255;
+                const bassEnd = Math.min(Math.floor(dataArray.length * 0.1), dataArray.length);
+                for (let i = 0; i < bassEnd; i++) {
+                    energy += dataArray[i];
+                }
+                energy = energy / bassEnd / 255;
                 } else {
                     // No audio data available
                     return;
@@ -27155,7 +26907,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         
                         // Restart morph in Pro mode since user had morph active
                         if (wasMorphing) {
-                            console.log('🔄 Restarting morph in Pro mode after preset switch');
+                            // console.log('🔄 Restarting morph in Pro mode after preset switch');
                             this.startProMorphing();
                         }
                     }
@@ -27199,7 +26951,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         
                         // Restart morph in Pro mode since user had morph active
                         if (wasMorphing) {
-                            console.log('🔄 Restarting morph in Pro mode after preset switch');
+                            // console.log('🔄 Restarting morph in Pro mode after preset switch');
                             this.startProMorphing();
                         }
                     }
@@ -27408,7 +27160,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
 
                 } catch (error) {
-                    console.error('❌ Error applying Pro morph config:', error);
+                    // console.error('❌ Error applying Pro morph config:', error);
                 }
             }
 
@@ -27642,7 +27394,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 // Loading track...
 
-                await new Promise((resolve, reject) => {
+                    await new Promise((resolve, reject) => {
                         const onCanPlay = () => {
                             clearTimeout(timeoutId);
                             resolve();
@@ -28110,7 +27862,6 @@ window.debugBackgroundImage = function() {
     if (window.visualizer && window.visualizer.recordManager) {
         window.visualizer.recordManager.debugBackgroundImageState();
     } else {
-        console.log('❌ Visualizer or RecordManager not available');
     }
 };
 
@@ -28131,7 +27882,7 @@ window.testBackgroundImage = function() {
         testCanvas.height = 600;
         const testCtx = testCanvas.getContext('2d');
         
-        console.log('Testing drawBackgroundImage...');
+        // console.log('Testing drawBackgroundImage...');
         window.visualizer.drawBackgroundImage(testCtx, 800, 600);
         
         // Add test canvas to page for visual inspection
@@ -28149,7 +27900,7 @@ window.testBackgroundImage = function() {
 
 // Global function to inspect main canvas
 window.inspectMainCanvas = function() {
-    console.log('🔍 Inspecting main canvas...');
+    // console.log('🔍 Inspecting main canvas...');
     const mainCanvas = document.querySelector('#visualizationCanvas');
     if (mainCanvas) {
         console.log('Main canvas found:', {
@@ -28282,7 +28033,7 @@ FrequeVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
         beatReactBtn.classList.add('active');
     }
 
-    console.log('🔄 Applied Default preset - restored all settings to initial app values');
+    // console.log('🔄 Applied Default preset - restored all settings to initial app values');
 };
 
 // Apply Ambient Preset - purple scheme, all sliders minimum
@@ -28352,7 +28103,7 @@ FrequeVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
             this.fluidDynamics.setSpeed(0.5);
         }
 
-        console.log('🟣 Applied Ambient preset - calm purple fluid with minimal settings');
+        // console.log('🟣 Applied Ambient preset - calm purple fluid with minimal settings');
     }
 
 // Apply Metal Preset - fire scheme, all sliders maximum
@@ -28422,7 +28173,7 @@ FrequeVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
             this.fluidDynamics.setSpeed(2.5);
         }
 
-        console.log('🔥 Applied Metal preset - intense fire fluid with maximum settings');
+        // console.log('🔥 Applied Metal preset - intense fire fluid with maximum settings');
     };
 
 // Apply Random Preset - randomize all fluid settings
@@ -28507,7 +28258,7 @@ FrequeVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
         this.fluidDynamics.setSpeed(parseFloat(speed));
     }
 
-    console.log(`🎲 Applied Random preset - ${numColors} random colors with randomized settings`);
+    // console.log(`🎲 Applied Random preset - ${numColors} random colors with randomized settings`);
 };
 
 // Fluid Preset Management Methods
@@ -28587,7 +28338,7 @@ FrequeVisualizer.prototype.saveCurrentFluidPreset = function() {
     
     this.saveFluidPresets();
     this.updateFluidPresetSelector();
-    console.log(`💾 Saved fluid preset: ${name}`);
+    // console.log(`💾 Saved fluid preset: ${name}`);
 };
 
 FrequeVisualizer.prototype.loadFluidPreset = function(index) {
@@ -28692,7 +28443,7 @@ FrequeVisualizer.prototype.loadFluidPreset = function(index) {
         }
     }
     
-    console.log(`📂 Loaded fluid preset: ${preset.name}`);
+    // console.log(`📂 Loaded fluid preset: ${preset.name}`);
 };
 
 FrequeVisualizer.prototype.updateFluidPresetSelector = function() {

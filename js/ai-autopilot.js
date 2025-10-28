@@ -302,7 +302,7 @@ class PredictiveBehaviorSystem {
             // Execute mode change if suggested
             if (prediction.modeChange && prediction.modeChange.suggested !== null) {
                 this.autopilot.visualizer.setVisualizationMode(prediction.modeChange.suggested);
-                console.log(`🎯 Predictive mode change: ${prediction.modeChange.reason}`);
+                // console.log(`🎯 Predictive mode change: ${prediction.modeChange.reason}`);
             }
 
             // Execute parameter adjustments
@@ -310,7 +310,7 @@ class PredictiveBehaviorSystem {
                 for (const [param, adjustment] of Object.entries(prediction.parameterAdjustment)) {
                     if (adjustment.confidence > 0.6) {
                         this.autopilot.visualizer.audioMotion[param] = adjustment.suggested;
-                        console.log(`🎯 Predictive parameter adjustment: ${param} = ${adjustment.suggested} (${adjustment.reason})`);
+                        // console.log(`🎯 Predictive parameter adjustment: ${param} = ${adjustment.suggested} (${adjustment.reason})`);
                     }
                 }
             }
@@ -404,7 +404,7 @@ class MultiLayeredIntelligenceSystem {
             if (this.autopilot.scope === 'radial' || this.autopilot.scope === 'energy') {
                 const expectedMode = this.autopilot.scope === 'radial' ? 4 : 5;
                 if (currentMode !== expectedMode) {
-                    console.log(`🧠 Multi-layer scope enforcement: Switching to ${this.autopilot.scope} mode (${expectedMode})`);
+                    // console.log(`🧠 Multi-layer scope enforcement: Switching to ${this.autopilot.scope} mode (${expectedMode})`);
                     return {
                         action: 'mode_change',
                         mode: expectedMode,
@@ -553,33 +553,33 @@ class MultiLayeredIntelligenceSystem {
                 case 'mode_change':
                     if (decision.mode !== undefined) {
                         this.autopilot.visualizer.setVisualizationMode(decision.mode);
-                        console.log(`🧠 Multi-layer decision: Mode change to ${decision.mode}`);
+                        // console.log(`🧠 Multi-layer decision: Mode change to ${decision.mode}`);
                     }
                     break;
                     
                 case 'parameter_adjustment':
                     if (decision.parameters) {
                         this.applyParameterAdjustments(decision.parameters);
-                        console.log(`🧠 Multi-layer decision: Parameter adjustments applied`);
+                        // console.log(`🧠 Multi-layer decision: Parameter adjustments applied`);
                     }
                     break;
                     
                 case 'video_adjustment':
                     if (decision.videoParameters && this.autopilot.videoEffectsEnabled) {
                         this.applyVideoAdjustments(decision.videoParameters);
-                        console.log(`🧠 Multi-layer decision: Video adjustments applied`);
+                        // console.log(`🧠 Multi-layer decision: Video adjustments applied`);
                     }
                     break;
                     
                 case 'timing_adjustment':
                     if (decision.timing) {
                         this.adjustTiming(decision.timing);
-                        console.log(`🧠 Multi-layer decision: Timing adjusted`);
+                        // console.log(`🧠 Multi-layer decision: Timing adjusted`);
                     }
                     break;
                     
                 case 'no_action':
-                    console.log(`🧠 Multi-layer decision: No action needed`);
+                    // console.log(`🧠 Multi-layer decision: No action needed`);
                     break;
             }
         } catch (error) {
@@ -590,22 +590,22 @@ class MultiLayeredIntelligenceSystem {
     // Apply parameter adjustments
     applyParameterAdjustments(parameters) {
         if (!this.autopilot.visualizer.audioMotion) {
-            console.log('🧠 No audioMotion available for parameter adjustment');
+            // console.log('🧠 No audioMotion available for parameter adjustment');
             return;
         }
         
-        console.log('🧠 Applying parameters:', parameters);
-        console.log('🧠 Before - audioMotion params:', {
-            linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
-            gradient: this.autopilot.visualizer.audioMotion.gradient,
-            fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
-            smoothing: this.autopilot.visualizer.audioMotion.smoothing
-        });
+        // console.log('🧠 Applying parameters:', parameters);
+        // console.log('🧠 Before - audioMotion params:', {
+        //     linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
+        //     gradient: this.autopilot.visualizer.audioMotion.gradient,
+        //     fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
+        //     smoothing: this.autopilot.visualizer.audioMotion.smoothing
+        // });
         
         try {
             // Use setOptions to properly apply parameter changes
             this.autopilot.visualizer.audioMotion.setOptions(parameters);
-            console.log('🧠 Multi-layer parameters applied via setOptions:', parameters);
+            // console.log('🧠 Multi-layer parameters applied via setOptions:', parameters);
             
             // Force a redraw to ensure changes are visible
             if (this.autopilot.visualizer.audioMotion.ctx) {
@@ -616,24 +616,24 @@ class MultiLayeredIntelligenceSystem {
             
             // Verify the parameters were actually set
             setTimeout(() => {
-                console.log('🧠 After - audioMotion params:', {
-                    linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
-                    gradient: this.autopilot.visualizer.audioMotion.gradient,
-                    fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
-                    smoothing: this.autopilot.visualizer.audioMotion.smoothing
-                });
+                // console.log('🧠 After - audioMotion params:', {
+                //     linearBoost: this.autopilot.visualizer.audioMotion.linearBoost,
+                //     gradient: this.autopilot.visualizer.audioMotion.gradient,
+                //     fillAlpha: this.autopilot.visualizer.audioMotion.fillAlpha,
+                //     smoothing: this.autopilot.visualizer.audioMotion.smoothing
+                // });
             }, 100);
             
         } catch (error) {
             console.error('Error applying multi-layer parameters via setOptions:', error);
             // Fallback to direct property setting
-            console.log('🧠 Falling back to direct property setting');
+            // console.log('🧠 Falling back to direct property setting');
             for (const [param, value] of Object.entries(parameters)) {
                 if (this.autopilot.visualizer.audioMotion.hasOwnProperty(param)) {
                     this.autopilot.visualizer.audioMotion[param] = value;
-                    console.log(`🧠 Set ${param} = ${value}`);
+                    // console.log(`🧠 Set ${param} = ${value}`);
                 } else {
-                    console.log(`🧠 Property ${param} not found on audioMotion`);
+                    // console.log(`🧠 Property ${param} not found on audioMotion`);
                 }
             }
         }
@@ -645,7 +645,7 @@ class MultiLayeredIntelligenceSystem {
         
         try {
             this.autopilot.parameterController.applyVideoParameters(videoParameters);
-            console.log('🧠 Multi-layer video parameters applied:', videoParameters);
+            // console.log('🧠 Multi-layer video parameters applied:', videoParameters);
         } catch (error) {
             console.error('Error applying multi-layer video parameters:', error);
         }
@@ -1138,7 +1138,7 @@ class AdaptiveTuningSystem {
         this.performanceWindow = [];
         this.lastOptimization = 0;
         
-        console.log('🎯 Adaptive Tuning System initialized');
+        // console.log('🎯 Adaptive Tuning System initialized');
     }
     
     // Track performance of current parameters
@@ -1201,18 +1201,18 @@ class AdaptiveTuningSystem {
     // Optimize parameters based on performance history
     optimizeParameters(forced = false) {
         try {
-            console.log('🎯 Starting parameter optimization...', forced ? '(FORCED)' : '');
+            // console.log('🎯 Starting parameter optimization...', forced ? '(FORCED)' : '');
             
             // Analyze current performance trends
             const performanceAnalysis = this.analyzePerformance();
             
             // Get current parameters
             const currentParams = this.getCurrentParameters();
-            console.log('🎯 Current parameters:', currentParams);
+            // console.log('🎯 Current parameters:', currentParams);
             
             // Generate optimization suggestions
             const optimizations = this.generateOptimizations(currentParams, performanceAnalysis, forced);
-            console.log('🎯 Generated optimizations:', optimizations);
+            // console.log('🎯 Generated optimizations:', optimizations);
             
             // Apply optimizations
             this.applyOptimizations(optimizations);
@@ -1222,7 +1222,7 @@ class AdaptiveTuningSystem {
             
             this.lastOptimization = Date.now();
             
-            console.log('🎯 Parameter optimization completed');
+            // console.log('🎯 Parameter optimization completed');
             
         } catch (error) {
             console.error('Error in parameter optimization:', error);
@@ -1323,7 +1323,7 @@ class AdaptiveTuningSystem {
         
         if (this.autopilot.visualizer.audioMotion) {
             this.autopilot.visualizer.audioMotion.setOptions(optimizations);
-            console.log('🎯 Applied optimizations:', optimizations);
+            // console.log('🎯 Applied optimizations:', optimizations);
         }
     }
     
@@ -1430,7 +1430,7 @@ class PatternLearningSystem {
         this.minSamples = 5; // Minimum samples before making predictions
         this.maxHistory = 1000; // Maximum stored samples per pattern
         
-        console.log('🧠 Pattern Learning System initialized');
+        // console.log('🧠 Pattern Learning System initialized');
     }
     
     // Learn from successful parameter combinations
@@ -1466,11 +1466,11 @@ class PatternLearningSystem {
         // Save learning data
         this.saveLearningData();
         
-        console.log(`🧠 Learned pattern for ${patternKey}:`, {
-            samples: pattern.samples.length,
-            successRate: pattern.successRate.toFixed(3),
-            avgEffectiveness: pattern.avgEffectiveness.toFixed(3)
-        });
+        // console.log(`🧠 Learned pattern for ${patternKey}:`, {
+        //     samples: pattern.samples.length,
+        //     successRate: pattern.successRate.toFixed(3),
+        //     avgEffectiveness: pattern.avgEffectiveness.toFixed(3)
+        // });
     }
     
     // Get pattern-based parameter recommendations
@@ -1495,7 +1495,7 @@ class PatternLearningSystem {
         // Calculate weighted average of effective parameters
         const recommendations = this.calculateWeightedAverage(effectiveSamples);
         
-        console.log(`🧠 Pattern recommendations for ${patternKey}:`, recommendations);
+        // console.log(`🧠 Pattern recommendations for ${patternKey}:`, recommendations);
         
         return {
             confidence: pattern.successRate,
@@ -1537,10 +1537,10 @@ class PatternLearningSystem {
         
         behavior.lastAction = Date.now();
         
-        console.log(`🧠 Learned user behavior: ${behaviorKey}`, {
-            totalActions: behavior.totalActions,
-            successRate: (behavior.positiveOutcomes / behavior.totalActions).toFixed(3)
-        });
+        // console.log(`🧠 Learned user behavior: ${behaviorKey}`, {
+        //     totalActions: behavior.totalActions,
+        //     successRate: (behavior.positiveOutcomes / behavior.totalActions).toFixed(3)
+        // });
     }
     
     // Get user behavior predictions
