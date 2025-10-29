@@ -4783,6 +4783,9 @@ class RecordManager {
             backgroundSettingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isVisible = backgroundSettingsPanel.style.display !== 'none';
+                if (!isVisible) {
+                    this.closeAllPanels(); // CLOSE ALL PANELS FIRST
+                }
                 backgroundSettingsPanel.style.display = isVisible ? 'none' : 'block';
             });
         }
@@ -11563,13 +11566,7 @@ class FrequeVisualizer {
     }
 
     showAudioInputMenu() {
-        // Check if dropdown is already open, if so close it
-        const existingDropdown = document.getElementById('footerAudioInputDropdown');
-        if (existingDropdown) {
-            existingDropdown.remove();
-            return;
-        }
-        
+        this.closeAllPanels(); // CLOSE ALL PANELS FIRST
         // Create a custom dropdown menu for audio input selection
         this.createAudioInputDropdown();
         
@@ -11604,8 +11601,8 @@ class FrequeVisualizer {
         
         if (!panel || !button) return;
         
-        // Close other footer settings panels first
-        this.closeAllFooterSettingsPanels();
+        // Close other panels first
+        this.closeAllPanels();
         
         // Toggle current panel
         if (panel.style.display === 'none' || panel.style.display === '') {
@@ -11684,6 +11681,40 @@ class FrequeVisualizer {
         });
     }
 
+    // SIMPLE: Close ALL panels - one function, no complexity
+    closeAllPanels() {
+        // Close mixer
+        const mixerPanel = document.getElementById('mixerPanel');
+        if (mixerPanel) mixerPanel.style.display = 'none';
+        const mixerBtn = document.getElementById('mixerBtn');
+        if (mixerBtn) mixerBtn.classList.remove('active');
+        
+        // Close all header panels
+        ['headerKaleidoscopePanel', 'headerWebGLPanel', 'headerBlobsPanel', 'headerInfiniteZoomPanel', 'headerNebulaPanel', 'headerFluidDynamicsPanel', 'headerVisualizerPanel'].forEach(id => {
+            const panel = document.getElementById(id);
+            if (panel) panel.style.display = 'none';
+        });
+        
+        // Close all footer panels
+        ['footerDisplaySettingsPanel', 'footerRecordSettingsPanel', 'footerAutopilotSettingsPanel', 'display1SettingsPanel', 'display2SettingsPanel', 'display3SettingsPanel'].forEach(id => {
+            const panel = document.getElementById(id);
+            if (panel) panel.style.display = 'none';
+        });
+        
+        // Close dynamic panels (B,V,C,A buttons)
+        ['footerAudioInputDropdown', 'footerVideoInputDropdown', 'colorPickerPanel', 'backgroundImagePanel', 'playlistPanel'].forEach(id => {
+            const panel = document.getElementById(id);
+            if (panel) panel.remove();
+        });
+        
+        // Close other panels
+        const backgroundPanel = document.getElementById('backgroundSettingsPanel');
+        if (backgroundPanel) backgroundPanel.style.display = 'none';
+        
+        // Use existing footer method
+        this.closeAllFooterSettingsPanels();
+    }
+
     toggleFooterAutopilotSettingsPanel() {
         const panel = document.getElementById('footerAutopilotSettingsPanel');
         const button = document.getElementById('footerAutopilotSettingsBtn');
@@ -11706,7 +11737,7 @@ class FrequeVisualizer {
         if (!panel || !button) return;
         
         // Close other panels first
-        this.closeAllFooterSettingsPanels();
+        this.closeAllPanels();
         
         // Position panel above the gear button with 6px gap, right-aligned
         const buttonRect = button.getBoundingClientRect();
@@ -12983,13 +13014,7 @@ class FrequeVisualizer {
     }
 
     showVideoInputMenu() {
-        // Check if dropdown is already open, if so close it
-        const existingDropdown = document.getElementById('footerVideoInputDropdown');
-        if (existingDropdown) {
-            existingDropdown.remove();
-            return;
-        }
-        
+        this.closeAllPanels(); // CLOSE ALL PANELS FIRST
         // Create a simple custom dropdown for video input selection
         this.createVideoInputDropdown();
     }
@@ -14028,13 +14053,7 @@ class FrequeVisualizer {
     }
 
     showColorPicker() {
-        // Check if panel is already open, if so close it
-        const existingPanel = document.getElementById('colorPickerPanel');
-        if (existingPanel) {
-            existingPanel.remove();
-            return;
-        }
-        
+        this.closeAllPanels(); // CLOSE ALL PANELS FIRST
         // Create a custom color picker panel positioned relative to C button
         this.createColorPickerPanel();
     }
@@ -14124,13 +14143,7 @@ class FrequeVisualizer {
     }
 
     showBackgroundImageSelection() {
-        // Check if panel is already open, if so close it
-        const existingPanel = document.getElementById('backgroundImagePanel');
-        if (existingPanel) {
-            existingPanel.remove();
-            return;
-        }
-        
+        this.closeAllPanels(); // CLOSE ALL PANELS FIRST
         // Show the background image control panel
         this.createBackgroundImagePanel();
     }
@@ -14482,6 +14495,7 @@ class FrequeVisualizer {
     }
 
     showPlaylistPanel() {
+        this.closeAllPanels(); // CLOSE ALL PANELS FIRST
         // Create playlist panel
         this.createPlaylistPanel();
     }
@@ -14492,6 +14506,7 @@ class FrequeVisualizer {
         if (panel) {
             // Toggle panel visibility
             if (panel.style.display === 'none' || !panel.style.display) {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel relative to the visualizer button
                 const button = document.getElementById('footerVisualizerBtn');
                 if (button) {
@@ -19402,6 +19417,7 @@ https://rogueamoeba.com/loopback/
             if (isVisible) {
                 panel.style.display = 'none';
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
@@ -19544,6 +19560,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'none';
                 // console.log('🔵 Panel hidden');
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
@@ -19578,6 +19595,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'none';
                 // console.log('🎮 Panel hidden');
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
@@ -20233,6 +20251,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'none';
                 btn.classList.remove('active');
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
@@ -20257,6 +20276,7 @@ https://rogueamoeba.com/loopback/
                 // Clean up peek button event listeners when mixer closes
                 this.cleanupPeekButton();
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel using same system as Record panel
                 this.positionFloatingPanel(panel, btn);
                 panel.style.display = 'block';
@@ -20411,6 +20431,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'none';
                 // Don't change button state - it should only reflect visualization ON/OFF
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
@@ -20432,6 +20453,7 @@ https://rogueamoeba.com/loopback/
                 panel.style.display = 'none';
                 // Don't change button state - it should only reflect visualization ON/OFF
             } else {
+                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel using new system
                 const buttonRect = btn.getBoundingClientRect();
                 panel.style.left = `${buttonRect.left}px`;
