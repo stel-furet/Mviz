@@ -312,4 +312,147 @@ This updated plan addresses the core stuttering issue with your specified requir
 - **Complete rollback safety** if any issues arise
 - **Minimal overhead design** for maximum performance
 
-**Ready to proceed with Phase 1 implementation of the Master Animation Loop?**
+---
+
+## 🚀 **NATIVE MAL PLUGIN ARCHITECTURE** (October 29, 2024)
+
+### **New Direction: Clean Plugin Architecture**
+After testing the wrapper approach, we've identified that **wrapper overhead and complexity** are hindering performance and maintainability. 
+
+**New Strategy**: Convert all systems to **native MAL plugins** and **remove all legacy code** for a cleaner, simpler, more performant architecture.
+
+### **Benefits of Native Plugin Approach**
+- ✅ **Simpler Codebase**: Remove 2000+ lines of wrapper code
+- ✅ **Better Performance**: No wrapper overhead, direct MAL integration
+- ✅ **Plugin Architecture**: Day-1 ready for third-party developers
+- ✅ **Easier Debugging**: Single animation system, no legacy conflicts
+- ✅ **Future-Proof**: Clean foundation for extensibility
+
+---
+
+## 🏗️ **NATIVE MAL CONVERSION PLAN**
+
+### **Phase 1: Core Infrastructure Cleanup** 
+**Goal**: Remove all debug code, wrapper switching logic, and prepare clean MAL foundation
+
+#### **1.1 Remove Debug & Switching Code**
+- Delete all 🎬 debug console statements
+- Remove `Shift+L` enable/disable switching logic  
+- Remove `useMasterLoop` feature flags
+- Clean up cache-busting parameters
+- **Result**: MAL always active, no legacy fallback
+
+#### **1.2 Clean Master Animation Controller**
+- Remove wrapper enable/disable methods
+- Remove aggressive RAF cleanup (no longer needed)
+- Simplify to pure plugin registration system
+- Keep centralized audio data generation
+- **Result**: Clean, focused MAL core
+
+### **Phase 2: Convert Systems to Native Plugins**
+**Goal**: Replace wrapper + legacy system pairs with single native plugins
+
+#### **2.1 SpectrumAnalyzer → Native Plugin**
+- Create `js/plugins/spectrum-analyzer-plugin.js`
+- Move core visualization logic from `spectrum-analyzer.js`
+- Remove RAF loops, use MAL `update()`/`render()` interface
+- Delete `spectrum-analyzer-master-wrapper.js`
+- Delete original `spectrum-analyzer.js`
+
+#### **2.2 Blobs → Native Plugin**
+- Create `js/plugins/blobs-plugin.js`  
+- Move particle system from `liquid-fire.js`
+- Native MAL integration with shared audio data
+- Delete `blobs-master-wrapper.js`
+- Delete original `liquid-fire.js`
+
+#### **2.3 AudioMotion → Native Plugin**
+- Create `js/plugins/audiomotion-plugin.js`
+- Integrate official AudioMotion library directly
+- Use MAL timing, remove internal RAF
+- Delete `audiomotion-master-wrapper.js`
+- Keep `audiomotion-analyzer.js` (external library)
+
+#### **2.4 Recording → Native Plugin**
+- Create `js/plugins/recording-plugin.js`
+- Move recording logic from main.js
+- Frame-perfect timing via MAL
+- Delete `recording-master-wrapper.js`
+
+#### **2.5 Kaleidoscope → Native Plugin**
+- Create `js/plugins/kaleidoscope-plugin.js`
+- Move video effects from main.js
+- Precise timing via MAL
+- Delete `kaleidoscope-master-wrapper.js`
+
+### **Phase 3: Plugin System Finalization**
+**Goal**: Establish production-ready plugin architecture
+
+#### **3.1 Plugin API Documentation**
+- Create plugin developer guide
+- Standardize plugin interface
+- Example plugin template
+- Third-party integration docs
+
+#### **3.2 Plugin Manager**
+- Auto-discovery of plugins in `/plugins/` folder
+- Dynamic loading and registration
+- Plugin dependency management
+- Error isolation per plugin
+
+#### **3.3 Performance Optimization**
+- Profile individual plugins
+- Optimize heavy computational systems
+- Memory allocation optimization
+- Target: `frameTime < 5ms`
+
+---
+
+## 📋 **IMPLEMENTATION PHASES**
+
+### **🎯 Phase 1: Infrastructure Cleanup (Week 1)**
+1. Remove all debug code and switching logic
+2. Clean Master Animation Controller
+3. Establish MAL as single animation system
+4. **Deliverable**: Clean, debug-free MAL foundation
+
+### **🔧 Phase 2: Native Plugin Conversion (Week 2-3)**
+1. Convert SpectrumAnalyzer to native plugin
+2. Convert Blobs to native plugin  
+3. Convert AudioMotion to native plugin
+4. Convert Recording to native plugin
+5. Convert Kaleidoscope to native plugin
+6. **Deliverable**: All systems as native MAL plugins
+
+### **🚀 Phase 3: Plugin Architecture (Week 4)**
+1. Plugin API documentation
+2. Plugin Manager implementation
+3. Performance optimization
+4. Third-party developer support
+5. **Deliverable**: Production-ready plugin ecosystem
+
+---
+
+## 🎯 **SUCCESS CRITERIA**
+
+### **Code Quality**
+- [ ] **2000+ lines removed** (wrappers + legacy systems)
+- [ ] **Single animation architecture** (MAL only)
+- [ ] **No debug/switching code** (clean production code)
+- [ ] **Plugin-ready from day 1** (third-party support)
+
+### **Performance**
+- [ ] **frameTime < 5ms** (significant improvement)
+- [ ] **Stuttering eliminated** (smooth animations)
+- [ ] **Memory optimized** (reduced GC pressure)
+- [ ] **Plugin isolation** (one plugin crash doesn't affect others)
+
+### **Architecture**
+- [ ] **Clean plugin API** (standardized interface)
+- [ ] **Auto-discovery** (plugins in `/plugins/` folder)
+- [ ] **Developer docs** (third-party integration guide)
+- [ ] **Future extensible** (easy to add new visualizations)
+
+---
+
+**Ready to proceed with Phase 1: Infrastructure Cleanup?**

@@ -23,7 +23,6 @@ class SpectrumAnalyzerMasterWrapper {
             this.init();
         }
         
-        console.log('🎬 SpectrumAnalyzer Master Wrapper initialized');
     }
     
     init() {
@@ -43,14 +42,13 @@ class SpectrumAnalyzerMasterWrapper {
             window.masterAnimationController.registerSystem('spectrum-analyzer', {
                 priority: window.masterAnimationController.PRIORITIES.WEBGL, // Priority 5
                 targetFPS: 60,
-                update: (timestamp, deltaTime) => this.update(timestamp, deltaTime),
-                render: (timestamp, deltaTime) => this.render(timestamp, deltaTime),
+                update: (deltaTime, timestamp, sharedAudioData) => this.update(deltaTime, timestamp, sharedAudioData),
+                render: (deltaTime, timestamp, sharedAudioData) => this.render(deltaTime, timestamp, sharedAudioData),
                 cleanup: () => this.cleanup(),
                 errorHandler: (error) => this.defaultErrorHandler(error)
             });
             
             this.isRegistered = true;
-            console.log('🎬 SpectrumAnalyzer: Registered with Master Animation Controller');
         }
     }
     
@@ -80,7 +78,6 @@ class SpectrumAnalyzerMasterWrapper {
             this.isActive = true;
         }
         
-        console.log('🎬 SpectrumAnalyzer: Master control enabled');
     }
     
     /**
@@ -108,7 +105,6 @@ class SpectrumAnalyzerMasterWrapper {
             this.spectrumAnalyzer.animationFrame = requestAnimationFrame(() => this.originalAnimate());
         }
         
-        console.log('🎬 SpectrumAnalyzer: Master control disabled, reverted to legacy mode');
     }
     
     /**
@@ -123,10 +119,13 @@ class SpectrumAnalyzerMasterWrapper {
     /**
      * Update method called by Master Animation Controller
      */
-    update(timestamp, deltaTime) {
+    update(deltaTime, timestamp, sharedAudioData) {
         if (!this.spectrumAnalyzer || !this.isActive) return;
         
         this.lastUpdateTime = timestamp;
+        
+        // Store shared audio data for use by render method (PERFORMANCE OPTIMIZATION)
+        this.sharedAudioData = sharedAudioData;
         
         // Update audio data and peaks (non-rendering logic)
         if (this.spectrumAnalyzer.getAudioData) {
@@ -140,7 +139,7 @@ class SpectrumAnalyzerMasterWrapper {
     /**
      * Render method called by Master Animation Controller
      */
-    render(timestamp, deltaTime) {
+    render(deltaTime, timestamp, sharedAudioData) {
         if (!this.spectrumAnalyzer || !this.isActive) {
             return;
         }
@@ -172,7 +171,7 @@ class SpectrumAnalyzerMasterWrapper {
             this.handleAdditionalVisualizations();
             
         } catch (error) {
-            console.error('🎬 SpectrumAnalyzer render error:', error);
+            console.error('SpectrumAnalyzer render error:', error);
         }
     }
     
@@ -296,6 +295,12 @@ class SpectrumAnalyzerMasterWrapper {
      * Get audio features for visualizations
      */
     getAudioFeatures() {
+        // Use shared audio data from Master Animation Controller (PERFORMANCE OPTIMIZATION)
+        if (this.sharedAudioData) {
+            return this.sharedAudioData;
+        }
+        
+        // Fallback for legacy mode or if shared data not available
         let audioFeatures = null;
         const visualizer = window.visualizer;
         
@@ -322,7 +327,7 @@ class SpectrumAnalyzerMasterWrapper {
      * Default error handler
      */
     defaultErrorHandler(error) {
-        console.error('🎬 SpectrumAnalyzer Master Wrapper error:', error);
+        console.error('SpectrumAnalyzer Master Wrapper error:', error);
     }
     
     /**
@@ -340,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const waitForSpectrumAnalyzer = () => {
             if (window.visualizer && window.visualizer.audioMotion) {
                 window.spectrumAnalyzerMasterWrapper = new SpectrumAnalyzerMasterWrapper(window.visualizer.audioMotion);
-                console.log('🎬 SpectrumAnalyzer Master Wrapper: Connected to spectrum analyzer');
             } else {
                 setTimeout(waitForSpectrumAnalyzer, 100);
             }
@@ -349,6 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
         waitForSpectrumAnalyzer();
         
     } catch (error) {
-        console.error('🎬 SpectrumAnalyzer Master Wrapper initialization failed:', error);
+        console.error('SpectrumAnalyzer Master Wrapper initialization failed:', error);
     }
 });

@@ -26505,29 +26505,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                                 console.log('🔍 Memory Profiler STOPPED - Check console for report');
                             }
                             break;
-                        case 'KeyL':
-                            // Master Animation Controller Controls (Shift+L to enable, Ctrl+L to disable) - L for "Loop"
-                            if (e.shiftKey && window.masterAnimationController) {
-                                e.preventDefault();
-                                window.masterAnimationController.enable();
-                                console.log('🎬 Master Animation Controller ENABLED - Single RAF loop active');
-                            } else if (e.ctrlKey && window.masterAnimationController) {
-                                e.preventDefault();
-                                window.masterAnimationController.disable();
-                                console.log('🎬 Master Animation Controller DISABLED - Rolled back to legacy systems');
-                            }
-                            break;
-                        case 'KeyD':
-                            // Master Animation Controller Debug (Shift+D for debug mode)
-                            if (e.shiftKey && window.masterAnimationController) {
-                                e.preventDefault();
-                                console.log('🎬 Debug key detected - toggling debug mode');
-                                const stats = window.masterAnimationController.getPerformanceStats();
-                                console.log('🎬 Master Animation Controller Stats:', stats);
-                                window.masterAnimationController.setDebugMode(!stats.config.debugMode);
-                                console.log('🎬 Debug mode toggled to:', !stats.config.debugMode);
-                            }
-                            break;
                         case 'Escape':
                             e.preventDefault();
                             this.exitFullscreen();

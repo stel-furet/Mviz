@@ -55,11 +55,8 @@ class AudioMotionMasterWrapper {
         
         if (success) {
             this.isRegistered = true;
-            if (window.masterAnimationController.config.debugMode) {
-                console.log('🎬 AudioMotion registered with Master Animation Controller');
-            }
         } else {
-            console.error('🎬 Failed to register AudioMotion with Master Animation Controller');
+            console.error('Failed to register AudioMotion with Master Animation Controller');
         }
     }
     
@@ -78,7 +75,7 @@ class AudioMotionMasterWrapper {
         }
         
         if (!this.originalToggleAnalyzer) {
-            console.error('🎬 AudioMotion: Cannot enable master control - toggleAnalyzer method not found');
+            console.error('AudioMotion: Cannot enable master control - toggleAnalyzer method not found');
             return;
         }
         
@@ -96,12 +93,6 @@ class AudioMotionMasterWrapper {
         
         // Check if AudioMotion is actually running and set active state accordingly
         const shouldBeActive = this.audioMotion.isOn;
-        console.log('🎬 AudioMotion enableMasterControl:', {
-            audioMotionIsOn: this.audioMotion.isOn,
-            audioMotionRunId: this.audioMotion._runId,
-            audioMotionDestroyed: this.audioMotion._destroyed,
-            settingActiveState: shouldBeActive
-        });
         
         // Activate the system in master controller only if AudioMotion is actually running
         if (window.masterAnimationController) {
@@ -109,7 +100,6 @@ class AudioMotionMasterWrapper {
             this.isActive = shouldBeActive;
         }
         
-        console.log('🎬 AudioMotion: Master control enabled, active:', this.isActive);
     }
     
     /**
@@ -139,9 +129,6 @@ class AudioMotionMasterWrapper {
             this.audioMotion._runId = requestAnimationFrame(timestamp => this.audioMotion._draw(timestamp));
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 AudioMotion: Master control disabled, reverted to legacy mode');
-        }
     }
     
     /**
@@ -165,14 +152,12 @@ class AudioMotionMasterWrapper {
             if (window.masterAnimationController) {
                 window.masterAnimationController.setSystemActive('audiomotion', true);
             }
-            console.log('🎬 AudioMotion started via masterToggleAnalyzer - activated in master controller');
         } else if (!isNowRunning && this.isActive) {
             // AudioMotion stopped: deactivate in master controller
             this.isActive = false;
             if (window.masterAnimationController) {
                 window.masterAnimationController.setSystemActive('audiomotion', false);
             }
-            console.log('🎬 AudioMotion stopped via masterToggleAnalyzer - deactivated in master controller');
         }
         
         return result;
@@ -181,8 +166,11 @@ class AudioMotionMasterWrapper {
     /**
      * Update method called by Master Animation Controller
      */
-    update(deltaTime, timestamp) {
+    update(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive || !this.audioMotion.isOn) return;
+        
+        // Store shared audio data (PERFORMANCE OPTIMIZATION)
+        this.sharedAudioData = sharedAudioData;
         
         // AudioMotion handles its own frame rate limiting
         // We just need to call its internal draw method
@@ -192,7 +180,7 @@ class AudioMotionMasterWrapper {
     /**
      * Render method called by Master Animation Controller
      */
-    render(deltaTime, timestamp) {
+    render(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive || !this.audioMotion.isOn) {
             return;
         }
@@ -203,7 +191,7 @@ class AudioMotionMasterWrapper {
             // since the master controller handles timing
             this.renderAudioMotionFrame(timestamp);
         } catch (error) {
-            console.error('🎬 AudioMotion render error:', error);
+            console.error('AudioMotion render error:', error);
         }
     }
     
@@ -241,7 +229,7 @@ class AudioMotionMasterWrapper {
         const audioMotion = this.audioMotion;
         
         if (!this.originalDraw) {
-            console.error('🎬 AudioMotion: No originalDraw method available!');
+            console.error('AudioMotion: No originalDraw method available!');
             return;
         }
         
@@ -252,7 +240,7 @@ class AudioMotionMasterWrapper {
         
         // Validate minDecibels/maxDecibels configuration before drawing
         if (audioMotion.minDecibels >= audioMotion.maxDecibels) {
-            console.warn('🎬 AudioMotion: Invalid decibel range, skipping frame', {
+            console.warn('AudioMotion: Invalid decibel range, skipping frame', {
                 minDecibels: audioMotion.minDecibels,
                 maxDecibels: audioMotion.maxDecibels
             });
@@ -286,7 +274,7 @@ class AudioMotionMasterWrapper {
             // Only log unique errors to avoid spam
             const errorKey = error.message + error.stack?.split('\n')[0];
             if (!this.lastError || this.lastError !== errorKey) {
-                console.error('🎬 AudioMotion drawing error:', error.message);
+                console.error('AudioMotion drawing error:', error.message);
                 this.lastError = errorKey;
             }
             
@@ -314,9 +302,8 @@ class AudioMotionMasterWrapper {
             // Reset to safe gradient
             this.audioMotion.gradient = 'classic';
             
-            console.log('🎬 AudioMotion: Reset to safe defaults');
         } catch (error) {
-            console.error('🎬 AudioMotion: Failed to reset to safe defaults:', error);
+            console.error('AudioMotion: Failed to reset to safe defaults:', error);
         }
     }
     
@@ -326,20 +313,16 @@ class AudioMotionMasterWrapper {
     cleanup() {
         this.disableMasterControl();
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 AudioMotion wrapper cleanup completed');
-        }
     }
     
     /**
      * Error handler for Master Animation Controller
      */
     errorHandler(error) {
-        console.error('🎬 AudioMotion wrapper error:', error);
+        console.error('AudioMotion wrapper error:', error);
         
         // On error, try to revert to legacy mode
         if (this.masterControlled) {
-            console.log('🎬 AudioMotion: Error detected, reverting to legacy mode');
             this.disableMasterControl();
         }
     }
@@ -383,14 +366,12 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
         
-        console.log('🎬 AudioMotion Master Wrapper initialized');
         
         // If AudioMotion isn't ready yet, wait for it
                 if (!audioMotionInstance) {
                     const waitForAudioMotion = () => {
                         if (window.visualizer && window.visualizer.officialAudioMotion) {
                             window.audioMotionMasterWrapper.audioMotion = window.visualizer.officialAudioMotion;
-                            console.log('🎬 AudioMotion Master Wrapper: AudioMotion instance connected');
                         } else {
                             setTimeout(waitForAudioMotion, 100);
                         }
@@ -399,6 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
         
     } catch (error) {
-        console.error('🎬 AudioMotion Master Wrapper initialization failed:', error);
+        console.error('AudioMotion Master Wrapper initialization failed:', error);
     }
 });

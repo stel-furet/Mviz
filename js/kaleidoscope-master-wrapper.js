@@ -54,11 +54,8 @@ class KaleidoscopeMasterWrapper {
         
         if (success) {
             this.isRegistered = true;
-            if (window.masterAnimationController.config.debugMode) {
-                console.log('🎬 Kaleidoscope registered with Master Animation Controller');
-            }
         } else {
-            console.error('🎬 Failed to register Kaleidoscope with Master Animation Controller');
+            console.error('Failed to register Kaleidoscope with Master Animation Controller');
         }
     }
     
@@ -75,7 +72,7 @@ class KaleidoscopeMasterWrapper {
         this.visualizer = window.visualizer;
         
         if (!this.visualizer) {
-            console.error('🎬 Kaleidoscope: Visualizer not found');
+            console.error('Kaleidoscope: Visualizer not found');
             return;
         }
         
@@ -102,9 +99,6 @@ class KaleidoscopeMasterWrapper {
             }
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Kaleidoscope: Master control enabled');
-        }
     }
     
     /**
@@ -135,9 +129,6 @@ class KaleidoscopeMasterWrapper {
         
         this.isAnimating = false;
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Kaleidoscope: Master control disabled, reverted to legacy mode');
-        }
     }
     
     /**
@@ -153,9 +144,6 @@ class KaleidoscopeMasterWrapper {
             window.masterAnimationController.setSystemActive('kaleidoscope', true);
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Kaleidoscope: Master animation started');
-        }
     }
     
     /**
@@ -191,16 +179,16 @@ class KaleidoscopeMasterWrapper {
             this.visualizer.kaleidoscopeVizCanvas.style.display = 'none';
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Kaleidoscope: Master animation stopped');
-        }
     }
     
     /**
      * Update method called by Master Animation Controller
      */
-    update(deltaTime, timestamp) {
+    update(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive || !this.isAnimating || !this.visualizer) return;
+        
+        // Store shared audio data (PERFORMANCE OPTIMIZATION)
+        this.sharedAudioData = sharedAudioData;
         
         // Check if kaleidoscope is still enabled
         if (!this.visualizer.kaleidoscopeEnabled) {
@@ -214,7 +202,7 @@ class KaleidoscopeMasterWrapper {
     /**
      * Render method called by Master Animation Controller
      */
-    render(deltaTime, timestamp) {
+    render(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive || !this.isAnimating || !this.visualizer) return;
         
         try {
@@ -222,7 +210,7 @@ class KaleidoscopeMasterWrapper {
             this.executeKaleidoscopeFrame();
             
         } catch (error) {
-            console.error('🎬 Kaleidoscope render error:', error);
+            console.error('Kaleidoscope render error:', error);
         }
     }
     
@@ -281,20 +269,16 @@ class KaleidoscopeMasterWrapper {
     cleanup() {
         this.disableMasterControl();
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Kaleidoscope wrapper cleanup completed');
-        }
     }
     
     /**
      * Error handler for Master Animation Controller
      */
     errorHandler(error) {
-        console.error('🎬 Kaleidoscope wrapper error:', error);
+        console.error('Kaleidoscope wrapper error:', error);
         
         // On error, try to revert to legacy mode
         if (this.masterControlled) {
-            console.log('🎬 Kaleidoscope: Error detected, reverting to legacy mode');
             this.disableMasterControl();
         }
     }
@@ -337,5 +321,4 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    console.log('🎬 Kaleidoscope Master Wrapper initialized');
 });

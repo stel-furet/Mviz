@@ -986,19 +986,6 @@ class SpectrumAnalyzer {
         // Check if background image is active and enabled
         const hasBackgroundImage = window.visualizer && window.visualizer.backgroundImage && window.visualizer.backgroundImageEnabled;
 
-        // console.log('🎬 SpectrumAnalyzer.draw - Layer Debug:', {
-        //     isVideoActive,
-        //     hasBackgroundImage,
-        //     backgroundColor: this.backgroundColor,
-        //     showBgColor: this.showBgColor,
-        //     bgAlpha: this.bgAlpha,
-        //     canvasSize: `${width}x${height}`,
-        //     contextType: this.ctx.constructor.name,
-        //     visualizerExists: !!window.visualizer,
-        //     backgroundImageExists: !!(window.visualizer && window.visualizer.backgroundImage),
-        //     backgroundImageEnabled: !!(window.visualizer && window.visualizer.backgroundImageEnabled)
-        // });
-
         if (! isVideoActive) { // Only fill background when video is NOT active
             if (!hasBackgroundImage) {
                 // Only fill with background color if no background image

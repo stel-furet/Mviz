@@ -53,11 +53,8 @@ class RecordingMasterWrapper {
         
         if (success) {
             this.isRegistered = true;
-            if (window.masterAnimationController.config.debugMode) {
-                console.log('🎬 Recording System registered with Master Animation Controller');
-            }
         } else {
-            console.error('🎬 Failed to register Recording System with Master Animation Controller');
+            console.error('Failed to register Recording System with Master Animation Controller');
         }
     }
     
@@ -86,9 +83,6 @@ class RecordingMasterWrapper {
             this.liveDisplayManager.startCompositing = this.masterStartCompositing.bind(this);
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Recording System: Master control enabled');
-        }
     }
     
     /**
@@ -115,9 +109,6 @@ class RecordingMasterWrapper {
             this.isActive = false;
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Recording System: Master control disabled, reverted to legacy mode');
-        }
     }
     
     /**
@@ -135,16 +126,16 @@ class RecordingMasterWrapper {
             this.targetFrameRate = this.recordManager.frameRate;
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log(`🎬 Recording System: Master compositing started at ${this.targetFrameRate}fps`);
-        }
     }
     
     /**
      * Update method called by Master Animation Controller
      */
-    update(deltaTime, timestamp) {
+    update(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive) return;
+        
+        // Store shared audio data (PERFORMANCE OPTIMIZATION)
+        this.sharedAudioData = sharedAudioData;
         
         // Frame rate control for recording
         const targetInterval = 1000 / this.targetFrameRate;
@@ -161,7 +152,7 @@ class RecordingMasterWrapper {
     /**
      * Render method called by Master Animation Controller
      */
-    render(deltaTime, timestamp) {
+    render(deltaTime, timestamp, sharedAudioData) {
         if (!this.isActive) return;
         
         try {
@@ -172,7 +163,7 @@ class RecordingMasterWrapper {
             this.compositeLiveDisplayFrames();
             
         } catch (error) {
-            console.error('🎬 Recording System render error:', error);
+            console.error('Recording System render error:', error);
         }
     }
     
@@ -236,7 +227,7 @@ class RecordingMasterWrapper {
                 try {
                     displayManager.compositeFrame();
                 } catch (error) {
-                    console.error(`🎬 Live Display ${displayId} composite error:`, error);
+                    console.error(`Live Display ${displayId} composite error:`, error);
                 }
             }
         }
@@ -251,9 +242,6 @@ class RecordingMasterWrapper {
             window.masterAnimationController.setSystemActive('recording', false);
         }
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Recording System: Master compositing stopped');
-        }
     }
     
     /**
@@ -262,9 +250,6 @@ class RecordingMasterWrapper {
     setFrameRate(frameRate) {
         this.targetFrameRate = frameRate;
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log(`🎬 Recording System: Frame rate updated to ${frameRate}fps`);
-        }
     }
     
     /**
@@ -273,20 +258,16 @@ class RecordingMasterWrapper {
     cleanup() {
         this.disableMasterControl();
         
-        if (window.masterAnimationController && window.masterAnimationController.config.debugMode) {
-            console.log('🎬 Recording System wrapper cleanup completed');
-        }
     }
     
     /**
      * Error handler for Master Animation Controller
      */
     errorHandler(error) {
-        console.error('🎬 Recording System wrapper error:', error);
+        console.error('Recording System wrapper error:', error);
         
         // On error, try to revert to legacy mode
         if (this.masterControlled) {
-            console.log('🎬 Recording System: Error detected, reverting to legacy mode');
             this.disableMasterControl();
         }
     }
@@ -330,5 +311,4 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    console.log('🎬 Recording Master Wrapper initialized');
 });

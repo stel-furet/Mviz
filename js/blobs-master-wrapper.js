@@ -23,7 +23,6 @@ class BlobsMasterWrapper {
             this.init();
         }
         
-        console.log('🎬 Blobs Master Wrapper initialized');
     }
     
     init() {
@@ -43,14 +42,13 @@ class BlobsMasterWrapper {
             window.masterAnimationController.registerSystem('blobs', {
                 priority: window.masterAnimationController.PRIORITIES.BLOBS, // Priority 6
                 targetFPS: 60,
-                update: (timestamp, deltaTime) => this.update(timestamp, deltaTime),
-                render: (timestamp, deltaTime) => this.render(timestamp, deltaTime),
+                update: (deltaTime, timestamp, sharedAudioData) => this.update(deltaTime, timestamp, sharedAudioData),
+                render: (deltaTime, timestamp, sharedAudioData) => this.render(deltaTime, timestamp, sharedAudioData),
                 cleanup: () => this.cleanup(),
                 errorHandler: (error) => this.defaultErrorHandler(error)
             });
             
             this.isRegistered = true;
-            console.log('🎬 Blobs: Registered with Master Animation Controller');
         }
     }
     
@@ -81,7 +79,6 @@ class BlobsMasterWrapper {
             this.isActive = shouldBeActive;
         }
         
-        console.log('🎬 Blobs: Master control enabled');
     }
     
     /**
@@ -109,7 +106,6 @@ class BlobsMasterWrapper {
             this.blobsVisualization.animationFrameId = requestAnimationFrame(() => this.originalAnimate());
         }
         
-        console.log('🎬 Blobs: Master control disabled, reverted to legacy mode');
     }
     
     /**
@@ -124,8 +120,11 @@ class BlobsMasterWrapper {
     /**
      * Update method called by Master Animation Controller
      */
-    update(timestamp, deltaTime) {
+    update(deltaTime, timestamp, sharedAudioData) {
         if (!this.blobsVisualization || !this.isActive) return;
+        
+        // Store shared audio data (PERFORMANCE OPTIMIZATION)
+        this.sharedAudioData = sharedAudioData;
         
         this.lastUpdateTime = timestamp;
         
@@ -147,7 +146,7 @@ class BlobsMasterWrapper {
     /**
      * Render method called by Master Animation Controller
      */
-    render(timestamp, deltaTime) {
+    render(deltaTime, timestamp, sharedAudioData) {
         if (!this.blobsVisualization || !this.isActive) return;
         
         try {
@@ -163,7 +162,7 @@ class BlobsMasterWrapper {
             }
             
         } catch (error) {
-            console.error('🎬 Blobs render error:', error);
+            console.error('Blobs render error:', error);
         }
     }
     
@@ -171,6 +170,12 @@ class BlobsMasterWrapper {
      * Get audio data for blobs rendering (from original animate method)
      */
     getAudioData() {
+        // Use shared audio data from Master Animation Controller (PERFORMANCE OPTIMIZATION)
+        if (this.sharedAudioData) {
+            return this.sharedAudioData;
+        }
+        
+        // Fallback for legacy mode
         let audioData = null;
         
         if (this.blobsVisualization.visualizer && this.blobsVisualization.visualizer.audioMotion) {
@@ -232,7 +237,7 @@ class BlobsMasterWrapper {
      * Default error handler
      */
     defaultErrorHandler(error) {
-        console.error('🎬 Blobs Master Wrapper error:', error);
+        console.error('Blobs Master Wrapper error:', error);
     }
     
     /**
@@ -250,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const waitForBlobsVisualization = () => {
             if (window.visualizer && window.visualizer.blobsVisualization) {
                 window.blobsMasterWrapper = new BlobsMasterWrapper(window.visualizer.blobsVisualization);
-                console.log('🎬 Blobs Master Wrapper: Connected to blobs visualization');
             } else {
                 setTimeout(waitForBlobsVisualization, 100);
             }
@@ -259,6 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         waitForBlobsVisualization();
         
     } catch (error) {
-        console.error('🎬 Blobs Master Wrapper initialization failed:', error);
+        console.error('Blobs Master Wrapper initialization failed:', error);
     }
 });
