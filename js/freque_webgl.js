@@ -959,11 +959,18 @@ class WebGLParticleSystem {
     }
     
     updateParticles(audioFeatures, beatInfo = null) {
-        // Remove dead particles and add new ones
-        this.particles = this.particles.filter(particle => {
-            particle.life -= particle.decay;
-            return particle.life > 0;
-        });
+        // Remove dead particles in-place (avoid array allocation)
+        // Update life first, then remove dead particles using reverse iteration
+        for (let i = 0; i < this.particles.length; i++) {
+            this.particles[i].life -= this.particles[i].decay;
+        }
+        
+        // Remove dead particles using reverse iteration to avoid index shifting issues
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            if (this.particles[i].life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
         
         // Handle beat effects
         let extraParticles = 0;

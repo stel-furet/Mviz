@@ -127,7 +127,7 @@
 ## 🎨 UI/UX Improvements
 11. **Improve: Better UI continuity between settings panels for consistent user experience**
 12. ✅ **COMPLETED: Better user preset management - add clear list button** - Added Clear All Presets button with confirmation modal
-13. **Fix: Click Outside handler for all panels and mixer**
+13. ✅ **COMPLETED: Click Outside handler for all panels and mixer** - Implemented "last opened wins" behavior where only one panel can be open at a time across all panels (header, footer, mixer, B/V/C/A buttons)
 14. **Fix: Match Header button order to Mixer order**
 
 ## 📹 Video System

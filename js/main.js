@@ -26476,6 +26476,18 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                             e.preventDefault();
                             this.toggleMixer();
                             break;
+                        case 'KeyP':
+                            // Memory Profiler Controls (Shift+P to start, Ctrl+P to stop)
+                            if (e.shiftKey && window.memoryProfiler) {
+                                e.preventDefault();
+                                window.memoryProfiler.start();
+                                console.log('🔍 Memory Profiler STARTED - Press Ctrl+P to stop and generate report');
+                            } else if (e.ctrlKey && window.memoryProfiler) {
+                                e.preventDefault();
+                                window.memoryProfiler.stop();
+                                console.log('🔍 Memory Profiler STOPPED - Check console for report');
+                            }
+                            break;
                         case 'Escape':
                             e.preventDefault();
                             this.exitFullscreen();

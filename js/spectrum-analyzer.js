@@ -14,6 +14,15 @@ class SpectrumAnalyzer {
         this.connectedElement = null;
         this.currentColorScheme = 'default';
         this.backgroundColor = '#000000';
+        
+        // Cached audio features object to reduce GC pressure
+        this.cachedAudioFeatures = {
+            energy: 0,
+            beat: false,
+            tempo: 120,
+            dominantFrequency: 0
+        };
+        this.lastBeatTime = 0;
 
         // Initialize all parameters with defaults
         this.resetToDefaults();
@@ -425,13 +434,12 @@ class SpectrumAnalyzer {
     
     generateBasicAudioFeatures() {
         if (!this.analyser || !this.dataArray) {
-            console.log('🔍 No analyser or dataArray available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
-            return {
-                energy: 0,
-                beat: false,
-                tempo: 0,
-                dominantFrequency: 0
-            };
+            // Reuse cached object instead of creating new one
+            this.cachedAudioFeatures.energy = 0;
+            this.cachedAudioFeatures.beat = false;
+            this.cachedAudioFeatures.tempo = 0;
+            this.cachedAudioFeatures.dominantFrequency = 0;
+            return this.cachedAudioFeatures;
         }
         
         // Get fresh audio data
@@ -444,8 +452,13 @@ class SpectrumAnalyzer {
         }
         const energy = sum / (this.dataArray.length * 255);
         
-        // Debug: check if we're getting real audio data
-        const maxDataValue = Math.max(...this.dataArray);
+        // Debug: check if we're getting real audio data (optimized to avoid array spread)
+        let maxDataValue = 0;
+        for (let i = 0; i < this.dataArray.length; i++) {
+            if (this.dataArray[i] > maxDataValue) {
+                maxDataValue = this.dataArray[i];
+            }
+        }
             // console.log('🔍 Audio data - Energy:', energy.toFixed(3), 'Max value:', maxDataValue, 'DataArray length:', this.dataArray.length);
         
         // Simple beat detection based on energy spikes (more sensitive)
@@ -471,19 +484,24 @@ class SpectrumAnalyzer {
         }
         const dominantFrequency = (dominantBin / this.dataArray.length) * 22050; // Assuming 44.1kHz sample rate
         
-        const features = {
-            energy: Math.min(energy, 1),
-            beat: beat,
-            tempo: 120, // Default tempo
-            dominantFrequency: dominantFrequency
-        };
+        // Reuse cached object instead of creating new one
+        this.cachedAudioFeatures.energy = Math.min(energy, 1);
+        this.cachedAudioFeatures.beat = beat;
+        this.cachedAudioFeatures.tempo = 120; // Default tempo
+        this.cachedAudioFeatures.dominantFrequency = dominantFrequency;
         
         // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
         
-        return features;
+        return this.cachedAudioFeatures;
     }
 
-    animate() { // Check if visualization is enabled through parent visualizer
+    animate() { 
+        // Memory profiling for stuttering investigation
+        if (window.memoryProfiler) {
+            window.memoryProfiler.recordFrame();
+        }
+        
+        // Check if visualization is enabled through parent visualizer
         if (window.visualizer && !window.visualizer.visualizationEnabled) {
             // Generate audio features for both Infinite Zoom and Fluid Dynamics
             let audioFeatures = null;

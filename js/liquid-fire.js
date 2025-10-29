@@ -15,6 +15,10 @@ class BlobsVisualization {
         this.maxParticles = 500; // Increased to match density max
         this.particleCount = 200; // Default particle count (will be updated by density)
         
+        // Particle object pool to reduce GC pressure
+        this.particlePool = [];
+        this.poolSize = 500; // Pre-allocate pool of particle objects
+        
         // Plasma physics
         this.gravity = 0.05;
         this.turbulence = 0.8;
@@ -78,6 +82,62 @@ class BlobsVisualization {
         this.lastCorruptionLog = 0;
         
         // console.log('🔵 Blobs Visualization initialized');
+        
+        // Initialize particle pool
+        this.initializeParticlePool();
+    }
+    
+    initializeParticlePool() {
+        // Pre-allocate particle objects to reduce GC pressure
+        this.particlePool = [];
+        for (let i = 0; i < this.poolSize; i++) {
+            this.particlePool.push(this.createEmptyParticle());
+        }
+    }
+    
+    createEmptyParticle() {
+        // Create a particle object with all properties initialized
+        return {
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            life: 1.0,
+            decay: 0.002,
+            size: 1,
+            colorIndex: 0,
+            turbulence: 0.3,
+            heat: 0.6,
+            flicker: 0,
+            flickerSpeed: 0.05,
+            direction: 0,
+            baseSpeed: 0,
+            curvePhase: 0,
+            curveStrength: 1.0,
+            curveFrequency: 0.02,
+            inUse: false // Track if particle is in use
+        };
+    }
+    
+    getParticleFromPool() {
+        // Find an unused particle in the pool
+        for (let i = 0; i < this.particlePool.length; i++) {
+            if (!this.particlePool[i].inUse) {
+                this.particlePool[i].inUse = true;
+                return this.particlePool[i];
+            }
+        }
+        
+        // If no free particles, create a new one (pool expansion)
+        const newParticle = this.createEmptyParticle();
+        newParticle.inUse = true;
+        this.particlePool.push(newParticle);
+        return newParticle;
+    }
+    
+    returnParticleToPool(particle) {
+        // Mark particle as available for reuse
+        particle.inUse = false;
     }
     
     initialize() {
@@ -543,6 +603,10 @@ class BlobsVisualization {
             this.canvas.style.opacity = '0';
         }
         
+        // Return all particles to pool before clearing array
+        for (let particle of this.particles) {
+            this.returnParticleToPool(particle);
+        }
         this.particles = [];
         
         // Don't stop the animation loop - just mark as inactive
@@ -551,6 +615,10 @@ class BlobsVisualization {
     }
     
     generateInitialParticles() {
+        // Return any existing particles to pool before clearing
+        for (let particle of this.particles) {
+            this.returnParticleToPool(particle);
+        }
         this.particles = [];
         const initialCount = Math.max(this.particleCount, 20); // Ensure at least 20 particles
         for (let i = 0; i < initialCount; i++) {
@@ -623,25 +691,27 @@ class BlobsVisualization {
         const angle = Math.random() * Math.PI * 2;
         const speed = 0.2 + Math.random() * 0.6; // Speed between 0.2-0.8 (reduced from 1-4)
         
-        const particle = {
-            x: x,
-            y: y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            life: 1.0, // Start at full life
-            decay: (0.002 + Math.random() * 0.004) / this.decayMultiplier, // Decay rate affected by multiplier
-            size: Math.max(this.minSize, Math.min(this.maxSize, this.minSize + Math.random() * (this.maxSize - this.minSize))),
-            colorIndex: Math.floor(Math.random() * this.plasmaColors.length),
-            turbulence: 0.3 + Math.random() * 0.4,
-            heat: 0.6 + Math.random() * 0.4,
-            flicker: Math.random() * Math.PI * 2,
-            flickerSpeed: 0.05 + Math.random() * 0.1,
-            direction: angle, // Store original direction for reference
-            baseSpeed: speed, // Store base speed
-            curvePhase: Math.random() * Math.PI * 2, // For curved paths
-            curveStrength: 1.0 + Math.random() * 2.0, // How much the path curves
-            curveFrequency: 0.02 + Math.random() * 0.04 // How fast the curve oscillates
-        };
+        // Get particle from pool instead of creating new object
+        const particle = this.getParticleFromPool();
+        
+        // Initialize particle properties
+        particle.x = x;
+        particle.y = y;
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
+        particle.life = 1.0; // Start at full life
+        particle.decay = (0.002 + Math.random() * 0.004) / this.decayMultiplier; // Decay rate affected by multiplier
+        particle.size = Math.max(this.minSize, Math.min(this.maxSize, this.minSize + Math.random() * (this.maxSize - this.minSize)));
+        particle.colorIndex = Math.floor(Math.random() * this.plasmaColors.length);
+        particle.turbulence = 0.3 + Math.random() * 0.4;
+        particle.heat = 0.6 + Math.random() * 0.4;
+        particle.flicker = Math.random() * Math.PI * 2;
+        particle.flickerSpeed = 0.05 + Math.random() * 0.1;
+        particle.direction = angle; // Store original direction for reference
+        particle.baseSpeed = speed; // Store base speed
+        particle.curvePhase = Math.random() * Math.PI * 2; // For curved paths
+        particle.curveStrength = 1.0 + Math.random() * 2.0; // How much the path curves
+        particle.curveFrequency = 0.02 + Math.random() * 0.04; // How fast the curve oscillates
         
         this.particles.push(particle);
     }
@@ -1213,6 +1283,9 @@ class BlobsVisualization {
                     this.renderParticle(particle);
                     renderedParticles++;
                 } else {
+                    // Return dead particle to pool and remove from array
+                    this.returnParticleToPool(particle);
+                    this.particles.splice(i, 1);
                     removedParticles++;
                 }
             }
