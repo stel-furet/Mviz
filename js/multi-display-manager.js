@@ -2,6 +2,7 @@
  * MultiDisplayManager - Isolated system for managing multiple Live Display windows
  * Uses LiveDisplayManager for streaming (Phase 2 integration)
  */
+
 class MultiDisplayManager {
     constructor(visualizer) {
         this.visualizer = visualizer;
@@ -1013,6 +1014,126 @@ class MultiDisplayManager {
             const value = this.visualizer.infiniteZoom.baseRotationSpeed || 0;
             mixerInfiniteZoomRotationSlider.value = value;
             mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
+        }
+    }
+
+    // ========== STARFALL UPDATE METHODS ==========
+
+    updateMixerStarfallToggle() {
+        const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
+        if (mixerStarfallToggle && this.visualizer) {
+            const text = mixerStarfallToggle.querySelector('.toggle-text');
+            if (text) {
+                const isOn = this.visualizer.webglEnabled;
+                
+                text.textContent = isOn ? 'ON' : 'OFF';
+                
+                // Update button state
+                if (isOn) {
+                    mixerStarfallToggle.classList.add('active');
+                } else {
+                    mixerStarfallToggle.classList.remove('active');
+                }
+            }
+        }
+    }
+
+    updateMixerStarfallOpacitySlider() {
+        const mixerStarfallOpacitySlider = document.getElementById('mixerStarfallOpacitySlider');
+        const mixerStarfallOpacityValue = document.getElementById('mixerStarfallOpacityValue');
+        if (mixerStarfallOpacitySlider && mixerStarfallOpacityValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            // Get current opacity from WebGL visualization (0.0-1.0) and convert to 0-100
+            const opacityPercent = Math.round(this.visualizer.webglVisualization.currentVisualization.opacity * 100);
+            mixerStarfallOpacitySlider.value = opacityPercent;
+            mixerStarfallOpacityValue.textContent = opacityPercent;
+        }
+    }
+
+    updateMixerStarfallColorSchemeSelect() {
+        const mixerStarfallColorSchemeSelect = document.getElementById('mixerStarfallColorSchemeSelect');
+        if (mixerStarfallColorSchemeSelect && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const currentScheme = this.visualizer.webglVisualization.currentVisualization.currentColorScheme;
+            mixerStarfallColorSchemeSelect.value = currentScheme || 'rainbow';
+        }
+    }
+
+    updateMixerStarfallParticleCountSlider() {
+        const mixerStarfallParticleCountSlider = document.getElementById('mixerStarfallParticleCountSlider');
+        const mixerStarfallParticleCountValue = document.getElementById('mixerStarfallParticleCountValue');
+        if (mixerStarfallParticleCountSlider && mixerStarfallParticleCountValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const particleCount = this.visualizer.webglVisualization.currentVisualization.particleCount || 1000;
+            mixerStarfallParticleCountSlider.value = particleCount;
+            mixerStarfallParticleCountValue.textContent = particleCount;
+        }
+    }
+
+    updateMixerStarfallParticleSizeSlider() {
+        const mixerStarfallParticleSizeSlider = document.getElementById('mixerStarfallParticleSizeSlider');
+        const mixerStarfallParticleSizeValue = document.getElementById('mixerStarfallParticleSizeValue');
+        if (mixerStarfallParticleSizeSlider && mixerStarfallParticleSizeValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const particleSize = this.visualizer.webglVisualization.currentVisualization.particleSize || 2.0;
+            mixerStarfallParticleSizeSlider.value = particleSize;
+            mixerStarfallParticleSizeValue.textContent = particleSize.toFixed(1);
+        }
+    }
+
+    updateMixerStarfallSpeedSlider() {
+        const mixerStarfallSpeedSlider = document.getElementById('mixerStarfallSpeedSlider');
+        const mixerStarfallSpeedValue = document.getElementById('mixerStarfallSpeedValue');
+        if (mixerStarfallSpeedSlider && mixerStarfallSpeedValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const speed = this.visualizer.webglVisualization.currentVisualization.speed || 1.0;
+            mixerStarfallSpeedSlider.value = speed;
+            mixerStarfallSpeedValue.textContent = speed.toFixed(1) + 'x';
+        }
+    }
+
+    updateMixerStarfallGravitySlider() {
+        const mixerStarfallGravitySlider = document.getElementById('mixerStarfallGravitySlider');
+        const mixerStarfallGravityValue = document.getElementById('mixerStarfallGravityValue');
+        if (mixerStarfallGravitySlider && mixerStarfallGravityValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const gravity = this.visualizer.webglVisualization.currentVisualization.gravity || 0.1;
+            mixerStarfallGravitySlider.value = gravity;
+            mixerStarfallGravityValue.textContent = gravity.toFixed(2);
+        }
+    }
+
+    updateMixerStarfallSaturationSlider() {
+        const mixerStarfallSaturationSlider = document.getElementById('mixerStarfallSaturationSlider');
+        const mixerStarfallSaturationValue = document.getElementById('mixerStarfallSaturationValue');
+        if (mixerStarfallSaturationSlider && mixerStarfallSaturationValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const saturation = this.visualizer.webglVisualization.currentVisualization.saturation || 1.0;
+            mixerStarfallSaturationSlider.value = saturation;
+            mixerStarfallSaturationValue.textContent = Math.round(saturation * 100) + '%';
+        }
+    }
+
+    updateMixerStarfallTwinkleSlider() {
+        const mixerStarfallTwinkleSlider = document.getElementById('mixerStarfallTwinkleSlider');
+        const mixerStarfallTwinkleValue = document.getElementById('mixerStarfallTwinkleValue');
+        if (mixerStarfallTwinkleSlider && mixerStarfallTwinkleValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const twinkle = this.visualizer.webglVisualization.currentVisualization.twinkle || 0.5;
+            mixerStarfallTwinkleSlider.value = twinkle;
+            mixerStarfallTwinkleValue.textContent = Math.round(twinkle * 100) + '%';
+        }
+    }
+
+    updateMixerStarfallStarPercentageSlider() {
+        const mixerStarfallStarPercentageSlider = document.getElementById('mixerStarfallStarPercentageSlider');
+        const mixerStarfallStarPercentageValue = document.getElementById('mixerStarfallStarPercentageValue');
+        if (mixerStarfallStarPercentageSlider && mixerStarfallStarPercentageValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const starPercentage = this.visualizer.webglVisualization.currentVisualization.starPercentage || 0.3;
+            mixerStarfallStarPercentageSlider.value = starPercentage;
+            mixerStarfallStarPercentageValue.textContent = Math.round(starPercentage * 100) + '%';
+        }
+    }
+
+    updateMixerStarfallAudioReactivitySlider() {
+        const mixerStarfallAudioReactivitySlider = document.getElementById('mixerStarfallAudioReactivitySlider');
+        const mixerStarfallAudioReactivityValue = document.getElementById('mixerStarfallAudioReactivityValue');
+        if (mixerStarfallAudioReactivitySlider && mixerStarfallAudioReactivityValue && this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
+            const audioReactivity = this.visualizer.webglVisualization.currentVisualization.audioReactivity || 1.0;
+            mixerStarfallAudioReactivitySlider.value = audioReactivity;
+            mixerStarfallAudioReactivityValue.textContent = Math.round(audioReactivity * 100) + '%';
         }
     }
 }

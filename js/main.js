@@ -1,3 +1,4 @@
+
 class ParameterController {
     constructor(autopilot) {
         this.autopilot = autopilot;
@@ -19509,9 +19510,11 @@ https://rogueamoeba.com/loopback/
         
         this.updateWebGLButton();
         
-        // Update mixer UI
-        this.updateMixerStarfallToggle();
-        this.updateMixerStarfallOpacitySlider();
+        // Update mixer UI via MultiDisplayManager
+        if (window.multiDisplayManager) {
+            window.multiDisplayManager.updateMixerStarfallToggle();
+            window.multiDisplayManager.updateMixerStarfallOpacitySlider();
+        }
     }
 
     updateWebGLButton() {
@@ -19875,8 +19878,10 @@ https://rogueamoeba.com/loopback/
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleCount: value });
                     // console.log('🎮 WebGL: Settings updated for particle count:', value);
-                    // Update mixer UI
-                    this.updateMixerStarfallParticleCountSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallParticleCountSlider();
+                    }
                 } else {
                     console.warn('🎮 WebGL: Visualization not available for settings update');
                 }
@@ -19896,8 +19901,10 @@ https://rogueamoeba.com/loopback/
                 // console.log('🎮 WebGL: Particle size slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleSize: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallParticleSizeSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallParticleSizeSlider();
+                    }
                 }
             });
         } else {
@@ -19914,8 +19921,10 @@ https://rogueamoeba.com/loopback/
                 speedValue.textContent = value.toFixed(1);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ speed: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallSpeedSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallSpeedSlider();
+                    }
                 }
             });
         }
@@ -19930,8 +19939,10 @@ https://rogueamoeba.com/loopback/
                 gravityValue.textContent = value.toFixed(1);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ gravity: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallGravitySlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallGravitySlider();
+                    }
                 }
             });
         }
@@ -19946,8 +19957,10 @@ https://rogueamoeba.com/loopback/
                 saturationValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ saturation: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallSaturationSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallSaturationSlider();
+                    }
                 }
             });
         }
@@ -19961,8 +19974,10 @@ https://rogueamoeba.com/loopback/
                 // console.log('🎮 WebGL: Color scheme changed to:', scheme);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
-                    // Update mixer UI
-                    this.updateMixerStarfallColorSchemeSelect();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallColorSchemeSelect();
+                    }
                 }
             });
         }
@@ -19977,8 +19992,10 @@ https://rogueamoeba.com/loopback/
                 twinkleValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ twinkleIntensity: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallTwinkleSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallTwinkleSlider();
+                    }
                 }
             });
         }
@@ -19993,8 +20010,10 @@ https://rogueamoeba.com/loopback/
                 starPercentageValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ starPercentage: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallStarPercentageSlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallStarPercentageSlider();
+                    }
                 }
             });
         }
@@ -20008,8 +20027,10 @@ https://rogueamoeba.com/loopback/
                 audioReactivityValue.textContent = value + '%';
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
-                    // Update mixer UI
-                    this.updateMixerStarfallAudioReactivitySlider();
+                    // Update mixer UI via MultiDisplayManager
+                    if (window.multiDisplayManager) {
+                        window.multiDisplayManager.updateMixerStarfallAudioReactivitySlider();
+                    }
                 }
             });
         } else {
@@ -26468,10 +26489,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                             e.preventDefault();
                             this.toggleMorph();
                             break;
-                        case 'KeyL':
-                            e.preventDefault();
-                            this.toggleLoop();
-                            break;
                         case 'KeyX':
                             e.preventDefault();
                             this.toggleMixer();
@@ -26486,6 +26503,29 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                                 e.preventDefault();
                                 window.memoryProfiler.stop();
                                 console.log('🔍 Memory Profiler STOPPED - Check console for report');
+                            }
+                            break;
+                        case 'KeyL':
+                            // Master Animation Controller Controls (Shift+L to enable, Ctrl+L to disable) - L for "Loop"
+                            if (e.shiftKey && window.masterAnimationController) {
+                                e.preventDefault();
+                                window.masterAnimationController.enable();
+                                console.log('🎬 Master Animation Controller ENABLED - Single RAF loop active');
+                            } else if (e.ctrlKey && window.masterAnimationController) {
+                                e.preventDefault();
+                                window.masterAnimationController.disable();
+                                console.log('🎬 Master Animation Controller DISABLED - Rolled back to legacy systems');
+                            }
+                            break;
+                        case 'KeyD':
+                            // Master Animation Controller Debug (Shift+D for debug mode)
+                            if (e.shiftKey && window.masterAnimationController) {
+                                e.preventDefault();
+                                console.log('🎬 Debug key detected - toggling debug mode');
+                                const stats = window.masterAnimationController.getPerformanceStats();
+                                console.log('🎬 Master Animation Controller Stats:', stats);
+                                window.masterAnimationController.setDebugMode(!stats.config.debugMode);
+                                console.log('🎬 Debug mode toggled to:', !stats.config.debugMode);
                             }
                             break;
                         case 'Escape':
@@ -27794,6 +27834,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new FrequeVisualizer();
+
+// Initialize Master Animation Controller (Phase 1 - Foundation)
+window.masterAnimationController = new MasterAnimationController();
 
 // Initialize Multi-Display Manager (isolated system)
 window.multiDisplayManager = new MultiDisplayManager(window.visualizer);
