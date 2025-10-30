@@ -11286,7 +11286,7 @@ class FrequeVisualizer {
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
             this.fluidDynamics = new FluidDynamicsVisualization(this);
-            this.blobsVisualization = new BlobsVisualization(this);
+            this.blobsVisualization = new BlobsPlugin(this);
             this.webglVisualization = new WebGLVisualizationManager(this);
             
             // Initialize Nebula visualization
@@ -27811,6 +27811,37 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new FrequeVisualizer();
+
+// Initialize Plugin AutoLoader after app is created
+if (window.pluginAutoLoader) {
+    // Start autoloader initialization (it will wait for app to be ready)
+    window.pluginAutoLoader.initialize().catch(error => {
+        console.error('🔌 Plugin AutoLoader initialization failed:', error);
+    });
+    
+    // Wire up refresh button (DOM is already ready at this point)
+    const refreshBtn = document.getElementById('refreshPluginsBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            console.log('🔌 Manual plugin refresh triggered');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Refreshing...';
+            
+            try {
+                await window.pluginAutoLoader.refreshPlugins();
+                refreshBtn.textContent = 'Refresh Plugins';
+            } catch (error) {
+                console.error('🔌 Manual refresh failed:', error);
+                refreshBtn.textContent = 'Refresh Failed';
+                setTimeout(() => {
+                    refreshBtn.textContent = 'Refresh Plugins';
+                }, 2000);
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        });
+    }
+}
 
 // Initialize Master Animation Controller (Phase 1 - Foundation)
 window.masterAnimationController = new MasterAnimationController();
