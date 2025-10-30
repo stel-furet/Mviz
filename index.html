@@ -39,7 +39,7 @@
     <script src="js/recording-master-wrapper.js?v=1761759756-phase1-clean"></script>
     <script src="js/kaleidoscope-master-wrapper.js?v=1761759756-phase1-clean"></script>
     <script src="js/spectrum-analyzer-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/plugins/core/plugin-base.js?v=1761847300"></script>
+    <script src="js/plugins/core/plugin-base.js?v=1761848200"></script>
     <script src="js/plugins/core/plugin-autoloader.js?v=1761846700"></script>
     <script>
         // Inline Plugin Manager for testing
@@ -47,8 +47,7 @@
             constructor() {
                 this.plugins = new Map();
                 this.zIndexCounter = 11;
-                window.pluginManager = this;
-                console.log('🔌 Inline Plugin Manager initialized');
+        window.pluginManager = this;
             }
             
             registerPlugin(plugin) {
@@ -56,7 +55,6 @@
                 
                 // Check if plugin is already registered
                 if (this.plugins.has(plugin.pluginName)) {
-                    console.log(`🔌 Plugin "${plugin.pluginName}" already registered, skipping duplicate registration`);
                     return true;
                 }
                 
@@ -68,7 +66,6 @@
                     this.createChannelStrip(plugin);
                 }, 1000);
                 
-                console.log(`🔌 Registered plugin "${plugin.pluginName}" with z-index ${plugin.zIndex}`);
                 return true;
             }
             
@@ -83,26 +80,38 @@
                 return null;
             }
             
+            updatePluginControls(pluginName) {
+                const plugin = this.plugins.get(pluginName);
+                if (!plugin || !window.pluginMixerIntegration) return;
+                
+                // Update controls in the mixer integration
+                window.pluginMixerIntegration.addPluginControls(pluginName, plugin.controls);
+            }
+            
+            updatePluginPresets(pluginName) {
+                const plugin = this.plugins.get(pluginName);
+                if (!plugin || !window.pluginMixerIntegration) return;
+                
+                // Update presets in the mixer integration
+                window.pluginMixerIntegration.addPluginPresets(pluginName, plugin.presets);
+            }
+            
             getPlugin(name) { return this.plugins.get(name); }
             getAllPlugins() { return Array.from(this.plugins.values()); }
         }
         
         // Initialize immediately
         window.pluginManager = new FrequePluginManager();
-        console.log('✅ Plugin Manager created and assigned to window');
     </script>
     <script>
         // Inline Plugin Loader for testing
         class FrequePluginLoader {
             constructor() {
-                window.pluginLoader = this;
-                console.log('🔌 Inline Plugin Loader initialized');
+        window.pluginLoader = this;
             }
             
             async loadPlugin(pluginPath) {
                 try {
-                    console.log(`🔌 Loading plugin: ${pluginPath}`);
-                    
                     const response = await fetch(pluginPath);
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -112,8 +121,6 @@
                     
                     // Execute the plugin code
                     eval(pluginCode);
-                    
-                    console.log(`🔌 Plugin script loaded: ${pluginPath.split('/').pop().replace('.js', '')}`);
                     return true;
                     
                 } catch (error) {
@@ -124,9 +131,7 @@
             
             async loadStormTemplate() {
                 try {
-                    console.log('🔌 Loading Storm template...');
                     const success = await this.loadPlugin('js/plugins/templates/storm-freque-plugin.js');
-                    console.log('🔌 Storm template loaded successfully', success);
                     return success;
                 } catch (error) {
                     console.error('🔌 Storm template loading failed:', error);
@@ -137,13 +142,11 @@
         
         // Initialize plugin loader
         window.pluginLoader = new FrequePluginLoader();
-        console.log('✅ Plugin Loader created and assigned to window');
         
         // Initialize plugin autoloader (will start after app loads)
         window.pluginAutoLoader = new PluginAutoLoader();
-        console.log('✅ Plugin AutoLoader created and assigned to window');
     </script>
-    <script src="js/plugins/core/plugin-mixer-integration.js?v=1761847200"></script>
+        <script src="js/plugins/core/plugin-mixer-integration.js?v=1761848200"></script>
     <script src="js/plugins/blobs-plugin.js?v=1761844046"></script>
     <script src="js/metadata-parser.js"></script>
     <script src="js/spectrum-analyzer.js"></script>
@@ -2651,8 +2654,70 @@
         <!-- Mixer Channels Section -->
         <div class="mixer-channels">
             
+            <!-- Audio Input Channel -->
+            <div class="channel-strip input-channel">
+                <div class="channel-header">Audio Input</div>
+                
+                <div class="channel-toggle-section">
+                    <button class="btn-toggle" id="mixerAudioToggle" title="Toggle Live Audio">
+                        <span class="toggle-text">OFF</span>
+                    </button>
+                </div>
+                
+                <div class="vertical-slider-section">
+                    <div class="vertical-slider-container">
+                        <div class="vertical-slider-label top">Volume</div>
+                        <div class="vertical-slider-wrapper">
+                            <div class="vertical-slider" id="mixerAudioVolumeSlider" data-min="0" data-max="100" data-value="100">
+                                <div class="vertical-slider-track"></div>
+                                <div class="vertical-slider-fill"></div>
+                                <div class="vertical-slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div class="vertical-slider-label bottom" id="mixerAudioVolumeValue">100</div>
+                    </div>
+                </div>
+                
+                <div class="channel-input-section">
+                    <div class="control-mini-group">
+                    <select class="dropdown-selector-mixer" id="mixerAudioDeviceSelect">
+                        <option value="">Select Audio Input...</option>
+                    </select>
+                        
+                        <button class="control-btn clear-btn" id="mixerAudioClearInputBtn">Clear Input</button>
+                    </div>
+                </div>
+                
+                <div class="channel-presets-section">
+                    <div class="control-mini-label collapsible-header" data-target="audioPresets">
+                        <span>Presets</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="audioPresets">
+                        <!-- Empty - preset buttons will go here -->
+                    </div>
+                </div>
+                
+                <div class="channel-controls-section">
+                    <div class="control-mini-label collapsible-header" data-target="audioControls">
+                        <span>Controls</span>
+                        <span class="collapse-indicator"></span>
+                    </div>
+                    <div class="collapsible-content" id="audioControls">
+                        <!-- Empty - additional controls will go here -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Background Image Channel -->
             <div class="channel-strip input-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Background Image</div>
                 
                 <div class="channel-toggle-section">
@@ -2738,6 +2803,13 @@
 
             <!-- Video Input Channel -->
             <div class="channel-strip input-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Video Input</div>
                 
                 <div class="channel-toggle-section">
@@ -2955,66 +3027,18 @@
                 </div>
             </div>
 
-            <!-- Audio Input Channel -->
-            <div class="channel-strip input-channel">
-                <div class="channel-header">Audio Input</div>
-                
-                <div class="channel-toggle-section">
-                    <button class="btn-toggle" id="mixerAudioToggle" title="Toggle Live Audio">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="vertical-slider-section">
-                    <div class="vertical-slider-container">
-                        <div class="vertical-slider-label top">Volume</div>
-                        <div class="vertical-slider-wrapper">
-                            <div class="vertical-slider" id="mixerAudioVolumeSlider" data-min="0" data-max="100" data-value="100">
-                                <div class="vertical-slider-track"></div>
-                                <div class="vertical-slider-fill"></div>
-                                <div class="vertical-slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div class="vertical-slider-label bottom" id="mixerAudioVolumeValue">100</div>
-                    </div>
-                </div>
-                
-                <div class="channel-input-section">
-                    <div class="control-mini-group">
-                    <select class="dropdown-selector-mixer" id="mixerAudioDeviceSelect">
-                        <option value="">Select Audio Input...</option>
-                    </select>
-                        
-                        <button class="control-btn clear-btn" id="mixerAudioClearInputBtn">Clear Input</button>
-                    </div>
-                </div>
-                
-                <div class="channel-presets-section">
-                    <div class="control-mini-label collapsible-header" data-target="audioPresets">
-                        <span>Presets</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="audioPresets">
-                        <!-- Empty - preset buttons will go here -->
-                    </div>
-                </div>
-                
-                <div class="channel-controls-section">
-                    <div class="control-mini-label collapsible-header" data-target="audioControls">
-                        <span>Controls</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="audioControls">
-                        <!-- Empty - additional controls will go here -->
-                    </div>
-                </div>
-            </div>
-
             <!-- Spacer -->
             <div class="channel-spacer"></div>
 
             <!-- AM Visualizer Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">AM Visualizer</div>
                 
                 <div class="channel-toggle-section">
@@ -3132,6 +3156,13 @@
 
             <!-- Infinite Zoom Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Infinite Zoom</div>
                 
                 <div class="channel-toggle-section">
@@ -3249,6 +3280,13 @@
 
             <!-- Blobs Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Blobs</div>
                 
                 <div class="channel-toggle-section">
@@ -3381,6 +3419,13 @@
 
             <!-- Starfall Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Starfall</div>
                 
                 <div class="channel-toggle-section">
@@ -3691,6 +3736,13 @@
 
             <!-- Nebula Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button" title="Drag to reorder">
+                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
                 <div class="channel-header">Nebula</div>
                 
                 <div class="channel-toggle-section">

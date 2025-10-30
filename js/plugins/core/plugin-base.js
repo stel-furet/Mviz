@@ -130,18 +130,13 @@ class FrequePluginBase {
      * Create UI channel strip for plugin
      */
     createUI() {
-        console.log(`🔌 CREATE UI DEBUG: ${this.pluginName} createUI() called`);
-        
         // Check if channel strip already exists
         if (window.pluginMixerIntegration && window.pluginMixerIntegration.channelStrips) {
             const existingStrip = window.pluginMixerIntegration.channelStrips.get(this.pluginName);
             if (existingStrip) {
-                console.log(`🔌 CREATE UI DEBUG: ${this.pluginName} channel strip already exists, skipping creation`);
                 return;
             }
         }
-        
-        console.log(`🔌 CREATE UI DEBUG: ${this.pluginName} creating new channel strip`);
         if (window.pluginManager && window.pluginManager.createChannelStrip) {
             window.pluginManager.createChannelStrip(this);
         }

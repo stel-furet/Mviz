@@ -14,13 +14,16 @@ class PluginMixerIntegration {
         
         // Z-index assignments as per plan
         this.zIndexMap = {
-            'audio': 1,
-            'video': 1, 
-            'audioMotion': 2,
-            'infiniteZoom': 3,
-            // 4-10 reserved
-            // 11+ for plugins (auto-assigned)
-            'kaleidoscope': 100 // always top
+            'audioinput': null,        // No z-index (audio only)
+            'backgroundimage': 1,      // Background Image
+            'videoinput': 2,          // Video Input
+            'amvisualizer': 3,        // AM Visualizer
+            'infinitezoom': 4,        // Infinite Zoom
+            'blobs': 5,               // Blobs
+            'starfall': 6,            // Starfall
+            'nebula': 7,              // Nebula
+            'plugins': 8,             // First plugin starts at 8
+            'kaleidoscope': 100       // Always top, non-movable
         };
         
         this.init();
@@ -30,7 +33,6 @@ class PluginMixerIntegration {
         // Wait for mixer to be ready
         this.waitForMixer().then(() => {
             this.setupDragDrop();
-            console.log('🔌 Plugin Mixer Integration initialized');
         });
     }
     
@@ -102,7 +104,6 @@ class PluginMixerIntegration {
         // Make draggable
         this.makeDraggable(channelStrip);
         
-        console.log(`🔌 Created proper mixer channel strip for "${plugin.pluginName}"`);
         return channelStrip;
     }
     
@@ -111,6 +112,13 @@ class PluginMixerIntegration {
      */
     createChannelStripHTML(plugin) {
         return `
+            <div class="channel-drag-button" title="Drag to reorder">
+                <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
+                    <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
+                    <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
+                    <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
+                </svg>
+            </div>
             <div class="channel-header">${plugin.metadata.name}</div>
             
             <!-- ON/OFF Toggle -->
@@ -442,31 +450,92 @@ class PluginMixerIntegration {
      */
     setupDragDrop() {
         this.dragDropEnabled = true;
-        console.log('🔌 Drag-drop reordering system initialized');
+        
+        // Initialize drag-drop for all existing native channel strips
+        this.initializeNativeChannelDragDrop();
+        
+        // Load saved channel order or initialize default z-indexes
+        this.loadChannelOrder();
+        
+        // If no saved order was loaded, initialize default z-indexes
+        setTimeout(() => {
+            this.initializeDefaultZIndexes();
+        }, 100);
+        
     }
     
     /**
-     * Make channel strip draggable
+     * Initialize drag-drop for all native channel strips
+     */
+    initializeNativeChannelDragDrop() {
+        const mixerChannels = document.querySelector('.mixer-channels');
+        if (!mixerChannels) return;
+        
+        // Find all channel strips with drag buttons (excluding Audio and Kaleidoscope)
+        const channelStrips = mixerChannels.querySelectorAll('.channel-strip');
+        
+        channelStrips.forEach(strip => {
+            const dragButton = strip.querySelector('.channel-drag-button');
+            if (dragButton) {
+                // Add data attributes for identification
+                const header = strip.querySelector('.channel-header');
+                if (header) {
+                    const channelName = header.textContent.trim().toLowerCase().replace(/\s+/g, '');
+                    strip.setAttribute('data-channel', channelName);
+                    strip.setAttribute('data-draggable', 'true');
+                }
+                
+                // Make it draggable
+                this.makeDraggable(strip);
+            }
+        });
+    }
+    
+    /**
+     * Initialize default z-indexes for all visualization elements
+     */
+    initializeDefaultZIndexes() {
+        // Apply default z-indexes based on the current channel order
+        this.recalculateZIndexes();
+    }
+    
+    /**
+     * Make channel strip draggable (only via drag button)
      */
     makeDraggable(channelStrip) {
         if (!this.dragDropEnabled) return;
         
-        channelStrip.draggable = true;
-        channelStrip.style.cursor = 'move';
+        const dragButton = channelStrip.querySelector('.channel-drag-button');
+        if (!dragButton) return;
         
-        channelStrip.addEventListener('dragstart', (e) => {
+        // Make only the drag button draggable
+        dragButton.draggable = true;
+        
+        // Store reference to the channel strip on the drag button
+        dragButton.channelStrip = channelStrip;
+        
+        dragButton.addEventListener('dragstart', (e) => {
             this.currentDragElement = channelStrip;
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
             channelStrip.style.opacity = '0.5';
+            
+            // Create drag image from the entire channel strip
+            const dragImage = channelStrip.cloneNode(true);
+            dragImage.style.position = 'absolute';
+            dragImage.style.top = '-1000px';
+            document.body.appendChild(dragImage);
+            e.dataTransfer.setDragImage(dragImage, e.offsetX, e.offsetY);
+            setTimeout(() => document.body.removeChild(dragImage), 0);
         });
         
-        channelStrip.addEventListener('dragend', (e) => {
+        dragButton.addEventListener('dragend', (e) => {
             channelStrip.style.opacity = '1';
             this.currentDragElement = null;
             this.recalculateZIndexes();
         });
         
+        // Still need dragover and drop on the entire strip for drop zones
         channelStrip.addEventListener('dragover', (e) => {
             e.preventDefault();
         });
@@ -483,10 +552,21 @@ class PluginMixerIntegration {
      * Reorder channel strips based on drag-drop
      */
     reorderChannelStrips(draggedElement, targetElement) {
+        // Check if either element is non-draggable (Audio or Kaleidoscope)
+        const draggedChannel = draggedElement.getAttribute('data-channel');
+        const targetChannel = targetElement.getAttribute('data-channel');
+        
+        // Prevent reordering if Audio or Kaleidoscope is involved
+        if (draggedChannel === 'audioinput' || draggedChannel === 'kaleidoscope' ||
+            targetChannel === 'audioinput' || targetChannel === 'kaleidoscope') {
+            return;
+        }
+        
         const parent = targetElement.parentNode;
         const draggedRect = draggedElement.getBoundingClientRect();
         const targetRect = targetElement.getBoundingClientRect();
         
+        // Determine insertion position based on horizontal position
         if (draggedRect.left < targetRect.left) {
             // Insert before target
             parent.insertBefore(draggedElement, targetElement);
@@ -495,7 +575,8 @@ class PluginMixerIntegration {
             parent.insertBefore(draggedElement, targetElement.nextSibling);
         }
         
-        console.log('🔌 Channel strips reordered');
+        // Save the new order to localStorage
+        this.saveChannelOrder();
     }
     
     /**
@@ -506,27 +587,100 @@ class PluginMixerIntegration {
         if (!mixerChannels) return;
         
         const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
-        let zIndex = 1;
+        let pluginZIndex = 8; // Plugins start at z-index 8
         
         channelStrips.forEach((strip, index) => {
+            const channelType = strip.getAttribute('data-channel');
             const pluginName = strip.getAttribute('data-plugin');
             
-            // Skip kaleidoscope (always z-index 100)
-            if (strip.getAttribute('data-channel') === 'kaleidoscope') {
-                zIndex = 100;
-            } else {
-                // Assign z-index based on position
-                if (pluginName) {
-                    const plugin = window.pluginManager?.getPlugin(pluginName);
-                    if (plugin) {
-                        plugin.setZIndex(zIndex);
-                    }
-                }
-                zIndex++;
+            let zIndex = null;
+            
+            // Determine z-index based on channel type
+            if (this.zIndexMap.hasOwnProperty(channelType)) {
+                zIndex = this.zIndexMap[channelType];
+            } else if (pluginName) {
+                // Plugin channel - assign incrementing z-index starting at 8
+                zIndex = pluginZIndex++;
+            }
+            
+            // Apply z-index to the appropriate elements
+            if (zIndex !== null) {
+                this.applyZIndexToVisualization(channelType, pluginName, zIndex);
             }
         });
         
-        console.log('🔌 Z-indexes recalculated based on channel strip order');
+    }
+    
+    /**
+     * Apply z-index to the actual visualization elements
+     */
+    applyZIndexToVisualization(channelType, pluginName, zIndex) {
+        // Handle plugin channels
+        if (pluginName) {
+            const plugin = window.pluginManager?.getPlugin(pluginName);
+            if (plugin && plugin.setZIndex) {
+                plugin.setZIndex(zIndex);
+            }
+            
+            // Also apply to plugin canvas if it exists
+            const pluginCanvas = document.getElementById(`${pluginName}-plugin-canvas`);
+            if (pluginCanvas) {
+                pluginCanvas.style.zIndex = zIndex;
+            }
+            return;
+        }
+        
+        // Handle native visualization channels
+        // Most visualizations create canvases dynamically, so we need to find them by other means
+        switch (channelType) {
+            case 'backgroundimage':
+                // Background image might be applied to a specific element
+                const bgElement = document.querySelector('#visualizer .background-image, #visualizationContainer .background-image');
+                if (bgElement) bgElement.style.zIndex = zIndex;
+                break;
+                
+            case 'videoinput':
+                // Video element is likely in the visualizer container
+                const videoElement = document.querySelector('#visualizer video, #visualizationContainer video');
+                if (videoElement) videoElement.style.zIndex = zIndex;
+                break;
+                
+            case 'amvisualizer':
+                // AudioMotion canvas - look for audiomotion canvas
+                const amCanvas = document.querySelector('canvas[data-audiomotion], #visualizer canvas:first-child');
+                if (amCanvas) amCanvas.style.zIndex = zIndex;
+                break;
+                
+            case 'infinitezoom':
+                // Infinite Zoom canvas - created dynamically by InfiniteZoomVisualization
+                const izCanvas = document.querySelector('#visualizationContainer canvas[style*="z-index: 3"], #visualizationContainer canvas[style*="zIndex: 3"]');
+                if (izCanvas) izCanvas.style.zIndex = zIndex;
+                break;
+                
+            case 'blobs':
+                // Blobs canvas - now handled by plugin system
+                const blobsCanvas = document.getElementById('blobs-plugin-canvas');
+                if (blobsCanvas) blobsCanvas.style.zIndex = zIndex;
+                break;
+                
+            case 'starfall':
+                // Starfall (WebGL) canvas - created dynamically
+                const starfallCanvas = document.querySelector('#visualizationContainer canvas[style*="z-index: 4"], #visualizationContainer canvas[style*="zIndex: 4"]');
+                if (starfallCanvas) starfallCanvas.style.zIndex = zIndex;
+                break;
+                
+            case 'nebula':
+                // Nebula canvas - created dynamically
+                const nebulaCanvas = document.querySelector('#visualizationContainer canvas[style*="z-index: 7"], #visualizationContainer canvas[style*="zIndex: 7"]');
+                if (nebulaCanvas) nebulaCanvas.style.zIndex = zIndex;
+                break;
+                
+            case 'kaleidoscope':
+                // Kaleidoscope canvas - look for kaleidoscope-specific canvas
+                const kaleidoscopeCanvas = document.querySelector('#visualizer canvas[data-kaleidoscope], #kaleidoscopeCanvas');
+                if (kaleidoscopeCanvas) kaleidoscopeCanvas.style.zIndex = zIndex;
+                break;
+        }
     }
     
     /**
@@ -557,6 +711,133 @@ class PluginMixerIntegration {
      */
     getChannelStrip(pluginName) {
         return this.channelStrips.get(pluginName);
+    }
+    
+    /**
+     * Save current channel order to localStorage
+     */
+    saveChannelOrder() {
+        const mixerChannels = document.querySelector('.mixer-channels');
+        if (!mixerChannels) return;
+        
+        const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
+        const channelOrder = channelStrips.map(strip => {
+            const channelType = strip.getAttribute('data-channel');
+            const pluginName = strip.getAttribute('data-plugin');
+            
+            return {
+                type: channelType,
+                plugin: pluginName,
+                id: pluginName || channelType
+            };
+        });
+        
+        const orderData = {
+            channelOrder: channelOrder,
+            lastUpdated: Date.now()
+        };
+        
+        try {
+            localStorage.setItem('freque-channel-order', JSON.stringify(orderData));
+        } catch (error) {
+            console.error('🔌 Failed to save channel order:', error);
+        }
+    }
+    
+    /**
+     * Load channel order from localStorage and reorder channels
+     */
+    loadChannelOrder() {
+        try {
+            const savedData = localStorage.getItem('freque-channel-order');
+            if (!savedData) {
+                return;
+            }
+            
+            const orderData = JSON.parse(savedData);
+            if (!orderData.channelOrder || !Array.isArray(orderData.channelOrder)) {
+                return;
+            }
+            
+            this.applyChannelOrder(orderData.channelOrder);
+            
+        } catch (error) {
+            console.error('🔌 Failed to load channel order:', error);
+        }
+    }
+    
+    /**
+     * Apply a specific channel order to the mixer
+     */
+    applyChannelOrder(savedOrder) {
+        const mixerChannels = document.querySelector('.mixer-channels');
+        if (!mixerChannels) return;
+        
+        const currentStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
+        const stripMap = new Map();
+        
+        // Create a map of current strips by their identifier
+        currentStrips.forEach(strip => {
+            const channelType = strip.getAttribute('data-channel');
+            const pluginName = strip.getAttribute('data-plugin');
+            const id = pluginName || channelType;
+            stripMap.set(id, strip);
+        });
+        
+        // Reorder strips according to saved order
+        const orderedStrips = [];
+        const usedIds = new Set();
+        
+        // First, add strips in saved order
+        savedOrder.forEach(item => {
+            const strip = stripMap.get(item.id);
+            if (strip) {
+                orderedStrips.push(strip);
+                usedIds.add(item.id);
+            }
+        });
+        
+        // Then add any new strips that weren't in the saved order
+        currentStrips.forEach(strip => {
+            const channelType = strip.getAttribute('data-channel');
+            const pluginName = strip.getAttribute('data-plugin');
+            const id = pluginName || channelType;
+            
+            if (!usedIds.has(id)) {
+                // Insert new plugins before Kaleidoscope, others at their default position
+                if (pluginName) {
+                    // Find position before Kaleidoscope
+                    const kaleidoscopeIndex = orderedStrips.findIndex(s => 
+                        s.getAttribute('data-channel') === 'kaleidoscope');
+                    if (kaleidoscopeIndex !== -1) {
+                        orderedStrips.splice(kaleidoscopeIndex, 0, strip);
+                    } else {
+                        orderedStrips.push(strip);
+                    }
+                } else {
+                    orderedStrips.push(strip);
+                }
+            }
+        });
+        
+        // Apply the new order to the DOM
+        orderedStrips.forEach(strip => {
+            mixerChannels.appendChild(strip);
+        });
+        
+        // Recalculate z-indexes after reordering
+        this.recalculateZIndexes();
+    }
+    
+    /**
+     * Clear saved channel order (reset to default)
+     */
+    clearSavedChannelOrder() {
+        try {
+            localStorage.removeItem('freque-channel-order');
+        } catch (error) {
+            console.error('🔌 Failed to clear saved channel order:', error);
+        }
     }
 }
 

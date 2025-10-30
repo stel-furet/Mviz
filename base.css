@@ -1458,6 +1458,33 @@ html body .slider-2-wrapper .slider-2-value {
     text-overflow: ellipsis;
 }
 
+/* Channel Drag Button */
+.channel-drag-button {
+    height: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    background: var(--hover-color);
+    border-radius: 3px 3px 0 0;
+    margin-bottom: 2px;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.channel-drag-button:hover {
+    background: var(--accent-color);
+}
+
+.drag-arrows {
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.channel-drag-button:hover .drag-arrows {
+    color: white;
+}
+
 /* Input-specific channel styles */
 .channel-strip.input-channel .channel-header {
     color: var(--info-color);
