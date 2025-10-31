@@ -4332,11 +4332,11 @@ class RecordManager {
         if (mixerNebulaToggle) {
             // console.log('✅ Mixer Nebula toggle button found, adding event listener');
             mixerNebulaToggle.addEventListener('click', () => {
-                if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaVisualization.enabled);
+                if (this.visualizer) {
+                    // console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaEnabled);
                     
                     // Toggle Nebula state
-                    this.visualizer.nebulaVisualization.toggle();
+                    this.visualizer.toggleNebula();
                     
                     // Update mixer UI
                     this.updateMixerNebulaToggle();
@@ -4346,8 +4346,8 @@ class RecordManager {
                     if (headerBtn) {
                         const toggleText = headerBtn.querySelector('.toggle-text');
                         if (toggleText) {
-                            toggleText.textContent = this.visualizer.nebulaVisualization.enabled ? 'ON' : 'OFF';
-                            headerBtn.classList.toggle('active', this.visualizer.nebulaVisualization.enabled);
+                            toggleText.textContent = this.visualizer.nebulaEnabled ? 'ON' : 'OFF';
+                            headerBtn.classList.toggle('active', this.visualizer.nebulaEnabled);
                         }
                     }
                 }
@@ -6538,8 +6538,8 @@ class RecordManager {
 
     updateMixerNebulaToggle() {
         const mixerNebulaToggle = document.getElementById('mixerNebulaToggle');
-        if (mixerNebulaToggle && this.visualizer && this.visualizer.nebulaVisualization) {
-            const isActive = this.visualizer.nebulaVisualization.enabled;
+        if (mixerNebulaToggle && this.visualizer) {
+            const isActive = this.visualizer.nebulaEnabled;
             const toggleText = mixerNebulaToggle.querySelector('.toggle-text');
             
             if (isActive) {
@@ -21224,6 +21224,11 @@ https://rogueamoeba.com/loopback/
             } else {
                 mainBtn.classList.remove('active');
             }
+        }
+        
+        // Update mixer toggle button
+        if (window.multiDisplayManager && window.multiDisplayManager.updateMixerNebulaToggle) {
+            window.multiDisplayManager.updateMixerNebulaToggle();
         }
     }
 

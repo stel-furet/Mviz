@@ -454,8 +454,10 @@ class PluginMixerIntegration {
         // Initialize drag-drop for all existing native channel strips
         this.initializeNativeChannelDragDrop();
         
-        // Load saved channel order or initialize default z-indexes
-        this.loadChannelOrder();
+        // Load saved channel order AFTER data-channel attributes are set
+        setTimeout(() => {
+            this.loadChannelOrder();
+        }, 50);
         
         // If no saved order was loaded, initialize default z-indexes
         setTimeout(() => {
@@ -476,7 +478,9 @@ class PluginMixerIntegration {
         
         channelStrips.forEach(strip => {
             const dragButton = strip.querySelector('.channel-drag-button');
-            if (dragButton) {
+            const isDisplayChannel = strip.classList.contains('display-channel');
+            
+            if (dragButton && !isDisplayChannel) {
                 // Add data attributes for identification
                 const header = strip.querySelector('.channel-header');
                 if (header) {
@@ -508,6 +512,9 @@ class PluginMixerIntegration {
         const dragButton = channelStrip.querySelector('.channel-drag-button');
         if (!dragButton) return;
         
+        // Skip placeholder handles (non-functional)
+        if (dragButton.classList.contains('placeholder')) return;
+        
         // Make only the drag button draggable
         dragButton.draggable = true;
         
@@ -532,16 +539,29 @@ class PluginMixerIntegration {
         dragButton.addEventListener('dragend', (e) => {
             channelStrip.style.opacity = '1';
             this.currentDragElement = null;
+            // Clean up any remaining drop-target indicators
+            document.querySelectorAll('.channel-strip.drop-target').forEach(strip => {
+                strip.classList.remove('drop-target');
+            });
             this.recalculateZIndexes();
         });
         
         // Still need dragover and drop on the entire strip for drop zones
         channelStrip.addEventListener('dragover', (e) => {
             e.preventDefault();
+            // Add drop target indicator
+            channelStrip.classList.add('drop-target');
+        });
+        
+        channelStrip.addEventListener('dragleave', (e) => {
+            // Remove drop target indicator when leaving
+            channelStrip.classList.remove('drop-target');
         });
         
         channelStrip.addEventListener('drop', (e) => {
             e.preventDefault();
+            // Remove drop target indicator
+            channelStrip.classList.remove('drop-target');
             if (this.currentDragElement && this.currentDragElement !== channelStrip) {
                 this.reorderChannelStrips(this.currentDragElement, channelStrip);
             }
@@ -720,7 +740,8 @@ class PluginMixerIntegration {
         const mixerChannels = document.querySelector('.mixer-channels');
         if (!mixerChannels) return;
         
-        const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
+        // Only save draggable channels (exclude Display channels and those without data-channel)
+        const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip[data-channel]:not(.display-channel)'));
         const channelOrder = channelStrips.map(strip => {
             const channelType = strip.getAttribute('data-channel');
             const pluginName = strip.getAttribute('data-plugin');
@@ -838,6 +859,26 @@ class PluginMixerIntegration {
         } catch (error) {
             console.error('🔌 Failed to clear saved channel order:', error);
         }
+    }
+    
+    /**
+     * Debug method to inspect current localStorage data
+     */
+    debugChannelOrder() {
+        const savedData = localStorage.getItem('freque-channel-order');
+        if (savedData) {
+            console.log('🔌 Current localStorage data:', JSON.parse(savedData));
+        } else {
+            console.log('🔌 No localStorage data found');
+        }
+        
+        const currentOrder = Array.from(document.querySelectorAll('.mixer-channels .channel-strip')).map(strip => ({
+            header: strip.querySelector('.channel-header')?.textContent,
+            dataChannel: strip.getAttribute('data-channel'),
+            dataPlugin: strip.getAttribute('data-plugin'),
+            classes: strip.className
+        }));
+        console.log('🔌 Current DOM order:', currentOrder);
     }
 }
 

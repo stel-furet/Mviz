@@ -146,7 +146,7 @@
         // Initialize plugin autoloader (will start after app loads)
         window.pluginAutoLoader = new PluginAutoLoader();
     </script>
-        <script src="js/plugins/core/plugin-mixer-integration.js?v=1761848200"></script>
+        <script src="js/plugins/core/plugin-mixer-integration.js?v=1761848500"></script>
     <script src="js/plugins/blobs-plugin.js?v=1761844046"></script>
     <script src="js/metadata-parser.js"></script>
     <script src="js/spectrum-analyzer.js"></script>
@@ -164,7 +164,7 @@
     <script src="js/audiomotion-analyzer.js"></script>
     
     
-    <script src="js/main.js?v=1761846200"></script>
+    <script src="js/main.js?v=1761848600"></script>
 </head>
 <body>
 <header class="header">
@@ -2656,6 +2656,9 @@
             
             <!-- Audio Input Channel -->
             <div class="channel-strip input-channel">
+                <div class="channel-drag-button placeholder" title="Audio channel cannot be moved">
+                    <div class="drag-placeholder"></div>
+                </div>
                 <div class="channel-header">Audio Input</div>
                 
                 <div class="channel-toggle-section">
@@ -2708,7 +2711,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Background Image Channel -->
             <div class="channel-strip input-channel">
                 <div class="channel-drag-button" title="Drag to reorder">
@@ -3555,7 +3558,7 @@
             </div>
 
             <!-- Fluidity Channel -->
-            <div class="channel-strip viz-channel">
+            <div class="channel-strip viz-channel" data-channel="fluidity">
                 <div class="channel-header">Fluidity</div>
                 
                 <div class="channel-toggle-section">
@@ -4012,6 +4015,9 @@
 
             <!-- Kaleidoscope Channel -->
             <div class="channel-strip viz-channel">
+                <div class="channel-drag-button placeholder" title="Kaleidoscope channel cannot be moved">
+                    <div class="drag-placeholder"></div>
+                </div>
                 <div class="channel-header">Kaleidoscope</div>
                 
                 <div class="channel-toggle-section">
@@ -4191,7 +4197,7 @@
             <div class="channel-spacer"></div>
 
             <!-- Display 1 Channel -->
-            <div class="channel-strip display-channel">
+            <div class="channel-strip display-channel" data-channel="display1">
                 <div class="channel-header">Display 1</div>
                 
                 <div class="channel-toggle-section">
@@ -4315,7 +4321,7 @@
             </div>
 
             <!-- Display 2 Channel -->
-            <div class="channel-strip display-channel">
+            <div class="channel-strip display-channel" data-channel="display2">
                 <div class="channel-header">Display 2</div>
                 
                 <div class="channel-toggle-section">
@@ -4439,7 +4445,7 @@
             </div>
 
             <!-- Display 3 Channel -->
-            <div class="channel-strip display-channel">
+            <div class="channel-strip display-channel" data-channel="display3">
                 <div class="channel-header">Display 3</div>
                 
                 <div class="channel-toggle-section">

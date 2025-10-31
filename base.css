@@ -1485,6 +1485,32 @@ html body .slider-2-wrapper .slider-2-value {
     color: white;
 }
 
+/* Placeholder Drag Button (non-functional) */
+.channel-drag-button.placeholder {
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+    opacity: 0.6;
+}
+
+.channel-drag-button.placeholder:hover {
+    background: var(--bg-secondary);
+    opacity: 0.8;
+}
+
+.drag-placeholder {
+    width: 12px;
+    height: 2px;
+    background: var(--text-secondary);
+    border-radius: 1px;
+    opacity: 0.5;
+}
+
+/* Drop Zone Indicator */
+.channel-strip.drop-target {
+    border-left: 3px solid var(--accent-color);
+    box-shadow: -2px 0 8px rgba(var(--accent-color-rgb), 0.3);
+}
+
 /* Input-specific channel styles */
 .channel-strip.input-channel .channel-header {
     color: var(--info-color);
