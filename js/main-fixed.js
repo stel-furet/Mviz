@@ -11274,17 +11274,7 @@ class FrequeVisualizer {
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
             this.fluidDynamics = new FluidDynamicsVisualization(this);
-            // Initialize Blobs visualization (delayed for mixer integration)
-            setTimeout(() => {
-                if (window.pluginMixerIntegration) {
-                    this.blobsVisualization = new BlobsPlugin(this);
-                } else {
-                    // Retry if mixer integration not ready
-                    setTimeout(() => {
-                        this.blobsVisualization = new BlobsPlugin(this);
-                    }, 100);
-                }
-            }, 50);
+            // Blobs is now plugin-only - handled by plugin autoloader
             this.webglVisualization = new WebGLVisualizationManager(this);
             
             // Initialize Nebula visualization
@@ -11502,10 +11492,15 @@ class FrequeVisualizer {
             // Initialize Nebula visualization after audioMotion is ready
             if (window.NebulaVisualization) {
                 this.nebulaVisualization = new NebulaVisualization(this.audioMotion.canvas, null);
-                // Append nebula canvas to visualizer container
+                // Insert nebula canvas early in DOM for proper z-index stacking
                 const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
                 if (visualizerContainer && this.nebulaVisualization.canvas) {
-                    visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                    // Insert as first child to ensure proper DOM order for z-index stacking
+                    if (visualizerContainer.firstChild) {
+                        visualizerContainer.insertBefore(this.nebulaVisualization.canvas, visualizerContainer.firstChild);
+                    } else {
+                        visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                    }
                     this.nebulaVisualization.canvas.style.display = 'none'; // Start hidden
                     // Auto-resize to match container
                     this.nebulaVisualization.autoResize();
@@ -17079,7 +17074,7 @@ class FrequeVisualizer {
                 this.videoElement.playsInline = true;
                 this.videoElement.autoplay = true;
 
-                // Critical: Set proper positioning (z-index managed by mixer integration)
+                // Critical: Set proper z-index and positioning
                 this.videoElement.style.cssText = `
             position: absolute;
             top: 0;
@@ -17087,6 +17082,7 @@ class FrequeVisualizer {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            z-index: 1;
             opacity: 0;
             transition: opacity ${
                     this.videoFadeTime
@@ -17094,9 +17090,18 @@ class FrequeVisualizer {
             pointer-events: none;
         `;
 
-                // Insert video after backdrop but before visualizer
+                // Insert video as early as possible in DOM for proper z-index stacking
                 const backdrop = document.getElementById('videoBackdrop');
-                container.insertBefore(this.videoElement, backdrop.nextSibling);
+                if (backdrop && backdrop.nextSibling) {
+                    container.insertBefore(this.videoElement, backdrop.nextSibling);
+                } else {
+                    // Fallback: insert as first child to ensure proper DOM order for z-index stacking
+                    if (container.firstChild) {
+                        container.insertBefore(this.videoElement, container.firstChild);
+                    } else {
+                        container.appendChild(this.videoElement);
+                    }
+                }
                 
                 // Apply current z-index from mixer position
                 if (window.pluginMixerIntegration) {
@@ -17468,7 +17473,16 @@ class FrequeVisualizer {
 
                 const backdrop = document.getElementById('videoBackdrop');
                 console.log('Backdrop found:', !!backdrop);
-                container.insertBefore(this.videoElement, backdrop.nextSibling);
+                if (backdrop && backdrop.nextSibling) {
+                    container.insertBefore(this.videoElement, backdrop.nextSibling);
+                } else {
+                    // Fallback: insert as first child to ensure proper DOM order for z-index stacking
+                    if (container.firstChild) {
+                        container.insertBefore(this.videoElement, container.firstChild);
+                    } else {
+                        container.appendChild(this.videoElement);
+                    }
+                }
                 console.log('Video element inserted into container');
                 
                 // Apply current z-index from mixer position
@@ -19483,25 +19497,23 @@ https://rogueamoeba.com/loopback/
         }
     }
 
-    // Blobs toggle methods
+    // Blobs toggle methods - now delegates to plugin system
     toggleBlobs() {
-        this.blobsEnabled = !this.blobsEnabled;
-        
-        // console.log('🔵 Blobs toggle:', {
-        //     enabled: this.blobsEnabled,
-        //     visualization: !!this.blobsVisualization,
-        //     canvas: this.blobsVisualization ? this.blobsVisualization.canvas : null
-        // });
-        
-        if (this.blobsEnabled) {
-            this.blobsVisualization.start();
-            // console.log('🔵 Blobs enabled');
+        // Blobs is now plugin-only, get plugin instance and toggle directly
+        if (window.pluginManager) {
+            const blobsPlugin = window.pluginManager.getPlugin('blobs');
+            if (blobsPlugin) {
+                blobsPlugin.toggle();
+                // Update power button in mixer
+                if (window.pluginMixerIntegration) {
+                    window.pluginMixerIntegration.updatePowerButton('blobs');
+                }
+            } else {
+                console.warn('🔵 Blobs plugin not found or not loaded yet');
+            }
         } else {
-            this.blobsVisualization.stop();
-            // console.log('🔵 Blobs disabled');
+            console.warn('🔵 Plugin system not ready for Blobs toggle');
         }
-        
-        this.updateBlobsButton();
         
         // Update mixer UI
         if (window.multiDisplayManager && window.multiDisplayManager.updateMixerBlobsToggle) {
@@ -20536,7 +20548,12 @@ https://rogueamoeba.com/loopback/
             
             const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
             if (visualizerContainer && this.nebulaVisualization.canvas) {
-                visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                // Insert as first child to ensure proper DOM order for z-index stacking
+                if (visualizerContainer.firstChild) {
+                    visualizerContainer.insertBefore(this.nebulaVisualization.canvas, visualizerContainer.firstChild);
+                } else {
+                    visualizerContainer.appendChild(this.nebulaVisualization.canvas);
+                }
                 this.nebulaVisualization.canvas.style.display = 'none';
                 this.nebulaVisualization.autoResize();
                 
@@ -22316,13 +22333,14 @@ https://rogueamoeba.com/loopback/
             const videoPlaceholder = document.createElement('div');
             videoPlaceholder.id = 'bgVideoPlaceholder';
             
-            // Style as invisible placeholder (z-index managed by mixer integration)
+            // Style as invisible placeholder
             videoPlaceholder.style.cssText = `
                 position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
+                z-index: 2;
                 opacity: 0;
                 pointer-events: none;
                 background: transparent;

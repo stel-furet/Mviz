@@ -93,18 +93,21 @@ class FluidDynamicsVisualization {
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '5'; // Above WebGL (z-index: 4)
+        // Z-index will be set by the mixer integration system
         this.canvas.style.display = 'none';
         this.canvas.style.opacity = this.opacity.toString();
         this.canvas.style.visibility = 'visible';
         
-        // Add to visualizer container
-        const visualizerContainer = document.getElementById('visualizer');
-        if (visualizerContainer) {
-            visualizerContainer.appendChild(this.canvas);
-            // console.log('🌊 Fluid canvas created and added to container');
+        // Add unique identifier for z-index management
+        this.canvas.setAttribute('data-visualization', 'fluidity');
+        
+        // Add to visualizationContainer for proper z-index stacking (not visualizer)
+        const visualizationContainer = document.getElementById('visualizationContainer');
+        if (visualizationContainer) {
+            visualizationContainer.appendChild(this.canvas);
+            // console.log('🌊 Fluid canvas created and added to visualizationContainer');
         } else {
-            console.error('🌊 Visualizer container not found!');
+            console.error('🌊 VisualizationContainer not found!');
         }
     }
     

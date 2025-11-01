@@ -19,7 +19,10 @@ class NebulaVisualization {
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.pointerEvents = 'auto';  // Enable mouse interaction (was 'none')
-        this.canvas.style.zIndex = '20';  // Much higher z-index to ensure visibility
+        // Z-index will be set by the mixer integration system
+        
+        // Add unique identifier for z-index management
+        this.canvas.setAttribute('data-visualization', 'nebula');
         
         // Three.js components
         this.scene = null;

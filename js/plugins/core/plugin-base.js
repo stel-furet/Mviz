@@ -73,10 +73,15 @@ class FrequePluginBase {
     registerWithPluginManager() {
         console.log(`🔌 REGISTER DEBUG: ${this.pluginName} attempting to register with plugin manager`);
         console.log(`🔌 REGISTER DEBUG: Plugin manager exists:`, !!window.pluginManager);
-        console.log(`🔌 REGISTER DEBUG: Stack trace:`, new Error().stack);
+        console.log(`🔌 REGISTER DEBUG: Mixer integration exists:`, !!window.pluginMixerIntegration);
         
-        if (window.pluginManager) {
+        if (window.pluginManager && window.pluginMixerIntegration) {
             window.pluginManager.registerPlugin(this);
+        } else {
+            console.warn(`🔌 Plugin systems not ready for ${this.pluginName} - retrying in 100ms`);
+            setTimeout(() => {
+                this.registerWithPluginManager();
+            }, 100);
         }
     }
     
@@ -113,6 +118,7 @@ class FrequePluginBase {
         
         // Add metadata attributes
         this.canvas.setAttribute('data-plugin', this.pluginName);
+        this.canvas.setAttribute('data-visualization', 'plugin-' + this.pluginName);
         this.canvas.setAttribute('data-owner', 'FrequePlugin');
         this.canvas.setAttribute('data-created', new Date().toISOString());
         

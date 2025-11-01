@@ -167,7 +167,14 @@ class SpectrumAnalyzer {
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
         this.canvas.style.background = 'transparent';
-        this.container.appendChild(this.canvas);
+        // Add to visualizationContainer instead of visualizer for proper z-index stacking
+        const visualizationContainer = document.getElementById('visualizationContainer');
+        if (visualizationContainer) {
+            visualizationContainer.appendChild(this.canvas);
+        } else {
+            // Fallback to original container if visualizationContainer not found
+            this.container.appendChild(this.canvas);
+        }
     }
 
     setupAudio() {
@@ -1010,11 +1017,7 @@ class SpectrumAnalyzer {
             this.ctx.clearRect(0, 0, width, height);
         }
 
-        // Draw background image if available (only in main visualization, not in capture)
-        if (hasBackgroundImage) {
-            // console.log('🖼️ Drawing background image in main visualization');
-            window.visualizer.drawBackgroundImage(this.ctx, width, height);
-        }
+        // Background image is now handled by DOM element layer - no canvas drawing needed
 
         // Only apply overlay if showBgColor is true AND background is not pure white AND no background image
         if (this.showBgColor && this.backgroundColor !== '#ffffff' && !hasBackgroundImage) {

@@ -6,7 +6,7 @@
 
 class PluginMixerIntegration {
     constructor() {
-        console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853100 LOADED - FIXED CANVAS DETECTION');
+        console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853300 LOADED - FIXED VIDEO Z-INDEX');
         this.channelStrips = new Map();
         this.dragDropEnabled = false;
         this.currentDragElement = null;
@@ -919,7 +919,11 @@ class PluginMixerIntegration {
             case 'backgroundimage':
                 // Background image DOM element
                 const bgElement = document.getElementById('bgImage');
-                if (bgElement) bgElement.style.zIndex = zIndex;
+                if (bgElement) {
+                    bgElement.style.zIndex = zIndex;
+                    // Force stacking context
+                    bgElement.style.position = 'absolute';
+                }
                 break;
                 
             case 'videoinput':
@@ -927,6 +931,7 @@ class PluginMixerIntegration {
                 const videoElement = document.getElementById('bgVideo') || document.getElementById('bgVideoPlaceholder');
                 if (videoElement) {
                     videoElement.style.zIndex = zIndex;
+                    videoElement.style.position = 'absolute';
                     // If we have a real video element, hide the placeholder
                     if (videoElement.id === 'bgVideo') {
                         const placeholder = document.getElementById('bgVideoPlaceholder');
@@ -939,7 +944,10 @@ class PluginMixerIntegration {
                 // AudioMotion canvas - use data attribute or direct reference
                 const amCanvas = document.querySelector('canvas[data-visualization="amvisualizer"]') ||
                                (window.visualizer?.audioMotion?.canvas);
-                if (amCanvas) amCanvas.style.zIndex = zIndex;
+                if (amCanvas) {
+                    amCanvas.style.zIndex = zIndex;
+                    amCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'infinitezoom':
@@ -951,7 +959,10 @@ class PluginMixerIntegration {
                         izCanvas = fallbackCanvas;
                     }
                 }
-                if (izCanvas) izCanvas.style.zIndex = zIndex;
+                if (izCanvas) {
+                    izCanvas.style.zIndex = zIndex;
+                    izCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'blobs':
@@ -971,7 +982,10 @@ class PluginMixerIntegration {
                 // Fluidity (Fluid Dynamics) canvas - use data attribute or direct reference
                 const fluidityCanvas = document.querySelector('canvas[data-visualization="fluidity"]') ||
                                      (window.visualizer?.fluidDynamics?.canvas);
-                if (fluidityCanvas) fluidityCanvas.style.zIndex = zIndex;
+                if (fluidityCanvas) {
+                    fluidityCanvas.style.zIndex = zIndex;
+                    fluidityCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'nebula':
@@ -983,7 +997,10 @@ class PluginMixerIntegration {
                         nebulaCanvas = fallbackCanvas;
                     }
                 }
-                if (nebulaCanvas) nebulaCanvas.style.zIndex = zIndex;
+                if (nebulaCanvas) {
+                    nebulaCanvas.style.zIndex = zIndex;
+                    nebulaCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'kaleidoscope':

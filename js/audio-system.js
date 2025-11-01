@@ -59,7 +59,10 @@ class InfiniteZoomVisualization {
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
         this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '3'; // Above AudioMotion
+        // Z-index will be set by the mixer integration system
+        
+        // Add unique identifier for z-index management
+        this.canvas.setAttribute('data-visualization', 'infinitezoom');
         
         // Add to visualization container
         const container = document.getElementById('visualizationContainer');
