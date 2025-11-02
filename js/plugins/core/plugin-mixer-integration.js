@@ -6,7 +6,7 @@
 
 class PluginMixerIntegration {
     constructor() {
-        console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853100 LOADED - FIXED CANVAS DETECTION');
+        // console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853300 LOADED - FIXED VIDEO Z-INDEX');
         this.channelStrips = new Map();
         this.dragDropEnabled = false;
         this.currentDragElement = null;
@@ -240,22 +240,66 @@ class PluginMixerIntegration {
      * Add plugin controls to the channel strip
      */
     addPluginControls(pluginName, controls) {
+        console.log(`🎛️ DEBUG: Adding controls for plugin "${pluginName}":`, controls);
         const channelStrip = this.channelStrips.get(pluginName);
-        if (!channelStrip) return;
+        if (!channelStrip) {
+            console.error(`🎛️ DEBUG: No channel strip found for plugin "${pluginName}"`);
+            return;
+        }
         
         const controlsContainer = channelStrip.querySelector('.plugin-controls-container');
-        if (!controlsContainer) return;
+        if (!controlsContainer) {
+            console.error(`🎛️ DEBUG: No controls container found for plugin "${pluginName}"`);
+            return;
+        }
         
         // Clear existing controls
         controlsContainer.innerHTML = '';
         
         // Add each control
         controls.forEach((controlConfig, controlId) => {
+            console.log(`🎛️ DEBUG: Creating control "${controlId}":`, controlConfig);
             const controlElement = this.createControlElement(controlId, controlConfig);
             if (controlElement) {
                 controlsContainer.appendChild(controlElement);
+                console.log(`🎛️ DEBUG: Added control "${controlId}" to container`);
+            } else {
+                console.error(`🎛️ DEBUG: Failed to create control element for "${controlId}"`);
             }
         });
+        
+        console.log(`🎛️ DEBUG: Finished adding ${controls.size} controls for "${pluginName}"`);
+        
+        // DEBUG: Check DOM state after adding controls
+        console.log(`🎛️ DOM DEBUG: Controls container for "${pluginName}":`, controlsContainer);
+        console.log(`🎛️ DOM DEBUG: Container innerHTML length:`, controlsContainer.innerHTML.length);
+        console.log(`🎛️ DOM DEBUG: Container children count:`, controlsContainer.children.length);
+        console.log(`🎛️ DOM DEBUG: Container display style:`, getComputedStyle(controlsContainer).display);
+        console.log(`🎛️ DOM DEBUG: Container height:`, getComputedStyle(controlsContainer).height);
+        console.log(`🎛️ DOM DEBUG: Container visibility:`, getComputedStyle(controlsContainer).visibility);
+        
+        // Check if controls section is collapsed and auto-expand it
+        const controlsSection = channelStrip.querySelector('.channel-controls-section');
+        if (controlsSection) {
+            const header = controlsSection.querySelector('.plugin-controls-header');
+            console.log(`🎛️ DOM DEBUG: Controls section exists, header:`, header);
+            console.log(`🎛️ DOM DEBUG: Controls section classes:`, controlsSection.className);
+            console.log(`🎛️ DOM DEBUG: Controls container classes:`, controlsContainer.className);
+            
+            // Auto-expand the controls section to show the controls
+            if (!controlsContainer.classList.contains('expanded')) {
+                console.log(`🎛️ DOM DEBUG: Auto-expanding controls section for "${pluginName}"`);
+                controlsContainer.classList.add('expanded');
+                
+                // Also update the header indicator if it exists
+                if (header) {
+                    const indicator = header.querySelector('.collapse-indicator');
+                    if (indicator) {
+                        indicator.style.transform = 'rotate(90deg)';
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -299,10 +343,32 @@ class PluginMixerIntegration {
                 return this.createDropdownControl(controlId, controlConfig);
             case 'checkbox':
                 return this.createCheckboxControl(controlId, controlConfig);
+            case 'section-header':
+                return this.createSectionHeader(controlId, controlConfig);
             default:
                 console.warn(`Unknown control type: ${controlConfig.type}`);
                 return null;
         }
+    }
+    
+    /**
+     * Create section header for control groups
+     */
+    createSectionHeader(controlId, config) {
+        const header = document.createElement('div');
+        header.className = 'control-section-header';
+        header.textContent = config.label;
+        header.style.cssText = `
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            margin: 8px 0 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        `;
+        return header;
     }
     
     /**
@@ -341,6 +407,14 @@ class PluginMixerIntegration {
             valueDisplay.textContent = `${value}${config.unit || ''}`;
             if (config.onChange) {
                 config.onChange(value);
+            }
+        });
+        
+        // Allow X key to bubble up for mixer toggle hotkey
+        slider.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyX') {
+                // Don't prevent default, let it bubble up to main handler
+                return;
             }
         });
         
@@ -919,7 +993,11 @@ class PluginMixerIntegration {
             case 'backgroundimage':
                 // Background image DOM element
                 const bgElement = document.getElementById('bgImage');
-                if (bgElement) bgElement.style.zIndex = zIndex;
+                if (bgElement) {
+                    bgElement.style.zIndex = zIndex;
+                    // Force stacking context
+                    bgElement.style.position = 'absolute';
+                }
                 break;
                 
             case 'videoinput':
@@ -927,6 +1005,7 @@ class PluginMixerIntegration {
                 const videoElement = document.getElementById('bgVideo') || document.getElementById('bgVideoPlaceholder');
                 if (videoElement) {
                     videoElement.style.zIndex = zIndex;
+                    videoElement.style.position = 'absolute';
                     // If we have a real video element, hide the placeholder
                     if (videoElement.id === 'bgVideo') {
                         const placeholder = document.getElementById('bgVideoPlaceholder');
@@ -939,7 +1018,10 @@ class PluginMixerIntegration {
                 // AudioMotion canvas - use data attribute or direct reference
                 const amCanvas = document.querySelector('canvas[data-visualization="amvisualizer"]') ||
                                (window.visualizer?.audioMotion?.canvas);
-                if (amCanvas) amCanvas.style.zIndex = zIndex;
+                if (amCanvas) {
+                    amCanvas.style.zIndex = zIndex;
+                    amCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'infinitezoom':
@@ -951,7 +1033,10 @@ class PluginMixerIntegration {
                         izCanvas = fallbackCanvas;
                     }
                 }
-                if (izCanvas) izCanvas.style.zIndex = zIndex;
+                if (izCanvas) {
+                    izCanvas.style.zIndex = zIndex;
+                    izCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'blobs':
@@ -971,7 +1056,10 @@ class PluginMixerIntegration {
                 // Fluidity (Fluid Dynamics) canvas - use data attribute or direct reference
                 const fluidityCanvas = document.querySelector('canvas[data-visualization="fluidity"]') ||
                                      (window.visualizer?.fluidDynamics?.canvas);
-                if (fluidityCanvas) fluidityCanvas.style.zIndex = zIndex;
+                if (fluidityCanvas) {
+                    fluidityCanvas.style.zIndex = zIndex;
+                    fluidityCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'nebula':
@@ -983,7 +1071,10 @@ class PluginMixerIntegration {
                         nebulaCanvas = fallbackCanvas;
                     }
                 }
-                if (nebulaCanvas) nebulaCanvas.style.zIndex = zIndex;
+                if (nebulaCanvas) {
+                    nebulaCanvas.style.zIndex = zIndex;
+                    nebulaCanvas.style.position = 'absolute';
+                }
                 break;
                 
             case 'kaleidoscope':

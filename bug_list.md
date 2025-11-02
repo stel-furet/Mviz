@@ -12,12 +12,16 @@
 - **Display Channel Drop Prevention**: Prevent dropping onto display channel strips and to the right of Kaleidoscope
 - **Last Used Visualization Persistence**: Make the last used visualization persistent across sessions
 - **Debug Code Cleanup**: Clean up all remaining debug code throughout the application
+- **30fps Throttling Quality Issue**: Fluid Dynamics and Infinite Zoom use 30fps throttling which causes jerky motion in 60fps/4K recordings - need to remove throttling for professional quality output
 
 ### Low Priority
-- **Convert Fluidity to Plugin**: Convert Fluidity visualization to use the plugin architecture
 - **Mixer Panel Detachment**: Add ability to detach mixer panel from main interface
 - **Mixer Panel Collapsible**: Make mixer collapsible to just handles, labels, and ON/OFF toggles with expand button
 - **Remove Plugin Buttons**: Remove the "Remove Plugin" buttons from channel strips as they are no longer needed
+
+## Planned Plugin Conversions
+- **Convert Nebula to Plugin**: Migrate all 41 Nebula controls (including 9 audio reactive toggles) from header panel to plugin mixer channel strip (Phase 1) - IN PROGRESS
+- **Convert Fluidity to Plugin**: Migrate all 13 Fluidity controls + preset system to plugin architecture (Phase 2)
 
 ## Recently Fixed
 - ✅ Nebula ON/OFF Toggle Sync - Fixed synchronization between mixer and header button

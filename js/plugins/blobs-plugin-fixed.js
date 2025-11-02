@@ -96,7 +96,9 @@ class BlobsPlugin extends FrequePluginBase {
     }
     
     setupBlobsControls() {
-        // Add saturation control
+        // All controls to match native Blobs system exactly
+        
+        // 1. Saturation (0-200%)
         this.addControl('saturation', {
             type: 'slider',
             label: 'Saturation',
@@ -104,36 +106,122 @@ class BlobsPlugin extends FrequePluginBase {
             max: 200,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setSaturation(value)
+            onChange: (value) => this.setSaturation(value / 100)
         });
         
-        // Add beat react control
-        this.addControl('beatReact', {
-            type: 'checkbox',
-            label: 'Beat React',
-            checked: true,
-            onChange: (checked) => this.setBeatReact(checked)
+        // 2. Posterize (2-16)
+        this.addControl('posterize', {
+            type: 'slider',
+            label: 'Posterize',
+            min: 2,
+            max: 16,
+            value: 16,
+            onChange: (value) => this.setPosterize(value)
         });
         
-        // Add intensity control
+        // 3. Contrast (10-300%)
+        this.addControl('contrast', {
+            type: 'slider',
+            label: 'Contrast',
+            min: 10,
+            max: 300,
+            value: 100,
+            unit: '%',
+            onChange: (value) => this.setContrast(value / 100)
+        });
+        
+        // 4. Brightness (10-300%)
+        this.addControl('brightness', {
+            type: 'slider',
+            label: 'Brightness',
+            min: 10,
+            max: 300,
+            value: 100,
+            unit: '%',
+            onChange: (value) => this.setBrightness(value / 100)
+        });
+        
+        // 5. Intensity (10-200%)
         this.addControl('intensity', {
             type: 'slider',
             label: 'Intensity',
-            min: 0,
+            min: 10,
             max: 200,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setIntensity(value)
+            onChange: (value) => this.setIntensity(value / 100)
         });
         
-        // Add particle density control
+        // 6. Min Size (0.5-10.0)
+        this.addControl('minSize', {
+            type: 'slider',
+            label: 'Min Size',
+            min: 0.5,
+            max: 10,
+            value: 2,
+            step: 0.1,
+            onChange: (value) => this.setMinSize(value)
+        });
+        
+        // 7. Max Size (1-10, with pixel conversion)
+        this.addControl('maxSize', {
+            type: 'slider',
+            label: 'Max Size',
+            min: 1,
+            max: 10,
+            value: 1,
+            step: 0.1,
+            unit: 'px',
+            onChange: (value) => this.setMaxSize(value)
+        });
+        
+        // 8. Agitate (10-500%)
+        this.addControl('agitate', {
+            type: 'slider',
+            label: 'Agitate',
+            min: 10,
+            max: 500,
+            value: 100,
+            unit: '%',
+            onChange: (value) => this.setAgitate(value / 100)
+        });
+        
+        // 9. Density (100-500)
         this.addControl('density', {
             type: 'slider',
             label: 'Density',
-            min: 50,
+            min: 100,
             max: 500,
             value: 200,
             onChange: (value) => this.setDensity(value)
+        });
+        
+        // 10. Lifespan/Decay (1-10x)
+        this.addControl('decay', {
+            type: 'slider',
+            label: 'Lifespan',
+            min: 1,
+            max: 10,
+            value: 10,
+            step: 0.1,
+            unit: 'x',
+            onChange: (value) => this.setDecayMultiplier(value)
+        });
+        
+        // 11. Beat React Button (On/Off toggle)
+        this.addControl('beatReact', {
+            type: 'button',
+            label: 'Beat React: On',
+            className: 'btn-primary-mixer',
+            wrapperClass: 'button-mini-wrapper',
+            onClick: () => {
+                const newState = this.toggleBeatReact();
+                // Update button text
+                const button = document.querySelector(`[data-plugin="blobs"] [data-control="beatReact"]`);
+                if (button) {
+                    button.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
+                }
+            }
         });
     }
     
@@ -250,7 +338,11 @@ class BlobsPlugin extends FrequePluginBase {
      * Render particles to canvas - called by MAL
      */
     onRender(deltaTime, timestamp, sharedAudioData) {
-        if (!this.isActive || !this.isInitialized || !this.ctx) return;
+        console.log(`🎨 RENDER DEBUG: ${this.pluginName} onRender called - active: ${this.isActive}, initialized: ${this.isInitialized}, ctx: ${!!this.ctx}`);
+        if (!this.isActive || !this.isInitialized || !this.ctx) {
+            console.log(`🎨 RENDER DEBUG: ${this.pluginName} skipping render - active: ${this.isActive}, initialized: ${this.isInitialized}, ctx: ${!!this.ctx}`);
+            return;
+        }
         
         const currentTime = timestamp;
         if (currentTime - this.lastFrameTime < this.frameInterval) {
@@ -265,7 +357,12 @@ class BlobsPlugin extends FrequePluginBase {
         }
         
         try {
+            // Update particles first
+            console.log(`🎨 RENDER DEBUG: ${this.pluginName} calling update method`);
+            this.update(deltaTime, timestamp, sharedAudioData);
+            
             // Clear canvas
+            console.log(`🎨 RENDER DEBUG: ${this.pluginName} clearing canvas ${this.canvas.width}x${this.canvas.height}`);
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
             // Create trails effect
@@ -277,9 +374,11 @@ class BlobsPlugin extends FrequePluginBase {
             }
             
             // Render all particles
+            console.log(`🎨 RENDER DEBUG: ${this.pluginName} particles count: ${this.particles.length}`);
             this.particles.forEach(particle => {
                 this.renderParticle(particle);
             });
+            console.log(`🎨 RENDER DEBUG: ${this.pluginName} finished drawing particles`);
             
             // Render heat distortion
             this.renderHeatDistortion();
@@ -366,6 +465,7 @@ class BlobsPlugin extends FrequePluginBase {
     addParticle() {
         if (!this.canvas) return;
         
+        console.log(`🎨 PARTICLE DEBUG: ${this.pluginName} adding particle (current count: ${this.particles.length})`);
         const particle = this.getParticleFromPool();
         
         // Initialize particle properties
@@ -551,6 +651,15 @@ class BlobsPlugin extends FrequePluginBase {
     setDensity(value) {
         this.density = Math.max(50, Math.min(500, value));
         this.particleCount = this.density;
+    }
+    
+    setBeatReact(enabled) {
+        this.beatReact = enabled;
+    }
+    
+    toggleBeatReact() {
+        this.beatReact = !this.beatReact;
+        return this.beatReact;
     }
     
     // Integration methods (base class handles getCanvas, isEnabled, cleanup, handleError)

@@ -51,20 +51,20 @@ class MultiDisplayManager {
             if (typeof this.updateMixerVideoPulseRateSlider === 'function') this.updateMixerVideoPulseRateSlider();
             if (typeof this.updateMixerVideoFileInfo === 'function') this.updateMixerVideoFileInfo();
             
-            // Blobs controls
-            if (typeof this.updateMixerBlobsToggle === 'function') this.updateMixerBlobsToggle();
-            if (typeof this.updateMixerBlobsOpacitySlider === 'function') this.updateMixerBlobsOpacitySlider();
-            if (typeof this.updateMixerBlobsSaturationSlider === 'function') this.updateMixerBlobsSaturationSlider();
-            if (typeof this.updateMixerBlobsPosterizeSlider === 'function') this.updateMixerBlobsPosterizeSlider();
-            if (typeof this.updateMixerBlobsContrastSlider === 'function') this.updateMixerBlobsContrastSlider();
-            if (typeof this.updateMixerBlobsBrightnessSlider === 'function') this.updateMixerBlobsBrightnessSlider();
-            if (typeof this.updateMixerBlobsIntensitySlider === 'function') this.updateMixerBlobsIntensitySlider();
-            if (typeof this.updateMixerBlobsMinSizeSlider === 'function') this.updateMixerBlobsMinSizeSlider();
-            if (typeof this.updateMixerBlobsMaxSizeSlider === 'function') this.updateMixerBlobsMaxSizeSlider();
-            if (typeof this.updateMixerBlobsAgitateSlider === 'function') this.updateMixerBlobsAgitateSlider();
-            if (typeof this.updateMixerBlobsDensitySlider === 'function') this.updateMixerBlobsDensitySlider();
-            if (typeof this.updateMixerBlobsDecaySlider === 'function') this.updateMixerBlobsDecaySlider();
-            if (typeof this.updateMixerBlobsBeatReactButton === 'function') this.updateMixerBlobsBeatReactButton();
+            // Blobs controls - DISABLED (Native system removed, using plugin system)
+            // if (typeof this.updateMixerBlobsToggle === 'function') this.updateMixerBlobsToggle();
+            // if (typeof this.updateMixerBlobsOpacitySlider === 'function') this.updateMixerBlobsOpacitySlider();
+            // if (typeof this.updateMixerBlobsSaturationSlider === 'function') this.updateMixerBlobsSaturationSlider();
+            // if (typeof this.updateMixerBlobsPosterizeSlider === 'function') this.updateMixerBlobsPosterizeSlider();
+            // if (typeof this.updateMixerBlobsContrastSlider === 'function') this.updateMixerBlobsContrastSlider();
+            // if (typeof this.updateMixerBlobsBrightnessSlider === 'function') this.updateMixerBlobsBrightnessSlider();
+            // if (typeof this.updateMixerBlobsIntensitySlider === 'function') this.updateMixerBlobsIntensitySlider();
+            // if (typeof this.updateMixerBlobsMinSizeSlider === 'function') this.updateMixerBlobsMinSizeSlider();
+            // if (typeof this.updateMixerBlobsMaxSizeSlider === 'function') this.updateMixerBlobsMaxSizeSlider();
+            // if (typeof this.updateMixerBlobsAgitateSlider === 'function') this.updateMixerBlobsAgitateSlider();
+            // if (typeof this.updateMixerBlobsDensitySlider === 'function') this.updateMixerBlobsDensitySlider();
+            // if (typeof this.updateMixerBlobsDecaySlider === 'function') this.updateMixerBlobsDecaySlider();
+            // if (typeof this.updateMixerBlobsBeatReactButton === 'function') this.updateMixerBlobsBeatReactButton();
             
             // Fluidity controls
             if (typeof this.updateMixerFluidityToggle === 'function') this.updateMixerFluidityToggle();

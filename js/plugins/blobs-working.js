@@ -274,19 +274,9 @@ class BlobsPlugin extends FrequePluginBase {
     }
     
     onInitialize() {
-        console.log(`🎨 BLOBS DEBUG: onInitialize() called`);
-        console.log(`🎨 BLOBS DEBUG: Main canvas from base class:`, this.canvas);
-        console.log(`🎨 BLOBS DEBUG: Canvas dimensions: ${this.canvas?.width}x${this.canvas?.height}`);
-        console.log(`🎨 BLOBS DEBUG: Canvas parent:`, this.canvas?.parentElement);
-        console.log(`🎨 BLOBS DEBUG: Canvas data-visualization:`, this.canvas?.getAttribute('data-visualization'));
-        console.log(`🎨 BLOBS DEBUG: Canvas z-index:`, this.canvas?.style.zIndex);
-        
         // Create trail canvas (main canvas handled by base class)
         this.trailCanvas = document.createElement('canvas');
         this.trailCtx = this.trailCanvas.getContext('2d');
-        
-        console.log(`🎨 BLOBS DEBUG: Trail canvas created:`, this.trailCanvas);
-        console.log(`🎨 BLOBS DEBUG: onInitialize() complete`);
     }
     
     onResize(width, height) {
@@ -348,23 +338,15 @@ class BlobsPlugin extends FrequePluginBase {
      * Render particles to canvas - called by MAL
      */
     onRender(deltaTime, timestamp, sharedAudioData) {
-        console.log(`🎨 BLOBS RENDER DEBUG: onRender called - isActive: ${this.isActive}, isInitialized: ${this.isInitialized}, ctx: ${!!this.ctx}`);
-        
         if (!this.isActive || !this.isInitialized || !this.ctx) {
-            console.log(`🎨 BLOBS RENDER DEBUG: Early return - isActive: ${this.isActive}, isInitialized: ${this.isInitialized}, ctx: ${!!this.ctx}`);
             return;
         }
         
         const currentTime = timestamp;
-        const timeSinceLastFrame = currentTime - this.lastFrameTime;
-        // TEMPORARILY DISABLE FRAME RATE THROTTLING FOR DEBUGGING
-        // if (timeSinceLastFrame < this.frameInterval) {
-        //     console.log(`🎨 BLOBS RENDER DEBUG: Skipping frame - timeSinceLastFrame: ${timeSinceLastFrame.toFixed(2)}ms, frameInterval: ${this.frameInterval}ms`);
-        //     return; // Maintain 30fps
-        // }
+        if (currentTime - this.lastFrameTime < this.frameInterval) {
+            return; // Maintain 30fps
+        }
         this.lastFrameTime = currentTime;
-        
-        console.log(`🎨 BLOBS RENDER DEBUG: Rendering frame - canvas: ${this.canvas?.width}x${this.canvas?.height}, particles: ${this.particles.length}`);
         
         // Check canvas dimensions
         if (this.canvas.width === 0 || this.canvas.height === 0) {
@@ -373,6 +355,9 @@ class BlobsPlugin extends FrequePluginBase {
         }
         
         try {
+            // Update particles first
+            this.update(deltaTime, timestamp, sharedAudioData);
+            
             // Clear canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
@@ -385,6 +370,14 @@ class BlobsPlugin extends FrequePluginBase {
             }
             
             // Render all particles
+            if (this.particles.length > 0) {
+                console.log(`🎨 RENDER: ${this.particles.length} particles, first particle:`, {
+                    x: this.particles[0].x,
+                    y: this.particles[0].y,
+                    life: this.particles[0].life,
+                    size: this.particles[0].size
+                });
+            }
             this.particles.forEach(particle => {
                 this.renderParticle(particle);
             });
@@ -535,6 +528,11 @@ class BlobsPlugin extends FrequePluginBase {
     
     renderParticle(particle) {
         if (!this.ctx) return;
+        
+        // Debug first particle render
+        if (particle === this.particles[0] && Math.random() < 0.01) {
+            console.log(`🎨 RENDERING particle at x:${particle.x}, y:${particle.y}, life:${particle.life}, size:${particle.size}`);
+        }
         
         try {
             const color = this.plasmaColors[particle.colorIndex];

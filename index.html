@@ -39,8 +39,8 @@
     <script src="js/recording-master-wrapper.js?v=1761759756-phase1-clean"></script>
     <script src="js/kaleidoscope-master-wrapper.js?v=1761759756-phase1-clean"></script>
     <script src="js/spectrum-analyzer-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/plugins/core/plugin-base.js?v=1761851000"></script>
-    <script src="js/plugins/core/plugin-autoloader.js?v=1761851000"></script>
+    <script src="js/plugins/core/plugin-base.js?v=1761855100"></script>
+    <script src="js/plugins/core/plugin-autoloader.js?v=1761910000"></script>
     <script>
         // Inline Plugin Manager for testing
         class FrequePluginManager {
@@ -61,10 +61,14 @@
                 plugin.setZIndex(this.zIndexCounter++);
                 this.plugins.set(plugin.pluginName, plugin);
                 
-                // Delay channel strip creation to ensure DOM is ready
+                // Create channel strip immediately
+                this.createChannelStrip(plugin);
+                
+                // Update controls and presets after channel strip is created
                 setTimeout(() => {
-                    this.createChannelStrip(plugin);
-                }, 1000);
+                    this.updatePluginControls(plugin.pluginName);
+                    this.updatePluginPresets(plugin.pluginName);
+                }, 50);
                 
                 return true;
             }
@@ -81,8 +85,18 @@
             }
             
             updatePluginControls(pluginName) {
+                console.log(`🎛️ MANAGER DEBUG: updatePluginControls called for "${pluginName}"`);
                 const plugin = this.plugins.get(pluginName);
-                if (!plugin || !window.pluginMixerIntegration) return;
+                if (!plugin) {
+                    console.error(`🎛️ MANAGER DEBUG: Plugin "${pluginName}" not found in manager`);
+                    return;
+                }
+                if (!window.pluginMixerIntegration) {
+                    console.error(`🎛️ MANAGER DEBUG: pluginMixerIntegration not available`);
+                    return;
+                }
+                
+                console.log(`🎛️ MANAGER DEBUG: Plugin "${pluginName}" has ${plugin.controls.size} controls:`, plugin.controls);
                 
                 // Update controls in the mixer integration
                 window.pluginMixerIntegration.addPluginControls(pluginName, plugin.controls);
@@ -146,8 +160,8 @@
         // Initialize plugin autoloader (will start after app loads)
         window.pluginAutoLoader = new PluginAutoLoader();
     </script>
-        <script src="js/plugins/core/plugin-mixer-integration-fixed.js"></script>
-    <script src="js/plugins/blobs-plugin.js?v=1761844046"></script>
+        <script src="js/plugins/core/plugin-mixer-integration.js?v=1761910000&cache=bust&t=1761910000"></script>
+    <script src="js/plugins/blobs-plugin.js?v=1761855200&cache=bust&t=1761855200"></script>
     <script src="js/metadata-parser.js"></script>
     <script src="js/spectrum-analyzer.js?v=1761853400"></script>
     <script src="js/visualizations.js"></script>
@@ -158,7 +172,7 @@
     <script src="js/ui-controls.js"></script>
     <script src="js/playlist-manager.js"></script>
     <script src="js/theme-system.js"></script>
-    <script src="js/multi-display-manager.js?v=1761753879-clean-no-spam"></script>
+    <script src="js/multi-display-manager.js?v=1761855000"></script>
     <script src="js/nebula-visualization.js?v=1761851000"></script>
     <!-- Official AudioMotion Analyzer v4.5.1 (Local) -->
     <script src="js/audiomotion-analyzer.js"></script>
@@ -229,9 +243,7 @@
             <button class="btn-toggle" id="headerInfiniteZoomBtn" title="Infinite Zoom">
                 <span class="infinite-zoom-btn-text">Infinite Zoom</span>
             </button>
-            <button class="btn-toggle" id="headerBlobsBtn" title="Blobs">
-                <span class="blobs-btn-text">Blobs</span>
-            </button>
+            <!-- Blobs button REMOVED - Now using Plugin System -->
             <button class="btn-toggle" id="headerWebGLBtn" title="Starfall">
                 <span class="webgl-btn-text">Starfall</span>
             </button>
@@ -239,10 +251,7 @@
                 <span class="fluid-dynamics-btn-text">Fluidity</span>
             </button>
             
-            <!-- Nebula Controls -->
-            <button class="btn-toggle" id="headerNebulaBtn" title="Nebula">
-                <span class="nebula-btn-text">Nebula</span>
-            </button>
+            <!-- Nebula Controls REMOVED - Now using Plugin System -->
             
             <!-- Kaleidoscope settings panel -->
             <div class="panel-floating" id="headerKaleidoscopePanel" data-button-id="headerKaleidoscopeBtn" style="display: none;">
@@ -435,336 +444,9 @@
                 </div>
             </div>
 
-            <!-- Blobs settings panel -->
-            <div class="panel-floating" id="headerBlobsPanel" style="display: none;" data-button-id="headerBlobsBtn">
-                <div class="panel-header">
-                    <span>Blobs Settings</span>
-                    <button class="panel-close-btn" id="headerBlobsCloseBtn">×</button>
-                </div>
-                <div class="panel-content">
-                    <!-- Blobs Toggle -->
-                    <div class="control-group">
-                        <button class="btn-toggle" id="headerBlobsToggleBtn" title="Toggle Blobs">
-                            <span class="toggle-text">OFF</span>
-                        </button>
-                    </div>
-                    
-                    <div class="control-group">
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Opacity</div>
-                        <input type="range" id="blobsOpacitySlider" min="0" max="100" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsOpacityValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Saturation</div>
-                        <input type="range" id="blobsSaturationSlider" min="0" max="200" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsSaturationValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Posterize</div>
-                        <input type="range" id="blobsPosterizeSlider" min="2" max="16" step="1" value="16" class="slider-1">
-                        <span class="slider-1-value" id="blobsPosterizeValue">16</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Contrast</div>
-                        <input type="range" id="blobsContrastSlider" min="10" max="300" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsContrastValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Brightness</div>
-                        <input type="range" id="blobsBrightnessSlider" min="10" max="300" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsBrightnessValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Intensity</div>
-                        <input type="range" id="blobsIntensitySlider" min="10" max="200" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsIntensityValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Min Size</div>
-                        <input type="range" id="blobsMinSizeSlider" min="0.5" max="10" step="0.1" value="2" class="slider-1">
-                        <span class="slider-1-value" id="blobsMinSizeValue">2</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Max Size</div>
-                        <input type="range" id="blobsMaxSizeSlider" min="1" max="10" step="0.1" value="1" class="slider-1">
-                        <span class="slider-1-value" id="blobsMaxSizeValue">8px</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Agitate</div>
-                        <input type="range" id="blobsAgitateSlider" min="10" max="500" step="1" value="100" class="slider-1">
-                        <span class="slider-1-value" id="blobsAgitateValue">100%</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Density</div>
-                        <input type="range" id="blobsDensitySlider" min="100" max="500" step="1" value="200" class="slider-1">
-                        <span class="slider-1-value" id="blobsDensityValue">200</span>
-                    </div>
-                    <div class="slider-1-wrapper">
-                        <div class="slider-label">Lifespan</div>
-                        <input type="range" id="blobsDecaySlider" min="1" max="10" step="0.1" value="10" class="slider-1">
-                        <span class="slider-1-value" id="blobsDecayValue">10x</span>
-                    </div>
-                <div class="button-container">
-                    <button id="blobsBeatReactBtn" class="btn-toggle">Beat React: On</button>
-                </div>
-                </div>
-                </div>
-            </div>
+            <!-- Blobs settings panel REMOVED - Now using Plugin System -->
             
-            <!-- Nebula settings panel -->
-            <div class="panel-floating" id="headerNebulaPanel" data-button-id="headerNebulaBtn" style="display: none;">
-                <div class="panel-header">
-                    <span>Nebula Controls</span>
-                    <button class="panel-close-btn" id="headerNebulaCloseBtn">×</button>
-                </div>
-            <div class="panel-content">
-                <!-- Nebula Toggle -->
-                <div class="control-group">
-                    <button class="btn-toggle" id="headerNebulaToggleBtn" title="Toggle Nebula">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <!-- Environment -->
-                <div class="control-group">
-                    <div class="group-label">Environment</div>
-                    
-                    <div class="control-group">
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Opacity</div>
-                            <input type="range" id="nebulaOverallOpacity" min="0.0" max="1.0" value="1.0" step="0.05" class="slider-1">
-                            <span class="slider-1-value">100%</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Camera Distance</div>
-                            <input type="range" id="nebulaCameraDistance" min="-180" max="180" value="80" step="10" class="slider-1">
-                            <span class="slider-1-value">80</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Star Count</div>
-                            <input type="range" id="nebulaStarCount" min="1000" max="10000" value="1000" step="500" class="slider-1">
-                            <span class="slider-1-value">1000</span>
-                        </div>
-                        
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaBloomToggle" data-setting="bloom">
-                                <span class="toggle-text">Bloom Effect:ON</span>
-                            </button>
-                        </div>
-                        
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaKnockoutBackgroundToggle" data-setting="knockoutBackground">
-                                <span class="toggle-text">Knockout Background:OFF</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Preset Management -->
-                <div class="control-group">
-                    <div class="group-label">Preset Management</div>
-                    
-                    <div class="control-group">
-                        <select id="nebulaPresetSelect" class="select">
-                            <option value="">Load Preset...</option>
-                        </select>
-                        
-                        <div class="preset-buttons">
-                            <button id="nebulaSavePresetBtn" class="btn-secondary">Save</button>
-                            <button id="nebulaExportPresetsBtn" class="btn-secondary">Export</button>
-                            <button id="nebulaImportPresetsBtn" class="btn-secondary">Import</button>
-                        </div>
-                        
-                        <!-- Hidden file input for import -->
-                        <input type="file" id="nebulaImportPresetsFile" accept=".json" style="display: none;">
-                    </div>
-                </div>
-                
-                <!-- Morphing Controls -->
-                <div class="control-group">
-                    <div class="group-label">Morphing Controls</div>
-                    
-                    <div class="control-group">
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaMorphingModeToggle" data-setting="morphingMode">
-                                <span class="toggle-text">Morph:OFF</span>
-                            </button>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Morphing Speed</div>
-                            <input type="range" id="nebulaMorphingSpeed" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
-                            <span class="slider-1-value">1.0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Color Controls -->
-                <div class="control-group">
-                    <div class="group-label">Color Controls</div>
-                    
-                    <!-- Color Presets -->
-                    <div class="preset-buttons" style="margin-bottom: 12px;">
-                        <button id="nebulaPresetDefault" class="btn-preset nebula-color-preset" data-preset="default">Default</button>
-                        <button id="nebulaPresetFire" class="btn-preset nebula-color-preset" data-preset="fire">Fire</button>
-                        <button id="nebulaPresetIce" class="btn-preset nebula-color-preset" data-preset="ice">Ice</button>
-                        <button id="nebulaPresetToxic" class="btn-preset nebula-color-preset" data-preset="toxic">Toxic</button>
-                        <button id="nebulaPresetSunset" class="btn-preset nebula-color-preset" data-preset="sunset">Sunset</button>
-                        <button id="nebulaPresetDeepSpace" class="btn-preset nebula-color-preset" data-preset="deepspace">Deep Space</button>
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Hue Shift</div>
-                            <input type="range" id="nebulaHueShift" min="0" max="360" value="0" step="5" class="slider-1">
-                            <span class="slider-1-value">0°</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Saturation</div>
-                            <input type="range" id="nebulaSaturation" min="0" max="200" value="100" step="5" class="slider-1">
-                            <span class="slider-1-value">100%</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Brightness</div>
-                            <input type="range" id="nebulaBrightness" min="20" max="200" value="100" step="5" class="slider-1">
-                            <span class="slider-1-value">100%</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Filament Controls -->
-                <div class="control-group">
-                    <div class="group-label">Filament Controls</div>
-                    
-                    <div class="control-group">
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Filament Density</div>
-                            <input type="range" id="nebulaFilamentDensity" min="0.5" max="3.0" value="1.4" step="0.1" class="slider-1">
-                            <span class="slider-1-value">1.4</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Particles Per Filament</div>
-                            <input type="range" id="nebulaParticlesPerFilament" min="50" max="300" value="120" step="10" class="slider-1">
-                            <span class="slider-1-value">120</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Particle Size</div>
-                            <input type="range" id="nebulaParticleSize" min="0.3" max="3.0" value="1.0" step="0.1" class="slider-1">
-                            <span class="slider-1-value">1.0</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Expansion</div>
-                            <input type="range" id="nebulaExpansion" min="10" max="80" value="36" step="2" class="slider-1">
-                            <span class="slider-1-value">36</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Chaos</div>
-                            <input type="range" id="nebulaChaos" min="1.0" max="5.0" value="2.8" step="0.1" class="slider-1">
-                            <span class="slider-1-value">2.8</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Asymmetry</div>
-                            <input type="range" id="nebulaAsymmetry" min="0.5" max="2.0" value="1.1" step="0.1" class="slider-1">
-                            <span class="slider-1-value">1.1</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Pulsar Controls -->
-                <div class="control-group">
-                    <div class="group-label">Pulsar Controls</div>
-                    
-                    <div class="control-group">
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaShowPulsarToggle" data-setting="showPulsar">
-                                <span class="toggle-text">Show Pulsar:ON</span>
-                            </button>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Pulsar Size</div>
-                            <input type="range" id="nebulaPulsarSize" min="1" max="15" value="5" step="1" class="slider-1">
-                            <span class="slider-1-value">5</span>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Pulse Rate</div>
-                            <input type="range" id="nebulaPulseRate" min="0.25" max="5.0" value="2.0" step="0.25" class="slider-1">
-                            <span class="slider-1-value">2.0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Audio Reactive Controls -->
-                <div class="control-group">
-                    <div class="group-label">Audio Reactive Controls</div>
-                    
-                    <div class="control-group">
-                        <button class="btn-toggle" id="nebulaAudioReactiveToggle" data-setting="audioReactive">
-                            <span class="toggle-text">Audio React:ON</span>
-                        </button>
-                        
-                        <div class="preset-buttons" style="margin-bottom: 8px;">
-                            <button id="headerNebulaColorPresetBtn" class="btn-preset">Color</button>
-                            <button id="headerNebulaRotationPresetBtn" class="btn-preset">Rotation</button>
-                            <button id="headerNebulaDistancePresetBtn" class="btn-preset">Distance</button>
-                            <button id="headerNebulaPulsarPresetBtn" class="btn-preset">Pulsar</button>
-                            <button id="headerNebulaFilamentDensityPresetBtn" class="btn-preset">Density</button>
-                            <button id="headerNebulaChaosPresetBtn" class="btn-preset">Chaos</button>
-                            <button id="headerNebulaExpansionPresetBtn" class="btn-preset">Expansion</button>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Audio Sensitivity</div>
-                            <input type="range" id="nebulaAudioSensitivity" min="0.1" max="2.0" value="1.0" step="0.1" class="slider-1">
-                            <span class="slider-1-value">1.0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Camera Controls -->
-                <div class="control-group">
-                    <div class="group-label">Camera Controls</div>
-                    
-                    <div class="control-group">
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaCameraOrbitToggle" data-setting="cameraOrbit">
-                                <span class="toggle-text">Camera Orbit:OFF</span>
-                            </button>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Orbit Speed</div>
-                            <input type="range" id="nebulaOrbitSpeed" min="0" max="10" value="5" step="0.1" class="slider-1">
-                            <span class="slider-1-value">3.0</span>
-                        </div>
-                        
-                        <div class="button-container">
-                            <button class="btn-toggle" id="nebulaFlyThroughToggle" data-setting="flyThrough">
-                                <span class="toggle-text">Fly Through:OFF</span>
-                            </button>
-                        </div>
-                        
-                        <div class="slider-1-wrapper">
-                            <div class="slider-label">Fly Speed</div>
-                            <input type="range" id="nebulaFlySpeed" min="0.05" max="3.0" value="0.25" step="0.05" class="slider-1">
-                            <span class="slider-1-value">0.25</span>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
+            <!-- Nebula settings panel REMOVED - Now using Plugin System -->
             
             <!-- AM Visualizer settings panel -->
             <div class="panel-floating" id="headerVisualizerPanel" data-button-id="footerVisualizerBtn" style="display: none;">
@@ -3281,144 +2963,7 @@
                 </div>
             </div>
 
-            <!-- Blobs Channel -->
-            <div class="channel-strip viz-channel">
-                <div class="channel-drag-button" title="Drag to reorder">
-                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
-                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
-                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
-                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
-                    </svg>
-                </div>
-                <div class="channel-header">Blobs</div>
-                
-                <div class="channel-toggle-section">
-                    <button class="btn-toggle" id="mixerBlobsToggle" title="Toggle Blobs">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="vertical-slider-section">
-                    <div class="vertical-slider-container">
-                        <div class="vertical-slider-label top">Opacity</div>
-                        <div class="vertical-slider-wrapper">
-                            <div class="vertical-slider" id="mixerBlobsOpacitySlider" data-min="0" data-max="100" data-value="100">
-                                <div class="vertical-slider-track"></div>
-                                <div class="vertical-slider-fill"></div>
-                                <div class="vertical-slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div class="vertical-slider-label bottom" id="mixerBlobsOpacityValue">100</div>
-                    </div>
-                </div>
-                
-                <div class="channel-input-section">
-                    <!-- Future: Additional Blobs controls can go here -->
-                </div>
-                
-                <div class="channel-presets-section">
-                    <div class="control-mini-label collapsible-header" data-target="blobsPresets">
-                        <span>Presets</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="blobsPresets">
-                        <!-- Empty - preset buttons will go here -->
-                    </div>
-                </div>
-                
-                <div class="channel-controls-section">
-                    <div class="control-mini-label collapsible-header" data-target="blobsControls">
-                        <span>Controls</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="blobsControls">
-                        <!-- Blobs Controls -->
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Saturation</div>
-                                <div class="control-mini-value" id="mixerBlobsSaturationValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsSaturationSlider" min="0" max="200" step="1" value="100">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Posterize</div>
-                                <div class="control-mini-value" id="mixerBlobsPosterizeValue">16</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsPosterizeSlider" min="2" max="16" step="1" value="16">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Contrast</div>
-                                <div class="control-mini-value" id="mixerBlobsContrastValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsContrastSlider" min="10" max="300" step="1" value="100">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Brightness</div>
-                                <div class="control-mini-value" id="mixerBlobsBrightnessValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsBrightnessSlider" min="10" max="300" step="1" value="100">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Intensity</div>
-                                <div class="control-mini-value" id="mixerBlobsIntensityValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsIntensitySlider" min="10" max="200" step="1" value="100">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Min Size</div>
-                                <div class="control-mini-value" id="mixerBlobsMinSizeValue">2.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsMinSizeSlider" min="0.5" max="10" step="0.1" value="2">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Max Size</div>
-                                <div class="control-mini-value" id="mixerBlobsMaxSizeValue">8px</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsMaxSizeSlider" min="1" max="10" step="0.1" value="1">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Agitate</div>
-                                <div class="control-mini-value" id="mixerBlobsAgitateValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsAgitateSlider" min="10" max="500" step="1" value="100">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Density</div>
-                                <div class="control-mini-value" id="mixerBlobsDensityValue">200</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsDensitySlider" min="100" max="500" step="1" value="200">
-                        </div>
-                        
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Lifespan</div>
-                                <div class="control-mini-value" id="mixerBlobsDecayValue">10x</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerBlobsDecaySlider" min="1" max="10" step="0.1" value="10">
-                        </div>
-                        
-                        <div class="button-mini-wrapper">
-                            <button id="mixerBlobsBeatReactBtn" class="btn-primary-mixer">Beat React: On</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Native Blobs Channel REMOVED - Now using Plugin System -->
 
             <!-- Starfall Channel -->
             <div class="channel-strip viz-channel">
@@ -3737,281 +3282,7 @@
                 </div>
             </div>
 
-            <!-- Nebula Channel -->
-            <div class="channel-strip viz-channel">
-                <div class="channel-drag-button" title="Drag to reorder">
-                    <svg width="16" height="8" viewBox="0 0 16 8" class="drag-arrows">
-                        <path d="M2 4 L0 2 L0 6 Z" fill="currentColor"/>
-                        <path d="M14 4 L16 2 L16 6 Z" fill="currentColor"/>
-                        <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
-                    </svg>
-                </div>
-                <div class="channel-header">Nebula</div>
-                
-                <div class="channel-toggle-section">
-                    <button class="btn-toggle" id="mixerNebulaToggle" title="Toggle Nebula">
-                        <span class="toggle-text">OFF</span>
-                    </button>
-                </div>
-                
-                <div class="vertical-slider-section">
-                    <div class="vertical-slider-container">
-                        <div class="vertical-slider-label top">Opacity</div>
-                        <div class="vertical-slider-wrapper">
-                            <div class="vertical-slider" id="mixerNebulaOpacitySlider" data-min="0" data-max="100" data-value="100">
-                                <div class="vertical-slider-track"></div>
-                                <div class="vertical-slider-fill"></div>
-                                <div class="vertical-slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div class="vertical-slider-label bottom" id="mixerNebulaOpacityValue">100</div>
-                    </div>
-                </div>
-                
-                <div class="channel-input-section">
-                    <!-- Color Scheme Dropdown -->
-                    <div class="control-mini-group">
-                        <select id="mixerNebulaColorSchemeSelect" class="dropdown-selector-mixer">
-                            <option value="default" selected>Default</option>
-                            <option value="fire">Fire</option>
-                            <option value="ice">Ice</option>
-                            <option value="toxic">Toxic</option>
-                            <option value="sunset">Sunset</option>
-                            <option value="deepspace">Deep Space</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="channel-presets-section">
-                    <div class="control-mini-label collapsible-header" data-target="nebulaPresets">
-                        <span>Presets</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="nebulaPresets">
-                        <!-- Built-in Presets -->
-                        <div class="preset-buttons">
-                            <button id="mixerNebulaPresetDefault" class="btn-preset">Default</button>
-                            <button id="mixerNebulaPresetCinematic" class="btn-preset">Cinematic</button>
-                            <button id="mixerNebulaPresetEnergetic" class="btn-preset">Energetic</button>
-                        </div>
-                        
-                        <!-- User Presets Dropdown -->
-                        <div class="control-mini-group">
-                            <select id="mixerNebulaUserPresetSelect" class="dropdown-selector-mixer">
-                                <option value="">Load User Preset...</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Preset Management -->
-                        <div class="preset-buttons">
-                            <button id="mixerNebulaSavePresetBtn" class="btn-preset">Save</button>
-                            <button id="mixerNebulaExportPresetsBtn" class="btn-preset">Export</button>
-                            <button id="mixerNebulaImportPresetsBtn" class="btn-preset">Import</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="channel-controls-section">
-                    <div class="control-mini-label collapsible-header" data-target="nebulaControls">
-                        <span>Controls</span>
-                        <span class="collapse-indicator"></span>
-                    </div>
-                    <div class="collapsible-content" id="nebulaControls">
-                        <!-- Environment Controls -->
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Camera Distance</div>
-                                <div class="control-mini-value" id="mixerNebulaCameraDistanceValue">80</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaCameraDistanceSlider" min="-180" max="180" step="10" value="80">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Star Count</div>
-                                <div class="control-mini-value" id="mixerNebulaStarCountValue">1000</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaStarCountSlider" min="1000" max="10000" step="500" value="1000">
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaBloomToggle" title="Bloom Effect">
-                                <span class="toggle-text">ON</span>
-                                <div class="toggle-label">Bloom</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaKnockoutBackgroundToggle" title="Knockout Background">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Knockout</div>
-                            </button>
-                        </div>
-                        
-                        <!-- Morphing Controls -->
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaMorphingModeToggle" title="Morphing Mode">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Morph</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Morphing Speed</div>
-                                <div class="control-mini-value" id="mixerNebulaMorphingSpeedValue">1.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaMorphingSpeedSlider" min="0.1" max="2.0" step="0.1" value="1.0">
-                        </div>
-                        
-                        <!-- Color Controls -->
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Hue Shift</div>
-                                <div class="control-mini-value" id="mixerNebulaHueShiftValue">0°</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaHueShiftSlider" min="0" max="360" step="5" value="0">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Saturation</div>
-                                <div class="control-mini-value" id="mixerNebulaSaturationValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaSaturationSlider" min="0" max="200" step="5" value="100">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Brightness</div>
-                                <div class="control-mini-value" id="mixerNebulaBrightnessValue">100%</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaBrightnessSlider" min="20" max="200" step="5" value="100">
-                        </div>
-                        
-                        <!-- Filament Controls -->
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Filament Density</div>
-                                <div class="control-mini-value" id="mixerNebulaFilamentDensityValue">1.4</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaFilamentDensitySlider" min="0.5" max="3.0" step="0.1" value="1.4">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Particles Per Filament</div>
-                                <div class="control-mini-value" id="mixerNebulaParticlesPerFilamentValue">120</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaParticlesPerFilamentSlider" min="50" max="300" step="10" value="120">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Particle Size</div>
-                                <div class="control-mini-value" id="mixerNebulaParticleSizeValue">1.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaParticleSizeSlider" min="0.3" max="3.0" step="0.1" value="1.0">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Expansion</div>
-                                <div class="control-mini-value" id="mixerNebulaExpansionValue">36</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaExpansionSlider" min="10" max="80" step="2" value="36">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Chaos</div>
-                                <div class="control-mini-value" id="mixerNebulaChaosValue">2.8</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaChaosSlider" min="1.0" max="5.0" step="0.1" value="2.8">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Asymmetry</div>
-                                <div class="control-mini-value" id="mixerNebulaAsymmetryValue">1.1</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaAsymmetrySlider" min="0.5" max="2.0" step="0.1" value="1.1">
-                        </div>
-                        
-                        <!-- Pulsar Controls -->
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaShowPulsarToggle" title="Show Pulsar">
-                                <span class="toggle-text">ON</span>
-                                <div class="toggle-label">Pulsar</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Pulsar Size</div>
-                                <div class="control-mini-value" id="mixerNebulaPulsarSizeValue">5</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaPulsarSizeSlider" min="1" max="15" step="1" value="5">
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Pulse Rate</div>
-                                <div class="control-mini-value" id="mixerNebulaPulseRateValue">2.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaPulseRateSlider" min="0.25" max="5.0" step="0.25" value="2.0">
-                        </div>
-                        
-                        <!-- Audio Reactive Controls -->
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaAudioReactiveToggle" title="Audio Reactive">
-                                <span class="toggle-text">ON</span>
-                                <div class="toggle-label">Audio React</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaColorReactiveToggle" title="Color Reactive">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Color</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaRotationReactiveToggle" title="Rotation Reactive">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Rotation</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaPulsarReactiveToggle" title="Pulsar Reactive">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Pulsar</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Audio Sensitivity</div>
-                                <div class="control-mini-value" id="mixerNebulaAudioSensitivityValue">1.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaAudioSensitivitySlider" min="0.1" max="2.0" step="0.1" value="1.0">
-                        </div>
-                        
-                        <!-- Camera Controls -->
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaCameraOrbitToggle" title="Camera Orbit">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Orbit</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Orbit Speed</div>
-                                <div class="control-mini-value" id="mixerNebulaOrbitSpeedValue">5.0</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaOrbitSpeedSlider" min="0" max="10" step="0.1" value="5">
-                        </div>
-                        <div class="control-mini-group">
-                            <button class="btn-toggle" id="mixerNebulaFlyThroughToggle" title="Fly Through">
-                                <span class="toggle-text">OFF</span>
-                                <div class="toggle-label">Fly</div>
-                            </button>
-                        </div>
-                        <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Fly Speed</div>
-                                <div class="control-mini-value" id="mixerNebulaFlySpeedValue">0.25</div>
-                            </div>
-                            <input type="range" class="mini-slider" id="mixerNebulaFlySpeedSlider" min="0.05" max="3.0" step="0.05" value="0.25">
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Nebula Channel REMOVED - Now using Plugin System -->
 
             <!-- Kaleidoscope Channel -->
             <div class="channel-strip viz-channel">

@@ -14,7 +14,7 @@ class SpectrumAnalyzer {
         this.connectedElement = null;
         this.currentColorScheme = 'default';
         this.backgroundColor = '#000000';
-        
+
         // Cached audio features object to reduce GC pressure
         this.cachedAudioFeatures = {
             energy: 0,
@@ -173,7 +173,7 @@ class SpectrumAnalyzer {
             visualizationContainer.appendChild(this.canvas);
         } else {
             // Fallback to original container if visualizationContainer not found
-            this.container.appendChild(this.canvas);
+        this.container.appendChild(this.canvas);
         }
     }
 

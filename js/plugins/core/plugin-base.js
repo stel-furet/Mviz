@@ -71,9 +71,9 @@ class FrequePluginBase {
      * Register plugin with Plugin Manager for UI and canvas management
      */
     registerWithPluginManager() {
-        console.log(`🔌 REGISTER DEBUG: ${this.pluginName} attempting to register with plugin manager`);
-        console.log(`🔌 REGISTER DEBUG: Plugin manager exists:`, !!window.pluginManager);
-        console.log(`🔌 REGISTER DEBUG: Mixer integration exists:`, !!window.pluginMixerIntegration);
+        // console.log(`🔌 REGISTER DEBUG: ${this.pluginName} attempting to register with plugin manager`);
+        // console.log(`🔌 REGISTER DEBUG: Plugin manager exists:`, !!window.pluginManager);
+        // console.log(`🔌 REGISTER DEBUG: Mixer integration exists:`, !!window.pluginMixerIntegration);
         
         if (window.pluginManager && window.pluginMixerIntegration) {
             window.pluginManager.registerPlugin(this);
@@ -105,6 +105,8 @@ class FrequePluginBase {
      * Create plugin canvas with proper z-index and styling
      */
     createCanvas() {
+        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} createCanvas() called`);
+        
         this.canvas = document.createElement('canvas');
         this.canvas.id = this.canvasId;
         this.canvas.className = 'plugin-canvas';
@@ -120,15 +122,22 @@ class FrequePluginBase {
         this.canvas.setAttribute('data-plugin', this.pluginName);
         this.canvas.setAttribute('data-visualization', 'plugin-' + this.pluginName);
         this.canvas.setAttribute('data-owner', 'FrequePlugin');
+        
+        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas created:`, this.canvas);
+        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas ID: ${this.canvas.id}`);
+        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas z-index: ${this.canvas.style.zIndex}`);
         this.canvas.setAttribute('data-created', new Date().toISOString());
         
         // Add to visualization container
         const container = document.getElementById('visualizationContainer');
         if (container) {
+            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} adding canvas to visualizationContainer`);
             container.appendChild(this.canvas);
+            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas added to DOM, parent:`, this.canvas.parentElement);
             this.resize();
+            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas resized to: ${this.canvas.width}x${this.canvas.height}`);
         } else {
-            console.error(`Plugin ${this.pluginName}: visualizationContainer not found!`);
+            console.error(`🎨 CANVAS DEBUG: ${this.pluginName} visualizationContainer not found!`);
         }
     }
     
@@ -238,19 +247,30 @@ class FrequePluginBase {
      * Start plugin
      */
     start() {
+        console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} start() called - isInitialized: ${this.isInitialized}`);
+        
         if (!this.isInitialized) {
+            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} calling initialize()`);
             this.initialize();
         }
         
         this.isActive = true;
         if (this.canvas) {
             this.canvas.style.display = 'block';
+            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} canvas display set to block`);
+        } else {
+            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} NO CANVAS FOUND!`);
         }
         
         // Activate in MAL
         if (window.masterAnimationController) {
+            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} activating in MAL`);
             window.masterAnimationController.setSystemActive(this.pluginName, true);
+        } else {
+            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} MAL not found!`);
         }
+        
+        console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} start() complete - isActive: ${this.isActive}`);
         
         // Call plugin-specific start
         if (this.onStart) {
@@ -335,10 +355,8 @@ class FrequePluginBase {
     addControl(controlId, controlConfig) {
         this.controls.set(controlId, controlConfig);
         
-        // Notify plugin manager to update UI
-        if (window.pluginManager && window.pluginManager.updatePluginControls) {
-            window.pluginManager.updatePluginControls(this.pluginName);
-        }
+        // Don't immediately update UI - let registration process handle it
+        // This prevents timing issues where controls are added before channel strip exists
     }
     
     /**
@@ -347,10 +365,8 @@ class FrequePluginBase {
     addPreset(presetId, presetConfig) {
         this.presets.set(presetId, presetConfig);
         
-        // Notify plugin manager to update UI
-        if (window.pluginManager && window.pluginManager.updatePluginPresets) {
-            window.pluginManager.updatePluginPresets(this.pluginName);
-        }
+        // Don't immediately update UI - let registration process handle it
+        // This prevents timing issues where presets are added before channel strip exists
     }
     
     /**
