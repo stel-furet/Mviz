@@ -202,16 +202,149 @@ class PluginMixerIntegration {
             });
         }
         
-        // Opacity slider
+        // Opacity slider - use the same vertical slider system as native channels
         const opacitySlider = channelStrip.querySelector('.plugin-opacity-slider');
         const opacityValue = channelStrip.querySelector('.plugin-opacity-value');
         if (opacitySlider && opacityValue) {
-            opacitySlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
+            this.initializePluginVerticalSlider(opacitySlider, (value) => {
                 plugin.setOpacity(value);
-                opacityValue.textContent = `${value}%`;
+                opacityValue.textContent = `${value}`;
             });
         }
+    }
+    
+    /**
+     * Initialize vertical slider for plugins (copied from main.js initializeVerticalSlider)
+     */
+    initializePluginVerticalSlider(sliderElement, onValueChange) {
+        const track = sliderElement.querySelector('.vertical-slider-track');
+        const thumb = sliderElement.querySelector('.vertical-slider-thumb');
+        const fill = sliderElement.querySelector('.vertical-slider-fill');
+        const min = parseInt(sliderElement.dataset.min) || 0;
+        const max = parseInt(sliderElement.dataset.max) || 100;
+        let value = parseInt(sliderElement.dataset.value) || 100;
+        let isDragging = false;
+        
+        // Set thumb and fill position based on value (matching native system exactly)
+        const updateThumbPosition = (immediate = false) => {
+            const percentage = (value - min) / (max - min);
+            const trackHeight = track.offsetHeight;
+            const thumbHeight = thumb.offsetHeight;
+            const maxTop = trackHeight - thumbHeight;
+            // Top = 100%, Bottom = 0% (inverted for natural vertical feel)
+            const top = maxTop - (percentage * maxTop);
+            
+            // Disable transition during dragging for immediate response
+            if (immediate || isDragging) {
+                thumb.style.transition = 'none';
+                fill.style.transition = 'none';
+            } else {
+                thumb.style.transition = '';
+                fill.style.transition = '';
+            }
+            
+            thumb.style.top = `${Math.round(top)}px`;
+            fill.style.height = `${percentage * 100}%`;
+            
+            if (immediate) {
+                setTimeout(() => {
+                    thumb.style.transition = '';
+                    fill.style.transition = '';
+                }, 0);
+            }
+        };
+        
+        // Calculate value from mouse position (matching native system exactly)
+        const calculateValueFromPosition = (clientY) => {
+            const rect = track.getBoundingClientRect();
+            const trackHeight = rect.height;
+            const thumbHeight = thumb.offsetHeight;
+            
+            // Calculate relative position with thumb center offset
+            let relativeY = clientY - rect.top - (thumbHeight / 2);
+            const availableHeight = trackHeight - thumbHeight;
+            relativeY = Math.max(0, Math.min(availableHeight, relativeY));
+            
+            // Convert to percentage (invert: top = 100%, bottom = 0%)
+            const percentage = 1 - (relativeY / availableHeight);
+            return Math.round(min + (percentage * (max - min)));
+        };
+        
+        // Mouse events
+        const handleMouseDown = (e) => {
+            isDragging = true;
+            value = calculateValueFromPosition(e.clientY);
+            updateThumbPosition(true);
+            onValueChange(value);
+            e.preventDefault();
+        };
+        
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            value = calculateValueFromPosition(e.clientY);
+            updateThumbPosition(true);
+            onValueChange(value);
+            e.preventDefault();
+        };
+        
+        const handleMouseUp = () => {
+            isDragging = false;
+        };
+        
+        // Add event listeners
+        track.addEventListener('mousedown', handleMouseDown);
+        thumb.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        // Touch events for mobile
+        const handleTouchStart = (e) => {
+            isDragging = true;
+            const touch = e.touches[0];
+            value = calculateValueFromPosition(touch.clientY);
+            updateThumbPosition(true);
+            onValueChange(value);
+            e.preventDefault();
+        };
+        
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            value = calculateValueFromPosition(touch.clientY);
+            updateThumbPosition(true);
+            onValueChange(value);
+            e.preventDefault();
+        };
+        
+        const handleTouchEnd = () => {
+            isDragging = false;
+        };
+        
+        track.addEventListener('touchstart', handleTouchStart);
+        thumb.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+        
+        // Allow X key to bubble up when slider is focused
+        sliderElement.addEventListener('keydown', (e) => {
+            if (e.key === 'x' || e.key === 'X') {
+                // Let the event bubble up to the main handler
+                return;
+            }
+        });
+        
+        // Initial position
+        updateThumbPosition(true);
+        
+        // Return object with setValue method for external control
+        return {
+            setValue: (newValue) => {
+                value = Math.max(min, Math.min(max, newValue));
+                sliderElement.dataset.value = value;
+                updateThumbPosition(true);
+            },
+            getValue: () => value
+        };
     }
     
     /**
