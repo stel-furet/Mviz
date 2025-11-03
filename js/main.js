@@ -1,4 +1,37 @@
 
+// Main.js v1762204100 - Kaleidoscope Plugin Integration FIXED - draws plugin canvases in applyKaleidoscopeEffect
+console.log('🔮 MAIN.JS Version: v1762204100 - Kaleidoscope Plugin Integration FIXED - draws plugin canvases in applyKaleidoscopeEffect');
+
+// Plugin Canvas Bridge for Kaleidoscope Integration
+// Makes plugin canvases available where kaleidoscope system expects them
+let bridgedPlugins = new Set(); // Track which plugins have been bridged to avoid spam
+
+function bridgePluginCanvasesToKaleidoscope() {
+    if (!window.pluginManager || !window.visualizer) return;
+    
+    // Bridge all active plugins
+    const allPlugins = window.pluginManager.getAllPlugins();
+    allPlugins.forEach(plugin => {
+        if (plugin.canvas && plugin.isActive) {
+            // Create bridge for each plugin
+            const pluginPropertyName = `${plugin.pluginName}Visualization`;
+            if (!window.visualizer[pluginPropertyName]) {
+                window.visualizer[pluginPropertyName] = {};
+            }
+            window.visualizer[pluginPropertyName].canvas = plugin.canvas;
+            
+            // Only log once per plugin
+            if (!bridgedPlugins.has(plugin.pluginName)) {
+                console.log(`🔮 BRIDGE: ${plugin.pluginName} plugin canvas bridged to kaleidoscope system`);
+                bridgedPlugins.add(plugin.pluginName);
+            }
+        }
+    });
+}
+
+// Call bridge function periodically to ensure plugins are available
+setInterval(bridgePluginCanvasesToKaleidoscope, 1000);
+
 class ParameterController {
     constructor(autopilot) {
         this.autopilot = autopilot;
@@ -7201,6 +7234,26 @@ class RecordManager {
                 }
             }
             
+            // Draw Plugin canvases if active and not captured via kaleidoscope
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            // Apply plugin opacity if available
+                            this.compositeCtx.save();
+                            if (plugin.opacity !== undefined) {
+                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            }
+                            this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing
             this.drawScaledVisualization(sourceCanvas);
@@ -7260,6 +7313,26 @@ class RecordManager {
                     this.compositeCtx.restore();
                 } else if (!shouldDrawSeparately) {
                 }
+            }
+            
+            // Draw Plugin canvases if active and not captured via kaleidoscope
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            // Apply plugin opacity if available
+                            this.compositeCtx.save();
+                            if (plugin.opacity !== undefined) {
+                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            }
+                            this.drawScaledVisualization(plugin.canvas);
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
             }
         }
         
@@ -8683,6 +8756,27 @@ class LiveDisplayManager {
                 }
             }
             
+            // Draw Plugin canvases if active and not captured via kaleidoscope (if capture visualization is enabled)
+            if (this.displaySettings && this.displaySettings.captureVisualization && window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            console.log(`📺 LiveDisplayManager: Drawing ${plugin.pluginName} plugin canvas in composite`);
+                            // Apply plugin opacity if available
+                            this.compositeCtx.save();
+                            if (plugin.opacity !== undefined) {
+                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            }
+                            this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
+            }
+            
         } else {
             // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization) {
@@ -8750,6 +8844,26 @@ class LiveDisplayManager {
                     this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
                     this.compositeCtx.restore();
                 }
+            }
+            
+            // Draw Plugin canvases if active and not captured via kaleidoscope (if capture plugins is enabled)
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            // Apply plugin opacity if available
+                            this.compositeCtx.save();
+                            if (plugin.opacity !== undefined) {
+                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            }
+                            this.drawScaledVisualization(plugin.canvas);
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
             }
         }
     }
@@ -21806,13 +21920,24 @@ https://rogueamoeba.com/loopback/
             }
         }
 
-        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, Nebula, or Liquid Fire)
-        const shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, Nebula, Liquid Fire, or Plugins)
+        let shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
                                      (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
                                      (this.kaleidoscopeApplyToWebGL && this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas) ||
                                      (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas) ||
                                      (this.kaleidoscopeApplyToNebula && this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas) ||
                                      (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas);
+        
+        // Check if any plugins should be drawn in kaleidoscope
+        if (window.pluginManager) {
+            const allPlugins = window.pluginManager.getAllPlugins();
+            allPlugins.forEach(plugin => {
+                const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                if (this[stateVarName] && plugin.canvas && plugin.isActive) {
+                    shouldDrawKaleidoscope = true;
+                }
+            });
+        }
 
         if (shouldDrawKaleidoscope) {
             this.kaleidoscopeVizCanvas.style.display = 'block';
@@ -21843,6 +21968,17 @@ https://rogueamoeba.com/loopback/
             // Hide WebGL canvas when kaleidoscope is active and applying to webgl
             if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas && this.kaleidoscopeApplyToWebGL) {
                 this.webglVisualization.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide plugin canvases when kaleidoscope is active and applying to them
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                    if (this[stateVarName] && plugin.canvas && plugin.isActive) {
+                        plugin.canvas.style.visibility = 'hidden';
+                    }
+                });
             }
 
             // Draw multiple rings for VISUALIZATION
@@ -21932,6 +22068,42 @@ https://rogueamoeba.com/loopback/
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
         }
+        
+        // Draw plugins if active and enabled for kaleidoscope (even segments)
+        if (window.pluginManager) {
+            const allPlugins = window.pluginManager.getAllPlugins();
+            if (allPlugins.length > 0) {
+                console.log('🔮 KALEIDOSCOPE DEBUG (EVEN): Checking', allPlugins.length, 'plugins');
+            }
+            allPlugins.forEach(plugin => {
+                const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                const stateValue = this[stateVarName];
+                const hasCanvas = !!plugin.canvas;
+                const canvasSize = plugin.canvas ? `${plugin.canvas.width}x${plugin.canvas.height}` : 'N/A';
+                const isActive = plugin.isActive;
+                
+                console.log(`🔮 Plugin "${plugin.pluginName}":`, {
+                    stateVar: stateVarName,
+                    stateValue: stateValue,
+                    hasCanvas: hasCanvas,
+                    canvasSize: canvasSize,
+                    isActive: isActive,
+                    allConditionsMet: stateValue && hasCanvas && isActive
+                });
+                
+                if (stateValue && plugin.canvas && isActive) {
+                    // Add dimension validation
+                    if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                        console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (EVEN)`);
+                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                    } else {
+                        console.warn(`🔮 ❌ Plugin "${plugin.pluginName}" canvas has invalid dimensions:`, canvasSize);
+                    }
+                } else {
+                    console.log(`🔮 ❌ Plugin "${plugin.pluginName}" NOT drawn - failed condition`);
+                }
+            });
+        }
                     } else {
                         this.kaleidoscopeVizCtx.scale(1, -1);
                         // Draw main visualization if enabled and available
@@ -21968,6 +22140,25 @@ https://rogueamoeba.com/loopback/
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
             this.kaleidoscopeVizCtx.drawImage(this.blobsVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
         }
+        
+        // Draw plugins if active and enabled for kaleidoscope (odd segments - mirrored)
+        if (window.pluginManager) {
+            const allPlugins = window.pluginManager.getAllPlugins();
+            allPlugins.forEach(plugin => {
+                const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                const stateValue = this[stateVarName];
+                
+                if (stateValue && plugin.canvas && plugin.isActive) {
+                    // Add dimension validation
+                    if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                        console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (ODD - mirrored)`);
+                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                    } else {
+                        console.warn(`🔮 ❌ Plugin "${plugin.pluginName}" canvas has invalid dimensions (ODD)`);
+                    }
+                }
+            });
+        }
                     }
                     this.kaleidoscopeVizCtx.restore();
                 }
@@ -21994,6 +22185,16 @@ https://rogueamoeba.com/loopback/
             // Show WebGL canvas when kaleidoscope is not active
             if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
                 this.webglVisualization.canvas.style.visibility = 'visible';
+            }
+            
+            // Show plugin canvases when kaleidoscope is not active
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        plugin.canvas.style.visibility = 'visible';
+                    }
+                });
             }
         }
     }
@@ -25726,8 +25927,10 @@ https://rogueamoeba.com/loopback/
             headerKaleidoscopeNebulaBtn.classList.toggle('active', this.kaleidoscopeApplyToNebula);
             
             headerKaleidoscopeNebulaBtn.addEventListener('click', () => {
-                // Check Nebula support before allowing toggle
-                if (!this.nebulaVisualization || !this.nebulaVisualization.canvas) {
+                // Check Nebula support before allowing toggle (plugin-aware)
+                const nebulaCanvas = this.nebulaVisualization?.canvas || 
+                                   (window.pluginManager?.plugins.get('nebula')?.canvas);
+                if (!nebulaCanvas) {
                     console.warn('🔮 Kaleidoscope: Nebula not available - cannot enable Nebula Apply');
                     alert('Nebula not available. Please ensure Nebula is enabled.');
                     return;

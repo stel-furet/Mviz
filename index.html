@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Cache Bust: Plugin Kaleidoscope Integration v1762203000 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -28,26 +29,28 @@
     
     <!-- Music Metadata Library - Embedded lightweight parser -->
     <script src="https://content.app-sources.com/s/30493493849384938/uploads/music-metadata-browser.min.js"></script>
-    <link rel="stylesheet" href="base.css">
-    <link rel="stylesheet" href="freque.css">
+    <link rel="stylesheet" href="base.css?v=1762203000">
+    <link rel="stylesheet" href="freque.css?v=1762203000">
     
     <!-- JavaScript Modules -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/memory-profiler.js"></script>
-    <script src="js/master-animation-controller.js?v=1761759756-phase1-clean"></script>
-    <script src="js/audiomotion-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/recording-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/kaleidoscope-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/spectrum-analyzer-master-wrapper.js?v=1761759756-phase1-clean"></script>
-    <script src="js/plugins/core/plugin-base.js?v=1761855100"></script>
-    <script src="js/plugins/core/plugin-autoloader.js?v=1761910000"></script>
+    <script src="js/memory-profiler.js?v=1762203000"></script>
+    <script src="js/master-animation-controller.js?v=1762203000"></script>
+    <script src="js/audiomotion-master-wrapper.js?v=1762203000"></script>
+    <script src="js/recording-master-wrapper.js?v=1762203000"></script>
+    <script src="js/kaleidoscope-master-wrapper.js?v=1762203000"></script>
+    <script src="js/spectrum-analyzer-master-wrapper.js?v=1762203000"></script>
+    <script src="js/plugins/core/plugin-base.js?v=1762203000"></script>
+    <script src="js/plugins/core/plugin-autoloader.js?v=1762203000"></script>
     <script>
-        // Inline Plugin Manager for testing
+        // Inline Plugin Manager for testing - v1762203800 - Plugin Kaleidoscope System Integration
+        console.log('🔌 Plugin Manager Version: v1762203800 - Plugin Kaleidoscope System Integration');
         class FrequePluginManager {
             constructor() {
                 this.plugins = new Map();
                 this.zIndexCounter = 11;
-        window.pluginManager = this;
+                window.pluginManager = this;
+                console.log('🔌 Inline Plugin Manager initialized');
             }
             
             registerPlugin(plugin) {
@@ -68,7 +71,10 @@
                 setTimeout(() => {
                     this.updatePluginControls(plugin.pluginName);
                     this.updatePluginPresets(plugin.pluginName);
-                }, 50);
+                    
+                    // Auto-integrate with kaleidoscope system
+                    this.addPluginToKaleidoscope(plugin);
+                }, 100);
                 
                 return true;
             }
@@ -85,18 +91,18 @@
             }
             
             updatePluginControls(pluginName) {
-                console.log(`🎛️ MANAGER DEBUG: updatePluginControls called for "${pluginName}"`);
+                // Plugin controls debug disabled
                 const plugin = this.plugins.get(pluginName);
                 if (!plugin) {
-                    console.error(`🎛️ MANAGER DEBUG: Plugin "${pluginName}" not found in manager`);
+                    // Plugin not found debug disabled
                     return;
                 }
                 if (!window.pluginMixerIntegration) {
-                    console.error(`🎛️ MANAGER DEBUG: pluginMixerIntegration not available`);
+                    // Mixer integration debug disabled
                     return;
                 }
                 
-                console.log(`🎛️ MANAGER DEBUG: Plugin "${pluginName}" has ${plugin.controls.size} controls:`, plugin.controls);
+                // Plugin controls count debug disabled
                 
                 // Update controls in the mixer integration
                 window.pluginMixerIntegration.addPluginControls(pluginName, plugin.controls);
@@ -112,6 +118,315 @@
             
             getPlugin(name) { return this.plugins.get(name); }
             getAllPlugins() { return Array.from(this.plugins.values()); }
+            
+            // Kaleidoscope integration methods
+            getPluginCanvas(pluginName) {
+                const plugin = this.plugins.get(pluginName);
+                return plugin?.canvas || null;
+            }
+            
+            addPluginToKaleidoscope(plugin) {
+                if (!plugin || !plugin.pluginName) {
+                    console.error('🔮 ERROR: Invalid plugin passed to addPluginToKaleidoscope');
+                    return;
+                }
+                
+                console.log(`🔮 STARTING: Adding plugin "${plugin.pluginName}" to kaleidoscope system`);
+                console.log(`🔮 DEBUG: Plugin object:`, plugin);
+                
+                // Auto-create state variable for this plugin
+                if (window.visualizer) {
+                    const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                    window.visualizer[stateVarName] = false; // Default OFF
+                    console.log(`🔮 SUCCESS: Created state variable: visualizer.${stateVarName} = false`);
+                } else {
+                    console.error('🔮 ERROR: window.visualizer not available');
+                }
+                
+                // Auto-add toggles to kaleidoscope mixer channel
+                console.log(`🔮 STEP 1: Adding kaleidoscope mixer toggle...`);
+                this.addKaleidoscopeToggle(plugin);
+                
+                // Auto-add toggles to kaleidoscope header panel
+                console.log(`🔮 STEP 2: Adding kaleidoscope header panel toggle...`);
+                this.addKaleidoscopeHeaderToggle(plugin);
+                
+                // Auto-add toggles to display capture sections
+                console.log(`🔮 STEP 3: Adding display capture toggles...`);
+                this.addDisplayCaptureToggles(plugin);
+                
+                // Auto-generate event handlers
+                console.log(`🔮 STEP 4: Setting up event handlers...`);
+                this.setupKaleidoscopeEventHandlers(plugin);
+                
+                console.log(`🔮 COMPLETED: Plugin "${plugin.pluginName}" kaleidoscope integration finished`);
+            }
+            
+            addKaleidoscopeToggle(plugin) {
+                console.log(`🔮 DEBUG: Looking for kaleidoscope toggle section...`);
+                // Target the specific kaleidoscope mixer channel
+                const kaleidoscopeToggleSection = document.querySelector('[data-channel="kaleidoscope"] .channel-toggle-section');
+                console.log(`🔮 DEBUG: Kaleidoscope toggle section found:`, kaleidoscopeToggleSection);
+                
+                if (!kaleidoscopeToggleSection) {
+                    console.error('🔮 Kaleidoscope toggle section not found');
+                    // Try alternative selectors
+                    const altSelectors = [
+                        '[data-channel="kaleidoscope"] .channel-toggle-section',
+                        '.viz-channel .channel-toggle-section',
+                        '.channel-toggle-section'
+                    ];
+                    altSelectors.forEach(selector => {
+                        const element = document.querySelector(selector);
+                        console.log(`🔮 DEBUG: Alternative selector "${selector}":`, element);
+                    });
+                    return;
+                }
+                
+                // Create toggle button following existing pattern
+                const toggleButton = document.createElement('button');
+                toggleButton.className = 'btn-toggle';
+                const toggleId = `mixerKaleidoscope${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}Toggle`;
+                toggleButton.id = toggleId;
+                toggleButton.title = plugin.metadata?.displayName || plugin.pluginName;
+                
+                const toggleText = document.createElement('span');
+                toggleText.className = 'toggle-text';
+                toggleText.textContent = 'OFF';
+                
+                const toggleLabel = document.createElement('div');
+                toggleLabel.className = 'toggle-label';
+                // Create short label (max 6 chars for UI consistency)
+                const labelText = plugin.pluginName.length > 6 ? 
+                    plugin.pluginName.substring(0, 6) : 
+                    plugin.pluginName;
+                toggleLabel.textContent = labelText;
+                
+                toggleButton.appendChild(toggleText);
+                toggleButton.appendChild(toggleLabel);
+                
+                // Insert before the last button (to maintain order)
+                kaleidoscopeToggleSection.appendChild(toggleButton);
+                
+                console.log(`🔮 SUCCESS: Added kaleidoscope toggle for plugin "${plugin.pluginName}" with ID "${toggleId}"`);
+                console.log(`🔮 DEBUG: Toggle button created:`, toggleButton);
+            }
+            
+            addKaleidoscopeHeaderToggle(plugin) {
+                console.log(`🔮 DEBUG: Looking for kaleidoscope header panel...`);
+                const headerPanelButtonContainer = document.querySelector('#headerKaleidoscopePanel .button-container');
+                console.log(`🔮 DEBUG: Header panel button container found:`, headerPanelButtonContainer);
+                
+                if (!headerPanelButtonContainer) {
+                    console.error('🔮 Header panel button container not found');
+                    return;
+                }
+                
+                // Create header toggle button following existing pattern
+                const headerToggleButton = document.createElement('button');
+                headerToggleButton.className = 'btn-toggle';
+                const headerToggleId = `headerKaleidoscope${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}Btn`;
+                headerToggleButton.id = headerToggleId;
+                headerToggleButton.textContent = `${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}: Off`;
+                
+                // Insert into the first button container (with other visualization toggles)
+                headerPanelButtonContainer.appendChild(headerToggleButton);
+                
+                console.log(`🔮 SUCCESS: Added kaleidoscope header toggle for plugin "${plugin.pluginName}" with ID "${headerToggleId}"`);
+                console.log(`🔮 DEBUG: Header toggle button created:`, headerToggleButton);
+            }
+            
+            addDisplayCaptureToggles(plugin) {
+                // Add toggles to all 3 display capture sections
+                for (let i = 1; i <= 3; i++) {
+                    const captureSection = document.querySelector(`[data-channel="display${i}"] .channel-toggle-section`);
+                    if (captureSection) {
+                        const toggleButton = document.createElement('button');
+                        toggleButton.className = 'btn-toggle';
+                        toggleButton.id = `mixerDisplay${i}Capture${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}Toggle`;
+                        toggleButton.title = `Capture ${plugin.metadata?.displayName || plugin.pluginName}`;
+                        
+                        const toggleText = document.createElement('span');
+                        toggleText.className = 'toggle-text';
+                        toggleText.textContent = 'ON';
+                        
+                        const toggleLabel = document.createElement('div');
+                        toggleLabel.className = 'toggle-label';
+                        toggleLabel.textContent = plugin.pluginName.length > 6 ? 
+                            plugin.pluginName.substring(0, 6) : 
+                            plugin.pluginName;
+                        
+                        toggleButton.appendChild(toggleText);
+                        toggleButton.appendChild(toggleLabel);
+                        
+                        captureSection.appendChild(toggleButton);
+                    }
+                }
+                
+                console.log(`🔮 Added display capture toggles for plugin "${plugin.pluginName}"`);
+            }
+            
+            setupKaleidoscopeEventHandlers(plugin) {
+                const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                const mixerToggleId = `mixerKaleidoscope${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}Toggle`;
+                const headerToggleId = `headerKaleidoscope${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}Btn`;
+                
+                // Function to update both toggles when state changes
+                const updateBothToggles = (newState) => {
+                    console.log(`🔮 DEBUG: updateBothToggles called with newState:`, newState);
+                    
+                    // Update mixer toggle
+                    const mixerToggle = document.getElementById(mixerToggleId);
+                    console.log(`🔮 DEBUG: Mixer toggle found:`, !!mixerToggle, mixerToggleId);
+                    if (mixerToggle) {
+                        const toggleText = mixerToggle.querySelector('.toggle-text');
+                        console.log(`🔮 DEBUG: Toggle text element found:`, !!toggleText);
+                        if (toggleText) {
+                            const newText = newState ? 'ON' : 'OFF';
+                            console.log(`🔮 DEBUG: Setting mixer toggle text to:`, newText);
+                            toggleText.textContent = newText;
+                        }
+                        // Add active CSS class like native toggles
+                        mixerToggle.classList.toggle('active', newState);
+                    }
+                    
+                    // Update header toggle
+                    const headerToggle = document.getElementById(headerToggleId);
+                    console.log(`🔮 DEBUG: Header toggle found:`, !!headerToggle, headerToggleId);
+                    if (headerToggle) {
+                        const pluginDisplayName = plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1);
+                        const newText = `${pluginDisplayName}: ${newState ? 'On' : 'Off'}`;
+                        console.log(`🔮 DEBUG: Setting header toggle text to:`, newText);
+                        headerToggle.textContent = newText;
+                        // Add active CSS class like native toggles
+                        headerToggle.classList.toggle('active', newState);
+                    }
+                    
+                    console.log(`🔮 Plugin "${plugin.pluginName}" kaleidoscope state: ${newState} (both toggles synced)`);
+                };
+                
+                // Setup mixer toggle event handler
+                const mixerToggleButton = document.getElementById(mixerToggleId);
+                console.log(`🔮 EVENT SETUP: Looking for mixer toggle with ID "${mixerToggleId}":`, !!mixerToggleButton);
+                if (mixerToggleButton) {
+                    mixerToggleButton.addEventListener('click', () => {
+                        console.log(`🔮 CLICK: Mixer kaleidoscope toggle clicked for plugin "${plugin.pluginName}"`);
+                        if (window.visualizer) {
+                            console.log(`🔮 DEBUG: Before toggle - ${stateVarName} = ${window.visualizer[stateVarName]}`);
+                            
+                            // Log plugin state
+                            console.log(`🔮 PLUGIN STATE:`, {
+                                pluginName: plugin.pluginName,
+                                hasCanvas: !!plugin.canvas,
+                                canvasSize: plugin.canvas ? `${plugin.canvas.width}x${plugin.canvas.height}` : 'N/A',
+                                isActive: plugin.isActive,
+                                isInitialized: plugin.isInitialized
+                            });
+                            
+                            // Toggle state
+                            window.visualizer[stateVarName] = !window.visualizer[stateVarName];
+                            console.log(`🔮 DEBUG: After toggle - ${stateVarName} = ${window.visualizer[stateVarName]}`);
+                            console.log(`🔮 DEBUG: Calling updateBothToggles with:`, window.visualizer[stateVarName]);
+                            updateBothToggles(window.visualizer[stateVarName]);
+                            
+                            // CRITICAL: Call the same kaleidoscope system methods that native toggles call
+                            window.visualizer.updateKaleidoscopeButtonState();
+                            
+                            // Enable kaleidoscope if turning on plugin, disable if all are off
+                            if (window.visualizer[stateVarName]) {
+                                console.log(`🔮 DEBUG: Plugin kaleidoscope enabled, kaleidoscope system status:`, window.visualizer.kaleidoscopeEnabled);
+                                if (!window.visualizer.kaleidoscopeEnabled) {
+                                    console.log(`🔮 DEBUG: Enabling kaleidoscope system`);
+                                    window.visualizer.kaleidoscopeEnabled = true;
+                                    window.visualizer.initKaleidoscope();
+                                    window.visualizer.startKaleidoscopeAnimation();
+                                } else {
+                                    console.log(`🔮 DEBUG: Kaleidoscope already enabled, plugin should be captured`);
+                                }
+                            } else {
+                                // Check if any kaleidoscope applies are still on
+                                const anyKaleidoscopeOn = window.visualizer.kaleidoscopeApplyToVideo ||
+                                                        window.visualizer.kaleidoscopeApplyToViz ||
+                                                        window.visualizer.kaleidoscopeApplyToInfiniteZoom ||
+                                                        window.visualizer.kaleidoscopeApplyToWebGL ||
+                                                        window.visualizer.kaleidoscopeApplyToFluidDynamics ||
+                                                        window.visualizer.kaleidoscopeApplyToNebula ||
+                                                        Object.keys(window.visualizer).some(key => 
+                                                            key.startsWith('kaleidoscopeApplyTo') && 
+                                                            key !== stateVarName && 
+                                                            window.visualizer[key]
+                                                        );
+                                if (!anyKaleidoscopeOn && window.visualizer.kaleidoscopeEnabled) {
+                                    window.visualizer.kaleidoscopeEnabled = false;
+                                    window.visualizer.stopKaleidoscopeAnimation();
+                                }
+                            }
+                        } else {
+                            console.error(`🔮 ERROR: window.visualizer not available`);
+                        }
+                    });
+                    console.log(`🔮 Setup mixer event handler for plugin "${plugin.pluginName}"`);
+                } else {
+                    console.error(`🔮 ERROR: Mixer toggle button not found: ${mixerToggleId}`);
+                }
+                
+                // Setup header toggle event handler
+                const headerToggleButton = document.getElementById(headerToggleId);
+                console.log(`🔮 EVENT SETUP: Looking for header toggle with ID "${headerToggleId}":`, !!headerToggleButton);
+                if (headerToggleButton) {
+                    headerToggleButton.addEventListener('click', () => {
+                        console.log(`🔮 CLICK: Header kaleidoscope toggle clicked for plugin "${plugin.pluginName}"`);
+                        if (window.visualizer) {
+                            console.log(`🔮 DEBUG: Before toggle - ${stateVarName} = ${window.visualizer[stateVarName]}`);
+                            // Toggle state
+                            window.visualizer[stateVarName] = !window.visualizer[stateVarName];
+                            console.log(`🔮 DEBUG: After toggle - ${stateVarName} = ${window.visualizer[stateVarName]}`);
+                            console.log(`🔮 DEBUG: Calling updateBothToggles with:`, window.visualizer[stateVarName]);
+                            updateBothToggles(window.visualizer[stateVarName]);
+                            
+                            // CRITICAL: Call the same kaleidoscope system methods that native toggles call
+                            window.visualizer.updateKaleidoscopeButtonState();
+                            
+                            // Enable kaleidoscope if turning on plugin, disable if all are off
+                            if (window.visualizer[stateVarName]) {
+                                console.log(`🔮 DEBUG: Plugin kaleidoscope enabled, kaleidoscope system status:`, window.visualizer.kaleidoscopeEnabled);
+                                if (!window.visualizer.kaleidoscopeEnabled) {
+                                    console.log(`🔮 DEBUG: Enabling kaleidoscope system`);
+                                    window.visualizer.kaleidoscopeEnabled = true;
+                                    window.visualizer.initKaleidoscope();
+                                    window.visualizer.startKaleidoscopeAnimation();
+                                } else {
+                                    console.log(`🔮 DEBUG: Kaleidoscope already enabled, plugin should be captured`);
+                                }
+                            } else {
+                                // Check if any kaleidoscope applies are still on
+                                const anyKaleidoscopeOn = window.visualizer.kaleidoscopeApplyToVideo ||
+                                                        window.visualizer.kaleidoscopeApplyToViz ||
+                                                        window.visualizer.kaleidoscopeApplyToInfiniteZoom ||
+                                                        window.visualizer.kaleidoscopeApplyToWebGL ||
+                                                        window.visualizer.kaleidoscopeApplyToFluidDynamics ||
+                                                        window.visualizer.kaleidoscopeApplyToNebula ||
+                                                        Object.keys(window.visualizer).some(key => 
+                                                            key.startsWith('kaleidoscopeApplyTo') && 
+                                                            key !== stateVarName && 
+                                                            window.visualizer[key]
+                                                        );
+                                if (!anyKaleidoscopeOn && window.visualizer.kaleidoscopeEnabled) {
+                                    window.visualizer.kaleidoscopeEnabled = false;
+                                    window.visualizer.stopKaleidoscopeAnimation();
+                                }
+                            }
+                        } else {
+                            console.error(`🔮 ERROR: window.visualizer not available`);
+                        }
+                    });
+                    console.log(`🔮 Setup header event handler for plugin "${plugin.pluginName}"`);
+                } else {
+                    console.error(`🔮 ERROR: Header toggle button not found with ID "${headerToggleId}"`);
+                }
+                
+                console.log(`🔮 Setup synchronized event handlers for plugin "${plugin.pluginName}" kaleidoscope toggles`);
+            }
         }
         
         // Initialize immediately
@@ -160,25 +475,25 @@
         // Initialize plugin autoloader (will start after app loads)
         window.pluginAutoLoader = new PluginAutoLoader();
     </script>
-        <script src="js/plugins/core/plugin-mixer-integration.js?v=1761858500&cache=bust&t=1761858500"></script>
-    <script src="js/plugins/blobs-plugin.js?v=1761855200&cache=bust&t=1761855200"></script>
-    <script src="js/metadata-parser.js"></script>
-    <script src="js/spectrum-analyzer.js?v=1761853400"></script>
-    <script src="js/visualizations.js"></script>
-    <script src="js/ai-autopilot.js"></script>
-    <script src="js/audio-system.js?v=1761851000"></script>
-    <script src="js/freque_webgl.js?v=1761851000"></script>
-    <script src="js/fluid-dynamics-pavel.js?v=1761853400"></script>
-    <script src="js/ui-controls.js"></script>
-    <script src="js/playlist-manager.js"></script>
-    <script src="js/theme-system.js"></script>
-    <script src="js/multi-display-manager.js?v=1761855000"></script>
-    <script src="js/nebula-visualization.js?v=1761851000"></script>
+        <script src="js/plugins/core/plugin-mixer-integration.js?v=1762203500"></script>
+    <script src="js/plugins/blobs-plugin.js?v=1762203200"></script>
+    <script src="js/metadata-parser.js?v=1762203000"></script>
+    <script src="js/spectrum-analyzer.js?v=1762203000"></script>
+    <script src="js/visualizations.js?v=1762203000"></script>
+    <script src="js/ai-autopilot.js?v=1762203000"></script>
+    <script src="js/audio-system.js?v=1762203000"></script>
+    <script src="js/freque_webgl.js?v=1762203000"></script>
+    <script src="js/fluid-dynamics-pavel.js?v=1762203000"></script>
+    <script src="js/ui-controls.js?v=1762203000"></script>
+    <script src="js/playlist-manager.js?v=1762203000"></script>
+    <script src="js/theme-system.js?v=1762203000"></script>
+    <script src="js/multi-display-manager.js?v=1762203000"></script>
+    <script src="js/nebula-visualization.js?v=1762203000"></script>
     <!-- Official AudioMotion Analyzer v4.5.1 (Local) -->
-    <script src="js/audiomotion-analyzer.js"></script>
+    <script src="js/audiomotion-analyzer.js?v=1762203000"></script>
     
     
-    <script src="js/main.js?v=1761853300"></script>
+    <script src="js/main.js?v=1762204100"></script>
 </head>
 <body>
 <header class="header">
@@ -266,7 +581,7 @@
                         <button class="btn-toggle" id="headerKaleidoscopeInfiniteZoomBtn">Infinite Zoom: Off</button>
                         <button class="btn-toggle" id="headerKaleidoscopeWebGLBtn">WebGL: Off</button>
                         <button class="btn-toggle" id="headerKaleidoscopeFluidBtn">Fluid: Off</button>
-                        <button class="btn-toggle" id="headerKaleidoscopeNebulaBtn">Nebula: Off</button>
+                       
                     </div>
                     <div class="button-container">
                         <button class="btn-toggle" id="headerKaleidoscopeShapeBtn">Shape: Triangle</button>
@@ -3313,10 +3628,7 @@
                         <span class="toggle-text">OFF</span>
                         <div class="toggle-label">Fluid</div>
                     </button>
-                    <button class="btn-toggle" id="mixerKaleidoscopeNebulaToggle" title="Nebula">
-                        <span class="toggle-text">OFF</span>
-                        <div class="toggle-label">Nebula</div>
-                    </button>
+                    <!-- DEPRECATED: Nebula toggle removed - now handled by plugin system -->
                 </div>
                 
                 <div class="vertical-slider-section">

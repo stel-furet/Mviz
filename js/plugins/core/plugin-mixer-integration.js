@@ -373,7 +373,7 @@ class PluginMixerIntegration {
      * Add plugin controls to the channel strip
      */
     addPluginControls(pluginName, controls) {
-        console.log(`🎛️ DEBUG: Adding controls for plugin "${pluginName}":`, controls);
+        // Plugin controls debug disabled
         const channelStrip = this.channelStrips.get(pluginName);
         if (!channelStrip) {
             console.error(`🎛️ DEBUG: No channel strip found for plugin "${pluginName}"`);
@@ -391,37 +391,29 @@ class PluginMixerIntegration {
         
         // Add each control
         controls.forEach((controlConfig, controlId) => {
-            console.log(`🎛️ DEBUG: Creating control "${controlId}":`, controlConfig);
+            // Control creation debug disabled
             const controlElement = this.createControlElement(controlId, controlConfig);
             if (controlElement) {
                 controlsContainer.appendChild(controlElement);
-                console.log(`🎛️ DEBUG: Added control "${controlId}" to container`);
+                // Control added debug disabled
             } else {
-                console.error(`🎛️ DEBUG: Failed to create control element for "${controlId}"`);
+                // Control creation error debug disabled
             }
         });
         
-        console.log(`🎛️ DEBUG: Finished adding ${controls.size} controls for "${pluginName}"`);
+        // Controls finished debug disabled
         
-        // DEBUG: Check DOM state after adding controls
-        console.log(`🎛️ DOM DEBUG: Controls container for "${pluginName}":`, controlsContainer);
-        console.log(`🎛️ DOM DEBUG: Container innerHTML length:`, controlsContainer.innerHTML.length);
-        console.log(`🎛️ DOM DEBUG: Container children count:`, controlsContainer.children.length);
-        console.log(`🎛️ DOM DEBUG: Container display style:`, getComputedStyle(controlsContainer).display);
-        console.log(`🎛️ DOM DEBUG: Container height:`, getComputedStyle(controlsContainer).height);
-        console.log(`🎛️ DOM DEBUG: Container visibility:`, getComputedStyle(controlsContainer).visibility);
+        // DOM debug disabled
         
         // Check if controls section is collapsed and auto-expand it
         const controlsSection = channelStrip.querySelector('.channel-controls-section');
         if (controlsSection) {
             const header = controlsSection.querySelector('.plugin-controls-header');
-            console.log(`🎛️ DOM DEBUG: Controls section exists, header:`, header);
-            console.log(`🎛️ DOM DEBUG: Controls section classes:`, controlsSection.className);
-            console.log(`🎛️ DOM DEBUG: Controls container classes:`, controlsContainer.className);
+            // Controls section debug disabled
             
             // Auto-expand the controls section to show the controls
             if (!controlsContainer.classList.contains('expanded')) {
-                console.log(`🎛️ DOM DEBUG: Auto-expanding controls section for "${pluginName}"`);
+                // Auto-expand debug disabled
                 controlsContainer.classList.add('expanded');
                 
                 // Also update the header indicator if it exists
@@ -792,9 +784,8 @@ class PluginMixerIntegration {
      * Debug method to show initial z-index values on app launch
      */
     debugInitialZIndexes() {
-        console.log('🔍 Z-INDEX DEBUG: Initial channel z-index values on app launch:');
-        console.log('🔍 DEBUG TIMING: This debug runs 100ms after setupDragDrop()');
-        console.log('🔍 DEBUG TIMING: localStorage should have loaded 50ms ago');
+        // Z-index initial debug completely disabled
+        return;
         
         // Check if localStorage was loaded
         const savedData = localStorage.getItem('freque-channel-order');
@@ -1038,20 +1029,15 @@ class PluginMixerIntegration {
             }
         });
         
-        // Debug: Show updated z-index values after drag-drop
-        this.debugUpdatedZIndexes();
+        // Z-index values updated after drag-drop
     }
     
     /**
      * Debug method to show updated z-index values after drag-drop
      */
     debugUpdatedZIndexes() {
-        console.log('🔄 Z-INDEX DEBUG: Updated z-index values after drag-drop:');
-        
-        const mixerChannels = document.querySelector('.mixer-channels');
-        if (!mixerChannels) return;
-        
-        const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
+        // Z-index debug completely disabled
+        return;
         
         channelStrips.forEach((strip, index) => {
             const channelType = strip.getAttribute('data-channel');

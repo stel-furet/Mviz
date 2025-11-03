@@ -1071,10 +1071,7 @@ class NebulaPlugin extends FrequePluginBase {
     onRender(deltaTime, timestamp, sharedAudioData) {
         // Delegate to wrapped nebula visualization (minimal changes)
         if (this.nebulaViz && this.nebulaViz.update && this.nebulaViz.render) {
-            // Only log every 60 frames to avoid spam
-            if (this.frameCount % 60 === 0) {
-                console.log('🌌 NEBULA PLUGIN: Rendering frame', this.frameCount, 'canvas visible:', this.canvas.style.display !== 'none');
-            }
+            // Frame rendering debug removed
             
             // Call update first (handles time increment and pulsar pulsing)
             this.nebulaViz.update(sharedAudioData);

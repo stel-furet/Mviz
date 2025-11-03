@@ -8,6 +8,9 @@
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
 - **Audio Priority System Bug**: When video from file and playlist audio are both playing, visualizations are incorrectly driven by video file audio instead of playlist audio. Simple fix needed: If playlist play buttons are toggled on, video from file should be muted. When playlist is toggled off, video from file should stay muted. Live audio input should mute everything else and take priority.
+- **Plugin Kaleidoscope Integration Broken**: ✅ FIXED - Implemented automatic plugin integration with kaleidoscope system. All current and future plugins now automatically get kaleidoscope toggles in mixer channel and display capture sections. Plugin canvases are properly captured and composited by kaleidoscope using shouldDrawSeparately logic. System works with record, live display, and kaleidoscope capture.
+- **Fluidity Missing Drag Handle**: Fluidity needs drag handle and integration into reorder and z-index system as a native visualization
+- **Debug Code Cleanup Required**: Remove all debug code completely (not commented) and remove all previously commented code throughout entire codebase
 
 ### Medium Priority  
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues
