@@ -320,8 +320,8 @@ class PluginMixerIntegration {
             isDragging = false;
         };
         
-        track.addEventListener('touchstart', handleTouchStart);
-        thumb.addEventListener('touchstart', handleTouchStart);
+        track.addEventListener('touchstart', handleTouchStart, { passive: false });
+        thumb.addEventListener('touchstart', handleTouchStart, { passive: false });
         document.addEventListener('touchmove', handleTouchMove);
         document.addEventListener('touchend', handleTouchEnd);
         
@@ -442,7 +442,7 @@ class PluginMixerIntegration {
         const channelStrip = this.channelStrips.get(pluginName);
         if (!channelStrip) return;
         
-        const presetsContainer = channelStrip.querySelector('.preset-buttons-container');
+        const presetsContainer = channelStrip.querySelector('.plugin-presets-container');
         if (!presetsContainer) return;
         
         // Clear existing presets
@@ -450,16 +450,65 @@ class PluginMixerIntegration {
         
         // Add each preset
         presets.forEach((presetConfig, presetId) => {
-            const presetButton = document.createElement('button');
-            presetButton.className = 'btn-preset';
-            presetButton.textContent = presetConfig.name || presetId;
-            presetButton.addEventListener('click', () => {
-                const plugin = window.pluginManager?.getPlugin(pluginName);
-                if (plugin && plugin.applyPreset) {
-                    plugin.applyPreset(presetId);
+            // Handle dropdown presets (like preset selector)
+            if (presetConfig.type === 'dropdown') {
+                const controlGroup = document.createElement('div');
+                controlGroup.className = 'control-mini-group';
+                
+                const select = document.createElement('select');
+                select.className = 'dropdown-selector-mixer';
+                select.setAttribute('data-control', presetId);
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = presetConfig.label || 'Load Preset...';
+                select.appendChild(defaultOption);
+                
+                // Add preset options
+                if (presetConfig.options) {
+                    presetConfig.options.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value || option;
+                        optionElement.textContent = option.label || option;
+                        select.appendChild(optionElement);
+                    });
                 }
-            });
-            presetsContainer.appendChild(presetButton);
+                
+                // Add change event listener
+                if (presetConfig.onChange) {
+                    select.addEventListener('change', (e) => {
+                        if (e.target.value) {
+                            presetConfig.onChange(e.target.value);
+                            // Reset to default after selection
+                            e.target.value = '';
+                        }
+                    });
+                }
+                
+                controlGroup.appendChild(select);
+                presetsContainer.appendChild(controlGroup);
+            } else {
+                // Handle regular preset buttons
+                const presetButton = document.createElement('button');
+                presetButton.className = 'btn-preset';
+                presetButton.textContent = presetConfig.label || presetConfig.name || presetId;
+                presetButton.setAttribute('data-control', presetId);
+                
+                // Use onClick from preset config if available, otherwise try applyPreset method
+                if (presetConfig.onClick) {
+                    presetButton.addEventListener('click', presetConfig.onClick);
+                } else {
+                    presetButton.addEventListener('click', () => {
+                        const plugin = window.pluginManager?.getPlugin(pluginName);
+                        if (plugin && plugin.applyPreset) {
+                            plugin.applyPreset(presetId);
+                        }
+                    });
+                }
+                
+                presetsContainer.appendChild(presetButton);
+            }
         });
     }
     
@@ -510,6 +559,7 @@ class PluginMixerIntegration {
     createSliderControl(controlId, config) {
         const controlGroup = document.createElement('div');
         controlGroup.className = 'control-mini-group';
+        controlGroup.setAttribute('data-control', controlId);  // Add data-control attribute for selector
         
         // Header with label and value
         const header = document.createElement('div');
@@ -564,6 +614,7 @@ class PluginMixerIntegration {
         const button = document.createElement('button');
         button.className = config.className || 'btn-preset';
         button.textContent = config.label || controlId;
+        button.setAttribute('data-control', controlId);  // Add data-control attribute for selector
         
         if (config.onClick) {
             button.addEventListener('click', config.onClick);

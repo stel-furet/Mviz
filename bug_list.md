@@ -6,6 +6,7 @@
 - **Z-Index Values Incorrect**: When IZ is below AM in mixer, it still appears on top - z-index system not working properly
 - **AM + Fluidity Display Flicker**: Using AudioMotion and Fluidity together causes external display to flicker
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
+- **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
 
 ### Medium Priority  
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues

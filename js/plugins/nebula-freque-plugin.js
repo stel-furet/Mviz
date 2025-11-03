@@ -150,7 +150,7 @@ class NebulaPlugin extends FrequePluginBase {
         this.addPreset('presetSelector', { 
             type: 'dropdown', 
             label: 'Load Preset...', 
-            options: this.getStoredPresets(),
+            options: this.getStoredPresetsForDropdown(),
             onChange: (value) => this.loadPreset(value)
         });
         this.addPreset('save', { 
@@ -219,13 +219,46 @@ class NebulaPlugin extends FrequePluginBase {
             wrapperClass: 'btn-primary-mixer',
             onClick: () => {
                 this.morphingEnabled = !this.morphingEnabled;
+                console.log(`🌌 NEBULA PLUGIN: Morphing toggled to: ${this.morphingEnabled}`);
+                
+                // Update nebula setting
                 this.updateNebulaSetting('morphingMode', this.morphingEnabled);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="morphingToggle"]`);
-                if (button) {
-                    button.textContent = `Morphing: ${this.morphingEnabled ? 'ON' : 'OFF'}`;
+                
+                // Update button text - use specific channel strip selector
+                const channelStrip = document.querySelector(`.channel-strip[data-plugin="nebula"]`);
+                if (channelStrip) {
+                    const button = channelStrip.querySelector(`[data-control="morphingToggle"]`);
+                    if (button) {
+                        button.textContent = `Morphing: ${this.morphingEnabled ? 'ON' : 'OFF'}`;
+                    } else {
+                        console.error(`🌌 NEBULA PLUGIN: Morphing button not found in channel strip`);
+                    }
+                } else {
+                    console.error(`🌌 NEBULA PLUGIN: Channel strip not found`);
                 }
             }
+        });
+
+        // Preset Management Buttons (part of Basic Controls in native system)
+        this.addControl('savePreset', {
+            type: 'button',
+            label: 'Save',
+            wrapperClass: 'btn-secondary',
+            onClick: () => this.savePreset()
+        });
+
+        this.addControl('exportPresets', {
+            type: 'button',
+            label: 'Export',
+            wrapperClass: 'btn-secondary',
+            onClick: () => this.exportPresets()
+        });
+
+        this.addControl('importPresets', {
+            type: 'button',
+            label: 'Import',
+            wrapperClass: 'btn-secondary',
+            onClick: () => this.importPresets()
         });
         
         this.addControl('morphingSpeed', {
@@ -621,14 +654,17 @@ class NebulaPlugin extends FrequePluginBase {
         
         if (presets[presetName]) {
             const preset = presets[presetName];
+            console.log(`🌌 NEBULA PLUGIN: Applying color preset "${presetName}":`, preset);
+            
+            // Update plugin properties
             this.hueShift = preset.hueShift;
             this.saturation = preset.saturation;
             this.brightness = preset.brightness;
             
-            // Update nebula visualization
-            this.nebulaViz.settings.hueShift = this.hueShift;
-            this.nebulaViz.settings.saturation = this.saturation;
-            this.nebulaViz.settings.brightness = this.brightness;
+            // Update nebula visualization using proper updateSetting method
+            this.updateNebulaSetting('hueShift', this.hueShift);
+            this.updateNebulaSetting('saturation', this.saturation);
+            this.updateNebulaSetting('brightness', this.brightness);
             
             // Update UI controls to reflect new values
             this.updateControlValues();
@@ -639,21 +675,60 @@ class NebulaPlugin extends FrequePluginBase {
         // Get saved presets from localStorage
         try {
             const saved = localStorage.getItem('nebulaPresets');
-            return saved ? JSON.parse(saved) : [];
+            return saved ? JSON.parse(saved) : {};
         } catch (error) {
             console.error('Error loading nebula presets:', error);
-            return [];
+            return {};
         }
+    }
+    
+    getStoredPresetsForDropdown() {
+        // Get presets formatted for dropdown options
+        const presets = this.getStoredPresets();
+        return Object.keys(presets).map(name => ({
+            value: name,
+            label: name
+        }));
     }
     
     saveCurrentPreset() {
         // Save current settings as preset
         const presetName = prompt('Enter preset name:');
-        if (presetName) {
+        if (presetName && presetName.trim()) {
             const currentSettings = this.getCurrentSettings();
             const presets = this.getStoredPresets();
-            presets[presetName] = currentSettings;
+            presets[presetName.trim()] = currentSettings;
             localStorage.setItem('nebulaPresets', JSON.stringify(presets));
+            
+            console.log(`🌌 NEBULA PLUGIN: Saved preset "${presetName}" to localStorage`);
+            
+            // Update the dropdown with new preset
+            this.updatePresetDropdown();
+            
+            alert(`Preset "${presetName}" saved successfully!`);
+        }
+    }
+    
+    updatePresetDropdown() {
+        // Update the preset selector dropdown with current presets
+        const channelStrip = document.querySelector(`.channel-strip[data-plugin="nebula"]`);
+        if (channelStrip) {
+            const dropdown = channelStrip.querySelector('[data-control="presetSelector"]');
+            if (dropdown) {
+                // Clear existing options except the first one
+                const firstOption = dropdown.firstElementChild;
+                dropdown.innerHTML = '';
+                dropdown.appendChild(firstOption);
+                
+                // Add current presets
+                const presets = this.getStoredPresetsForDropdown();
+                presets.forEach(preset => {
+                    const option = document.createElement('option');
+                    option.value = preset.value;
+                    option.textContent = preset.label;
+                    dropdown.appendChild(option);
+                });
+            }
         }
     }
     
@@ -683,6 +758,7 @@ class NebulaPlugin extends FrequePluginBase {
                     try {
                         const presets = JSON.parse(e.target.result);
                         localStorage.setItem('nebulaPresets', JSON.stringify(presets));
+                        this.updatePresetDropdown();
                         alert('Presets imported successfully!');
                     } catch (error) {
                         alert('Error importing presets: ' + error.message);
@@ -741,13 +817,24 @@ class NebulaPlugin extends FrequePluginBase {
         const presets = this.getStoredPresets();
         if (presets[presetName]) {
             const preset = presets[presetName];
+            console.log(`🌌 NEBULA PLUGIN: Loading preset "${presetName}":`, preset);
+            
+            // Update plugin properties
             Object.assign(this, preset);
             
-            // Update nebula visualization
-            Object.assign(this.nebulaViz.settings, preset);
+            // Update nebula visualization using proper updateSetting method for each property
+            Object.keys(preset).forEach(property => {
+                if (this.nebulaViz && this.nebulaViz.updateSetting) {
+                    this.updateNebulaSetting(property, preset[property]);
+                }
+            });
             
             // Update UI controls
             this.updateControlValues();
+            
+            console.log(`🌌 NEBULA PLUGIN: Preset "${presetName}" loaded successfully`);
+        } else {
+            console.error(`🌌 NEBULA PLUGIN: Preset "${presetName}" not found`);
         }
     }
     
@@ -804,6 +891,9 @@ class NebulaPlugin extends FrequePluginBase {
                 this.nebulaViz.enabled = true;
                 console.log('🌌 NEBULA PLUGIN: Nebula visualization enabled');
             }
+            
+            // Initialize preset dropdown with any existing presets
+            setTimeout(() => this.updatePresetDropdown(), 100);
             
         } catch (error) {
             console.error('🌌 NEBULA PLUGIN: Initialization error:', error);
@@ -870,14 +960,19 @@ class NebulaPlugin extends FrequePluginBase {
     
     onRender(deltaTime, timestamp, sharedAudioData) {
         // Delegate to wrapped nebula visualization (minimal changes)
-        if (this.nebulaViz && this.nebulaViz.render) {
+        if (this.nebulaViz && this.nebulaViz.update && this.nebulaViz.render) {
             // Only log every 60 frames to avoid spam
             if (this.frameCount % 60 === 0) {
                 console.log('🌌 NEBULA PLUGIN: Rendering frame', this.frameCount, 'canvas visible:', this.canvas.style.display !== 'none');
             }
+            
+            // Call update first (handles time increment and pulsar pulsing)
+            this.nebulaViz.update(sharedAudioData);
+            
+            // Then render the frame
             this.nebulaViz.render();
         } else {
-            console.log('🌌 NEBULA PLUGIN: Cannot render - nebulaViz not ready:', !!this.nebulaViz, 'render method:', typeof this.nebulaViz?.render);
+            console.log('🌌 NEBULA PLUGIN: Cannot render - nebulaViz not ready:', !!this.nebulaViz, 'update method:', typeof this.nebulaViz?.update, 'render method:', typeof this.nebulaViz?.render);
         }
         
         // Increment frame counter
