@@ -7,6 +7,7 @@
 - **AM + Fluidity Display Flicker**: Using AudioMotion and Fluidity together causes external display to flicker
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
+- **Audio Priority System Bug**: When video from file and playlist audio are both playing, visualizations are incorrectly driven by video file audio instead of playlist audio. Simple fix needed: If playlist play buttons are toggled on, video from file should be muted. When playlist is toggled off, video from file should stay muted. Live audio input should mute everything else and take priority.
 
 ### Medium Priority  
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues

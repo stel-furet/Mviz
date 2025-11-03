@@ -20,9 +20,19 @@ class NebulaPlugin extends FrequePluginBase {
         // Initialize plugin-specific properties
         this.initializeNebulaProperties();
         
+        // Setup input section controls (channel-input-section)
+        this.setupNebulaInputControls();
+        
         // Setup all 41 controls in proper containers
         this.setupNebulaControls();
         this.setupNebulaPresets();
+        
+        // Update input controls after a delay to ensure UI is ready
+        setTimeout(() => {
+            if (this.inputControls && window.updatePluginInputControls) {
+                window.updatePluginInputControls(this.pluginName, this.inputControls);
+            }
+        }, 500);
     }
     
     initializeNebulaProperties() {
@@ -31,6 +41,7 @@ class NebulaPlugin extends FrequePluginBase {
         this.cameraDistance = 80;
         this.starCount = 1000;
         this.bloomEnabled = true;
+        this.knockoutBackground = true;
         this.morphingEnabled = false;
         this.morphingSpeed = 1.0;
         
@@ -70,6 +81,14 @@ class NebulaPlugin extends FrequePluginBase {
         this.flySpeed = 0.25;
     }
     
+    // Helper method to add controls to the input section
+    addInputControl(controlId, controlConfig) {
+        if (!this.inputControls) {
+            this.inputControls = new Map();
+        }
+        this.inputControls.set(controlId, controlConfig);
+    }
+
     // Helper method to safely update nebula settings
     updateNebulaSetting(property, value, nested = null) {
         if (this.nebulaViz && this.nebulaViz.updateSetting) {
@@ -116,6 +135,24 @@ class NebulaPlugin extends FrequePluginBase {
             type: 'section-header',
             label: title,
             isHeader: true
+        });
+    }
+
+    // Setup input section controls (channel-input-section)
+    setupNebulaInputControls() {
+        this.addInputControl('knockoutBackgroundToggle', {
+            type: 'button',
+            label: 'Background: OFF',
+            wrapperClass: 'btn-toggle',
+            onClick: () => {
+                this.knockoutBackground = !this.knockoutBackground;
+                this.updateNebulaSetting('knockoutBackground', this.knockoutBackground);
+                // Update button text (inverted logic: knockoutBackground=true means Background:OFF)
+                const button = document.querySelector(`[data-plugin="nebula"] .channel-input-section [data-control="knockoutBackgroundToggle"]`);
+                if (button) {
+                    button.textContent = `Background: ${this.knockoutBackground ? 'OFF' : 'ON'}`;
+                }
+            }
         });
     }
     
@@ -169,6 +206,65 @@ class NebulaPlugin extends FrequePluginBase {
     
     setupNebulaControls() {
         // Add section headers for control groups
+        this.addControlSectionHeader('Camera Controls');
+        
+        // Camera Controls (4 controls)
+        this.addControl('cameraOrbitToggle', {
+            type: 'button',
+            label: 'Orbit: OFF',
+            wrapperClass: 'btn-primary-mixer',
+            onClick: () => {
+                this.cameraOrbit = !this.cameraOrbit;
+                this.updateNebulaSetting('cameraOrbit', this.cameraOrbit);
+                // Update button text
+                const button = document.querySelector(`[data-plugin="nebula"] [data-control="cameraOrbitToggle"]`);
+                if (button) {
+                    button.textContent = `Orbit: ${this.cameraOrbit ? 'ON' : 'OFF'}`;
+                }
+            }
+        });
+        
+        this.addControl('orbitSpeed', {
+            type: 'slider',
+            label: 'Orbit Speed',
+            min: 0,
+            max: 10,
+            step: 0.1,
+            value: this.orbitSpeed,
+            onChange: (value) => {
+                this.orbitSpeed = value;
+                this.updateNebulaSetting('orbitSpeed', value);
+            }
+        });
+        
+        this.addControl('flyThroughToggle', {
+            type: 'button',
+            label: 'Fly Through: OFF',
+            wrapperClass: 'btn-primary-mixer',
+            onClick: () => {
+                this.flyThrough = !this.flyThrough;
+                this.updateNebulaSetting('flyThrough', this.flyThrough);
+                // Update button text
+                const button = document.querySelector(`[data-plugin="nebula"] [data-control="flyThroughToggle"]`);
+                if (button) {
+                    button.textContent = `Fly Through: ${this.flyThrough ? 'ON' : 'OFF'}`;
+                }
+            }
+        });
+        
+        this.addControl('flySpeed', {
+            type: 'slider',
+            label: 'Fly Speed',
+            min: 0.05,
+            max: 3.0,
+            step: 0.05,
+            value: this.flySpeed,
+            onChange: (value) => {
+                this.flySpeed = value;
+                this.updateNebulaSetting('flySpeed', value);
+            }
+        });
+        
         this.addControlSectionHeader('Basic Controls');
         
         // Basic Controls (5 controls - opacity auto-generated by plugin system)
@@ -905,11 +1001,19 @@ class NebulaPlugin extends FrequePluginBase {
         
         console.log('🌌 NEBULA PLUGIN: Applying initial settings');
         
-        // Apply all plugin properties to nebula visualization
+        // Apply all plugin properties to nebula visualization using updateSetting for proper initialization
         this.nebulaViz.settings.overallOpacity = this.overallOpacity;
         this.nebulaViz.settings.cameraDistance = this.cameraDistance;
         this.nebulaViz.settings.starCount = this.starCount;
         this.nebulaViz.settings.bloom = this.bloomEnabled;
+        
+        // Use updateSetting for knockoutBackground to trigger applyBackgroundKnockout()
+        if (this.nebulaViz.updateSetting) {
+            this.nebulaViz.updateSetting('knockoutBackground', this.knockoutBackground);
+        } else {
+            this.nebulaViz.settings.knockoutBackground = this.knockoutBackground;
+        }
+        
         this.nebulaViz.settings.morphingMode = this.morphingEnabled;
         this.nebulaViz.settings.morphingSpeed = this.morphingSpeed;
         
@@ -934,6 +1038,12 @@ class NebulaPlugin extends FrequePluginBase {
         // Audio reactive settings
         this.nebulaViz.settings.audioReactive = this.audioReactive;
         this.nebulaViz.settings.audioSensitivity = this.audioSensitivity;
+        
+        // Camera settings
+        this.nebulaViz.settings.cameraOrbit = this.cameraOrbit;
+        this.nebulaViz.settings.orbitSpeed = this.orbitSpeed;
+        this.nebulaViz.settings.flyThrough = this.flyThrough;
+        this.nebulaViz.settings.flySpeed = this.flySpeed;
         this.nebulaViz.settings.audioPresets.color = this.audioColor;
         this.nebulaViz.settings.audioPresets.rotation = this.audioRotation;
         this.nebulaViz.settings.audioPresets.distance = this.audioDistance;

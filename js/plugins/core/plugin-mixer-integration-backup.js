@@ -6,7 +6,6 @@
 
 class PluginMixerIntegration {
     constructor() {
-        // console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853300 LOADED - FIXED VIDEO Z-INDEX');
         this.channelStrips = new Map();
         this.dragDropEnabled = false;
         this.currentDragElement = null;
@@ -373,16 +372,16 @@ class PluginMixerIntegration {
      * Add plugin controls to the channel strip
      */
     addPluginControls(pluginName, controls) {
-        console.log(`🎛️ DEBUG: Adding controls for plugin "${pluginName}":`, controls);
+        console.log(`🔧 CONTROLS DEBUG: Processing ${controls.size} controls for "${pluginName}"`);
         const channelStrip = this.channelStrips.get(pluginName);
         if (!channelStrip) {
-            console.error(`🎛️ DEBUG: No channel strip found for plugin "${pluginName}"`);
+            console.error(`🔧 CONTROLS DEBUG: No channel strip found for "${pluginName}"`);
             return;
         }
         
         const controlsContainer = channelStrip.querySelector('.plugin-controls-container');
         if (!controlsContainer) {
-            console.error(`🎛️ DEBUG: No controls container found for plugin "${pluginName}"`);
+            console.error(`🔧 CONTROLS DEBUG: No controls container found for "${pluginName}"`);
             return;
         }
         
@@ -391,47 +390,42 @@ class PluginMixerIntegration {
         
         // Add each control
         controls.forEach((controlConfig, controlId) => {
-            console.log(`🎛️ DEBUG: Creating control "${controlId}":`, controlConfig);
             const controlElement = this.createControlElement(controlId, controlConfig);
             if (controlElement) {
                 controlsContainer.appendChild(controlElement);
-                console.log(`🎛️ DEBUG: Added control "${controlId}" to container`);
             } else {
-                console.error(`🎛️ DEBUG: Failed to create control element for "${controlId}"`);
+                console.error(`🔧 CONTROLS DEBUG: Failed to create control "${controlId}"`);
             }
         });
         
-        console.log(`🎛️ DEBUG: Finished adding ${controls.size} controls for "${pluginName}"`);
+        console.log(`🔧 CONTROLS DEBUG: Added ${controls.size} controls to DOM for "${pluginName}"`);
+        console.log(`🔧 CONTROLS DEBUG: Container innerHTML length: ${controlsContainer.innerHTML.length}`);
+        console.log(`🔧 CONTROLS DEBUG: Container children count: ${controlsContainer.children.length}`);
         
-        // DEBUG: Check DOM state after adding controls
-        console.log(`🎛️ DOM DEBUG: Controls container for "${pluginName}":`, controlsContainer);
-        console.log(`🎛️ DOM DEBUG: Container innerHTML length:`, controlsContainer.innerHTML.length);
-        console.log(`🎛️ DOM DEBUG: Container children count:`, controlsContainer.children.length);
-        console.log(`🎛️ DOM DEBUG: Container display style:`, getComputedStyle(controlsContainer).display);
-        console.log(`🎛️ DOM DEBUG: Container height:`, getComputedStyle(controlsContainer).height);
-        console.log(`🎛️ DOM DEBUG: Container visibility:`, getComputedStyle(controlsContainer).visibility);
+        // Force the controls to be visible by removing any hiding classes and setting display
+        controlsContainer.style.display = 'block';
+        controlsContainer.style.visibility = 'visible';
+        controlsContainer.style.height = 'auto';
+        controlsContainer.classList.add('expanded');
         
-        // Check if controls section is collapsed and auto-expand it
+        console.log(`🔧 CONTROLS DEBUG: Forced controls visibility for "${pluginName}"`);
+        
+        // Check if controls section exists
         const controlsSection = channelStrip.querySelector('.channel-controls-section');
         if (controlsSection) {
-            const header = controlsSection.querySelector('.plugin-controls-header');
-            console.log(`🎛️ DOM DEBUG: Controls section exists, header:`, header);
-            console.log(`🎛️ DOM DEBUG: Controls section classes:`, controlsSection.className);
-            console.log(`🎛️ DOM DEBUG: Controls container classes:`, controlsContainer.className);
+            console.log(`🔧 CONTROLS DEBUG: Found controls section for "${pluginName}"`);
             
-            // Auto-expand the controls section to show the controls
-            if (!controlsContainer.classList.contains('expanded')) {
-                console.log(`🎛️ DOM DEBUG: Auto-expanding controls section for "${pluginName}"`);
-                controlsContainer.classList.add('expanded');
-                
-                // Also update the header indicator if it exists
-                if (header) {
-                    const indicator = header.querySelector('.collapse-indicator');
-                    if (indicator) {
-                        indicator.style.transform = 'rotate(90deg)';
-                    }
+            // Force expand the entire section
+            controlsSection.style.display = 'block';
+            const header = controlsSection.querySelector('.plugin-controls-header');
+            if (header) {
+                const indicator = header.querySelector('.collapse-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'rotate(90deg)';
                 }
             }
+        } else {
+            console.error(`🔧 CONTROLS DEBUG: No controls section found for "${pluginName}"`);
         }
     }
     
@@ -575,6 +569,16 @@ class PluginMixerIntegration {
         const header = document.createElement('div');
         header.className = 'control-section-header';
         header.textContent = config.label;
+        header.style.cssText = `
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            margin: 8px 0 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        `;
         return header;
     }
     
