@@ -394,7 +394,8 @@ class NebulaVisualization {
         try {
             // Scene
             this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0x000000);
+            // Start with null background if knockout is enabled, black otherwise
+            this.scene.background = this.settings.knockoutBackground ? null : new THREE.Color(0x000000);
             
             // Camera
             this.camera = new THREE.PerspectiveCamera(
@@ -1539,16 +1540,21 @@ class NebulaVisualization {
     }
     
     applyBackgroundKnockout() {
-        if (!this.canvas) return;
+        if (!this.canvas || !this.scene) return;
         
         if (this.settings.knockoutBackground) {
-            // Apply blend mode to make dark areas transparent
+            // Make background actually transparent at the pixel level
+            // Set scene background to null so the transparent clear color shows through
+            this.scene.background = null;
+            // Apply CSS blend mode for additional effect on page
             this.canvas.style.mixBlendMode = 'screen';
-            // console.log('🌌 Nebula background knockout enabled (screen blend mode)');
+            console.log('🌌 Nebula background knockout enabled (transparent scene + screen blend mode)');
         } else {
+            // Render with solid black background
+            this.scene.background = new THREE.Color(0x000000);
             // Reset to normal blending
             this.canvas.style.mixBlendMode = 'normal';
-            console.log('🌌 Nebula background knockout disabled (normal blend mode)');
+            console.log('🌌 Nebula background knockout disabled (black background + normal blend mode)');
         }
     }
     

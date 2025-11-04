@@ -21575,6 +21575,16 @@ https://rogueamoeba.com/loopback/
         if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
             this.webglVisualization.canvas.style.visibility = 'visible';
         }
+        
+        // Show ALL active plugin canvases when kaleidoscope is stopped (matches native viz behavior)
+        if (window.pluginManager) {
+            const allPlugins = window.pluginManager.getAllPlugins();
+            allPlugins.forEach(plugin => {
+                if (plugin.canvas && plugin.isActive) {
+                    plugin.canvas.style.visibility = 'visible';
+                }
+            });
+        }
 
         // Restore video opacity if needed
         if (this.videoElement && this.videoMode === 'camera') {
@@ -21970,12 +21980,11 @@ https://rogueamoeba.com/loopback/
                 this.webglVisualization.canvas.style.visibility = 'hidden';
             }
             
-            // Hide plugin canvases when kaleidoscope is active and applying to them
+            // Hide ALL active plugin canvases when kaleidoscope is active (matches native viz behavior)
             if (window.pluginManager) {
                 const allPlugins = window.pluginManager.getAllPlugins();
                 allPlugins.forEach(plugin => {
-                    const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
-                    if (this[stateVarName] && plugin.canvas && plugin.isActive) {
+                    if (plugin.canvas && plugin.isActive) {
                         plugin.canvas.style.visibility = 'hidden';
                     }
                 });
@@ -22095,7 +22104,18 @@ https://rogueamoeba.com/loopback/
                     // Add dimension validation
                     if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
                         console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (EVEN)`);
-                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        
+                        // Save context for opacity/blend mode
+                        this.kaleidoscopeVizCtx.save();
+                        
+                        // Apply plugin opacity (already 0-1 from plugin.opacity)
+                        if (plugin.opacity !== undefined) {
+                            this.kaleidoscopeVizCtx.globalAlpha *= plugin.opacity; // Multiply with ring opacity
+                        }
+                        
+                        this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        
+                        this.kaleidoscopeVizCtx.restore();
                     } else {
                         console.warn(`🔮 ❌ Plugin "${plugin.pluginName}" canvas has invalid dimensions:`, canvasSize);
                     }
@@ -22152,7 +22172,18 @@ https://rogueamoeba.com/loopback/
                     // Add dimension validation
                     if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
                         console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (ODD - mirrored)`);
-                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        
+                        // Save context for opacity/blend mode
+                        this.kaleidoscopeVizCtx.save();
+                        
+                        // Apply plugin opacity (already 0-1 from plugin.opacity)
+                        if (plugin.opacity !== undefined) {
+                            this.kaleidoscopeVizCtx.globalAlpha *= plugin.opacity; // Multiply with ring opacity
+                        }
+                        
+                        this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        
+                        this.kaleidoscopeVizCtx.restore();
                     } else {
                         console.warn(`🔮 ❌ Plugin "${plugin.pluginName}" canvas has invalid dimensions (ODD)`);
                     }
