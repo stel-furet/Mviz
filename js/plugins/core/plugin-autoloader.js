@@ -205,6 +205,10 @@ class PluginAutoLoader {
             });
             
             if (!response.ok) {
+                // Silently return empty array for missing directories (404)
+                if (response.status === 404) {
+                    return [];
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             

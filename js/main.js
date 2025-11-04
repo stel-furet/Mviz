@@ -7211,28 +7211,7 @@ class RecordManager {
                 }
             }
             
-            // Draw Nebula visualization if active and not captured via kaleidoscope
-            if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
-                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    
-                    // Apply Nebula opacity and background knockout settings
-                    this.compositeCtx.save();
-                    
-                    // Apply overall opacity
-                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
-                    this.compositeCtx.globalAlpha = nebulaOpacity;
-                    
-                    // Apply background knockout (screen blend mode)
-                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
-                        this.compositeCtx.globalCompositeOperation = 'screen';
-                    }
-                    
-                    this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
-                    this.compositeCtx.restore();
-                } else if (!shouldDrawSeparately) {
-                }
-            }
+            // Native Nebula removed - Nebula plugin handled via plugin system
             
             // Draw Plugin canvases if active and not captured via kaleidoscope
             if (window.pluginManager) {
@@ -8730,31 +8709,7 @@ class LiveDisplayManager {
                 }
             }
             
-            // Draw Nebula visualization if active and not captured via kaleidoscope (if capture nebula is enabled)
-            if (this.displaySettings && this.displaySettings.captureNebula && 
-                this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
-                this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
-                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (with video)');
-                    
-                    // Apply Nebula opacity and background knockout settings
-                    this.compositeCtx.save();
-                    
-                    // Apply overall opacity
-                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
-                    this.compositeCtx.globalAlpha = nebulaOpacity;
-                    
-                    // Apply background knockout (screen blend mode)
-                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
-                        this.compositeCtx.globalCompositeOperation = 'screen';
-                        // console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
-                    }
-                    
-                    this.compositeCtx.drawImage(this.visualizer.nebulaVisualization.canvas, 0, 0, width, height);
-                    this.compositeCtx.restore();
-                }
-            }
+            // Native Nebula removed - Nebula plugin handled via plugin system
             
             // Draw Plugin canvases if active and not captured via kaleidoscope (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization && window.pluginManager) {
@@ -11401,11 +11356,6 @@ class FrequeVisualizer {
             }, 50);
             this.webglVisualization = new WebGLVisualizationManager(this);
             
-            // Initialize Nebula visualization
-            this.nebulaVisualization = null;
-            this.nebulaEnabled = false;
-            this.nebulaAnimationFrame = null;
-            
             // Initialize Fluid Dynamics Presets
             this.savedFluidPresets = [];
             
@@ -11611,22 +11561,6 @@ class FrequeVisualizer {
                 this.audioMotion.canvas.style.opacity = this.visualizationOpacity.toString();
                 // Add unique identifier for z-index management
                 this.audioMotion.canvas.setAttribute('data-visualization', 'amvisualizer');
-            }
-
-            // Initialize Nebula visualization after audioMotion is ready
-            if (window.NebulaVisualization) {
-                this.nebulaVisualization = new NebulaVisualization(this.audioMotion.canvas, null);
-                // Append nebula canvas to visualizer container
-                const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
-                if (visualizerContainer && this.nebulaVisualization.canvas) {
-                    visualizerContainer.appendChild(this.nebulaVisualization.canvas);
-                    this.nebulaVisualization.canvas.style.display = 'none'; // Start hidden
-                    // Auto-resize to match container
-                    this.nebulaVisualization.autoResize();
-                }
-                // console.log('🌌 Nebula visualization initialized');
-            } else {
-                console.warn('🌌 NebulaVisualization class not available');
             }
 
             // console.log('SpectrumAnalyzer initialized successfully');
@@ -12030,6 +11964,12 @@ class FrequeVisualizer {
     }
 
     initializeFooterDisplayControls() {
+        // SAFETY: Check if streamManager is initialized
+        if (!this.streamManager || !this.streamManager.displaySettings) {
+            console.warn('⚠️ initializeFooterDisplayControls: streamManager not yet initialized, skipping setup');
+            return;
+        }
+        
         // Display mode buttons - use same logic as sidebar
         const footerDisplayModeButtons = document.querySelectorAll('#footerDisplaySettingsPanel .display-mode-btn');
         footerDisplayModeButtons.forEach(btn => {
@@ -12040,7 +11980,7 @@ class FrequeVisualizer {
                 
                 // Update settings using existing streamManager logic
                 const mode = btn.dataset.mode;
-                if (this.streamManager) {
+                if (this.streamManager && this.streamManager.displaySettings) {
                     this.streamManager.displaySettings.presentationMode = mode;
                     this.streamManager.saveDisplaySettings();
                     
@@ -20634,175 +20574,6 @@ https://rogueamoeba.com/loopback/
             }
         }
     }
-
-    initializeNebulaVisualization() {
-        if (!window.NebulaVisualization || !window.THREE) {
-            console.error('🌌 NebulaVisualization or THREE.js not available');
-            return false;
-        }
-        
-        if (this.nebulaVisualization) {
-            return true;
-        }
-        
-        try {
-            this.nebulaVisualization = new NebulaVisualization(this.audioMotion?.canvas, null);
-            
-            const visualizerContainer = document.getElementById('visualizationContainer') || document.getElementById('visualizer');
-            if (visualizerContainer && this.nebulaVisualization.canvas) {
-                visualizerContainer.appendChild(this.nebulaVisualization.canvas);
-                this.nebulaVisualization.canvas.style.display = 'none';
-                this.nebulaVisualization.autoResize();
-                
-                // Initialize toggle button states after nebula is created
-                this.initializeNebulaToggleStates();
-                return true;
-            } else {
-                console.error('🌌 Container or canvas not found');
-                return false;
-            }
-        } catch (error) {
-            console.error('🌌 Error initializing nebula:', error);
-            return false;
-        }
-    }
-    
-    initializeNebulaToggleStates() {
-        if (!this.nebulaVisualization) return;
-        
-        // Update all toggle buttons to match nebula settings
-        const toggleControls = [
-            { id: 'nebulaCameraOrbitToggle', property: 'cameraOrbit' },
-            { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
-            { id: 'nebulaBloomToggle', property: 'bloom' },
-            { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
-            { id: 'nebulaKnockoutBackgroundToggle', property: 'knockoutBackground' },
-            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
-            { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
-        ];
-        
-        toggleControls.forEach(control => {
-            const element = document.getElementById(control.id);
-            if (element) {
-                const isEnabled = this.nebulaVisualization.settings[control.property];
-                this.updateNebulaToggleButton(element, isEnabled);
-            }
-        });
-    }
-
-    toggleNebula() {
-        // Initialize nebula on first toggle if not already initialized
-        if (!this.nebulaVisualization) {
-            const initialized = this.initializeNebulaVisualization();
-            if (!initialized) {
-                console.error('🌌 Failed to initialize nebula visualization');
-                return;
-            }
-        }
-        
-        this.nebulaEnabled = !this.nebulaEnabled;
-        
-        if (this.nebulaVisualization) {
-            this.nebulaVisualization.toggle(this.nebulaEnabled);
-        }
-        
-        this.updateNebulaButtons();
-        
-        // Re-apply z-indexes after canvas creation/destruction
-        if (window.pluginMixerIntegration) {
-            window.pluginMixerIntegration.reapplyZIndexes();
-        }
-        
-        // console.log('🌌 Nebula toggled:', this.nebulaEnabled);
-    }
-
-    initNebulaControlHandlers() {
-        // Range sliders
-        const controls = [
-            { id: 'nebulaCameraDistance', property: 'cameraDistance' },
-            { id: 'nebulaFilamentDensity', property: 'filamentDensity' },
-            { id: 'nebulaParticlesPerFilament', property: 'particlesPerFilament' },
-            { id: 'nebulaParticleSize', property: 'particleSize' },
-            { id: 'nebulaExpansion', property: 'expansion' },
-            { id: 'nebulaChaos', property: 'chaos' },
-            { id: 'nebulaAsymmetry', property: 'asymmetry' },
-            { id: 'nebulaPulsarSize', property: 'pulsarSize' },
-            { id: 'nebulaPulseRate', property: 'pulseRate' },
-            { id: 'nebulaStarCount', property: 'starCount' },
-            { id: 'nebulaOrbitSpeed', property: 'orbitSpeed' },
-            { id: 'nebulaFlySpeed', property: 'flySpeed' },
-            { id: 'nebulaAudioSensitivity', property: 'audioSensitivity' },
-            { id: 'nebulaOverallOpacity', property: 'overallOpacity' },
-            { id: 'nebulaMorphingSpeed', property: 'morphingSpeed' },
-            { id: 'nebulaHueShift', property: 'hueShift' },
-            { id: 'nebulaSaturation', property: 'saturation' },
-            { id: 'nebulaBrightness', property: 'brightness' }
-        ];
-        
-        controls.forEach(control => {
-            const element = document.getElementById(control.id);
-            const valueDisplay = element?.parentElement.querySelector('.slider-1-value');
-            
-            if (element) {
-                element.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    if (valueDisplay) {
-                        // Format display value based on control type
-                        let displayValue = value;
-                        if (control.id === 'nebulaHueShift') {
-                            displayValue = value + '°';
-                        } else if (control.id === 'nebulaSaturation' || control.id === 'nebulaBrightness') {
-                            displayValue = value + '%';
-                        }
-                        valueDisplay.textContent = displayValue;
-                    }
-                    
-                    if (this.nebulaVisualization) {
-                        this.nebulaVisualization.updateSetting(control.property, value);
-                    }
-                });
-            }
-        });
-        
-        // Toggle buttons (replaced checkboxes)
-        const toggleControls = [
-            { id: 'nebulaCameraOrbitToggle', property: 'cameraOrbit' },
-            { id: 'nebulaShowPulsarToggle', property: 'showPulsar' },
-            { id: 'nebulaBloomToggle', property: 'bloom' },
-            { id: 'nebulaAudioReactiveToggle', property: 'audioReactive' },
-            { id: 'nebulaKnockoutBackgroundToggle', property: 'knockoutBackground' },
-            { id: 'nebulaFlyThroughToggle', property: 'flyThrough' },
-            { id: 'nebulaMorphingModeToggle', property: 'morphingMode' }
-        ];
-        
-        toggleControls.forEach(control => {
-            const element = document.getElementById(control.id);
-            if (element) {
-                // Set initial state based on nebula settings
-                if (this.nebulaVisualization) {
-                    const isEnabled = this.nebulaVisualization.settings[control.property];
-                    this.updateNebulaToggleButton(element, isEnabled);
-                }
-                
-                element.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    if (this.nebulaVisualization) {
-                        // Toggle the setting
-                        const currentValue = this.nebulaVisualization.settings[control.property];
-                        const newValue = !currentValue;
-                        
-                        // Update the visualization
-                        this.nebulaVisualization.updateSetting(control.property, newValue);
-                        
-                        // Update button appearance
-                        this.updateNebulaToggleButton(element, newValue);
-                    }
-                });
-            }
-        });
-    }
     
     // Advanced Preset Controls Setup and Management
     setupAdvancedPresetControls() {
@@ -21052,7 +20823,14 @@ https://rogueamoeba.com/loopback/
         }
     }
     
-    initNebulaPresetHandlers() {
+    // ==================== NATIVE NEBULA PRESET/CONTROL METHODS REMOVED ====================
+    // All native Nebula preset handlers removed (335 lines)
+    // Methods removed: initNebulaPresetHandlers, updateNebulaPresetButton, updateNebulaToggleButton,
+    // initNebulaColorPresetHandlers, applyNebulaColorPreset, initNebulaPresetManagementHandlers,
+    // updateNebulaPresetDropdown, updateNebulaUIFromSettings, updateNebulaSliderValue, updateNebulaButtons
+    // ==================== END NATIVE NEBULA METHODS REMOVAL ====================
+
+    toggleInfiniteZoom() {
         // Preset button handlers
         const presetButtons = [
             { id: 'headerNebulaColorPresetBtn', preset: 'color' },
@@ -21575,7 +21353,7 @@ https://rogueamoeba.com/loopback/
         if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
             this.webglVisualization.canvas.style.visibility = 'visible';
         }
-        
+
         // Show ALL active plugin canvases when kaleidoscope is stopped (matches native viz behavior)
         if (window.pluginManager) {
             const allPlugins = window.pluginManager.getAllPlugins();
@@ -21930,13 +21708,12 @@ https://rogueamoeba.com/loopback/
             }
         }
 
-        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, Nebula, Liquid Fire, or Plugins)
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, or Plugins)
+        // Note: Nebula plugin handled via plugin system, but kaleidoscopeApplyToNebula still used by plugin
         let shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
                                      (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
                                      (this.kaleidoscopeApplyToWebGL && this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas) ||
-                                     (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas) ||
-                                     (this.kaleidoscopeApplyToNebula && this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas) ||
-                                     (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas);
+                                     (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas);
         
         // Check if any plugins should be drawn in kaleidoscope
         if (window.pluginManager) {
@@ -21965,10 +21742,7 @@ https://rogueamoeba.com/loopback/
                 this.fluidDynamics.canvas.style.visibility = 'hidden';
             }
             
-            // Hide Nebula canvas when kaleidoscope is active and applying to nebula
-            if (this.nebulaVisualization && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
-                this.nebulaVisualization.canvas.style.visibility = 'hidden';
-            }
+            // Native Nebula canvas hiding removed - Nebula plugin handled by plugin system
             
             // Hide Infinite Zoom canvas when kaleidoscope is active and applying to infinite zoom
             if (this.infiniteZoom && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
@@ -22068,10 +21842,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
                         
-        // Draw Nebula if active and enabled for kaleidoscope
-        if (this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
-            this.kaleidoscopeVizCtx.drawImage(this.nebulaVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
-                        }
+        // Native Nebula removed - Nebula plugin handles kaleidoscope rendering via plugin system
                         
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
@@ -22113,7 +21884,7 @@ https://rogueamoeba.com/loopback/
                             this.kaleidoscopeVizCtx.globalAlpha *= plugin.opacity; // Multiply with ring opacity
                         }
                         
-                        this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         
                         this.kaleidoscopeVizCtx.restore();
                     } else {
@@ -22151,10 +21922,7 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVizCtx.drawImage(this.fluidDynamics.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
                         
-        // Draw Nebula if active and enabled for kaleidoscope
-        if (this.nebulaVisualization && this.nebulaVisualization.enabled && this.nebulaVisualization.canvas && this.kaleidoscopeApplyToNebula) {
-            this.kaleidoscopeVizCtx.drawImage(this.nebulaVisualization.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
-                        }
+        // Native Nebula removed - Nebula plugin handles kaleidoscope rendering via plugin system
                         
         // Draw blobs if active and enabled for kaleidoscope
         if (this.blobsEnabled && this.blobsVisualization && this.blobsVisualization.isActive && this.blobsVisualization.canvas) {
@@ -22181,7 +21949,7 @@ https://rogueamoeba.com/loopback/
                             this.kaleidoscopeVizCtx.globalAlpha *= plugin.opacity; // Multiply with ring opacity
                         }
                         
-                        this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                    this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         
                         this.kaleidoscopeVizCtx.restore();
                     } else {
@@ -24387,15 +24155,7 @@ https://rogueamoeba.com/loopback/
             });
         }
 
-        // Header Nebula Toggle button
-        const headerNebulaToggleBtn = document.getElementById('headerNebulaToggleBtn');
-        if (headerNebulaToggleBtn) {
-            headerNebulaToggleBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.toggleNebula();
-            });
-        }
+        // Native Nebula toggle button removed - Nebula plugin handles power control
         
         // Nebula panel close button
         const headerNebulaCloseBtn = document.getElementById('headerNebulaCloseBtn');
@@ -24405,17 +24165,7 @@ https://rogueamoeba.com/loopback/
             });
         }
         
-        // Nebula control event handlers
-        this.initNebulaControlHandlers();
-        
-        // Nebula preset button handlers
-        this.initNebulaPresetHandlers();
-        
-        // Nebula color preset handlers
-        this.initNebulaColorPresetHandlers();
-        
-        // Nebula preset management handlers
-        this.initNebulaPresetManagementHandlers();
+        // Native Nebula control handlers removed - Nebula plugin handles all controls
 
         // Header Infinite Zoom Toggle button
         const headerInfiniteZoomToggleBtn = document.getElementById('headerInfiniteZoomToggleBtn');
