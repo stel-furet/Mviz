@@ -185,20 +185,8 @@ class PluginMixerIntegration {
         const powerBtn = channelStrip.querySelector('.plugin-power-btn');
         if (powerBtn) {
             powerBtn.addEventListener('click', () => {
-                console.log(`🔌 TOGGLE DEBUG: Button clicked for plugin "${plugin.pluginName}"`);
-                console.log(`🔌 TOGGLE DEBUG: Plugin state before toggle - isActive: ${plugin.isActive}`);
-                console.log(`🔌 TOGGLE DEBUG: Plugin manager has plugin:`, !!window.pluginManager?.getPlugin(plugin.pluginName));
-                console.log(`🔌 TOGGLE DEBUG: Channel strips count:`, this.channelStrips.size);
-                console.log(`🔌 TOGGLE DEBUG: Channel strips for this plugin:`, this.channelStrips.has(plugin.pluginName));
-                
                 plugin.toggle();
-                
-                console.log(`🔌 TOGGLE DEBUG: Plugin state after toggle - isActive: ${plugin.isActive}`);
-                console.log(`🔌 TOGGLE DEBUG: About to update power button`);
-                
                 this.updatePowerButton(plugin.pluginName);
-                
-                console.log(`🔌 TOGGLE DEBUG: Power button updated`);
             });
         }
         
@@ -440,7 +428,7 @@ class PluginMixerIntegration {
         
         const inputContainer = channelStrip.querySelector('.channel-input-section');
         if (!inputContainer) {
-            console.error(`🎛️ DEBUG: No input container found for plugin "${pluginName}"`);
+            console.error(`No input container found for plugin "${pluginName}"`);
             return;
         }
         
@@ -449,17 +437,13 @@ class PluginMixerIntegration {
         
         // Add each input control
         inputControls.forEach((controlConfig, controlId) => {
-            console.log(`🎛️ DEBUG: Creating input control "${controlId}":`, controlConfig);
             const controlElement = this.createControlElement(controlId, controlConfig);
             if (controlElement) {
                 inputContainer.appendChild(controlElement);
-                console.log(`🎛️ DEBUG: Added input control "${controlId}" to container`);
             } else {
-                console.error(`🎛️ DEBUG: Failed to create input control element for "${controlId}"`);
+                console.error(`Failed to create input control element for "${controlId}"`);
             }
         });
-        
-        console.log(`🎛️ DEBUG: Finished adding ${inputControls.size} input controls for "${pluginName}"`);
     }
     
     /**

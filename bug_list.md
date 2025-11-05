@@ -3,15 +3,21 @@
 ## Current Issues
 
 ### High Priority
+- **Kaleidoscope Z-Index Not Respected**: Kaleidoscope does not recognize or respect z-index values of visualizations - draws them in wrong order
+- **Fluidity Background Toggle Missing**: Add Background ON/OFF toggle to Fluidity (like Nebula knockout background feature)
 - **Z-Index Values Incorrect**: When IZ is below AM in mixer, it still appears on top - z-index system not working properly
 - **AM + Fluidity Display Flicker**: Using AudioMotion and Fluidity together causes external display to flicker
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
 - **Audio Priority System Bug**: When video from file and playlist audio are both playing, visualizations are incorrectly driven by video file audio instead of playlist audio. Simple fix needed: If playlist play buttons are toggled on, video from file should be muted. When playlist is toggled off, video from file should stay muted. Live audio input should mute everything else and take priority.
-- **Plugin Kaleidoscope Integration**: ✅ **FULLY COMPLETE** - Implemented comprehensive plugin integration with kaleidoscope system. All current and future plugins automatically get kaleidoscope toggles in mixer channel and display capture sections. Plugin canvases are properly captured, composited, hidden/shown, and respect plugin-specific features (opacity, knockout background). System works seamlessly with record, live display, and kaleidoscope capture. Nebula's knockout background now works at pixel level (transparent scene vs. black scene).
-- **Fluidity Missing Drag Handle**: Fluidity needs drag handle and integration into reorder and z-index system as a native visualization
 - **Debug Code Cleanup Required**: Remove all debug code completely (not commented) and remove all previously commented code throughout entire codebase
 - **Background Color Not Respected by Record/Live Display**: Background color (B button in header) not respected by record or live display
+
+### Completed
+- ✅ **Plugin Kaleidoscope Integration**: FULLY COMPLETE - Implemented comprehensive plugin integration with kaleidoscope system. All current and future plugins automatically get kaleidoscope toggles in mixer channel and display capture sections. Plugin canvases are properly captured, composited, hidden/shown, and respect plugin-specific features (opacity, knockout background). System works seamlessly with record, live display, and kaleidoscope capture. Nebula's knockout background now works at pixel level (transparent scene vs. black scene).
+- ✅ **Fluidity Missing Drag Handle**: Fluidity now has drag handle and full integration into reorder and z-index system
+- ✅ **LiveDisplay/Record Quality Issue**: Fixed quality degradation issue with generic plugin rendering API. Implemented comprehensive plugin rendering API in `FrequePluginBase` with 7 methods (`shouldClearCanvas()`, `getOpacity()`, `getBlendMode()`, `beforeComposite()`, `customComposite()`, `afterComposite()`, `getRenderingContext()`). This provides future-proof support for ALL plugin types (2D Canvas, Three.js, WebGL, shader-based, particle systems). Nebula plugin now correctly renders with opacity and knockout background in recordings and live displays. Zero effort required from plugin developers - all methods have sensible defaults. Updated all 4 composite rendering locations in RecordManager and LiveDisplayManager to use generic API.
+- ✅ **30fps Throttling Quality Issue**: Default frame rate changed to 60 FPS for recording and live display across all HTML dropdowns and JavaScript defaults
 
 ### Medium Priority  
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues

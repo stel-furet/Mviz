@@ -1604,7 +1604,7 @@ class RecordManager {
         
         // Recording settings - Unified Quality System
         this.qualityPreset = 'professional'; // Default to professional quality
-        this.frameRate = 30;
+        this.frameRate = 60; // Default to 60 FPS for professional quality
         this.customFilename = 'Freque_Recording';
         this.matchVisualizationAspect = true;
         this.recordFormat = 'mp4'; // MP4 only for professional compatibility
@@ -7079,7 +7079,6 @@ class RecordManager {
     startCompositing() {
         const composite = () => {
             if (!this.isRecording) return;
-            
             this.compositeFrame();
             this.animationFrame = requestAnimationFrame(composite);
         };
@@ -7211,8 +7210,6 @@ class RecordManager {
                 }
             }
             
-            // Native Nebula removed - Nebula plugin handled via plugin system
-            
             // Draw Plugin canvases if active and not captured via kaleidoscope
             if (window.pluginManager) {
                 const allPlugins = window.pluginManager.getAllPlugins();
@@ -7221,12 +7218,38 @@ class RecordManager {
                         const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
                         const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
                         if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            // Apply plugin opacity if available
+                            const renderCtx = plugin.getRenderingContext();
+                            
                             this.compositeCtx.save();
-                            if (plugin.opacity !== undefined) {
-                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
                             }
-                            this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
                             this.compositeCtx.restore();
                         }
                     }
@@ -7271,28 +7294,7 @@ class RecordManager {
                 }
             }
             
-            // Draw Nebula visualization if active and not captured via kaleidoscope
-            if (this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
-                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    
-                    // Apply Nebula opacity and background knockout settings
-                    this.compositeCtx.save();
-                    
-                    // Apply overall opacity
-                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
-                    this.compositeCtx.globalAlpha = nebulaOpacity;
-                    
-                    // Apply background knockout (screen blend mode)
-                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
-                        this.compositeCtx.globalCompositeOperation = 'screen';
-                    }
-                    
-                    this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
-                    this.compositeCtx.restore();
-                } else if (!shouldDrawSeparately) {
-                }
-            }
+            // Native Nebula removed - Nebula plugin handled via plugin system below
             
             // Draw Plugin canvases if active and not captured via kaleidoscope
             if (window.pluginManager) {
@@ -7302,12 +7304,39 @@ class RecordManager {
                         const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
                         const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
                         if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            // Apply plugin opacity if available
+                            // Get rendering context from plugin (generic API)
+                            const renderCtx = plugin.getRenderingContext();
+                            
                             this.compositeCtx.save();
-                            if (plugin.opacity !== undefined) {
-                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
                             }
-                            this.drawScaledVisualization(plugin.canvas);
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.drawScaledVisualization(plugin.canvas);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
                             this.compositeCtx.restore();
                         }
                     }
@@ -8294,7 +8323,7 @@ class LiveDisplayManager {
             // IDENTICAL to RecordManager settings
             this.resolution = '1080p';
             this.aspectRatio = '16:9';
-            this.frameRate = 30;
+            this.frameRate = 60; // Default to 60 FPS for professional quality
             this.videoQuality = 'auto';
             this.audioQuality = 'auto';
             this.customFilename = 'MV_PRO_Display';
@@ -8312,7 +8341,7 @@ class LiveDisplayManager {
                 mirrorBackground: false,
                 mirrorBackgroundBlur: 20,
                 resolution: '1080p',
-                frameRate: 30,
+                frameRate: 60, // Default to 60 FPS for professional quality
                 videoQuality: 'auto'
             };
         
@@ -8552,7 +8581,6 @@ class LiveDisplayManager {
     startCompositing() {
         const composite = () => {
             if (!this.isStreaming) return;
-            
             this.compositeFrame();
             this.animationFrame = requestAnimationFrame(composite);
         };
@@ -8709,8 +8737,6 @@ class LiveDisplayManager {
                 }
             }
             
-            // Native Nebula removed - Nebula plugin handled via plugin system
-            
             // Draw Plugin canvases if active and not captured via kaleidoscope (if capture visualization is enabled)
             if (this.displaySettings && this.displaySettings.captureVisualization && window.pluginManager) {
                 const allPlugins = window.pluginManager.getAllPlugins();
@@ -8719,13 +8745,48 @@ class LiveDisplayManager {
                         const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
                         const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
                         if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            console.log(`📺 LiveDisplayManager: Drawing ${plugin.pluginName} plugin canvas in composite`);
-                            // Apply plugin opacity if available
-                            this.compositeCtx.save();
-                            if (plugin.opacity !== undefined) {
-                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            const renderCtx = plugin.getRenderingContext();
+                            
+                            // DIAGNOSTIC: Log Nebula composite operations
+                            if (plugin.pluginName === 'nebula' && Math.random() < 0.01) { // Log 1% of frames
+                                console.log('📺 NEBULA COMPOSITE:', {
+                                    opacity: renderCtx.opacity,
+                                    blendMode: renderCtx.blendMode,
+                                    canvasSize: `${plugin.canvas.width}x${plugin.canvas.height}`,
+                                    timestamp: performance.now()
+                                });
                             }
-                            this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            
+                            this.compositeCtx.save();
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
+                            }
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
                             this.compositeCtx.restore();
                         }
                     }
@@ -8775,31 +8836,7 @@ class LiveDisplayManager {
                 }
             }
             
-            // Draw Nebula visualization if active and not captured via kaleidoscope (if capture nebula is enabled)
-            if (this.displaySettings && this.displaySettings.captureNebula && 
-                this.visualizer.nebulaVisualization && this.visualizer.nebulaVisualization.enabled && 
-                this.visualizer.nebulaVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToNebula;
-                if (shouldDrawSeparately && this.visualizer.nebulaVisualization.canvas.width > 0 && this.visualizer.nebulaVisualization.canvas.height > 0) {
-                    console.log('📺 LiveDisplayManager: Drawing Nebula visualization in composite (no video)');
-                    
-                    // Apply Nebula opacity and background knockout settings
-                    this.compositeCtx.save();
-                    
-                    // Apply overall opacity
-                    const nebulaOpacity = this.visualizer.nebulaVisualization.settings.overallOpacity || 1.0;
-                    this.compositeCtx.globalAlpha = nebulaOpacity;
-                    
-                    // Apply background knockout (screen blend mode)
-                    if (this.visualizer.nebulaVisualization.settings.knockoutBackground) {
-                        this.compositeCtx.globalCompositeOperation = 'screen';
-                        // console.log('📺 LiveDisplayManager: Applying Nebula background knockout (screen blend)');
-                    }
-                    
-                    this.drawScaledVisualization(this.visualizer.nebulaVisualization.canvas);
-                    this.compositeCtx.restore();
-                }
-            }
+            // Native Nebula removed - Nebula plugin handled via plugin system below
             
             // Draw Plugin canvases if active and not captured via kaleidoscope (if capture plugins is enabled)
             if (window.pluginManager) {
@@ -8809,12 +8846,39 @@ class LiveDisplayManager {
                         const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
                         const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
                         if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            // Apply plugin opacity if available
+                            // Get rendering context from plugin (generic API)
+                            const renderCtx = plugin.getRenderingContext();
+                            
                             this.compositeCtx.save();
-                            if (plugin.opacity !== undefined) {
-                                this.compositeCtx.globalAlpha = plugin.opacity;
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
                             }
-                            this.drawScaledVisualization(plugin.canvas);
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.drawScaledVisualization(plugin.canvas);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
                             this.compositeCtx.restore();
                         }
                     }
@@ -27974,6 +28038,77 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 document.addEventListener('DOMContentLoaded', () => {
 window.visualizer = new FrequeVisualizer();
 
+// Add comprehensive diagnostic helper function to window
+window.diagnoseLiveDisplayAndRecord = function() {
+    console.log('======== LIVE DISPLAY & RECORD DIAGNOSTICS ========');
+    console.log('');
+    
+    // Record Manager State
+    console.log('📹 RECORD MANAGER:');
+    if (window.visualizer?.recordManager) {
+        const rm = window.visualizer.recordManager;
+        console.log(`  isRecording: ${rm.isRecording}`);
+        console.log(`  compositeCanvas: ${rm.compositeCanvas?.width}x${rm.compositeCanvas?.height}`);
+        console.log(`  compositeCtx: ${!!rm.compositeCtx}`);
+        console.log(`  frameRate: ${rm.frameRate}`);
+    } else {
+        console.log('  ❌ RecordManager not initialized');
+    }
+    console.log('');
+    
+    // Live Display Managers State (check multiDisplayManager)
+    console.log('📺 LIVE DISPLAY MANAGERS:');
+    if (window.multiDisplayManager?.displayManagers && window.multiDisplayManager.displayManagers.size > 0) {
+        let displayIndex = 1;
+        window.multiDisplayManager.displayManagers.forEach((displayManager, displayId) => {
+            console.log(`  Display ${displayIndex} (ID: ${displayId}):`);
+            console.log(`    isStreaming: ${displayManager.isStreaming}`);
+            console.log(`    compositeCanvas: ${displayManager.compositeCanvas?.width}x${displayManager.compositeCanvas?.height}`);
+            console.log(`    compositeCtx: ${!!displayManager.compositeCtx}`);
+            console.log(`    frameRate: ${displayManager.frameRate}`);
+            console.log(`    displaySettings:`, displayManager.displaySettings);
+            displayIndex++;
+        });
+    } else {
+        console.log('  ❌ No active live displays');
+    }
+    console.log('');
+    
+    // Plugin State
+    console.log('🔌 PLUGINS:');
+    if (window.pluginManager) {
+        const plugins = window.pluginManager.getAllPlugins();
+        console.log(`  Total plugins: ${plugins.length}`);
+        plugins.forEach(plugin => {
+            console.log(`  - ${plugin.pluginName}:`);
+            console.log(`      isActive: ${plugin.isActive}`);
+            console.log(`      canvas: ${plugin.canvas?.width}x${plugin.canvas?.height}`);
+            console.log(`      opacity: ${plugin.getOpacity ? plugin.getOpacity() : 'N/A'}`);
+            console.log(`      blendMode: ${plugin.getBlendMode ? plugin.getBlendMode() : 'N/A'}`);
+            console.log(`      kaleidoscope: ${window.visualizer?.[`kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`] ? 'ON' : 'OFF'}`);
+        });
+    } else {
+        console.log('  ❌ PluginManager not initialized');
+    }
+    console.log('');
+    
+    // Kaleidoscope State
+    console.log('🔮 KALEIDOSCOPE:');
+    if (window.visualizer) {
+        console.log(`  enabled: ${window.visualizer.kaleidoscopeEnabled}`);
+        console.log(`  applyToViz: ${window.visualizer.kaleidoscopeApplyToViz}`);
+        console.log(`  applyToVideo: ${window.visualizer.kaleidoscopeApplyToVideo}`);
+        console.log(`  vizCanvas: ${window.visualizer.kaleidoscopeVizCanvas?.width}x${window.visualizer.kaleidoscopeVizCanvas?.height}`);
+    } else {
+        console.log('  ❌ Visualizer not initialized');
+    }
+    console.log('');
+    
+    console.log('===================================================');
+    console.log('TIP: Run this function while recording or live display is active');
+    console.log('===================================================');
+};
+
 // Initialize Plugin AutoLoader after app is created
 if (window.pluginAutoLoader) {
     // Start autoloader initialization (it will wait for app to be ready)
@@ -28107,9 +28242,7 @@ window.addEventListener('resize', () => {
     if (window.visualizer && window.visualizer.webglVisualization) {
         window.visualizer.webglVisualization.resize();
     }
-    if (window.visualizer && window.visualizer.nebulaVisualization) {
-        window.visualizer.nebulaVisualization.autoResize();
-    }
+    // Native Nebula removed - Nebula plugin handled via plugin system
 });
 
 // Global debug function for background image

@@ -105,8 +105,6 @@ class FrequePluginBase {
      * Create plugin canvas with proper z-index and styling
      */
     createCanvas() {
-        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} createCanvas() called`);
-        
         this.canvas = document.createElement('canvas');
         this.canvas.id = this.canvasId;
         this.canvas.className = 'plugin-canvas';
@@ -122,22 +120,15 @@ class FrequePluginBase {
         this.canvas.setAttribute('data-plugin', this.pluginName);
         this.canvas.setAttribute('data-visualization', 'plugin-' + this.pluginName);
         this.canvas.setAttribute('data-owner', 'FrequePlugin');
-        
-        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas created:`, this.canvas);
-        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas ID: ${this.canvas.id}`);
-        console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas z-index: ${this.canvas.style.zIndex}`);
         this.canvas.setAttribute('data-created', new Date().toISOString());
         
         // Add to visualization container
         const container = document.getElementById('visualizationContainer');
         if (container) {
-            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} adding canvas to visualizationContainer`);
             container.appendChild(this.canvas);
-            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas added to DOM, parent:`, this.canvas.parentElement);
             this.resize();
-            console.log(`🎨 CANVAS DEBUG: ${this.pluginName} canvas resized to: ${this.canvas.width}x${this.canvas.height}`);
         } else {
-            console.error(`🎨 CANVAS DEBUG: ${this.pluginName} visualizationContainer not found!`);
+            console.error(`Plugin ${this.pluginName}: visualizationContainer not found!`);
         }
     }
     
@@ -229,8 +220,10 @@ class FrequePluginBase {
         }
         
         try {
-            // Clear canvas
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            // Clear canvas (only if plugin wants it cleared - WebGL/Three.js plugins don't need this)
+            if (this.shouldClearCanvas() && this.ctx) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
             
             // Call plugin-specific render
             if (this.onRender) {
@@ -244,33 +237,100 @@ class FrequePluginBase {
     }
     
     /**
+     * PLUGIN RENDERING API - Generic methods for composite rendering
+     * Override these in your plugin to customize how the plugin is rendered
+     * in recording, live display, and kaleidoscope outputs
+     */
+    
+    /**
+     * Should the plugin's canvas be cleared before rendering?
+     * Override this for WebGL/Three.js plugins that handle their own clearing
+     * @returns {boolean} True to clear canvas (default for 2D), false to skip (WebGL/Three.js)
+     */
+    shouldClearCanvas() {
+        return true; // Default: clear for 2D canvas plugins
+    }
+    
+    /**
+     * Get plugin opacity for composite rendering
+     * Override this to use custom opacity sources (e.g., from plugin settings)
+     * @returns {number} Opacity value 0-1
+     */
+    getOpacity() {
+        return this.opacity || 1.0;
+    }
+    
+    /**
+     * Get plugin blend mode for composite rendering
+     * Override this to use custom blend modes (e.g., 'screen' for knockout backgrounds)
+     * @returns {string|null} globalCompositeOperation value or null for default
+     */
+    getBlendMode() {
+        return null; // Default: no special blend mode (source-over)
+    }
+    
+    /**
+     * Pre-render hook: Called before drawing plugin canvas to composite
+     * Use this for custom context setup (transforms, filters, etc.)
+     * @param {CanvasRenderingContext2D} ctx - Composite canvas context
+     * @param {number} width - Target width
+     * @param {number} height - Target height
+     */
+    beforeComposite(ctx, width, height) {
+        // Override in plugin if needed
+    }
+    
+    /**
+     * Custom composite drawing: Override this to replace default drawImage
+     * Use this for advanced rendering that needs more than drawImage
+     * @param {CanvasRenderingContext2D} ctx - Composite canvas context
+     * @param {number} width - Target width
+     * @param {number} height - Target height
+     * @returns {boolean} Return true if you handled drawing, false to use default drawImage
+     */
+    customComposite(ctx, width, height) {
+        return false; // Default: use standard drawImage
+    }
+    
+    /**
+     * Post-render hook: Called after drawing plugin canvas to composite
+     * Use this for cleanup or additional drawing on top of the composite
+     * @param {CanvasRenderingContext2D} ctx - Composite canvas context
+     */
+    afterComposite(ctx) {
+        // Override in plugin if needed
+    }
+    
+    /**
+     * Get complete rendering context (all properties)
+     * Used by RecordManager and LiveDisplayManager for composite rendering
+     * @returns {object} Object with rendering properties
+     */
+    getRenderingContext() {
+        return {
+            shouldClear: this.shouldClearCanvas(),
+            opacity: this.getOpacity(),
+            blendMode: this.getBlendMode()
+        };
+    }
+    
+    /**
      * Start plugin
      */
     start() {
-        console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} start() called - isInitialized: ${this.isInitialized}`);
-        
         if (!this.isInitialized) {
-            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} calling initialize()`);
             this.initialize();
         }
         
         this.isActive = true;
         if (this.canvas) {
             this.canvas.style.display = 'block';
-            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} canvas display set to block`);
-        } else {
-            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} NO CANVAS FOUND!`);
         }
         
         // Activate in MAL
         if (window.masterAnimationController) {
-            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} activating in MAL`);
             window.masterAnimationController.setSystemActive(this.pluginName, true);
-        } else {
-            console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} MAL not found!`);
         }
-        
-        console.log(`🔌 PLUGIN START DEBUG: ${this.pluginName} start() complete - isActive: ${this.isActive}`);
         
         // Call plugin-specific start
         if (this.onStart) {
@@ -302,17 +362,11 @@ class FrequePluginBase {
      * Toggle plugin on/off
      */
     toggle() {
-        console.log(`🔌 TOGGLE DEBUG: ${this.pluginName} toggle() called - current state: ${this.isActive}`);
-        
         if (this.isActive) {
-            console.log(`🔌 TOGGLE DEBUG: ${this.pluginName} calling stop()`);
             this.stop();
         } else {
-            console.log(`🔌 TOGGLE DEBUG: ${this.pluginName} calling start()`);
             this.start();
         }
-        
-        console.log(`🔌 TOGGLE DEBUG: ${this.pluginName} toggle() complete - new state: ${this.isActive}`);
     }
     
     /**

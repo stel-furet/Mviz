@@ -937,15 +937,8 @@ class NebulaPlugin extends FrequePluginBase {
     // Plugin lifecycle methods
     onInitialize() {
         try {
-            // Create NebulaVisualization using the plugin's canvas
-            console.log('🌌 NEBULA PLUGIN: Initializing with plugin canvas:', this.canvas);
-            console.log('🌌 NEBULA PLUGIN: Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
-            console.log('🌌 NEBULA PLUGIN: NebulaVisualization class available:', typeof NebulaVisualization);
-            console.log('🌌 NEBULA PLUGIN: Three.js available:', typeof THREE);
-            
             // Create nebula visualization - let it create its own canvas first
             this.nebulaViz = new NebulaVisualization(null, null);
-            console.log('🌌 NEBULA PLUGIN: NebulaVisualization instance created:', !!this.nebulaViz);
             
             // Copy plugin canvas properties to nebula canvas
             const nebulaCanvas = this.nebulaViz.canvas;
@@ -967,16 +960,13 @@ class NebulaPlugin extends FrequePluginBase {
             if (parent) {
                 parent.replaceChild(nebulaCanvas, this.canvas);
                 this.canvas = nebulaCanvas;
-                console.log('🌌 NEBULA PLUGIN: Replaced plugin canvas with nebula canvas in DOM');
             }
             
-            // Initialize the nebula visualization (method is called 'init', not 'initialize')
+            // Initialize the nebula visualization
             if (this.nebulaViz && typeof this.nebulaViz.init === 'function') {
-                console.log('🌌 NEBULA PLUGIN: Calling NebulaVisualization.init()');
                 this.nebulaViz.init();
-                console.log('🌌 NEBULA PLUGIN: NebulaVisualization.init() completed');
             } else {
-                console.error('🌌 NEBULA PLUGIN: NebulaVisualization.init() not available');
+                console.error('Nebula Plugin: NebulaVisualization.init() not available');
             }
             
             // Apply initial settings
@@ -985,21 +975,18 @@ class NebulaPlugin extends FrequePluginBase {
             // Enable the nebula visualization
             if (this.nebulaViz) {
                 this.nebulaViz.enabled = true;
-                console.log('🌌 NEBULA PLUGIN: Nebula visualization enabled');
             }
             
             // Initialize preset dropdown with any existing presets
             setTimeout(() => this.updatePresetDropdown(), 100);
             
         } catch (error) {
-            console.error('🌌 NEBULA PLUGIN: Initialization error:', error);
+            console.error('Nebula Plugin initialization error:', error);
         }
     }
     
     applyInitialSettings() {
         if (!this.nebulaViz || !this.nebulaViz.settings) return;
-        
-        console.log('🌌 NEBULA PLUGIN: Applying initial settings');
         
         // Apply all plugin properties to nebula visualization using updateSetting for proper initialization
         this.nebulaViz.settings.overallOpacity = this.overallOpacity;
@@ -1071,8 +1058,6 @@ class NebulaPlugin extends FrequePluginBase {
     onRender(deltaTime, timestamp, sharedAudioData) {
         // Delegate to wrapped nebula visualization (minimal changes)
         if (this.nebulaViz && this.nebulaViz.update && this.nebulaViz.render) {
-            // Frame rendering debug removed
-            
             // Call update first (handles time increment and pulsar pulsing)
             this.nebulaViz.update(sharedAudioData);
             
@@ -1097,6 +1082,46 @@ class NebulaPlugin extends FrequePluginBase {
         // Clean up nebula visualization
         if (this.nebulaViz && this.nebulaViz.destroy) {
             this.nebulaViz.destroy();
+        }
+    }
+    
+    // ==================== PLUGIN RENDERING API OVERRIDES ====================
+    // These methods customize how Nebula is rendered in recording/live display
+    
+    /**
+     * Three.js handles its own clearing - don't clear the canvas
+     */
+    shouldClearCanvas() {
+        return false; // Three.js WebGL renderer handles clearing
+    }
+    
+    /**
+     * Get Nebula's actual opacity from its settings
+     */
+    getOpacity() {
+        return this.nebulaViz?.settings?.overallOpacity || 1.0;
+    }
+    
+    /**
+     * Return 'screen' blend mode when knockout is enabled for canvas compositing
+     */
+    getBlendMode() {
+        if (this.nebulaViz?.settings?.knockoutBackground) {
+            return 'screen'; // Screen blend mode knocks out black background
+        }
+        return null;
+    }
+    
+    /**
+     * Before composite - ensure WebGL has finished rendering
+     */
+    beforeComposite(ctx, width, height) {
+        // Force WebGL to finish rendering before canvas capture
+        if (this.nebulaViz?.renderer?.getContext) {
+            const gl = this.nebulaViz.renderer.getContext();
+            if (gl && gl.finish) {
+                gl.finish(); // Wait for all WebGL commands to complete
+            }
         }
     }
 }

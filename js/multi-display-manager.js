@@ -143,7 +143,7 @@ class MultiDisplayManager {
         const frameRateSelect = document.getElementById(`display${displayId}FrameRateSelect`);
         if (frameRateSelect) {
             const frameRate = this.getDisplaySettings(displayId).frameRate;
-            frameRateSelect.value = frameRate ? frameRate.toString() : '30';
+            frameRateSelect.value = frameRate ? frameRate.toString() : '60'; // Default to 60 FPS
             frameRateSelect.addEventListener('change', () => {
                 this.updateDisplaySettings(displayId, { frameRate: parseInt(frameRateSelect.value) });
             });

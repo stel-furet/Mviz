@@ -394,8 +394,8 @@ class NebulaVisualization {
         try {
             // Scene
             this.scene = new THREE.Scene();
-            // Start with null background if knockout is enabled, black otherwise
-            this.scene.background = this.settings.knockoutBackground ? null : new THREE.Color(0x000000);
+            // Always use black background - knockout is handled via CSS blend mode on canvas
+            this.scene.background = new THREE.Color(0x000000);
             
             // Camera
             this.camera = new THREE.PerspectiveCamera(
@@ -411,7 +411,8 @@ class NebulaVisualization {
                 canvas: this.canvas,
                 antialias: true,
                 alpha: true,
-                premultipliedAlpha: false
+                premultipliedAlpha: false,
+                preserveDrawingBuffer: true  // CRITICAL: Prevent flicker in captureStream/drawImage
             });
             this.renderer.setSize(this.canvas.width, this.canvas.height);
             this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.settings.renderQuality, 2));
@@ -1540,21 +1541,16 @@ class NebulaVisualization {
     }
     
     applyBackgroundKnockout() {
-        if (!this.canvas || !this.scene) return;
+        if (!this.canvas) return;
         
         if (this.settings.knockoutBackground) {
-            // Make background actually transparent at the pixel level
-            // Set scene background to null so the transparent clear color shows through
-            this.scene.background = null;
-            // Apply CSS blend mode for additional effect on page
+            // Apply CSS screen blend mode for knockout effect
             this.canvas.style.mixBlendMode = 'screen';
-            console.log('🌌 Nebula background knockout enabled (transparent scene + screen blend mode)');
+            console.log('🌌 Nebula background knockout enabled (CSS screen blend mode)');
         } else {
-            // Render with solid black background
-            this.scene.background = new THREE.Color(0x000000);
             // Reset to normal blending
             this.canvas.style.mixBlendMode = 'normal';
-            console.log('🌌 Nebula background knockout disabled (black background + normal blend mode)');
+            console.log('🌌 Nebula background knockout disabled (normal blend mode)');
         }
     }
     

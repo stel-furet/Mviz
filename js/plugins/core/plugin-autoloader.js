@@ -13,24 +13,15 @@ class PluginAutoLoader {
         this.isPolling = false;
         this.initialLoadComplete = false;
         this.pollingTimer = null;
-        
-        console.log('🔌 Plugin AutoLoader initialized');
     }
     
     /**
      * Initialize the autoloader - wait for app to finish loading, then start
      */
     async initialize() {
-        console.log('🔌 AutoLoader waiting for initial app load...');
         await this.waitForInitialLoad();
-        
-        console.log('🔌 AutoLoader performing initial plugin scan...');
         await this.initialPluginScan();
-        
-        console.log('🔌 AutoLoader starting polling system...');
         this.startPolling();
-        
-        console.log('🔌 Plugin AutoLoader fully initialized');
     }
     
     /**
@@ -46,18 +37,9 @@ class PluginAutoLoader {
                 const hasMixerIntegration = !!window.pluginMixerIntegration;
                 const hasMixerChannels = !!document.querySelector('.mixer-channels');
                 
-                console.log('🔌 AutoLoader checking readiness:', {
-                    pluginManager: hasPluginManager,
-                    pluginLoader: hasPluginLoader,
-                    loadMethod: hasLoadMethod,
-                    mixerIntegration: hasMixerIntegration,
-                    mixerChannels: hasMixerChannels
-                });
-                
                 const appReady = hasPluginManager && hasPluginLoader && hasLoadMethod && hasMixerIntegration && hasMixerChannels;
                 
                 if (appReady) {
-                    console.log('🔌 AutoLoader: All systems ready, proceeding with initialization');
                     this.initialLoadComplete = true;
                     resolve();
                 } else {
@@ -74,16 +56,13 @@ class PluginAutoLoader {
     async initialPluginScan() {
         try {
             const discoveredPlugins = await this.scanPluginsDirectory();
-            console.log(`🔌 Initial scan found ${discoveredPlugins.length} plugins:`, discoveredPlugins);
             
             for (const pluginFile of discoveredPlugins) {
                 await this.loadDiscoveredPlugin(pluginFile);
                 this.knownPlugins.add(pluginFile);
             }
-            
-            console.log(`🔌 Initial plugin loading complete. Loaded ${this.loadedPlugins.size} plugins.`);
         } catch (error) {
-            console.error('🔌 Initial plugin scan failed:', error);
+            console.error('Initial plugin scan failed:', error);
         }
     }
     
@@ -91,17 +70,12 @@ class PluginAutoLoader {
      * Start the polling system for ongoing plugin discovery
      */
     startPolling() {
-        if (this.isPolling) {
-            console.warn('🔌 Polling already active');
-            return;
-        }
+        if (this.isPolling) return;
         
         this.isPolling = true;
         this.pollingTimer = setInterval(() => {
             this.pollForChanges();
         }, this.pollingInterval);
-        
-        console.log(`🔌 Plugin polling started (${this.pollingInterval/1000}s interval)`);
     }
     
     /**
@@ -113,7 +87,6 @@ class PluginAutoLoader {
             this.pollingTimer = null;
         }
         this.isPolling = false;
-        console.log('🔌 Plugin polling stopped');
     }
     
     /**
@@ -165,26 +138,8 @@ class PluginAutoLoader {
             const rootPlugins = await this.scanSingleDirectory('js/plugins/');
             allPlugins.push(...rootPlugins);
             
-            // Scan known subdirectories
-            const subdirectories = ['templates/', 'official/', 'third-party/'];
-            
-            for (const subdir of subdirectories) {
-                try {
-                    const subdirPlugins = await this.scanSingleDirectory(`js/plugins/${subdir}`);
-                    // Add subdirectory path to plugin names, but avoid duplicates
-                    const fullPathPlugins = subdirPlugins.map(plugin => {
-                        // If plugin already includes the subdirectory, don't add it again
-                        if (plugin.startsWith(subdir)) {
-                            return plugin;
-                        }
-                        return `${subdir}${plugin}`;
-                    });
-                    allPlugins.push(...fullPathPlugins);
-                } catch (error) {
-                    // Subdirectory might not exist, continue with others
-                    console.log(`🔌 Subdirectory js/plugins/${subdir} not accessible, skipping`);
-                }
-            }
+            // Subdirectories scanning disabled - only scan root plugins directory
+            // Future: Enable when templates/, official/, third-party/ directories are created
             
             return allPlugins;
             
@@ -202,10 +157,13 @@ class PluginAutoLoader {
             const response = await fetch(directoryPath, {
                 method: 'GET',
                 cache: 'no-cache'
+            }).catch(error => {
+                // Silently handle network errors (including 404s shown by browser)
+                return { ok: false, status: 404 };
             });
             
             if (!response.ok) {
-                // Silently return empty array for missing directories (404)
+                // Silently return empty array for missing directories
                 if (response.status === 404) {
                     return [];
                 }
@@ -216,7 +174,10 @@ class PluginAutoLoader {
             return this.parsePluginFiles(html);
             
         } catch (error) {
-            console.error(`🔌 Directory scan failed for ${directoryPath}:`, error);
+            // Only log non-404 errors
+            if (!error.message?.includes('404')) {
+                console.error(`Directory scan failed for ${directoryPath}:`, error);
+            }
             return [];
         }
     }
