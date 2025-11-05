@@ -7231,12 +7231,34 @@ class RecordManager {
             }
         }
         
-        // Check if kaleidoscope is active with any sources
-        const kaleidoscopeActive = this.visualizer.kaleidoscopeEnabled && 
-                                   this.visualizer.kaleidoscopeCanvas && 
-                                   this.visualizer.kaleidoscopeCanvas.style.display !== 'none';
+        // Get source canvas (main visualization canvas)
+        let sourceCanvas = null;
         
-        // Calculate letterboxing dimensions
+        // Determine which canvas to capture based on current state
+        if (this.visualizer.kaleidoscopeEnabled) {
+            // Check if any visualization is being captured by kaleidoscope
+            const anyVizCapturedByKaleidoscope = this.visualizer.kaleidoscopeApplyToViz || 
+                                               this.visualizer.kaleidoscopeApplyToInfiniteZoom || 
+                                               this.visualizer.kaleidoscopeApplyToWebGL || 
+                                               this.visualizer.kaleidoscopeApplyToFluidDynamics || 
+                                               this.visualizer.kaleidoscopeApplyToNebula;
+            
+            if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+            } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
+            } else if (this.visualizer.audioMotion?.canvas) {
+                sourceCanvas = this.visualizer.audioMotion.canvas;
+            }
+        } else if (this.visualizer.audioMotion?.canvas) {
+            sourceCanvas = this.visualizer.audioMotion.canvas;
+        }
+        
+        if (!sourceCanvas) {
+            return;
+        }
+        
+        // Calculate shared letterboxing dimensions for both video and visualization
         let sharedDrawWidth, sharedDrawHeight, sharedDrawX, sharedDrawY;
         
         if (this.visualizer.videoElement && 
@@ -7245,50 +7267,69 @@ class RecordManager {
             
             // Use video dimensions to calculate proper letterboxing (fit to width, crop top/bottom)
             const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            const canvasAspect = width / height;
             
-            // Always fit video to width and crop top/bottom
-            sharedDrawWidth = width;
-            sharedDrawHeight = width / videoAspect;
-            sharedDrawX = 0;
-            sharedDrawY = (height - sharedDrawHeight) / 2;
-        }
-        
-        // SIMPLE LOGIC: Draw kaleidoscope canvas if active, otherwise draw sources individually
-        if (kaleidoscopeActive) {
-            // Kaleidoscope is active - draw the single composited kaleidoscope canvas
-            const kalAspect = this.visualizer.kaleidoscopeCanvas.width / this.visualizer.kaleidoscopeCanvas.height;
-            let kalDrawWidth = width;
-            let kalDrawHeight = width / kalAspect;
-            let kalDrawX = 0;
-            let kalDrawY = (height - kalDrawHeight) / 2;
+            // Always fit video to width and crop top/bottom (like display)
+                sharedDrawWidth = width;
+                sharedDrawHeight = width / videoAspect;
+                sharedDrawX = 0;
+                sharedDrawY = (height - sharedDrawHeight) / 2;
             
-            const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeCanvas.style.opacity) || 1;
-            if (kaleidoscopeOpacity > 0) {
-                this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                this.compositeCtx.drawImage(this.visualizer.kaleidoscopeCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
-                this.compositeCtx.globalAlpha = 1;
-            }
-        } else {
-            // Kaleidoscope NOT active - draw sources individually
+            // console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            // console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
             
-            // Draw video background if present and not in kaleidoscope
-            if (this.visualizer.videoElement && 
-                (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
-                this.visualizer.videoElement.readyState >= 2) {
+            // Draw video background with shared dimensions (only if NOT using kaleidoscope)
+            if (!this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToVideo) {
+                // Draw regular video with effects using shared dimensions
                 const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                 if (opacity > 0) {
                     this.compositeCtx.globalAlpha = opacity;
                     this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                     this.compositeCtx.globalAlpha = 1;
                 }
+            } else if (this.visualizer.kaleidoscopeEnabled && 
+                       this.visualizer.kaleidoscopeApplyToVideo && 
+                       this.visualizer.kaleidoscopeVideoCanvas &&
+                       this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
+                // Draw kaleidoscope video canvas with proper letterboxing
+                const kalAspect = this.visualizer.kaleidoscopeVideoCanvas.width / this.visualizer.kaleidoscopeVideoCanvas.height;
+                let kalDrawWidth = width;
+                let kalDrawHeight = width / kalAspect;
+                let kalDrawX = 0;
+                let kalDrawY = (height - kalDrawHeight) / 2;
+                
+                const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                if (kaleidoscopeOpacity > 0) {
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                    this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
+                }
             }
             
-            // Draw AudioMotion if active
-            if (this.visualizer.audioMotion && this.visualizer.audioMotion.canvas && this.visualizer.visualizationEnabled) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.audioMotion.canvas, 0, 0, width, height);
+            // Draw visualization with proper letterboxing if it's a kaleidoscope canvas
+            // (but skip kaleidoscopeVideoCanvas if we already drew it above)
+            if (sourceCanvas === this.visualizer.kaleidoscopeVizCanvas) {
+                // Kaleidoscope viz canvas needs its own letterboxing based on its actual dimensions
+                const kalAspect = sourceCanvas.width / sourceCanvas.height;
+                const canvasAspect = width / height;
+                
+                let kalDrawWidth, kalDrawHeight, kalDrawX, kalDrawY;
+                kalDrawWidth = width;
+                kalDrawHeight = width / kalAspect;
+                kalDrawX = 0;
+                kalDrawY = (height - kalDrawHeight) / 2;
+                
+                // Apply opacity
+                const kaleidoscopeOpacity = parseFloat(sourceCanvas.style.opacity) || 1;
+                if (kaleidoscopeOpacity > 0) {
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                    this.compositeCtx.drawImage(sourceCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
                 }
+            } else if (sourceCanvas && sourceCanvas !== this.visualizer.kaleidoscopeVideoCanvas) {
+                // Draw other visualizations using full canvas dimensions (not letterboxed)
+                // Skip kaleidoscopeVideoCanvas here since it was already drawn above
+                this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
             }
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
@@ -7358,6 +7399,93 @@ class RecordManager {
                             
                             if (!customDrawn) {
                                 this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
+            }
+            
+        } else {
+            // No video - draw visualization with standard letterboxing
+            this.drawScaledVisualization(sourceCanvas);
+            
+            // Draw Infinite Zoom if active and not captured via kaleidoscope
+            if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
+            }
+            
+            // Draw WebGL visualization if active and not captured via kaleidoscope
+            if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
+                // Check WebGL support before attempting to draw
+                if (!this.visualizer.webglVisualization.webglSupported) {
+                } else {
+                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
+                    if (shouldDrawSeparately) {
+                        this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
+                    }
+                }
+            }
+            
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope
+            if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    
+                    this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                    this.compositeCtx.restore();
+                }
+            }
+            
+            // Native Nebula removed - Nebula plugin handled via plugin system below
+            
+            // Draw Plugin canvases if active and not captured via kaleidoscope
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            // Get rendering context from plugin (generic API)
+                            const renderCtx = plugin.getRenderingContext();
+                            
+                            this.compositeCtx.save();
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
+                            }
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.drawScaledVisualization(plugin.canvas);
                             }
                             
                             // Post-render hook (generic)
@@ -8640,12 +8768,35 @@ class LiveDisplayManager {
             }
         }
         
-        // Check if kaleidoscope is active with any sources
-        const kaleidoscopeActive = this.visualizer.kaleidoscopeEnabled && 
-                                   this.visualizer.kaleidoscopeCanvas && 
-                                   this.visualizer.kaleidoscopeCanvas.style.display !== 'none';
+        // Get source canvas (main visualization canvas)
+        let sourceCanvas = null;
         
-        // Calculate letterboxing dimensions
+        // Determine which canvas to capture based on current state
+        if (this.visualizer.kaleidoscopeEnabled) {
+            // Check if any visualization is being captured by kaleidoscope
+            const anyVizCapturedByKaleidoscope = this.visualizer.kaleidoscopeApplyToViz || 
+                                               this.visualizer.kaleidoscopeApplyToInfiniteZoom || 
+                                               this.visualizer.kaleidoscopeApplyToWebGL || 
+                                               this.visualizer.kaleidoscopeApplyToFluidDynamics || 
+                                               this.visualizer.kaleidoscopeApplyToNebula;
+            
+            if (anyVizCapturedByKaleidoscope && this.visualizer.kaleidoscopeVizCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVizCanvas;
+            } else if (this.visualizer.kaleidoscopeApplyToVideo && this.visualizer.kaleidoscopeVideoCanvas) {
+                sourceCanvas = this.visualizer.kaleidoscopeVideoCanvas;
+            } else if (this.visualizer.audioMotion?.canvas) {
+                sourceCanvas = this.visualizer.audioMotion.canvas;
+            }
+        } else if (this.visualizer.audioMotion?.canvas) {
+            sourceCanvas = this.visualizer.audioMotion.canvas;
+        }
+        
+        if (!sourceCanvas) {
+            console.warn(`LiveDisplay ${this.displayId}: No source canvas found for streaming`);
+            return;
+        }
+        
+        // Calculate shared letterboxing dimensions for both video and visualization
         let sharedDrawWidth, sharedDrawHeight, sharedDrawX, sharedDrawY;
         
         if (this.visualizer.videoElement && 
@@ -8654,51 +8805,80 @@ class LiveDisplayManager {
             
             // Use video dimensions to calculate proper letterboxing (fit to width, crop top/bottom)
             const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
+            const canvasAspect = width / height;
             
-            // Always fit video to width and crop top/bottom
+            // Always fit video to width and crop top/bottom (like display)
             sharedDrawWidth = width;
             sharedDrawHeight = width / videoAspect;
             sharedDrawX = 0;
             sharedDrawY = (height - sharedDrawHeight) / 2;
-        }
-        
-        // SIMPLE LOGIC: Draw kaleidoscope canvas if active, otherwise draw sources individually
-        if (kaleidoscopeActive && this.displaySettings && this.displaySettings.captureKaleidoscope) {
-            // Kaleidoscope is active - draw the single composited kaleidoscope canvas
-            const kalAspect = this.visualizer.kaleidoscopeCanvas.width / this.visualizer.kaleidoscopeCanvas.height;
-            let kalDrawWidth = width;
-            let kalDrawHeight = width / kalAspect;
-            let kalDrawX = 0;
-            let kalDrawY = (height - kalDrawHeight) / 2;
             
-            const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeCanvas.style.opacity) || 1;
-            if (kaleidoscopeOpacity > 0) {
-                this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                this.compositeCtx.drawImage(this.visualizer.kaleidoscopeCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
-                this.compositeCtx.globalAlpha = 1;
+            // console.log(`LiveDisplay ${this.displayId} video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
+            // console.log(`LiveDisplay ${this.displayId} video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
+            
+            // Log compositing frame with settings (every 60 frames)
+            if (!this.frameCount || this.frameCount % 60 === 0) {
+                
+                // Debug: Check if this.displaySettings is being updated
+                // console.log(`DEBUG LiveDisplay ${this.displayId}: Full displaySettings object:`, JSON.stringify(this.displaySettings));
             }
-        } else {
-            // Kaleidoscope NOT active - draw sources individually
             
-            // Draw video background if present and capture enabled
-            if (this.displaySettings && this.displaySettings.captureVideo &&
-                this.visualizer.videoElement && 
-                (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
-                this.visualizer.videoElement.readyState >= 2) {
-                const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
-                if (opacity > 0) {
-                    this.compositeCtx.globalAlpha = opacity;
-                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
+            // Draw video background with shared dimensions (if capture video is enabled, only if NOT using kaleidoscope)
+            if (this.displaySettings && this.displaySettings.captureVideo) {
+                if (!this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToVideo) {
+                    // Draw regular video with effects using shared dimensions
+                    const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
+                    if (opacity > 0) {
+                        this.compositeCtx.globalAlpha = opacity;
+                        this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                } else if (this.visualizer.kaleidoscopeEnabled && 
+                           this.visualizer.kaleidoscopeApplyToVideo && 
+                           this.visualizer.kaleidoscopeVideoCanvas &&
+                           this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none' &&
+                           this.displaySettings.captureKaleidoscope) {
+                    // Draw kaleidoscope video canvas with proper letterboxing
+                    const kalAspect = this.visualizer.kaleidoscopeVideoCanvas.width / this.visualizer.kaleidoscopeVideoCanvas.height;
+                    let kalDrawWidth = width;
+                    let kalDrawHeight = width / kalAspect;
+                    let kalDrawX = 0;
+                    let kalDrawY = (height - kalDrawHeight) / 2;
+                    
+                    const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                    if (kaleidoscopeOpacity > 0) {
+                        this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
                 }
             }
             
-            // Draw AudioMotion if active and capture enabled
-            if (this.displaySettings && this.displaySettings.captureVisualization &&
-                this.visualizer.audioMotion && this.visualizer.audioMotion.canvas && this.visualizer.visualizationEnabled) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.audioMotion.canvas, 0, 0, width, height);
+            // Draw visualization with proper letterboxing if it's a kaleidoscope canvas (if capture visualization is enabled)
+            // (but skip kaleidoscopeVideoCanvas if we already drew it above)
+            if (this.displaySettings && this.displaySettings.captureVisualization) {
+                if (sourceCanvas === this.visualizer.kaleidoscopeVizCanvas) {
+                    // Kaleidoscope viz canvas needs its own letterboxing based on its actual dimensions
+                    const kalAspect = sourceCanvas.width / sourceCanvas.height;
+                    const canvasAspect = width / height;
+                    
+                    let kalDrawWidth, kalDrawHeight, kalDrawX, kalDrawY;
+                    kalDrawWidth = width;
+                    kalDrawHeight = width / kalAspect;
+                    kalDrawX = 0;
+                    kalDrawY = (height - kalDrawHeight) / 2;
+                    
+                    // Apply opacity
+                    const kaleidoscopeOpacity = parseFloat(sourceCanvas.style.opacity) || 1;
+                    if (kaleidoscopeOpacity > 0) {
+                        this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        this.compositeCtx.drawImage(sourceCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                } else if (sourceCanvas && sourceCanvas !== this.visualizer.kaleidoscopeVideoCanvas) {
+                    // Draw other visualizations using full canvas dimensions (not letterboxed)
+                    // Skip kaleidoscopeVideoCanvas here since it was already drawn above
+                    this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
                 }
             }
             
@@ -8771,6 +8951,97 @@ class LiveDisplayManager {
                             
                             if (!customDrawn) {
                                 this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
+                            }
+                            
+                            // Post-render hook (generic)
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
+                            
+                            this.compositeCtx.restore();
+                        }
+                    }
+                });
+            }
+            
+        } else {
+            // No video - draw visualization with standard letterboxing (if capture visualization is enabled)
+            if (this.displaySettings && this.displaySettings.captureVisualization) {
+                this.drawScaledVisualization(sourceCanvas);
+            }
+            
+            // Draw Infinite Zoom if active and not captured via kaleidoscope (if capture infinite zoom is enabled)
+            if (this.displaySettings && this.displaySettings.captureInfiniteZoom && 
+                this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && 
+                this.visualizer.infiniteZoom.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.infiniteZoom.canvas);
+                }
+            }
+            
+            // Draw WebGL visualization if active and not captured via kaleidoscope (if capture WebGL is enabled)
+            if (this.displaySettings && this.displaySettings.captureWebGL && 
+                this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
+                this.visualizer.webglVisualization.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
+                if (shouldDrawSeparately) {
+                    this.drawScaledVisualization(this.visualizer.webglVisualization.canvas);
+                }
+            }
+            
+            // Draw Fluid Dynamics if active and not captured via kaleidoscope (if capture fluid dynamics is enabled)
+            if (this.displaySettings && this.displaySettings.captureFluidDynamics && 
+                this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && 
+                this.visualizer.fluidDynamics.canvas) {
+                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
+                if (shouldDrawSeparately) {
+                    // Apply Fluid Dynamics opacity setting
+                    this.compositeCtx.save();
+                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
+                    this.compositeCtx.globalAlpha = fluidOpacity;
+                    
+                    this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
+                    this.compositeCtx.restore();
+                }
+            }
+            
+            // Native Nebula removed - Nebula plugin handled via plugin system below
+            
+            // Draw Plugin canvases if active and not captured via kaleidoscope (if capture plugins is enabled)
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
+                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
+                            // Get rendering context from plugin (generic API)
+                            const renderCtx = plugin.getRenderingContext();
+                            
+                            this.compositeCtx.save();
+                            
+                            // Apply opacity (generic)
+                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
+                                this.compositeCtx.globalAlpha = renderCtx.opacity;
+                            }
+                            
+                            // Apply blend mode (generic)
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
+                            // Pre-render hook (generic)
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
+                            // Custom composite or default drawImage (generic)
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
+                                this.drawScaledVisualization(plugin.canvas);
                             }
                             
                             // Post-render hook (generic)
@@ -21799,229 +22070,371 @@ https://rogueamoeba.com/loopback/
     }
 
     applyKaleidoscopeEffect() {
-    if (!this.kaleidoscopeCanvas) {
-        console.error('Kaleidoscope canvas not initialized');
-        return;
-    }
+        if (!this.kaleidoscopeVideoCanvas || !this.kaleidoscopeVizCanvas) {
+            console.error('Kaleidoscope canvases not initialized');
+            return;
+        }
 
-    let width = this.kaleidoscopeCanvas.width;
-    let height = this.kaleidoscopeCanvas.height;
+        // console.log('Applying kaleidoscope effect:', {
+        //     videoMode: this.videoMode,
+        //     applyToVideo: this.kaleidoscopeApplyToVideo,
+        //     applyToViz: this.kaleidoscopeApplyToViz,
+        //     videoElement: !!this.videoElement,
+        //     captureVideoElement: !!this.captureVideoElement,
+        //     videoReady: this.videoElement ?. readyState,
+        //     captureReady: this.captureVideoElement ?. readyState
+        // });
 
-    // Make sure canvas is properly sized
-    if (width === 0 || height === 0) {
-        this.resizeKaleidoscopeCanvases();
-        width = this.kaleidoscopeCanvas.width;
-        height = this.kaleidoscopeCanvas.height;
-    }
+        let width = this.kaleidoscopeVideoCanvas.width;
+        let height = this.kaleidoscopeVideoCanvas.height;
 
-    // Get all sources (video + visualizations) sorted by z-index
-    const sortedSources = this.getActiveCanvasesInZIndexOrder();
-    
-    // Check if any sources should be drawn in kaleidoscope
-    const sourcesToDraw = sortedSources.filter(source => {
-        const applyToKal = source.applyToKalProperty ? this[source.applyToKalProperty] : true;
-        return applyToKal && source.canvas;
-    });
-    
-    if (sourcesToDraw.length === 0) {
-        // Nothing to draw - hide kaleidoscope canvas
-        this.kaleidoscopeCanvas.style.display = 'none';
+        // Make sure canvases are properly sized
+        if (width === 0 || height === 0) {
+            this.resizeKaleidoscopeCanvases();
+            width = this.kaleidoscopeVideoCanvas.width;
+            height = this.kaleidoscopeVideoCanvas.height;
+        }
+
+        // Skip viz kaleidoscope if visualization is disabled
+        if (!this.visualizationEnabled) {
+            if (this.kaleidoscopeVizCanvas) {
+                this.kaleidoscopeVizCanvas.style.display = 'none';
+            }
+            // Still process video kaleidoscope if enabled
+        }
+
+        const centerX = width * this.kaleidoscopeCenterX;
+        const centerY = height * this.kaleidoscopeCenterY;
+        const angleStep = (Math.PI * 2) / this.kaleidoscopeSegments;
+
+        // Calculate base radius using smaller dimension to maintain aspect ratio
+        const minDimension = Math.min(width, height);
+        const baseRadius = minDimension * 0.45;
         
-        // Show all original canvases
-        if (this.videoElement) {
-            this.videoElement.style.opacity = this.videoOpacity.toString();
+        let shapeRadius;
+
+        switch (this.kaleidoscopeShape) {
+            case 'petal': shapeRadius = baseRadius * 1.0;
+                break;
+            case 'rectangle': shapeRadius = baseRadius * 1.0;
+                break;
+            case 'triangle':
+            default: shapeRadius = baseRadius * 1.1;
+                break;
         }
-        if (this.audioMotion?.canvas) {
-            this.audioMotion.canvas.style.visibility = 'visible';
-        }
-        if (this.infiniteZoom?.canvas) {
-            this.infiniteZoom.canvas.style.visibility = 'visible';
-        }
-        if (this.fluidDynamics?.canvas) {
-            this.fluidDynamics.canvas.style.visibility = 'visible';
-        }
-        if (this.webglVisualization?.canvas) {
-            this.webglVisualization.canvas.style.visibility = 'visible';
-        }
-        if (window.pluginManager) {
-            window.pluginManager.getAllPlugins().forEach(plugin => {
-                if (plugin.canvas && plugin.isActive) {
-                    plugin.canvas.style.visibility = 'visible';
-                }
-            });
-        }
-        return;
-    }
 
-    // Show kaleidoscope canvas and clear it
-    this.kaleidoscopeCanvas.style.display = 'block';
-    this.kaleidoscopeCtx.clearRect(0, 0, width, height);
+        // Apply kaleidoscope to VIDEO if enabled
+        if (this.kaleidoscopeApplyToVideo && (this.videoMode === 'camera' || this.videoMode === 'file')) {
+            let videoSource = null;
 
-    // Hide original canvases that are being captured
-    sourcesToDraw.forEach(source => {
-        if (source.isVideo && this.videoElement) {
-            this.videoElement.style.opacity = '0';
-        } else if (source.canvas && source.canvas.style) {
-            source.canvas.style.visibility = 'hidden';
-        }
-    });
-
-    // Apply video filters if video is included
-    const hasVideo = sourcesToDraw.some(s => s.isVideo);
-    if (hasVideo) {
-        this.applyFiltersToKaleidoscopeContext();
-    }
-
-    const centerX = width * this.kaleidoscopeCenterX;
-    const centerY = height * this.kaleidoscopeCenterY;
-    const angleStep = (Math.PI * 2) / this.kaleidoscopeSegments;
-
-    // Calculate base radius
-    const minDimension = Math.min(width, height);
-    const baseRadius = minDimension * 0.45;
-    
-    let shapeRadius;
-    switch (this.kaleidoscopeShape) {
-        case 'petal':
-            shapeRadius = baseRadius * 1.0;
-            break;
-        case 'rectangle':
-            shapeRadius = baseRadius * 1.0;
-            break;
-        case 'triangle':
-        default:
-            shapeRadius = baseRadius * 1.1;
-            break;
-    }
-
-    // Draw multiple rings
-    for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
-        const ringScale = this.kaleidoscopeScale * Math.pow(1 - this.kaleidoscopeRingSpacing, ring);
-        const ringRotationOffset = this.kaleidoscopeRingRotations[ring] || (ring * (Math.PI / this.kaleidoscopeSegments));
-
-        // Draw segments
-        for (let i = 0; i < this.kaleidoscopeSegments; i++) {
-            this.kaleidoscopeCtx.save();
-            this.kaleidoscopeCtx.translate(centerX, centerY);
-            this.kaleidoscopeCtx.rotate(angleStep * i + this.kaleidoscopeRotation + ringRotationOffset);
-            this.kaleidoscopeCtx.scale(ringScale, ringScale);
-
-            // Create clipping path based on shape
-            this.kaleidoscopeCtx.beginPath();
-
-            switch (this.kaleidoscopeShape) {
-                case 'petal':
-                    this.kaleidoscopeCtx.moveTo(0, 0);
-                    const petalAngle = angleStep * 0.8;
-                    const controlRadius = shapeRadius * 0.7;
-                    this.kaleidoscopeCtx.quadraticCurveTo(
-                        controlRadius * Math.cos(petalAngle * 0.3),
-                        controlRadius * Math.sin(petalAngle * 0.3),
-                        shapeRadius * Math.cos(petalAngle * 0.5),
-                        shapeRadius * Math.sin(petalAngle * 0.5)
-                    );
-                    this.kaleidoscopeCtx.quadraticCurveTo(
-                        controlRadius * Math.cos(petalAngle * 0.7),
-                        controlRadius * Math.sin(petalAngle * 0.7),
-                        0,
-                        0
-                    );
-                    break;
-
-                case 'rectangle':
-                    const rectAngle = angleStep * 0.45;
-                    this.kaleidoscopeCtx.moveTo(0, 0);
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(-rectAngle), shapeRadius * Math.sin(-rectAngle));
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(-rectAngle), shapeRadius * Math.sin(-rectAngle) + shapeRadius * 0.3);
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle) + shapeRadius * 0.3);
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle));
-                    this.kaleidoscopeCtx.lineTo(0, 0);
-                    break;
-
-                case 'triangle':
-                default:
-                    this.kaleidoscopeCtx.moveTo(0, 0);
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(0), shapeRadius * Math.sin(0));
-                    this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(angleStep), shapeRadius * Math.sin(angleStep));
-                    break;
+            if (this.captureVideoElement && this.captureVideoElement.readyState >= 2) {
+                videoSource = this.captureVideoElement;
+                // console.log('Using captureVideoElement for kaleidoscope');
+            } else if (this.videoElement && this.videoElement.readyState >= 2) {
+                videoSource = this.videoElement;
+                // console.log('Using videoElement for kaleidoscope');
+            } else {
+                console.warn('No video source ready for kaleidoscope');
             }
 
-            this.kaleidoscopeCtx.closePath();
-            this.kaleidoscopeCtx.clip();
+            if (videoSource) {
+                this.kaleidoscopeVideoCanvas.style.display = 'block';
+                this.kaleidoscopeVideoCtx.clearRect(0, 0, width, height);
 
-            // Set opacity based on ring number
-            this.kaleidoscopeCtx.globalAlpha = 1 - (ring * 0.15);
+                // console.log('Drawing video kaleidoscope with', this.kaleidoscopeSegments, 'segments');
+                
+                // Apply video filters to kaleidoscope canvas
+                this.applyFiltersToKaleidoscopeContext();
+                
+                // Apply video opacity to kaleidoscope canvas
+                this.kaleidoscopeVideoCanvas.style.opacity = this.videoOpacity.toString();
 
-            // Mirror for odd segments
-            if (i % 2 !== 0) {
-                this.kaleidoscopeCtx.scale(1, -1);
-            }
+                // Draw multiple rings for VIDEO
+                for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
+                    const ringScale = this.kaleidoscopeScale * Math.pow(1 - this.kaleidoscopeRingSpacing, ring);
+                    const ringRotationOffset = this.kaleidoscopeRingRotations[ring] || (ring * (Math.PI / this.kaleidoscopeSegments));
 
-            // Draw ALL sources in z-index order (back to front)
-            sourcesToDraw.forEach(source => {
-                // Handle video source separately (needs special handling)
-                if (source.isVideo && source.canvas) {
-                    const videoElement = source.canvas;
-                    if (videoElement.readyState >= 2) {
-                        // Apply mirror transformation for video
-                        this.kaleidoscopeCtx.save();
+                    // Draw video kaleidoscope segments for this ring
+                    for (let i = 0; i < this.kaleidoscopeSegments; i++) {
+                        this.kaleidoscopeVideoCtx.save();
+                        this.kaleidoscopeVideoCtx.translate(centerX, centerY);
+                        this.kaleidoscopeVideoCtx.rotate(angleStep * i + this.kaleidoscopeRotation + ringRotationOffset);
+                        this.kaleidoscopeVideoCtx.scale(ringScale, ringScale);
+
+                        // Create clipping path based on shape
+                        this.kaleidoscopeVideoCtx.beginPath();
+
+                        switch (this.kaleidoscopeShape) {
+                            case 'petal':
+                                // Curved petal shape
+                                this.kaleidoscopeVideoCtx.moveTo(0, 0);
+                                const scaleAdjust = Math.max(1, this.kaleidoscopeScale);
+                                const petalAngle = angleStep * (1.2 * scaleAdjust);
+                                const controlRadius = shapeRadius * 0.7;
+                                this.kaleidoscopeVideoCtx.quadraticCurveTo(controlRadius * Math.cos(petalAngle * 0.3), controlRadius * Math.sin(petalAngle * 0.3), shapeRadius * Math.cos(petalAngle * 0.5), shapeRadius * Math.sin(petalAngle * 0.5));
+                                this.kaleidoscopeVideoCtx.quadraticCurveTo(controlRadius * Math.cos(petalAngle * 0.7), controlRadius * Math.sin(petalAngle * 0.7), 0, 0);
+                                break;
+
+                            case 'rectangle':
+                                // Draw rectangle as a path from origin
+                                const rectAngle = angleStep * 0.45;
+                                this.kaleidoscopeVideoCtx.moveTo(0, 0);
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(- rectAngle), shapeRadius * Math.sin(- rectAngle));
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(- rectAngle), shapeRadius * Math.sin(- rectAngle) + shapeRadius * 0.3);
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle) + shapeRadius * 0.3);
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle));
+                                this.kaleidoscopeVideoCtx.lineTo(0, 0);
+                                break;
+
+                            case 'triangle':
+                            default:
+                                // Original triangular shape
+                                this.kaleidoscopeVideoCtx.moveTo(0, 0);
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(0), shapeRadius * Math.sin(0));
+                                this.kaleidoscopeVideoCtx.lineTo(shapeRadius * Math.cos(angleStep), shapeRadius * Math.sin(angleStep));
+                                break;
+                        }
+
+                        this.kaleidoscopeVideoCtx.closePath();
+                        this.kaleidoscopeVideoCtx.clip();
+
+                        // Set opacity based on ring number for better visibility
+                        this.kaleidoscopeVideoCtx.globalAlpha = 1 - (ring * 0.15);
+
+                        // Apply mirror transformation if needed
                         if (this.videoMirror === 'horizontal' || this.videoMirror === 'both') {
-                            this.kaleidoscopeCtx.scale(-1, 1);
+                            this.kaleidoscopeVideoCtx.scale(-1, 1);
                         }
                         if (this.videoMirror === 'vertical' || this.videoMirror === 'both') {
-                            this.kaleidoscopeCtx.scale(1, -1);
+                            this.kaleidoscopeVideoCtx.scale(1, -1);
                         }
-                        this.kaleidoscopeCtx.drawImage(videoElement, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
-                        this.kaleidoscopeCtx.restore();
-                    }
-                } else if (source.canvas) {
-                    // Handle canvas sources (visualizations, plugins)
-                    // Skip WebGL if not supported
-                    if (source.type === 'webgl' && !source.webglSupported) {
-                        return;
-                    }
-                    
-                    // Handle Fluid Dynamics: Draw black background if TRANSPARENT is false
-                    if (source.type === 'fluidDynamics' && this.fluidDynamics?.config) {
-                        if (!this.fluidDynamics.config.TRANSPARENT) {
-                            // Draw black background rectangle
-                            this.kaleidoscopeCtx.save();
-                            const bgOpacity = this.fluidDynamics.config.BACKGROUND_OPACITY || 1.0;
-                            this.kaleidoscopeCtx.fillStyle = `rgba(0, 0, 0, ${bgOpacity})`;
-                            this.kaleidoscopeCtx.fillRect(-centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
-                            this.kaleidoscopeCtx.restore();
+
+                        // Draw segment
+                        if (i % 2 === 0) {
+                            this.kaleidoscopeVideoCtx.drawImage(videoSource, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
+                        } else {
+                            this.kaleidoscopeVideoCtx.scale(1, -1);
+                            this.kaleidoscopeVideoCtx.drawImage(videoSource, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         }
-                    }
-                    
-                    // Apply opacity for plugins
-                    if (source.type === 'plugin' && source.plugin) {
-                        this.kaleidoscopeCtx.save();
-                        
-                        // Handle Nebula knockout background
-                        if (source.pluginName === 'nebula' && source.plugin.knockoutBackground) {
-                            this.kaleidoscopeCtx.globalCompositeOperation = 'screen';
-                        }
-                        
-                        if (source.plugin.opacity !== undefined) {
-                            this.kaleidoscopeCtx.globalAlpha *= source.plugin.opacity;
-                        }
-                        this.kaleidoscopeCtx.drawImage(source.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
-                        this.kaleidoscopeCtx.restore();
-                    } else if (source.type === 'fluidDynamics' && source.opacity !== undefined) {
-                        this.kaleidoscopeCtx.save();
-                        this.kaleidoscopeCtx.globalAlpha *= source.opacity;
-                        this.kaleidoscopeCtx.drawImage(source.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
-                        this.kaleidoscopeCtx.restore();
-                    } else {
-                        this.kaleidoscopeCtx.drawImage(source.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
+                        this.kaleidoscopeVideoCtx.restore();
                     }
                 }
-            });
 
-            this.kaleidoscopeCtx.restore();
+                // Hide original video when kaleidoscope is active
+                if (this.videoElement) {
+                    this.videoElement.style.opacity = '0';
+                }
+
+                // console.log('Video kaleidoscope drawn successfully');
+            } else {
+                // console.warn('Video source not ready for kaleidoscope');
+            }
+        } else {
+            this.kaleidoscopeVideoCanvas.style.display = 'none';
+            if (this.videoElement && this.videoMode === 'camera') {
+                this.videoElement.style.opacity = this.videoOpacity.toString();
+            }
+        }
+
+        // Check if we need to draw kaleidoscope (either AM viz, IZ, WebGL, Fluid Dynamics, or Plugins)
+        // Note: Nebula plugin handled via plugin system, but kaleidoscopeApplyToNebula still used by plugin
+        let shouldDrawKaleidoscope = (this.kaleidoscopeApplyToViz && this.audioMotion && this.audioMotion.canvas && this.visualizationEnabled) ||
+                                     (this.kaleidoscopeApplyToInfiniteZoom && this.infiniteZoom && this.infiniteZoom.isActive && this.infiniteZoom.canvas) ||
+                                     (this.kaleidoscopeApplyToWebGL && this.webglEnabled && this.webglVisualization && this.webglVisualization.isActive && this.webglVisualization.canvas) ||
+                                     (this.kaleidoscopeApplyToFluidDynamics && this.fluidDynamics && this.fluidDynamics.isActive && this.fluidDynamics.canvas);
+        
+        // Check if any plugins should be drawn in kaleidoscope
+        if (window.pluginManager) {
+            const allPlugins = window.pluginManager.getAllPlugins();
+            allPlugins.forEach(plugin => {
+                const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
+                if (this[stateVarName] && plugin.canvas && plugin.isActive) {
+                    shouldDrawKaleidoscope = true;
+                }
+            });
+        }
+
+        if (shouldDrawKaleidoscope) {
+            this.kaleidoscopeVizCanvas.style.display = 'block';
+            this.kaleidoscopeVizCtx.clearRect(0, 0, width, height);
+
+            // console.log('Drawing viz kaleidoscope');
+
+            // Hide the original visualization canvas when kaleidoscope is active
+            if (this.audioMotion && this.audioMotion.canvas) {
+                this.audioMotion.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide Fluid Dynamics canvas when kaleidoscope is active and applying to fluid
+            if (this.fluidDynamics && this.fluidDynamics.canvas && this.kaleidoscopeApplyToFluidDynamics) {
+                this.fluidDynamics.canvas.style.visibility = 'hidden';
+            }
+            
+            // Native Nebula canvas hiding removed - Nebula plugin handled by plugin system
+            
+            // Hide Infinite Zoom canvas when kaleidoscope is active and applying to infinite zoom
+            if (this.infiniteZoom && this.infiniteZoom.canvas && this.kaleidoscopeApplyToInfiniteZoom) {
+                this.infiniteZoom.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide WebGL canvas when kaleidoscope is active and applying to webgl
+            if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas && this.kaleidoscopeApplyToWebGL) {
+                this.webglVisualization.canvas.style.visibility = 'hidden';
+            }
+            
+            // Hide ALL active plugin canvases when kaleidoscope is active (matches native viz behavior)
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        plugin.canvas.style.visibility = 'hidden';
+                    }
+                });
+            }
+
+            // Draw multiple rings for VISUALIZATION
+            for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
+                const ringScale = this.kaleidoscopeScale * Math.pow(1 - this.kaleidoscopeRingSpacing, ring);
+                const ringRotationOffset = this.kaleidoscopeRingRotations[ring] || (ring * (Math.PI / this.kaleidoscopeSegments));
+
+                // Draw viz kaleidoscope segments for this ring
+                for (let i = 0; i < this.kaleidoscopeSegments; i++) {
+                    this.kaleidoscopeVizCtx.save();
+                    this.kaleidoscopeVizCtx.translate(centerX, centerY);
+                    this.kaleidoscopeVizCtx.rotate(angleStep * i + this.kaleidoscopeRotation + ringRotationOffset);
+                    this.kaleidoscopeVizCtx.scale(ringScale, ringScale);
+
+                    // Create clipping path based on shape
+                    this.kaleidoscopeVizCtx.beginPath();
+
+                    switch (this.kaleidoscopeShape) {
+                        case 'petal':
+                            // Curved petal shape
+                            this.kaleidoscopeVizCtx.moveTo(0, 0);
+                            const petalAngle = angleStep * 0.8;
+                            const controlRadius = shapeRadius * 0.7;
+                            this.kaleidoscopeVizCtx.quadraticCurveTo(controlRadius * Math.cos(petalAngle * 0.3), controlRadius * Math.sin(petalAngle * 0.3), shapeRadius * Math.cos(petalAngle * 0.5), shapeRadius * Math.sin(petalAngle * 0.5));
+                            this.kaleidoscopeVizCtx.quadraticCurveTo(controlRadius * Math.cos(petalAngle * 0.7), controlRadius * Math.sin(petalAngle * 0.7), 0, 0);
+                            break;
+
+                        case 'rectangle':
+                            // Draw rectangle as a path from origin
+                            const rectAngle = angleStep * 0.45;
+                            this.kaleidoscopeVizCtx.moveTo(0, 0);
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(- rectAngle), shapeRadius * Math.sin(- rectAngle));
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(- rectAngle), shapeRadius * Math.sin(- rectAngle) + shapeRadius * 0.3);
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle) + shapeRadius * 0.3);
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle));
+                            this.kaleidoscopeVizCtx.lineTo(0, 0);
+                            break;
+
+                        case 'triangle':
+                        default:
+                            // Original triangular shape
+                            this.kaleidoscopeVizCtx.moveTo(0, 0);
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(0), shapeRadius * Math.sin(0));
+                            this.kaleidoscopeVizCtx.lineTo(shapeRadius * Math.cos(angleStep), shapeRadius * Math.sin(angleStep));
+                            break;
+                    }
+
+                    this.kaleidoscopeVizCtx.closePath();
+                    this.kaleidoscopeVizCtx.clip();
+
+                    // Set opacity based on ring number for better visibility
+                    this.kaleidoscopeVizCtx.globalAlpha = 1 - (ring * 0.15);
+
+                    // Draw segment - use z-index ordered canvases
+                    if (i % 2 === 0) {
+                        // Get all active canvases sorted by z-index
+                        const sortedCanvases = this.getActiveCanvasesInZIndexOrder();
+                        
+                        // Draw each canvas in z-index order (back to front)
+                        sortedCanvases.forEach(vizItem => {
+                            const applyToKal = vizItem.applyToKalProperty ? this[vizItem.applyToKalProperty] : true;
+                            
+                            if (applyToKal && vizItem.canvas) {
+                                // Skip WebGL if not supported
+                                if (vizItem.type === 'webgl' && !vizItem.webglSupported) {
+                                    return;
+                                }
+                                
+                                // Handle plugin opacity
+                                if (vizItem.type === 'plugin' && vizItem.plugin.opacity !== undefined) {
+                                    this.kaleidoscopeVizCtx.save();
+                                    this.kaleidoscopeVizCtx.globalAlpha *= vizItem.plugin.opacity;
+                                    this.kaleidoscopeVizCtx.drawImage(vizItem.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
+                                    this.kaleidoscopeVizCtx.restore();
+                                } else {
+                                    this.kaleidoscopeVizCtx.drawImage(vizItem.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
+                                }
+                            }
+                        });
+                    } else {
+                        this.kaleidoscopeVizCtx.scale(1, -1);
+                        
+                        // Get all active canvases sorted by z-index (mirrored segment)
+                        const sortedCanvases = this.getActiveCanvasesInZIndexOrder();
+                        
+                        // Draw each canvas in z-index order (back to front)
+                        sortedCanvases.forEach(vizItem => {
+                            const applyToKal = vizItem.applyToKalProperty ? this[vizItem.applyToKalProperty] : true;
+                            
+                            if (applyToKal && vizItem.canvas) {
+                                // Skip WebGL if not supported
+                                if (vizItem.type === 'webgl' && !vizItem.webglSupported) {
+                                    return;
+                                }
+                                
+                                // Handle plugin opacity
+                                if (vizItem.type === 'plugin' && vizItem.plugin.opacity !== undefined) {
+                                    this.kaleidoscopeVizCtx.save();
+                                    this.kaleidoscopeVizCtx.globalAlpha *= vizItem.plugin.opacity;
+                                    this.kaleidoscopeVizCtx.drawImage(vizItem.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
+                                    this.kaleidoscopeVizCtx.restore();
+                                } else {
+                                    this.kaleidoscopeVizCtx.drawImage(vizItem.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
+                                }
+                            }
+                        });
+                    }
+                    this.kaleidoscopeVizCtx.restore();
+                }
+            }
+
+            // console.log('Viz kaleidoscope drawn successfully');
+        } else {
+            this.kaleidoscopeVizCanvas.style.display = 'none';
+            // Show the original visualization canvas when kaleidoscope is not active
+            if (this.audioMotion && this.audioMotion.canvas) {
+                this.audioMotion.canvas.style.visibility = 'visible';
+            }
+            
+            // Show Fluid Dynamics canvas when kaleidoscope is not active
+            if (this.fluidDynamics && this.fluidDynamics.canvas) {
+                this.fluidDynamics.canvas.style.visibility = 'visible';
+            }
+            
+            // Show Infinite Zoom canvas when kaleidoscope is not active
+            if (this.infiniteZoom && this.infiniteZoom.canvas) {
+                this.infiniteZoom.canvas.style.visibility = 'visible';
+            }
+            
+            // Show WebGL canvas when kaleidoscope is not active
+            if (this.webglEnabled && this.webglVisualization && this.webglVisualization.canvas) {
+                this.webglVisualization.canvas.style.visibility = 'visible';
+            }
+            
+            // Show plugin canvases when kaleidoscope is not active
+            if (window.pluginManager) {
+                const allPlugins = window.pluginManager.getAllPlugins();
+                allPlugins.forEach(plugin => {
+                    if (plugin.canvas && plugin.isActive) {
+                        plugin.canvas.style.visibility = 'visible';
+                    }
+                });
+            }
         }
     }
-}
     setKaleidoscopeSegments(value) {
         this.kaleidoscopeSegments = value;
         if (this.kaleidoscopeEnabled) {
