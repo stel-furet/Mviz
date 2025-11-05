@@ -98,15 +98,12 @@ class NebulaPlugin extends FrequePluginBase {
                     this.nebulaViz.settings[property] = {};
                 }
                 this.nebulaViz.settings[property][nested] = value;
-                console.log(`🌌 NEBULA PLUGIN: Updated ${property}.${nested} to ${value}`);
             } else {
                 // Use NebulaVisualization's updateSetting method for proper updates
                 this.nebulaViz.updateSetting(property, value);
-                console.log(`🌌 NEBULA PLUGIN: Updated ${property} to ${value} via updateSetting()`);
             }
         } else {
             const propName = nested ? `${property}.${nested}` : property;
-            console.log(`🌌 NEBULA PLUGIN: Deferred ${propName} update to ${value} (nebula not ready)`);
         }
     }
     
@@ -119,7 +116,6 @@ class NebulaPlugin extends FrequePluginBase {
         if (this.nebulaViz) {
             this.nebulaViz.opacity = normalizedValue;
         }
-        console.log(`🌌 NEBULA PLUGIN: Set opacity to ${normalizedValue} (from ${value}%)`);
         
         // Call parent class method to handle canvas opacity
         super.setOpacity(value);
@@ -315,7 +311,6 @@ class NebulaPlugin extends FrequePluginBase {
             wrapperClass: 'btn-primary-mixer',
             onClick: () => {
                 this.morphingEnabled = !this.morphingEnabled;
-                console.log(`🌌 NEBULA PLUGIN: Morphing toggled to: ${this.morphingEnabled}`);
                 
                 // Update nebula setting
                 this.updateNebulaSetting('morphingMode', this.morphingEnabled);
@@ -750,7 +745,6 @@ class NebulaPlugin extends FrequePluginBase {
         
         if (presets[presetName]) {
             const preset = presets[presetName];
-            console.log(`🌌 NEBULA PLUGIN: Applying color preset "${presetName}":`, preset);
             
             // Update plugin properties
             this.hueShift = preset.hueShift;
@@ -796,7 +790,6 @@ class NebulaPlugin extends FrequePluginBase {
             presets[presetName.trim()] = currentSettings;
             localStorage.setItem('nebulaPresets', JSON.stringify(presets));
             
-            console.log(`🌌 NEBULA PLUGIN: Saved preset "${presetName}" to localStorage`);
             
             // Update the dropdown with new preset
             this.updatePresetDropdown();
@@ -913,7 +906,6 @@ class NebulaPlugin extends FrequePluginBase {
         const presets = this.getStoredPresets();
         if (presets[presetName]) {
             const preset = presets[presetName];
-            console.log(`🌌 NEBULA PLUGIN: Loading preset "${presetName}":`, preset);
             
             // Update plugin properties
             Object.assign(this, preset);
@@ -928,7 +920,6 @@ class NebulaPlugin extends FrequePluginBase {
             // Update UI controls
             this.updateControlValues();
             
-            console.log(`🌌 NEBULA PLUGIN: Preset "${presetName}" loaded successfully`);
         } else {
             console.error(`🌌 NEBULA PLUGIN: Preset "${presetName}" not found`);
         }
@@ -1045,7 +1036,6 @@ class NebulaPlugin extends FrequePluginBase {
         this.nebulaViz.settings.flyThrough = this.flyThrough;
         this.nebulaViz.settings.flySpeed = this.flySpeed;
         
-        console.log('🌌 NEBULA PLUGIN: Initial settings applied');
     }
     
     onUpdate(deltaTime, timestamp, sharedAudioData) {
@@ -1064,7 +1054,6 @@ class NebulaPlugin extends FrequePluginBase {
             // Then render the frame
             this.nebulaViz.render();
         } else {
-            console.log('🌌 NEBULA PLUGIN: Cannot render - nebulaViz not ready:', !!this.nebulaViz, 'update method:', typeof this.nebulaViz?.update, 'render method:', typeof this.nebulaViz?.render);
         }
         
         // Increment frame counter
@@ -1111,19 +1100,6 @@ class NebulaPlugin extends FrequePluginBase {
         }
         return null;
     }
-    
-    /**
-     * Before composite - ensure WebGL has finished rendering
-     */
-    beforeComposite(ctx, width, height) {
-        // Force WebGL to finish rendering before canvas capture
-        if (this.nebulaViz?.renderer?.getContext) {
-            const gl = this.nebulaViz.renderer.getContext();
-            if (gl && gl.finish) {
-                gl.finish(); // Wait for all WebGL commands to complete
-            }
-        }
-    }
 }
 
 // Auto-register plugin when dependencies are available
@@ -1132,7 +1108,6 @@ class NebulaPlugin extends FrequePluginBase {
         if (window.visualizer && window.pluginManager && window.FrequePluginBase) {
             try {
                 const nebulaPlugin = new NebulaPlugin(window.visualizer);
-                console.log('🌌 Nebula plugin auto-registered successfully');
             } catch (error) {
                 console.error('🌌 Failed to auto-register Nebula plugin:', error);
             }

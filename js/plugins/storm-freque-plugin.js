@@ -528,35 +528,18 @@ window.StormPlugin = StormPlugin;
 // Auto-register if visualizer is available (with delay to ensure plugin manager is ready)
 // Only register if not already registered
 setTimeout(() => {
-    console.log('🔌 STORM AUTO-REGISTER DEBUG: Timeout triggered');
-    console.log('🔌 STORM AUTO-REGISTER DEBUG: Dependencies check:', {
-        visualizer: !!window.visualizer,
-        pluginManager: !!window.pluginManager,
-        FrequePluginBase: !!window.FrequePluginBase
-    });
-    
     if (window.visualizer && window.pluginManager && window.FrequePluginBase) {
         // Check if Storm plugin is already registered
         const existingPlugin = window.pluginManager.getPlugin('storm');
-        console.log('🔌 STORM AUTO-REGISTER DEBUG: Existing plugin check:', !!existingPlugin);
         
         if (existingPlugin) {
-            console.log('🔌 STORM AUTO-REGISTER DEBUG: Storm plugin already registered, skipping auto-registration');
             return;
         }
         
         try {
-            console.log('🔌 STORM AUTO-REGISTER DEBUG: Creating new StormPlugin instance');
             new StormPlugin(window.visualizer);
-            console.log('🔌 STORM AUTO-REGISTER DEBUG: Storm plugin auto-registered successfully');
         } catch (error) {
             console.error('🔌 STORM AUTO-REGISTER DEBUG: Failed to auto-register Storm plugin:', error);
         }
-    } else {
-        console.log('🔌 STORM AUTO-REGISTER DEBUG: Storm plugin waiting for dependencies:', {
-            visualizer: !!window.visualizer,
-            pluginManager: !!window.pluginManager,
-            FrequePluginBase: !!window.FrequePluginBase
-        });
     }
 }, 500); // Increased delay to ensure all dependencies load

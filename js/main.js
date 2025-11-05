@@ -1,6 +1,5 @@
 
 // Main.js v1762204100 - Kaleidoscope Plugin Integration FIXED - draws plugin canvases in applyKaleidoscopeEffect
-console.log('🔮 MAIN.JS Version: v1762204100 - Kaleidoscope Plugin Integration FIXED - draws plugin canvases in applyKaleidoscopeEffect');
 
 // Plugin Canvas Bridge for Kaleidoscope Integration
 // Makes plugin canvases available where kaleidoscope system expects them
@@ -8730,7 +8729,6 @@ class LiveDisplayManager {
                     this.compositeCtx.save();
                     const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
                     this.compositeCtx.globalAlpha = fluidOpacity;
-                    console.log('📺 LiveDisplayManager: Drawing Fluid Dynamics with opacity:', fluidOpacity);
                     
                     this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
                     this.compositeCtx.restore();
@@ -8746,16 +8744,6 @@ class LiveDisplayManager {
                         const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
                         if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
                             const renderCtx = plugin.getRenderingContext();
-                            
-                            // DIAGNOSTIC: Log Nebula composite operations
-                            if (plugin.pluginName === 'nebula' && Math.random() < 0.01) { // Log 1% of frames
-                                console.log('📺 NEBULA COMPOSITE:', {
-                                    opacity: renderCtx.opacity,
-                                    blendMode: renderCtx.blendMode,
-                                    canvasSize: `${plugin.canvas.width}x${plugin.canvas.height}`,
-                                    timestamp: performance.now()
-                                });
-                            }
                             
                             this.compositeCtx.save();
                             
@@ -8829,7 +8817,6 @@ class LiveDisplayManager {
                     this.compositeCtx.save();
                     const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
                     this.compositeCtx.globalAlpha = fluidOpacity;
-                    console.log('📺 LiveDisplayManager: Drawing Fluid Dynamics with opacity (no video):', fluidOpacity);
                     
                     this.drawScaledVisualization(this.visualizer.fluidDynamics.canvas);
                     this.compositeCtx.restore();
@@ -14649,7 +14636,7 @@ class FrequeVisualizer {
                 // console.log('🎛️ AM Visualizer panel opened');
             } else {
                 panel.style.display = 'none';
-                console.log('🎛️ AM Visualizer panel closed');
+                // console.log('🎛️ AM Visualizer panel closed');
             }
         } else {
             // console.error('❌ Header visualizer panel not found');

@@ -156,7 +156,6 @@ class NebulaVisualization {
             pathEntryPoint: null    // Where camera enters the figure-8 path
         };
         
-        // console.log('🌌 Nebula Visualization created');
         this.init();
         this.setupMouseInteraction();
         
@@ -168,7 +167,6 @@ class NebulaVisualization {
     initializePresetSystem() {
         // Load saved presets from localStorage
         this.savedPresets = this.loadPresets();
-        // console.log('🌌 Loaded nebula presets:', this.savedPresets.length);
     }
     
     loadPresets() {
@@ -433,7 +431,6 @@ class NebulaVisualization {
             // Apply initial color adjustments
             setTimeout(() => this.applyColorAdjustments(), 200);
             
-            // console.log('🌌 Nebula Three.js scene initialized successfully');
         } catch (error) {
             console.error('🌌 Error initializing nebula:', error);
         }
@@ -669,7 +666,6 @@ class NebulaVisualization {
             this.scene.add(filament);
         }
         
-        // console.log('🌌 Created', this.filaments.length, 'nebula filament threads');
     }
     
     createInnerCore() {
@@ -1546,11 +1542,9 @@ class NebulaVisualization {
         if (this.settings.knockoutBackground) {
             // Apply CSS screen blend mode for knockout effect
             this.canvas.style.mixBlendMode = 'screen';
-            console.log('🌌 Nebula background knockout enabled (CSS screen blend mode)');
         } else {
             // Reset to normal blending
             this.canvas.style.mixBlendMode = 'normal';
-            console.log('🌌 Nebula background knockout disabled (normal blend mode)');
         }
     }
     
@@ -2177,7 +2171,6 @@ class NebulaVisualization {
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(this.canvas.width, this.canvas.height);
         
-        // console.log(`🌌 Nebula canvas resized to: ${this.canvas.width}x${this.canvas.height}`);
     }
     
     // Auto-resize to container
@@ -2187,7 +2180,6 @@ class NebulaVisualization {
             const rect = container.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
                 this.resize(rect.width, rect.height);
-                // console.log(`🌌 Nebula auto-resized to container: ${rect.width}x${rect.height}`);
             } else {
                 console.warn('🌌 Nebula autoResize: Container has zero dimensions');
             }
@@ -2216,7 +2208,6 @@ class NebulaVisualization {
             if (this.stars.material) this.stars.material.dispose();
         }
         
-        console.log('🌌 Nebula visualization destroyed');
     }
 }
 

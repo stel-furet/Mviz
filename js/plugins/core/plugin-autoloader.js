@@ -105,7 +105,6 @@ class PluginAutoLoader {
             
             // Handle new plugins
             for (const newPlugin of newPlugins) {
-                console.log(`🔌 New plugin discovered: ${newPlugin}`);
                 await this.loadDiscoveredPlugin(newPlugin);
                 this.knownPlugins.add(newPlugin);
                 
@@ -116,7 +115,6 @@ class PluginAutoLoader {
             // Handle missing plugins (mark as missing, don't cleanup until manual refresh)
             for (const missingPlugin of missingPlugins) {
                 if (!this.missingPlugins.has(missingPlugin)) {
-                    console.log(`🔌 Plugin file missing: ${missingPlugin} (marked as missing)`);
                     this.missingPlugins.add(missingPlugin);
                     this.markPluginAsMissing(missingPlugin);
                 }
@@ -243,7 +241,6 @@ class PluginAutoLoader {
      */
     async loadDiscoveredPlugin(pluginFile) {
         try {
-            console.log(`🔌 Loading discovered plugin: ${pluginFile}`);
             
             // Build correct plugin path - ensure single js/plugins/ prefix
             let pluginPath;
@@ -253,7 +250,6 @@ class PluginAutoLoader {
                 pluginPath = `js/plugins/${pluginFile}`;
             }
             
-            console.log(`🔌 Constructed plugin path: ${pluginPath}`);
             
             // Verify plugin loader is available and has the method
             if (!window.pluginLoader || typeof window.pluginLoader.loadPlugin !== 'function') {
@@ -269,7 +265,6 @@ class PluginAutoLoader {
                     loadedAt: Date.now(),
                     missing: false
                 });
-                console.log(`🔌 Successfully loaded plugin: ${pluginFile}`);
             } else {
                 throw new Error('Plugin loader returned false');
             }
@@ -288,7 +283,6 @@ class PluginAutoLoader {
         const pluginInfo = this.loadedPlugins.get(pluginFile);
         if (pluginInfo) {
             pluginInfo.missing = true;
-            console.log(`🔌 Plugin marked as missing: ${pluginFile}`);
             
             // Could add visual indicator to channel strip here
             // For now, just log it
@@ -299,7 +293,6 @@ class PluginAutoLoader {
      * Manual refresh - cleanup missing plugins and rescan
      */
     async refreshPlugins() {
-        console.log('🔌 Manual plugin refresh initiated...');
         
         try {
             // First, cleanup missing plugins
@@ -330,7 +323,6 @@ class PluginAutoLoader {
                 }
             }
             
-            console.log(`🔌 Manual refresh complete. Active plugins: ${this.loadedPlugins.size}`);
             
         } catch (error) {
             console.error('🔌 Manual refresh failed:', error);
@@ -344,7 +336,6 @@ class PluginAutoLoader {
         const missingPluginArray = Array.from(this.missingPlugins);
         
         for (const pluginFile of missingPluginArray) {
-            console.log(`🔌 Cleaning up missing plugin: ${pluginFile}`);
             await this.unloadPlugin(pluginFile);
         }
         
@@ -377,7 +368,6 @@ class PluginAutoLoader {
             this.loadedPlugins.delete(pluginFile);
             this.knownPlugins.delete(pluginFile);
             
-            console.log(`🔌 Plugin unloaded: ${pluginFile}`);
             
         } catch (error) {
             console.error(`🔌 Error unloading plugin ${pluginFile}:`, error);
