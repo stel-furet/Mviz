@@ -419,7 +419,6 @@ class PluginMixerIntegration {
      * Add input controls to plugin channel strip (channel-input-section)
      */
     addPluginInputControls(pluginName, inputControls) {
-        console.log(`🎛️ DEBUG: Adding input controls for plugin "${pluginName}":`, inputControls);
         const channelStrip = this.channelStrips.get(pluginName);
         if (!channelStrip) {
             console.error(`🎛️ DEBUG: No channel strip found for plugin "${pluginName}"`);

@@ -35,6 +35,7 @@ class FluidDynamicsVisualization {
             PAUSED: false,
             BACK_COLOR: { r: 0, g: 0, b: 0 },
             TRANSPARENT: false,
+            BACKGROUND_OPACITY: 0.0, // 0.0 = fully transparent, 1.0 = fully opaque
             BLOOM: true,
             BLOOM_ITERATIONS: 8,
             BLOOM_RESOLUTION: 256,
@@ -738,16 +739,25 @@ class FluidDynamicsVisualization {
         this.isActive = true;
         this.canvas.style.display = 'block';
         
-        // Remove red background - using fluid rendering now
-        this.canvas.style.backgroundColor = 'transparent';
+        // Set background based on BACKGROUND_OPACITY config
+        const opacity = this.config.BACKGROUND_OPACITY || 0.0;
+        if (opacity === 0.0) {
+            this.canvas.style.backgroundColor = 'transparent';
+        } else {
+            this.canvas.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+        }
+        
+        // Apply blend mode based on opacity (use screen blend for transparency)
+        this.applyBackgroundKnockout();
         
         // Initial resize and viewport setup
         setTimeout(() => {
             this.resize();
             if (this.gl) {
                 this.gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
-                // Initialize with transparent background
-                this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
+                // Set clear color based on BACKGROUND_OPACITY config
+                const opacity = this.config.BACKGROUND_OPACITY || 0.0;
+                this.gl.clearColor(0.0, 0.0, 0.0, opacity);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             }
         }, 16);
@@ -1861,7 +1871,39 @@ class FluidDynamicsVisualization {
         if (this.canvas) {
             this.canvas.style.opacity = this.opacity.toString();
         }
-        // console.log(`🎨 Fluid opacity set to: ${this.opacity}`);
+    }
+    
+    // Apply background knockout (like Nebula)
+    applyBackgroundKnockout() {
+        if (!this.canvas) return;
+        
+        const opacity = this.config.BACKGROUND_OPACITY || 0.0;
+        
+        if (opacity === 0.0) {
+            // Fully transparent: Apply CSS screen blend mode for knockout effect
+            this.canvas.style.mixBlendMode = 'screen';
+            this.canvas.style.backgroundColor = 'transparent';
+            // Set WebGL clear color to transparent
+            if (this.gl) {
+                this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            }
+        } else if (opacity === 1.0) {
+            // Fully opaque: Reset to normal blending with solid black
+            this.canvas.style.mixBlendMode = 'normal';
+            this.canvas.style.backgroundColor = 'black';
+            // Set WebGL clear color to solid black
+            if (this.gl) {
+                this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            }
+        } else {
+            // Partial opacity: Use normal blend mode with semi-transparent black
+            this.canvas.style.mixBlendMode = 'normal';
+            this.canvas.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+            // Set WebGL clear color to match
+            if (this.gl) {
+                this.gl.clearColor(0.0, 0.0, 0.0, opacity);
+            }
+        }
     }
     
     // Update saturation

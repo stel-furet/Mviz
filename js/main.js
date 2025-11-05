@@ -19,11 +19,8 @@ function bridgePluginCanvasesToKaleidoscope() {
             }
             window.visualizer[pluginPropertyName].canvas = plugin.canvas;
             
-            // Only log once per plugin
-            if (!bridgedPlugins.has(plugin.pluginName)) {
-                console.log(`🔮 BRIDGE: ${plugin.pluginName} plugin canvas bridged to kaleidoscope system`);
-                bridgedPlugins.add(plugin.pluginName);
-            }
+            // Track bridged plugins
+            bridgedPlugins.add(plugin.pluginName);
         }
     });
 }
@@ -3192,6 +3189,95 @@ class RecordManager {
         }
 
         // ========== AM PRESET CONTROLS ==========
+        
+        // Mixer AM Regular Preset Buttons (0-6)
+        const mixerAMPresetButtons = document.querySelectorAll('[id^="mixerAMPreset"][data-preset]');
+        if (mixerAMPresetButtons.length > 0) {
+            mixerAMPresetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const presetIndex = parseInt(button.getAttribute('data-preset'));
+                    
+                    if (this.visualizer && presetIndex >= 0 && presetIndex < this.visualizer.visualizationModes.length) {
+                        // Switch back to custom analyzer if using official
+                        if (this.visualizer.useOfficialAudioMotion) {
+                            this.visualizer.switchToCustomAnalyzer();
+                        }
+                        
+                        this.visualizer.setVisualizationMode(presetIndex);
+                        
+                        // Update active state for mixer buttons
+                        mixerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        // Remove active state from mixer advanced preset buttons
+                        const mixerAMAdvPresetButtons = document.querySelectorAll('[id^="mixerAMAdvPreset"]');
+                        mixerAMAdvPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        // Sync with header buttons
+                        const headerAMPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset[data-preset]');
+                        headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        const headerBtn = document.querySelector(`#headerVisualizerPanel .btn-preset[data-preset="${presetIndex}"]`);
+                        if (headerBtn) headerBtn.classList.add('active');
+                        
+                        const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro');
+                        headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        // Hide advanced controls
+                        const mixerAdvancedControls = document.getElementById('mixerAdvancedPresetControls');
+                        if (mixerAdvancedControls) {
+                            mixerAdvancedControls.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Mixer AM Advanced Preset Buttons (Fluid, Prism, Twin Peaks, Circus)
+        const mixerAMAdvPresetButtons = document.querySelectorAll('[id^="mixerAMAdvPreset"][data-official-preset]');
+        if (mixerAMAdvPresetButtons.length > 0) {
+            mixerAMAdvPresetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const presetIndex = parseInt(button.getAttribute('data-official-preset'));
+                    
+                    if (this.visualizer && this.visualizer.officialAudioMotionPresets && presetIndex >= 0 && presetIndex < this.visualizer.officialAudioMotionPresets.length) {
+                        this.visualizer.setOfficialAudioMotionPreset(presetIndex);
+                        
+                        // Update active state for mixer buttons
+                        mixerAMAdvPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        // Remove active state from mixer regular preset buttons
+                        const mixerAMPresetButtons = document.querySelectorAll('[id^="mixerAMPreset"][data-preset]');
+                        mixerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        // Sync with header buttons
+                        const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
+                        headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        const headerBtn = document.querySelector(`#headerVisualizerPanel .btn-preset-pro[data-official-preset="${presetIndex}"]`);
+                        if (headerBtn) headerBtn.classList.add('active');
+                        
+                        const headerAMPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset[data-preset]');
+                        headerAMPresetButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        // Show advanced controls
+                        const mixerAdvancedControls = document.getElementById('mixerAdvancedPresetControls');
+                        if (mixerAdvancedControls) {
+                            mixerAdvancedControls.style.display = 'block';
+                        }
+                        
+                        // Load control values from preset
+                        if (this.visualizer && typeof this.visualizer.loadMixerAdvancedControlsFromPreset === 'function') {
+                            setTimeout(() => this.visualizer.loadMixerAdvancedControlsFromPreset(), 100);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Setup mixer advanced control event listeners
+        if (this.visualizer && typeof this.visualizer.setupMixerAdvancedControlEventListeners === 'function') {
+            this.visualizer.setupMixerAdvancedControlEventListeners();
+        }
 
         // Mixer AM Preset Selector
         const mixerAMPresetSelector = document.getElementById('mixerAMPresetSelector');
@@ -4133,7 +4219,6 @@ class RecordManager {
             mixerFluidityColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const scheme = e.target.value;
-                    // console.log('🎨 Mixer Fluidity color scheme changed to:', scheme);
                     // Sync with header dropdown
                     const headerColorScheme = document.getElementById('headerFluidDynamicsColorScheme');
                     if (headerColorScheme) {
@@ -4142,8 +4227,53 @@ class RecordManager {
                     }
                 }
             });
-        } else {
-            // console.error('❌ Mixer Fluidity color scheme dropdown not found');
+        }
+        
+        // Background Opacity Sliders
+        const mixerFluidityBackgroundSlider = document.getElementById('mixerFluidityBackgroundSlider');
+        const mixerFluidityBackgroundValue = document.getElementById('mixerFluidityBackgroundValue');
+        const headerFluidDynamicsBackgroundSlider = document.getElementById('headerFluidDynamicsBackgroundSlider');
+        const headerFluidDynamicsBackgroundValue = document.getElementById('headerFluidDynamicsBackgroundValue');
+        
+        const updateFluidBackground = (value) => {
+            if (this.visualizer && this.visualizer.fluidDynamics) {
+                const fluid = this.visualizer.fluidDynamics;
+                const opacity = parseFloat(value);
+                
+                // Update config
+                fluid.config.BACKGROUND_OPACITY = opacity;
+                
+                // Update display values
+                const displayValue = opacity.toFixed(2);
+                if (mixerFluidityBackgroundValue) {
+                    mixerFluidityBackgroundValue.textContent = displayValue;
+                }
+                if (headerFluidDynamicsBackgroundValue) {
+                    headerFluidDynamicsBackgroundValue.textContent = displayValue;
+                }
+                
+                // Update slider values to stay in sync
+                if (mixerFluidityBackgroundSlider) {
+                    mixerFluidityBackgroundSlider.value = opacity;
+                }
+                if (headerFluidDynamicsBackgroundSlider) {
+                    headerFluidDynamicsBackgroundSlider.value = opacity;
+                }
+                
+                // Apply the opacity change
+                fluid.applyBackgroundKnockout();
+            }
+        };
+        
+        if (mixerFluidityBackgroundSlider) {
+            mixerFluidityBackgroundSlider.addEventListener('input', (e) => {
+                updateFluidBackground(e.target.value);
+            });
+        }
+        if (headerFluidDynamicsBackgroundSlider) {
+            headerFluidDynamicsBackgroundSlider.addEventListener('input', (e) => {
+                updateFluidBackground(e.target.value);
+            });
         }
 
         // ========== FLUIDITY CONTROL SLIDERS ==========
@@ -7148,20 +7278,8 @@ class RecordManager {
             // console.log(`Video letterbox dimensions: ${sharedDrawWidth}x${sharedDrawHeight} at ${sharedDrawX},${sharedDrawY}`);
             // console.log(`Video aspect: ${videoAspect.toFixed(3)}, Canvas aspect: ${canvasAspect.toFixed(3)}`);
             
-            // Draw video background with shared dimensions
-            if (this.visualizer.kaleidoscopeEnabled && 
-                this.visualizer.kaleidoscopeApplyToVideo && 
-                this.visualizer.kaleidoscopeVideoCanvas &&
-                this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
-                
-                // Draw kaleidoscope video canvas
-                const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
-                if (kaleidoscopeOpacity > 0) {
-                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                    this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
-                }
-            } else {
+            // Draw video background with shared dimensions (only if NOT using kaleidoscope)
+            if (!this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToVideo) {
                 // Draw regular video with effects using shared dimensions
                 const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                 if (opacity > 0) {
@@ -7169,11 +7287,50 @@ class RecordManager {
                     this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                     this.compositeCtx.globalAlpha = 1;
                 }
+            } else if (this.visualizer.kaleidoscopeEnabled && 
+                       this.visualizer.kaleidoscopeApplyToVideo && 
+                       this.visualizer.kaleidoscopeVideoCanvas &&
+                       this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
+                // Draw kaleidoscope video canvas with proper letterboxing
+                const kalAspect = this.visualizer.kaleidoscopeVideoCanvas.width / this.visualizer.kaleidoscopeVideoCanvas.height;
+                let kalDrawWidth = width;
+                let kalDrawHeight = width / kalAspect;
+                let kalDrawX = 0;
+                let kalDrawY = (height - kalDrawHeight) / 2;
+                
+                const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                if (kaleidoscopeOpacity > 0) {
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                    this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
+                }
             }
             
-            // Draw visualization using full canvas dimensions (not letterboxed like video)
-            // console.log(`Drawing visualization with full canvas dimensions: ${width}x${height}`);
-            this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+            // Draw visualization with proper letterboxing if it's a kaleidoscope canvas
+            // (but skip kaleidoscopeVideoCanvas if we already drew it above)
+            if (sourceCanvas === this.visualizer.kaleidoscopeVizCanvas) {
+                // Kaleidoscope viz canvas needs its own letterboxing based on its actual dimensions
+                const kalAspect = sourceCanvas.width / sourceCanvas.height;
+                const canvasAspect = width / height;
+                
+                let kalDrawWidth, kalDrawHeight, kalDrawX, kalDrawY;
+                kalDrawWidth = width;
+                kalDrawHeight = width / kalAspect;
+                kalDrawX = 0;
+                kalDrawY = (height - kalDrawHeight) / 2;
+                
+                // Apply opacity
+                const kaleidoscopeOpacity = parseFloat(sourceCanvas.style.opacity) || 1;
+                if (kaleidoscopeOpacity > 0) {
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                    this.compositeCtx.drawImage(sourceCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                    this.compositeCtx.globalAlpha = 1;
+                }
+            } else if (sourceCanvas && sourceCanvas !== this.visualizer.kaleidoscopeVideoCanvas) {
+                // Draw other visualizations using full canvas dimensions (not letterboxed)
+                // Skip kaleidoscopeVideoCanvas here since it was already drawn above
+                this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+            }
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope
             if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
@@ -8666,23 +8823,9 @@ class LiveDisplayManager {
                 // console.log(`DEBUG LiveDisplay ${this.displayId}: Full displaySettings object:`, JSON.stringify(this.displaySettings));
             }
             
-            // Draw video background with shared dimensions (if capture video is enabled)
+            // Draw video background with shared dimensions (if capture video is enabled, only if NOT using kaleidoscope)
             if (this.displaySettings && this.displaySettings.captureVideo) {
-                if (this.visualizer.kaleidoscopeEnabled && 
-                    this.visualizer.kaleidoscopeApplyToVideo && 
-                    this.visualizer.kaleidoscopeVideoCanvas &&
-                    this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none') {
-                    
-                    // Draw kaleidoscope video canvas (if capture kaleidoscope is enabled)
-                    if (this.displaySettings.captureKaleidoscope) {
-                        const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
-                        if (kaleidoscopeOpacity > 0) {
-                            this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
-                            this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                            this.compositeCtx.globalAlpha = 1;
-                        }
-                    }
-                } else {
+                if (!this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToVideo) {
                     // Draw regular video with effects using shared dimensions
                     const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
                     if (opacity > 0) {
@@ -8690,13 +8833,53 @@ class LiveDisplayManager {
                         this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                         this.compositeCtx.globalAlpha = 1;
                     }
+                } else if (this.visualizer.kaleidoscopeEnabled && 
+                           this.visualizer.kaleidoscopeApplyToVideo && 
+                           this.visualizer.kaleidoscopeVideoCanvas &&
+                           this.visualizer.kaleidoscopeVideoCanvas.style.display !== 'none' &&
+                           this.displaySettings.captureKaleidoscope) {
+                    // Draw kaleidoscope video canvas with proper letterboxing
+                    const kalAspect = this.visualizer.kaleidoscopeVideoCanvas.width / this.visualizer.kaleidoscopeVideoCanvas.height;
+                    let kalDrawWidth = width;
+                    let kalDrawHeight = width / kalAspect;
+                    let kalDrawX = 0;
+                    let kalDrawY = (height - kalDrawHeight) / 2;
+                    
+                    const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeVideoCanvas.style.opacity) || 1;
+                    if (kaleidoscopeOpacity > 0) {
+                        this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        this.compositeCtx.drawImage(this.visualizer.kaleidoscopeVideoCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
                 }
             }
             
-            // Draw visualization using full canvas dimensions (if capture visualization is enabled)
+            // Draw visualization with proper letterboxing if it's a kaleidoscope canvas (if capture visualization is enabled)
+            // (but skip kaleidoscopeVideoCanvas if we already drew it above)
             if (this.displaySettings && this.displaySettings.captureVisualization) {
-                // console.log(`LiveDisplay ${this.displayId} drawing visualization with full canvas dimensions: ${width}x${height}`);
-                this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+                if (sourceCanvas === this.visualizer.kaleidoscopeVizCanvas) {
+                    // Kaleidoscope viz canvas needs its own letterboxing based on its actual dimensions
+                    const kalAspect = sourceCanvas.width / sourceCanvas.height;
+                    const canvasAspect = width / height;
+                    
+                    let kalDrawWidth, kalDrawHeight, kalDrawX, kalDrawY;
+                    kalDrawWidth = width;
+                    kalDrawHeight = width / kalAspect;
+                    kalDrawX = 0;
+                    kalDrawY = (height - kalDrawHeight) / 2;
+                    
+                    // Apply opacity
+                    const kaleidoscopeOpacity = parseFloat(sourceCanvas.style.opacity) || 1;
+                    if (kaleidoscopeOpacity > 0) {
+                        this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        this.compositeCtx.drawImage(sourceCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                } else if (sourceCanvas && sourceCanvas !== this.visualizer.kaleidoscopeVideoCanvas) {
+                    // Draw other visualizations using full canvas dimensions (not letterboxed)
+                    // Skip kaleidoscopeVideoCanvas here since it was already drawn above
+                    this.compositeCtx.drawImage(sourceCanvas, 0, 0, width, height);
+                }
             }
             
             // Draw Infinite Zoom if active and not captured via kaleidoscope (if capture infinite zoom is enabled)
@@ -20874,6 +21057,178 @@ https://rogueamoeba.com/loopback/
         }
     }
     
+    // ========== MIXER ADVANCED CONTROLS ==========
+    
+    setupMixerAdvancedControlEventListeners() {
+        // Gradient dropdown
+        const gradientSelect = document.getElementById('mixerAdvancedGradient');
+        if (gradientSelect) {
+            gradientSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.gradient = e.target.value;
+                    const headerSelect = document.getElementById('advancedGradient');
+                    if (headerSelect) headerSelect.value = e.target.value;
+                }
+            });
+        }
+        
+        // Color Mode dropdown
+        const colorModeSelect = document.getElementById('mixerAdvancedColorMode');
+        if (colorModeSelect) {
+            colorModeSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.colorMode = e.target.value;
+                    const headerSelect = document.getElementById('advancedColorMode');
+                    if (headerSelect) headerSelect.value = e.target.value;
+                }
+            });
+        }
+        
+        // Channel Layout dropdown
+        const channelLayoutSelect = document.getElementById('mixerAdvancedChannelLayout');
+        if (channelLayoutSelect) {
+            channelLayoutSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.channelLayout = e.target.value;
+                    const headerSelect = document.getElementById('advancedChannelLayout');
+                    if (headerSelect) headerSelect.value = e.target.value;
+                }
+            });
+        }
+        
+        // Mode dropdown
+        const modeSelect = document.getElementById('mixerAdvancedMode');
+        if (modeSelect) {
+            modeSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.mode = parseInt(e.target.value);
+                    const headerSelect = document.getElementById('advancedModeSelect');
+                    if (headerSelect) headerSelect.value = e.target.value;
+                }
+            });
+        }
+        
+        // FFT Size dropdown
+        const fftSizeSelect = document.getElementById('mixerAdvancedFftSize');
+        if (fftSizeSelect) {
+            fftSizeSelect.addEventListener('change', (e) => {
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.fftSize = parseInt(e.target.value);
+                    const headerSelect = document.getElementById('advancedFftSize');
+                    if (headerSelect) headerSelect.value = e.target.value;
+                }
+            });
+        }
+        
+        // Volume slider
+        const volumeSlider = document.getElementById('mixerAdvancedVolumeSlider');
+        const volumeValue = document.getElementById('mixerAdvancedVolumeValue');
+        if (volumeSlider && volumeValue) {
+            volumeSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                volumeValue.textContent = value + '%';
+                if (this.officialAudioMotion) {
+                    this.officialAudioMotion.volume = value / 100;
+                }
+                const headerSlider = document.getElementById('advancedVolumeSlider');
+                const headerValue = document.getElementById('advancedVolumeValue');
+                if (headerSlider) headerSlider.value = value;
+                if (headerValue) headerValue.textContent = value + '%';
+            });
+        }
+        
+        // Smoothing, Linear Boost, Min/Max Decibels, Bar Space, Radius sliders
+        const sliders = [
+            { id: 'mixerAdvancedSmoothing', headerId: 'advancedSmoothing', prop: 'smoothing', decimals: 2 },
+            { id: 'mixerAdvancedLinearBoost', headerId: 'advancedLinearBoost', prop: 'linearBoost', decimals: 1 },
+            { id: 'mixerAdvancedMinDecibels', headerId: 'advancedMinDecibels', prop: 'minDecibels', decimals: 0 },
+            { id: 'mixerAdvancedMaxDecibels', headerId: 'advancedMaxDecibels', prop: 'maxDecibels', decimals: 0 },
+            { id: 'mixerAdvancedBarSpace', headerId: 'advancedBarSpace', prop: 'barSpace', decimals: 1 },
+            { id: 'mixerAdvancedRadius', headerId: 'advancedRadius', prop: 'radius', decimals: 2 }
+        ];
+        
+        sliders.forEach(({ id, headerId, prop, decimals }) => {
+            const slider = document.getElementById(id);
+            const valueDisplay = document.getElementById(id + 'Value');
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', (e) => {
+                    const value = decimals === 0 ? parseInt(e.target.value) : parseFloat(e.target.value);
+                    valueDisplay.textContent = decimals === 0 ? value.toString() : value.toFixed(decimals);
+                    if (this.officialAudioMotion) {
+                        this.officialAudioMotion[prop] = value;
+                    }
+                    const headerSlider = document.getElementById(headerId);
+                    const headerValue = document.getElementById(headerId + 'Value');
+                    if (headerSlider) headerSlider.value = value;
+                    if (headerValue) headerValue.textContent = decimals === 0 ? value.toString() : value.toFixed(decimals);
+                });
+            }
+        });
+        
+        // Reset button
+        const resetButton = document.getElementById('mixerResetAdvancedControls');
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                this.resetMixerAdvancedControlsToPreset();
+            });
+        }
+    }
+    
+    loadMixerAdvancedControlsFromPreset() {
+        if (!this.officialAudioMotion) return;
+        
+        const am = this.officialAudioMotion;
+        
+        // Dropdowns
+        const controls = [
+            { id: 'mixerAdvancedGradient', value: am.gradient || 'classic' },
+            { id: 'mixerAdvancedColorMode', value: am.colorMode || 'gradient' },
+            { id: 'mixerAdvancedChannelLayout', value: am.channelLayout || 'single' },
+            { id: 'mixerAdvancedMode', value: (am.mode || 0).toString() },
+            { id: 'mixerAdvancedFftSize', value: (am.fftSize || 8192).toString() }
+        ];
+        
+        controls.forEach(({ id, value }) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+        });
+        
+        // Sliders
+        const sliders = [
+            { id: 'mixerAdvancedSmoothing', value: am.smoothing || 0.5, decimals: 2 },
+            { id: 'mixerAdvancedLinearBoost', value: am.linearBoost || 1.0, decimals: 1 },
+            { id: 'mixerAdvancedMinDecibels', value: am.minDecibels || -85, decimals: 0 },
+            { id: 'mixerAdvancedMaxDecibels', value: am.maxDecibels || -25, decimals: 0 },
+            { id: 'mixerAdvancedBarSpace', value: am.barSpace || 0.1, decimals: 1 },
+            { id: 'mixerAdvancedRadius', value: am.radius || 0.3, decimals: 2 },
+            { id: 'mixerAdvancedVolumeSlider', value: (am.volume || 0) * 100, decimals: 0, suffix: '%' }
+        ];
+        
+        sliders.forEach(({ id, value, decimals, suffix }) => {
+            const slider = document.getElementById(id);
+            const valueDisplay = document.getElementById(id === 'mixerAdvancedVolumeSlider' ? 'mixerAdvancedVolumeValue' : id + 'Value');
+            if (slider) slider.value = value;
+            if (valueDisplay) {
+                const displayValue = decimals === 0 ? Math.round(value).toString() : value.toFixed(decimals);
+                valueDisplay.textContent = suffix ? displayValue + suffix : displayValue;
+            }
+        });
+    }
+    
+    resetMixerAdvancedControlsToPreset() {
+        const activePresetBtn = document.querySelector('[id^="mixerAMAdvPreset"].active');
+        if (activePresetBtn) {
+            const presetIndex = parseInt(activePresetBtn.getAttribute('data-official-preset'));
+            if (this.officialAudioMotionPresets && presetIndex >= 0 && presetIndex < this.officialAudioMotionPresets.length) {
+                this.setOfficialAudioMotionPreset(presetIndex);
+                setTimeout(() => {
+                    this.loadMixerAdvancedControlsFromPreset();
+                    this.loadAdvancedControlsFromPreset();
+                }, 100);
+            }
+        }
+    }
+    
     // ==================== NATIVE NEBULA PRESET/CONTROL METHODS REMOVED ====================
     // All native Nebula preset handlers removed (335 lines)
     // Methods removed: initNebulaPresetHandlers, updateNebulaPresetButton, updateNebulaToggleButton,
@@ -21903,30 +22258,14 @@ https://rogueamoeba.com/loopback/
         // Draw plugins if active and enabled for kaleidoscope (even segments)
         if (window.pluginManager) {
             const allPlugins = window.pluginManager.getAllPlugins();
-            if (allPlugins.length > 0) {
-                console.log('🔮 KALEIDOSCOPE DEBUG (EVEN): Checking', allPlugins.length, 'plugins');
-            }
             allPlugins.forEach(plugin => {
                 const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
                 const stateValue = this[stateVarName];
-                const hasCanvas = !!plugin.canvas;
-                const canvasSize = plugin.canvas ? `${plugin.canvas.width}x${plugin.canvas.height}` : 'N/A';
                 const isActive = plugin.isActive;
-                
-                console.log(`🔮 Plugin "${plugin.pluginName}":`, {
-                    stateVar: stateVarName,
-                    stateValue: stateValue,
-                    hasCanvas: hasCanvas,
-                    canvasSize: canvasSize,
-                    isActive: isActive,
-                    allConditionsMet: stateValue && hasCanvas && isActive
-                });
                 
                 if (stateValue && plugin.canvas && isActive) {
                     // Add dimension validation
                     if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                        console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (EVEN)`);
-                        
                         // Save context for opacity/blend mode
                         this.kaleidoscopeVizCtx.save();
                         
@@ -21938,11 +22277,7 @@ https://rogueamoeba.com/loopback/
                     this.kaleidoscopeVizCtx.drawImage(plugin.canvas, - centerX / ringScale, - centerY / ringScale, width / ringScale, height / ringScale);
                         
                         this.kaleidoscopeVizCtx.restore();
-                    } else {
-                        console.warn(`🔮 ❌ Plugin "${plugin.pluginName}" canvas has invalid dimensions:`, canvasSize);
                     }
-                } else {
-                    console.log(`🔮 ❌ Plugin "${plugin.pluginName}" NOT drawn - failed condition`);
                 }
             });
         }
@@ -21990,8 +22325,6 @@ https://rogueamoeba.com/loopback/
                 if (stateValue && plugin.canvas && plugin.isActive) {
                     // Add dimension validation
                     if (plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                        console.log(`🔮 ✅ DRAWING plugin "${plugin.pluginName}" to kaleidoscope (ODD - mirrored)`);
-                        
                         // Save context for opacity/blend mode
                         this.kaleidoscopeVizCtx.save();
                         

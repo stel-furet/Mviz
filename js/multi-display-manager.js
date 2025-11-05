@@ -1272,15 +1272,15 @@ class DisplayInstance {
         
         // Send settings via dedicated settings channel
         if (this.settingsChannel) {
-            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending settings via settings channel`);
-            const message = {
-                type: 'display-settings', 
-                data: this.settings
-            };
-            // console.log(`DEBUG DisplayInstance ${this.displayId}: Message to send:`, message);
-            this.settingsChannel.postMessage(message);
-        } else {
-            // console.error(`DEBUG DisplayInstance ${this.displayId}: Cannot send settings - no settings channel available`);
+            try {
+                const message = {
+                    type: 'display-settings', 
+                    data: this.settings
+                };
+                this.settingsChannel.postMessage(message);
+            } catch (error) {
+                // Channel might be closed, ignore silently
+            }
         }
     }
     

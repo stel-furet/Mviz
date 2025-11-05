@@ -1080,6 +1080,15 @@
                         </div>
                     </div>
                     
+                    <!-- Background Opacity Slider -->
+                    <div class="control-group-no-border-minor">
+                        <div class="slider-1-wrapper">
+                            <div class="slider-label">Background Opacity</div>
+                            <input type="range" id="headerFluidDynamicsBackgroundSlider" min="0" max="1" step="0.01" value="0" class="slider-1">
+                            <span class="slider-1-value" id="headerFluidDynamicsBackgroundValue">0.00</span>
+                        </div>
+                    </div>
+                    
                     <!-- Visual Controls -->
                     <div class="control-group">
                         <div class="group-label">Visual Controls</div>
@@ -3050,9 +3059,46 @@
                         <span>Presets</span>
                         <span class="collapse-indicator"></span>
                     </div>
-                    <div class="collapsible-content collapsed" id="amPresets">
-                        <!-- Preset Dropdown -->
+                    <div class="collapsible-content" id="amPresets">
+                        <!-- Regular Presets -->
                         <div class="control-mini-group">
+                            <div class="control-mini-label">Regular</div>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="btn-preset" id="mixerAMPreset0" data-preset="0">Spectrum</button>
+                            <button class="btn-preset" id="mixerAMPreset1" data-preset="1">Mirror Wave</button>
+                            <button class="btn-preset" id="mixerAMPreset2" data-preset="2">Classic LED</button>
+                            <button class="btn-preset" id="mixerAMPreset3" data-preset="3">Stereo</button>
+                            <button class="btn-preset" id="mixerAMPreset4" data-preset="4">Radial Spectrum</button>
+                            <button class="btn-preset" id="mixerAMPreset5" data-preset="5">Energy</button>
+                            <button class="btn-preset" id="mixerAMPreset6" data-preset="6">Mirror</button>
+                        </div>
+                        
+                        <!-- Advanced Presets -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">Advanced</div>
+                        </div>
+                        
+                        <!-- Advanced Volume Control -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-header">
+                                <div class="control-mini-label">Volume Adjust</div>
+                                <div class="control-mini-value" id="mixerAdvancedVolumeValue">0%</div>
+                            </div>
+                            <input type="range" class="mini-slider" id="mixerAdvancedVolumeSlider" 
+                                   min="0" max="100" step="1" value="0">
+                        </div>
+                        
+                        <div class="preset-buttons">
+                            <button class="btn-preset btn-preset-pro" id="mixerAMAdvPreset0" data-official-preset="0">Fluid</button>
+                            <button class="btn-preset btn-preset-pro" id="mixerAMAdvPreset1" data-official-preset="1">Prism</button>
+                            <button class="btn-preset btn-preset-pro" id="mixerAMAdvPreset2" data-official-preset="2">Twin Peaks</button>
+                            <button class="btn-preset btn-preset-pro" id="mixerAMAdvPreset3" data-official-preset="3">Circus</button>
+                        </div>
+                        
+                        <!-- User Presets Dropdown -->
+                        <div class="control-mini-group">
+                            <div class="control-mini-label">User Presets</div>
                             <select class="dropdown-selector-mixer" id="mixerAMPresetSelector">
                                 <option value="">Load Preset...</option>
                             </select>
@@ -3084,6 +3130,163 @@
                                 <option value="metal">Heavy Metal</option>
                                 <option value="psychedelic">Psychedelic</option>
                             </select>
+                        </div>
+                        
+                        <!-- Advanced Preset Controls (shown when Advanced preset is active) -->
+                        <div id="mixerAdvancedPresetControls" style="display: none;">
+                            <!-- Reset Button -->
+                            <div class="control-mini-group">
+                                <button class="btn-preset" id="mixerResetAdvancedControls">Reset to Preset Default</button>
+                            </div>
+                            
+                            <!-- Visual Controls -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Visual</div>
+                            </div>
+                            
+                            <!-- Gradient -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Gradient</div>
+                                <select class="dropdown-selector-mixer" id="mixerAdvancedGradient">
+                                    <option value="classic">Classic</option>
+                                    <option value="prism">Prism</option>
+                                    <option value="rainbow">Rainbow</option>
+                                    <option value="orangered">Orange Red</option>
+                                    <option value="steelblue">Steel Blue</option>
+                                    <option value="sunset">Sunset</option>
+                                    <option value="ocean">Ocean</option>
+                                    <option value="neon">Neon</option>
+                                    <option value="aurora">Aurora</option>
+                                    <option value="galaxy">Galaxy</option>
+                                    <option value="plasma">Plasma</option>
+                                    <option value="arctic">Arctic</option>
+                                    <option value="desert">Desert</option>
+                                    <option value="forest">Forest</option>
+                                    <option value="volcano">Volcano</option>
+                                    <option value="cosmic">Cosmic</option>
+                                    <option value="fire">Fire</option>
+                                    <option value="purps">Purps</option>
+                                    <option value="la">LA</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Color Mode -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Color Mode</div>
+                                <select class="dropdown-selector-mixer" id="mixerAdvancedColorMode">
+                                    <option value="gradient">Gradient</option>
+                                    <option value="bar-index">Bar Index</option>
+                                    <option value="bar-level">Bar Level</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Channel Layout -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Channel Layout</div>
+                                <select class="dropdown-selector-mixer" id="mixerAdvancedChannelLayout">
+                                    <option value="single">Single</option>
+                                    <option value="dual-combined">Dual Combined</option>
+                                    <option value="dual-horizontal">Dual Horizontal</option>
+                                    <option value="dual-vertical">Dual Vertical</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Mode Dropdown -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Mode</div>
+                                <select class="dropdown-selector-mixer" id="mixerAdvancedMode">
+                                    <option value="0">Discrete frequencies</option>
+                                    <option value="1">1/24th octave</option>
+                                    <option value="2">1/12th octave</option>
+                                    <option value="3">1/8th octave</option>
+                                    <option value="4">1/6th octave</option>
+                                    <option value="5">1/4th octave</option>
+                                    <option value="6">1/3rd octave</option>
+                                    <option value="7">Half octave</option>
+                                    <option value="8">Full octave</option>
+                                    <option value="9">Line/Area</option>
+                                    <option value="10">Area graph</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Audio Processing -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Audio Processing</div>
+                            </div>
+                            
+                            <!-- FFT Size -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-label">Fidelity (FFT)</div>
+                                <select class="dropdown-selector-mixer" id="mixerAdvancedFftSize">
+                                    <option value="512">512</option>
+                                    <option value="1024">1024</option>
+                                    <option value="2048">2048</option>
+                                    <option value="4096">4096</option>
+                                    <option value="8192">8192</option>
+                                    <option value="16384">16384</option>
+                                    <option value="32768">32768</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Smoothing -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Smoothing</div>
+                                    <div class="control-mini-value" id="mixerAdvancedSmoothingValue">0.5</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedSmoothing" 
+                                       min="0" max="1" step="0.01" value="0.5">
+                            </div>
+                            
+                            <!-- Linear Boost -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Linear Boost</div>
+                                    <div class="control-mini-value" id="mixerAdvancedLinearBoostValue">1.0</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedLinearBoost" 
+                                       min="0.1" max="3" step="0.1" value="1">
+                            </div>
+                            
+                            <!-- Min Decibels -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Min Decibels</div>
+                                    <div class="control-mini-value" id="mixerAdvancedMinDecibelsValue">-85</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedMinDecibels" 
+                                       min="-100" max="-60" step="1" value="-85">
+                            </div>
+                            
+                            <!-- Max Decibels -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Max Decibels</div>
+                                    <div class="control-mini-value" id="mixerAdvancedMaxDecibelsValue">-25</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedMaxDecibels" 
+                                       min="-40" max="0" step="1" value="-25">
+                            </div>
+                            
+                            <!-- Bar Space -->
+                            <div class="control-mini-group">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Bar Space</div>
+                                    <div class="control-mini-value" id="mixerAdvancedBarSpaceValue">0.1</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedBarSpace" 
+                                       min="0" max="2" step="0.1" value="0.1">
+                            </div>
+                            
+                            <!-- Radius (for Radial mode) -->
+                            <div class="control-mini-group" id="mixerAdvancedRadiusWrapper" style="display: none;">
+                                <div class="control-mini-header">
+                                    <div class="control-mini-label">Radius</div>
+                                    <div class="control-mini-value" id="mixerAdvancedRadiusValue">0.3</div>
+                                </div>
+                                <input type="range" class="mini-slider" id="mixerAdvancedRadius" 
+                                       min="0.1" max="1" step="0.01" value="0.3">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3395,6 +3598,16 @@
                             <option value="jerry">Jerry</option>
                             <option value="waterCaustic">Water Caustic</option>
                         </select>
+                    </div>
+                    
+                    <!-- Background Opacity Slider -->
+                    <div class="control-mini-group">
+                        <div class="control-mini-header">
+                            <div class="control-mini-label">Background</div>
+                            <div class="control-mini-value" id="mixerFluidityBackgroundValue">0.00</div>
+                        </div>
+                        <input type="range" class="mini-slider" id="mixerFluidityBackgroundSlider" 
+                               min="0" max="1" step="0.01" value="0">
                     </div>
                 </div>
                 
