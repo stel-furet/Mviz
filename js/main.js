@@ -20,7 +20,7 @@ function bridgePluginCanvasesToKaleidoscope() {
             window.visualizer[pluginPropertyName].canvas = plugin.canvas;
             
             // Track bridged plugins
-            bridgedPlugins.add(plugin.pluginName);
+                bridgedPlugins.add(plugin.pluginName);
         }
     });
 }
@@ -7247,10 +7247,10 @@ class RecordManager {
             const videoAspect = this.visualizer.videoElement.videoWidth / this.visualizer.videoElement.videoHeight;
             
             // Always fit video to width and crop top/bottom
-            sharedDrawWidth = width;
-            sharedDrawHeight = width / videoAspect;
-            sharedDrawX = 0;
-            sharedDrawY = (height - sharedDrawHeight) / 2;
+                sharedDrawWidth = width;
+                sharedDrawHeight = width / videoAspect;
+                sharedDrawX = 0;
+                sharedDrawY = (height - sharedDrawHeight) / 2;
         }
         
         // SIMPLE LOGIC: Draw kaleidoscope canvas if active, otherwise draw sources individually
@@ -7263,12 +7263,12 @@ class RecordManager {
             let kalDrawY = (height - kalDrawHeight) / 2;
             
             const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeCanvas.style.opacity) || 1;
-            if (kaleidoscopeOpacity > 0) {
-                this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                if (kaleidoscopeOpacity > 0) {
+                    this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
                 this.compositeCtx.drawImage(this.visualizer.kaleidoscopeCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
-                this.compositeCtx.globalAlpha = 1;
-            }
-        } else {
+                    this.compositeCtx.globalAlpha = 1;
+                }
+            } else {
             // Kaleidoscope NOT active - draw sources individually
             
             // Draw video background if present and not in kaleidoscope
@@ -8672,12 +8672,12 @@ class LiveDisplayManager {
             let kalDrawY = (height - kalDrawHeight) / 2;
             
             const kaleidoscopeOpacity = parseFloat(this.visualizer.kaleidoscopeCanvas.style.opacity) || 1;
-            if (kaleidoscopeOpacity > 0) {
-                this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
+                        if (kaleidoscopeOpacity > 0) {
+                            this.compositeCtx.globalAlpha = kaleidoscopeOpacity;
                 this.compositeCtx.drawImage(this.visualizer.kaleidoscopeCanvas, kalDrawX, kalDrawY, kalDrawWidth, kalDrawHeight);
-                this.compositeCtx.globalAlpha = 1;
-            }
-        } else {
+                            this.compositeCtx.globalAlpha = 1;
+                    }
+                } else {
             // Kaleidoscope NOT active - draw sources individually
             
             // Draw video background if present and capture enabled
@@ -8685,11 +8685,11 @@ class LiveDisplayManager {
                 this.visualizer.videoElement && 
                 (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
                 this.visualizer.videoElement.readyState >= 2) {
-                const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
-                if (opacity > 0) {
-                    this.compositeCtx.globalAlpha = opacity;
-                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
+                    const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
+                    if (opacity > 0) {
+                        this.compositeCtx.globalAlpha = opacity;
+                        this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
                 }
             }
             
@@ -21801,15 +21801,15 @@ https://rogueamoeba.com/loopback/
     applyKaleidoscopeEffect() {
     if (!this.kaleidoscopeCanvas) {
         console.error('Kaleidoscope canvas not initialized');
-        return;
-    }
+            return;
+        }
 
     let width = this.kaleidoscopeCanvas.width;
     let height = this.kaleidoscopeCanvas.height;
 
     // Make sure canvas is properly sized
-    if (width === 0 || height === 0) {
-        this.resizeKaleidoscopeCanvases();
+        if (width === 0 || height === 0) {
+            this.resizeKaleidoscopeCanvases();
         width = this.kaleidoscopeCanvas.width;
         height = this.kaleidoscopeCanvas.height;
     }
@@ -21869,7 +21869,7 @@ https://rogueamoeba.com/loopback/
     // Apply video filters if video is included
     const hasVideo = sourcesToDraw.some(s => s.isVideo);
     if (hasVideo) {
-        this.applyFiltersToKaleidoscopeContext();
+                this.applyFiltersToKaleidoscopeContext();
     }
 
     const centerX = width * this.kaleidoscopeCenterX;
@@ -21881,39 +21881,39 @@ https://rogueamoeba.com/loopback/
     const baseRadius = minDimension * 0.45;
     
     let shapeRadius;
-    switch (this.kaleidoscopeShape) {
-        case 'petal':
+                        switch (this.kaleidoscopeShape) {
+                            case 'petal':
             shapeRadius = baseRadius * 1.0;
-            break;
-        case 'rectangle':
+                                break;
+                            case 'rectangle':
             shapeRadius = baseRadius * 1.0;
-            break;
-        case 'triangle':
-        default:
+                                break;
+                            case 'triangle':
+                            default:
             shapeRadius = baseRadius * 1.1;
-            break;
-    }
+                                break;
+                        }
 
     // Draw multiple rings
-    for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
-        const ringScale = this.kaleidoscopeScale * Math.pow(1 - this.kaleidoscopeRingSpacing, ring);
-        const ringRotationOffset = this.kaleidoscopeRingRotations[ring] || (ring * (Math.PI / this.kaleidoscopeSegments));
+            for (let ring = 0; ring < this.kaleidoscopeRings; ring++) {
+                const ringScale = this.kaleidoscopeScale * Math.pow(1 - this.kaleidoscopeRingSpacing, ring);
+                const ringRotationOffset = this.kaleidoscopeRingRotations[ring] || (ring * (Math.PI / this.kaleidoscopeSegments));
 
         // Draw segments
-        for (let i = 0; i < this.kaleidoscopeSegments; i++) {
+                for (let i = 0; i < this.kaleidoscopeSegments; i++) {
             this.kaleidoscopeCtx.save();
             this.kaleidoscopeCtx.translate(centerX, centerY);
             this.kaleidoscopeCtx.rotate(angleStep * i + this.kaleidoscopeRotation + ringRotationOffset);
             this.kaleidoscopeCtx.scale(ringScale, ringScale);
 
-            // Create clipping path based on shape
+                    // Create clipping path based on shape
             this.kaleidoscopeCtx.beginPath();
 
-            switch (this.kaleidoscopeShape) {
-                case 'petal':
+                    switch (this.kaleidoscopeShape) {
+                        case 'petal':
                     this.kaleidoscopeCtx.moveTo(0, 0);
-                    const petalAngle = angleStep * 0.8;
-                    const controlRadius = shapeRadius * 0.7;
+                            const petalAngle = angleStep * 0.8;
+                            const controlRadius = shapeRadius * 0.7;
                     this.kaleidoscopeCtx.quadraticCurveTo(
                         controlRadius * Math.cos(petalAngle * 0.3),
                         controlRadius * Math.sin(petalAngle * 0.3),
@@ -21926,25 +21926,25 @@ https://rogueamoeba.com/loopback/
                         0,
                         0
                     );
-                    break;
+                            break;
 
-                case 'rectangle':
-                    const rectAngle = angleStep * 0.45;
+                        case 'rectangle':
+                            const rectAngle = angleStep * 0.45;
                     this.kaleidoscopeCtx.moveTo(0, 0);
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(-rectAngle), shapeRadius * Math.sin(-rectAngle));
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(-rectAngle), shapeRadius * Math.sin(-rectAngle) + shapeRadius * 0.3);
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle) + shapeRadius * 0.3);
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(rectAngle), shapeRadius * Math.sin(rectAngle));
                     this.kaleidoscopeCtx.lineTo(0, 0);
-                    break;
+                            break;
 
-                case 'triangle':
-                default:
+                        case 'triangle':
+                        default:
                     this.kaleidoscopeCtx.moveTo(0, 0);
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(0), shapeRadius * Math.sin(0));
                     this.kaleidoscopeCtx.lineTo(shapeRadius * Math.cos(angleStep), shapeRadius * Math.sin(angleStep));
-                    break;
-            }
+                            break;
+                    }
 
             this.kaleidoscopeCtx.closePath();
             this.kaleidoscopeCtx.clip();
@@ -22012,7 +22012,7 @@ https://rogueamoeba.com/loopback/
                         this.kaleidoscopeCtx.globalAlpha *= source.opacity;
                         this.kaleidoscopeCtx.drawImage(source.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
                         this.kaleidoscopeCtx.restore();
-                    } else {
+                            } else {
                         this.kaleidoscopeCtx.drawImage(source.canvas, -centerX / ringScale, -centerY / ringScale, width / ringScale, height / ringScale);
                     }
                 }
@@ -22020,8 +22020,8 @@ https://rogueamoeba.com/loopback/
 
             this.kaleidoscopeCtx.restore();
         }
+        }
     }
-}
     setKaleidoscopeSegments(value) {
         this.kaleidoscopeSegments = value;
         if (this.kaleidoscopeEnabled) {
@@ -22761,6 +22761,10 @@ https://rogueamoeba.com/loopback/
         // Clear any pending preset since we're switching immediately
         this.pendingProPreset = null;
         
+        // Save current regular mode before switching to Advanced
+        if (!this.useOfficialAudioMotion && this.currentMode !== undefined) {
+            this.lastRegularMode = this.currentMode;
+        }
 
         if (!this.officialAudioMotion) {
             // Try to initialize it now if the library is available
@@ -22924,6 +22928,14 @@ https://rogueamoeba.com/loopback/
                 } catch (error) {
                     // Ignore reconnection errors
                 }
+            }
+            
+            // Restore the previous regular mode if one was saved
+            if (this.lastRegularMode !== undefined && this.lastRegularMode !== null) {
+                // Small delay to ensure analyzer is ready
+                setTimeout(() => {
+                    this.setVisualizationMode(this.lastRegularMode);
+                }, 100);
             }
         }
         
