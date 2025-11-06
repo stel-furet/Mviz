@@ -1625,41 +1625,53 @@ class RecordManager {
             '4k': { width: 3840, height: 2160 }
         };
         
-        // Unified Quality Presets
+        // Unified Quality Presets - OPTIMIZED FOR PROFESSIONAL QUALITY
         this.qualityPresets = {
             'web-hd': {
                 resolution: '1080p',
-                videoBitrate: 6000000, // 6 Mbps
-                audioBitrate: 192000, // 192 kbps
-                codec: 'h264-baseline'
+                videoBitrate: 15000000, // 15 Mbps
+                audioBitrate: 256000, // 256 kbps
+                codec: 'h264-high'
             },
             'professional': {
                 resolution: '1080p',
-                videoBitrate: 15000000, // 15 Mbps
+                videoBitrate: 35000000, // 35 Mbps
                 audioBitrate: 320000, // 320 kbps
-                codec: 'h264-main'
+                codec: 'h264-high'
             },
             'broadcast': {
                 resolution: '1080p',
-                videoBitrate: 25000000, // 25 Mbps
+                videoBitrate: 60000000, // 60 Mbps
                 audioBitrate: 512000, // 512 kbps
                 codec: 'h264-high'
             },
-            'cinema-4k': {
+            'good-4k': {
                 resolution: '4k',
-                videoBitrate: 50000000, // 50 Mbps
+                videoBitrate: 60000000, // 60 Mbps
                 audioBitrate: 512000, // 512 kbps
+                codec: 'h264-high'
+            },
+            'excellent-4k': {
+                resolution: '4k',
+                videoBitrate: 150000000, // 150 Mbps
+                audioBitrate: 1024000, // 1024 kbps
                 codec: 'h264-high'
             },
             'master-4k': {
                 resolution: '4k',
-                videoBitrate: 80000000, // 80 Mbps
+                videoBitrate: 250000000, // 250 Mbps (DEFAULT)
                 audioBitrate: 1024000, // 1024 kbps
                 codec: 'h264-high'
             },
-            'archive-4k': {
+            'ultra-4k': {
                 resolution: '4k',
-                videoBitrate: 120000000, // 120 Mbps
+                videoBitrate: 400000000, // 400 Mbps
+                audioBitrate: 1024000, // 1024 kbps
+                codec: 'h264-high'
+            },
+            'maximum-4k': {
+                resolution: '4k',
+                videoBitrate: 600000000, // 600 Mbps
                 audioBitrate: 1024000, // 1024 kbps
                 codec: 'h264-high'
             }
@@ -7219,6 +7231,19 @@ class RecordManager {
         
         const { width, height } = this.compositeCanvas;
         
+        // Apply quality-based canvas smoothing for optimal rendering
+        const settings = this.getRecordingSettings();
+        const is4K = settings.resolution === '4k';
+        
+        if (is4K) {
+            // High-quality Lanczos upscaling for 4K recordings
+            this.compositeCtx.imageSmoothingEnabled = true;
+            this.compositeCtx.imageSmoothingQuality = 'high';
+        } else {
+            // Pixel-perfect rendering for 1080p (no interpolation)
+            this.compositeCtx.imageSmoothingEnabled = false;
+        }
+        
         // Clear canvas with black background
         this.compositeCtx.fillStyle = '#000000';
         this.compositeCtx.fillRect(0, 0, width, height);
@@ -8349,10 +8374,10 @@ class LiveDisplayManager {
         };
         
             // IDENTICAL to RecordManager settings
-            this.resolution = '1080p';
+            this.resolution = '4k'; // Default to 4K
             this.aspectRatio = '16:9';
             this.frameRate = 60; // Default to 60 FPS for professional quality
-            this.videoQuality = 'auto';
+            this.videoQuality = 'master'; // Default to 250 Mbps;
             this.audioQuality = 'auto';
             this.customFilename = 'MV_PRO_Display';
             this.matchVisualizationAspect = true;
@@ -8382,12 +8407,11 @@ class LiveDisplayManager {
         };
         
         this.videoQualityPresets = {
-            'auto': 5000000,        // 5 Mbps
-            'high': 8000000,         // 8 Mbps  
-            'medium': 3000000,       // 3 Mbps
-            'low': 1500000,          // 1.5 Mbps
-            '4k': 80000000,          // 80 Mbps
-            '4k-ultra': 120000000    // 120 Mbps
+            'good': 60000000,         // 60 Mbps
+            'excellent': 150000000,   // 150 Mbps
+            'master': 250000000,      // 250 Mbps (DEFAULT)
+            'ultra': 400000000,       // 400 Mbps
+            'maximum': 500000000      // 500 Mbps
         };
         
         this.audioQualityPresets = {
@@ -8407,10 +8431,26 @@ class LiveDisplayManager {
                 const saved = localStorage.getItem(`freque_live_display_settings_${this.displayId}`);
                 if (saved) {
                     const settings = JSON.parse(saved);
-                    this.resolution = settings.resolution || '1080p';
+                    
+                    // MIGRATE OLD QUALITY SETTINGS TO NEW NAMES
+                    const qualityMigration = {
+                        'auto': 'master',      // Old auto (60 Mbps) → master (250 Mbps)
+                        'low': 'good',         // Old low → good
+                        'medium': 'excellent', // Old medium → excellent
+                        'high': 'excellent',   // Old high → excellent
+                        '4k': 'excellent',     // Old 4k → excellent
+                        '4k-ultra': 'ultra'    // Old 4k-ultra → ultra
+                    };
+                    
+                    // Migrate video quality if it's an old value
+                    if (settings.videoQuality && qualityMigration[settings.videoQuality]) {
+                        settings.videoQuality = qualityMigration[settings.videoQuality];
+                    }
+                    
+                    this.resolution = settings.resolution || '4k'; // Default to 4K
                     this.aspectRatio = settings.aspectRatio || '16:9';
-                    this.frameRate = settings.frameRate || 30;
-                    this.videoQuality = settings.videoQuality || 'auto';
+                    this.frameRate = settings.frameRate || 60; // Default to 60 FPS
+                    this.videoQuality = settings.videoQuality || 'master'; // Default to 250 Mbps
                     this.audioQuality = settings.audioQuality || 'auto';
                     this.customFilename = settings.customFilename || 'MV_PRO_Display';
                     this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
@@ -8620,6 +8660,18 @@ class LiveDisplayManager {
             if (!this.compositeCtx) return;
             
             const { width, height } = this.compositeCanvas;
+            
+            // Apply quality-based canvas smoothing for optimal rendering
+            const is4K = this.resolution === '4k';
+            
+            if (is4K) {
+                // High-quality Lanczos upscaling for 4K live displays
+                this.compositeCtx.imageSmoothingEnabled = true;
+                this.compositeCtx.imageSmoothingQuality = 'high';
+            } else {
+                // Pixel-perfect rendering for 1080p (no interpolation)
+                this.compositeCtx.imageSmoothingEnabled = false;
+            }
             
             // Clear canvas with black background
             this.compositeCtx.fillStyle = '#000000';
@@ -9057,17 +9109,10 @@ class LiveDisplayManager {
             
             // Set video bitrate based on quality setting
             const videoQuality = this.displaySettings.videoQuality || 'auto';
-            let bitrate = this.videoQualityPresets[videoQuality] || 5000000; // Default to 5 Mbps
+            let bitrate = this.videoQualityPresets[videoQuality] || 60000000; // Default to 60 Mbps (was 5)
             
-            // For auto quality, adjust bitrate based on resolution
-            if (videoQuality === 'auto') {
-                const resolution = this.displaySettings.resolution || '1080p';
-                if (resolution === '4k') {
-                    bitrate = 20000000; // 20 Mbps for 4K auto
-                } else if (resolution === '720p') {
-                    bitrate = 2500000; // 2.5 Mbps for 720p auto
-                }
-            }
+            // Note: 'auto' now uses the preset value of 60 Mbps (no resolution-based override needed)
+            // The preset values are already optimized per quality level
             
             // console.log(`DEBUG LiveDisplay ${this.displayId}: Setting video bitrate to ${bitrate/1000000} Mbps (${videoQuality})`);
             
@@ -20409,32 +20454,6 @@ https://rogueamoeba.com/loopback/
                 });
             }
     }
-    
-    toggleInfiniteZoom() {
-        // Sidebar infinite zoom panel removed - functionality moved to header
-        
-        // Toggle panel visibility
-        if (panel) {
-            const isVisible = panel.style.display !== 'none';
-            panel.style.display = isVisible ? 'none' : 'block';
-            
-            if (!isVisible) {
-                // Panel is opening - toggle infinite zoom state
-                if (this.infiniteZoom) {
-                    if (this.infiniteZoom.isActive) {
-                        this.infiniteZoom.stop();
-                        btnText.textContent = 'Infinite Zoom Off';
-                        btn.classList.remove('active');
-                    } else {
-                        this.infiniteZoom.initialize();
-                        this.infiniteZoom.start();
-                        btnText.textContent = 'Infinite Zoom On';
-                        btn.classList.add('active');
-                    }
-                }
-            }
-        }
-    }
 
     toggleHeaderInfiniteZoom() {
         const panel = document.getElementById('headerInfiniteZoomPanel');
@@ -21087,7 +21106,7 @@ https://rogueamoeba.com/loopback/
     // updateNebulaPresetDropdown, updateNebulaUIFromSettings, updateNebulaSliderValue, updateNebulaButtons
     // ==================== END NATIVE NEBULA METHODS REMOVAL ====================
 
-    toggleInfiniteZoom() {
+    initNebulaPresetButtonHandlers() {
         // Preset button handlers
         const presetButtons = [
             { id: 'headerNebulaColorPresetBtn', preset: 'color' },

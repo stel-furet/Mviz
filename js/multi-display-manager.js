@@ -133,7 +133,7 @@ class MultiDisplayManager {
         // Resolution select
         const resolutionSelect = document.getElementById(`display${displayId}ResolutionSelect`);
         if (resolutionSelect) {
-            resolutionSelect.value = this.getDisplaySettings(displayId).resolution || '1080p';
+            resolutionSelect.value = this.getDisplaySettings(displayId).resolution || '4k'; // Default to 4K
             resolutionSelect.addEventListener('change', () => {
                 this.updateDisplaySettings(displayId, { resolution: resolutionSelect.value });
             });
@@ -152,7 +152,7 @@ class MultiDisplayManager {
         // Video quality select
         const videoQualitySelect = document.getElementById(`display${displayId}VideoQualitySelect`);
         if (videoQualitySelect) {
-            videoQualitySelect.value = this.getDisplaySettings(displayId).videoQuality || 'auto';
+            videoQualitySelect.value = this.getDisplaySettings(displayId).videoQuality || 'master'; // Default to 250 Mbps
             videoQualitySelect.addEventListener('change', () => {
                 this.updateDisplaySettings(displayId, { videoQuality: videoQualitySelect.value });
             });
@@ -1183,13 +1183,29 @@ class DisplayInstance {
             letterboxColor: '#000000',
             mirrorBackground: false,
             mirrorBackgroundBlur: 20,
-            resolution: '1080p',
-            frameRate: 30,
-            videoQuality: 'auto'
+            resolution: '4k', // Default to 4K
+            frameRate: 60, // Default to 60 FPS
+            videoQuality: 'master' // Default to 250 Mbps
         };
         
         if (saved) {
             const parsedSettings = JSON.parse(saved);
+            
+            // MIGRATE OLD QUALITY SETTINGS TO NEW NAMES
+            const qualityMigration = {
+                'auto': 'master',      // Old auto (60 Mbps) → master (250 Mbps)
+                'low': 'good',         // Old low → good
+                'medium': 'excellent', // Old medium → excellent
+                'high': 'excellent',   // Old high → excellent
+                '4k': 'excellent',     // Old 4k → excellent
+                '4k-ultra': 'ultra'    // Old 4k-ultra → ultra
+            };
+            
+            // Migrate video quality if it's an old value
+            if (parsedSettings.videoQuality && qualityMigration[parsedSettings.videoQuality]) {
+                parsedSettings.videoQuality = qualityMigration[parsedSettings.videoQuality];
+            }
+            
             // Merge with defaults to ensure new properties are added
             const mergedSettings = { ...defaults, ...parsedSettings };
             // console.log(`DEBUG DisplayInstance ${this.displayId}: Merged settings:`, mergedSettings);

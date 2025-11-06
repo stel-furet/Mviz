@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Display Settings</title>
+</head>
+<body>
+    <h1>Clear Display Settings</h1>
+    <button onclick="clearSettings()">Clear All Display Settings</button>
+    <div id="result"></div>
+    
+    <script>
+    function clearSettings() {
+        // Clear all display-related localStorage items
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.includes('freque_live_display_settings') || 
+                key.includes('display_settings') ||
+                key.includes('freque_recording_settings')) {
+                keys.push(key);
+            }
+        }
+        
+        keys.forEach(key => {
+            console.log('Clearing:', key);
+            localStorage.removeItem(key);
+        });
+        
+        document.getElementById('result').innerHTML = 
+            '<p style="color: green;">Cleared ' + keys.length + ' settings. Please refresh your main app.</p>' +
+            '<p>Keys cleared: ' + keys.join(', ') + '</p>';
+    }
+    </script>
+</body>
+</html>

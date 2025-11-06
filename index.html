@@ -2093,13 +2093,15 @@
             <div class="control-group">
                 <div class="group-label">Recording Quality</div>
                 <select id="footerRecordQualityPresetSelect" class="select">
-                    <option value="web-hd">Web HD (1080p, 6 Mbps, 192k audio, H.264 Baseline)</option>
-                    <option value="professional" selected>Professional (1080p, 15 Mbps, 320k audio, H.264 Main)</option>
-                    <option value="broadcast">Broadcast (1080p, 25 Mbps, 512k audio, H.264 High)</option>
-                    <option value="cinema-4k">Cinema 4K (4K, 50 Mbps, 512k audio, H.264 High)</option>
-                    <option value="master-4k">Master 4K (4K, 80 Mbps, 1024k audio, H.264 High)</option>
-                    <option value="archive-4k">Archive 4K (4K, 120 Mbps, 1024k audio, H.264 High)</option>
-                    <option value="custom">Custom (user-defined settings)</option>
+                    <option value="web-hd">15 Mbps (1080p)</option>
+                    <option value="professional">35 Mbps (1080p)</option>
+                    <option value="broadcast">60 Mbps (1080p)</option>
+                    <option value="good-4k">60 Mbps (4K)</option>
+                    <option value="excellent-4k">150 Mbps (4K)</option>
+                    <option value="master-4k" selected>250 Mbps (4K)</option>
+                    <option value="ultra-4k">400 Mbps (4K)</option>
+                    <option value="maximum-4k">600 Mbps (4K)</option>
+                    <option value="custom">Custom</option>
                 </select>
                 <select id="footerRecordFrameRateSelect" class="select">
                     <option value="30">30 FPS</option>
@@ -2207,20 +2209,19 @@
                     <select id="display1ResolutionSelect" class="select">
                         <option value="canvas">Canvas Size</option>
                         <option value="720p">720p (1280×720)</option>
-                        <option value="1080p" selected>1080p (1920×1080)</option>
-                        <option value="4k">4K (3840×2160)</option>
+                        <option value="1080p">1080p (1920×1080)</option>
+                        <option value="4k" selected>4K (3840×2160)</option>
                     </select>
                     <select id="display1FrameRateSelect" class="select">
                         <option value="30">30 FPS</option>
                         <option value="60" selected>60 FPS</option>
                     </select>
                     <select id="display1VideoQualitySelect" class="select">
-                        <option value="auto" selected>Auto</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                        <option value="4k">4K</option>
-                        <option value="4k-ultra">4K Ultra</option>
+                        <option value="good">60 Mbps</option>
+                        <option value="excellent">150 Mbps</option>
+                        <option value="master" selected>250 Mbps</option>
+                        <option value="ultra">400 Mbps</option>
+                        <option value="maximum">500 Mbps</option>
                     </select>
                 </div>
                 
@@ -2299,20 +2300,19 @@
                     <select id="display2ResolutionSelect" class="select">
                         <option value="canvas">Canvas Size</option>
                         <option value="720p">720p (1280×720)</option>
-                        <option value="1080p" selected>1080p (1920×1080)</option>
-                        <option value="4k">4K (3840×2160)</option>
+                        <option value="1080p">1080p (1920×1080)</option>
+                        <option value="4k" selected>4K (3840×2160)</option>
                     </select>
                     <select id="display2FrameRateSelect" class="select">
                         <option value="30">30 FPS</option>
                         <option value="60" selected>60 FPS</option>
                     </select>
                     <select id="display2VideoQualitySelect" class="select">
-                        <option value="auto" selected>Auto</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                        <option value="4k">4K</option>
-                        <option value="4k-ultra">4K Ultra</option>
+                        <option value="good">60 Mbps</option>
+                        <option value="excellent">150 Mbps</option>
+                        <option value="master" selected>250 Mbps</option>
+                        <option value="ultra">400 Mbps</option>
+                        <option value="maximum">500 Mbps</option>
                     </select>
                 </div>
                 
@@ -2391,20 +2391,19 @@
                     <select id="display3ResolutionSelect" class="select">
                         <option value="canvas">Canvas Size</option>
                         <option value="720p">720p (1280×720)</option>
-                        <option value="1080p" selected>1080p (1920×1080)</option>
-                        <option value="4k">4K (3840×2160)</option>
+                        <option value="1080p">1080p (1920×1080)</option>
+                        <option value="4k" selected>4K (3840×2160)</option>
                     </select>
                     <select id="display3FrameRateSelect" class="select">
                         <option value="30">30 FPS</option>
                         <option value="60" selected>60 FPS</option>
                     </select>
                     <select id="display3VideoQualitySelect" class="select">
-                        <option value="auto" selected>Auto</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                        <option value="4k">4K</option>
-                        <option value="4k-ultra">4K Ultra</option>
+                        <option value="good">60 Mbps</option>
+                        <option value="excellent">150 Mbps</option>
+                        <option value="master" selected">250 Mbps</option>
+                        <option value="ultra">400 Mbps</option>
+                        <option value="maximum">500 Mbps</option>
                     </select>
                 </div>
                 
