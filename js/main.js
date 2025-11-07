@@ -4282,6 +4282,15 @@ class RecordManager {
                 updateFluidBackground(e.target.value);
             });
         }
+        
+        // Mixer Dial for Fluidity Background
+        const mixerFluidityBackgroundDial = document.getElementById('mixerFluidityBackgroundDial');
+        if (mixerFluidityBackgroundDial) {
+            mixerFluidityBackgroundDial.addEventListener('dialchange', (e) => {
+                updateFluidBackground(e.detail.value);
+            });
+        }
+        
         if (headerFluidDynamicsBackgroundSlider) {
             headerFluidDynamicsBackgroundSlider.addEventListener('input', (e) => {
                 updateFluidBackground(e.target.value);

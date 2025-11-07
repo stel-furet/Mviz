@@ -68,6 +68,24 @@
             --info-color: #3498db;
         }
 
+        /* Light Theme - Vibrant Palette */
+[data-theme="light-vibrant"],
+.theme-light-vibrant {
+    --primary-bg: #ffffff;
+    --secondary-bg: #F4F0E1;
+    --text-primary: #000000;
+    --text-secondary: #4a4a4a;
+    --accent-color: #2BAF90;  /* Teal */
+    --hover-color: #A1D4B1;   /* Light Mint */
+    --highlight-color: #F1A512; /* Golden Yellow */
+    --border-color: #e0e0e0;
+    --error-color: #DD4111;    /* Orange-Red */
+    --success-color: #2BAF90;  /* Teal */
+    --warning-color: #F1A512;  /* Golden Yellow */
+    --info-color: #A1D4B1;     /* Light Mint */
+    --accent-secondary: #8C0027; /* Deep Burgundy for special elements */
+}
+
         html,
         body {
             height: 100%;
@@ -751,9 +769,11 @@
         }
 
         .logo h1 {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 100;
-            color: var(--accent-color);
+            color: var(---text-primary);
+            font-family: 'mostra-nuova', sans-serif;
+            margin-left: 40px;
         }
 
         .info-button {

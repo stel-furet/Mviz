@@ -1,23 +1,7 @@
 /* Base CSS - Simplified UI Component Classes */
 
-/* ========================================
-   CSS VARIABLES & THEMES
-   ======================================== */
-:root {
-    /* Dark Theme Variables */
-    --primary-bg: #1a1a1a;
-    --secondary-bg: #2a2a2a;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --accent-color: #6b7280;
-    --hover-color: #374151;
-    --highlight-color: #9ca3af;
-    --border-color: #4b5563;
-    --error-color: #ef4444;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --info-color: #3b82f6;
-}
+
+
 
 /* ========================================
    BASE STYLES & RESET
@@ -195,9 +179,9 @@ body {
 
 /* Effect Toggle Button - Toggle states */
 .btn-toggle {
-    background: var(--hover-color, #2a2a2a);
+    background: var(--accent-color, #2a2a2a);
     border: 1px solid var(--border-color, #898989);
-    color: var(--text-secondary);
+    color: var(--primary-bg);
     padding: 8px 12px !important;
     border-radius: 4px;
     cursor: pointer;
@@ -214,7 +198,7 @@ body {
 }
 
 .btn-toggle:hover {
-    background: var(--accent-color);
+    background: var(--hover-color);
     color: white;
 }
 
@@ -453,7 +437,7 @@ body {
 
 /* Square Button - For icon buttons like C V B A */
 .btn-square {
-    background: var(--hover-color);
+    background: var(--accent-color);
     color: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--border-color);
     border-radius: 5px;
@@ -471,7 +455,7 @@ body {
 }
 
 .btn-square:hover {
-    background: var(--accent-color);
+    background: var(--hover-color);
     color: rgba(255, 255, 255, 0.9);
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -1554,7 +1538,7 @@ html body .slider-2-wrapper .slider-2-value {
 
 /* Peek Toggle Button - Based on btn-toggle with max width */
 .btn-toggle-peek {
-    background: var(--hover-color, #2a2a2a);
+    background: var(--accent-color, #2a2a2a);
     border: 1px solid var(--border-color, #898989);
     color: var(--text-secondary);
     padding: 8px 12px !important;
@@ -1573,7 +1557,7 @@ html body .slider-2-wrapper .slider-2-value {
 }
 
 .btn-toggle-peek:hover {
-    background: var(--accent-color);
+    background: var(--hover-color);
     color: white;
 }
 
@@ -1696,7 +1680,7 @@ html body .slider-2-wrapper .slider-2-value {
 .vertical-slider-track {
     width: 16px;
     height: 180px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--hover-color);
     border-radius: 3px;
     border: none;
     outline: none;
@@ -2272,6 +2256,93 @@ html body .slider-2-wrapper .slider-2-value {
 /* Ensure footer recording settings panel is always accessible */
 #footerRecordSettingsPanel {
     z-index: 20000 !important;
+}
+
+/* ========================================
+   MIXER DIAL - Rotary Knob Component
+   ======================================== */
+
+/* Mixer Dial Container */
+.mixer-dial-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+/* Mixer Dial - Base SVG Circle */
+.mixer-dial {
+    width: 40px;
+    height: 40px;
+    cursor: ns-resize;
+    user-select: none;
+    position: relative;
+}
+
+.mixer-dial svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-135deg); /* Start position at 7 o'clock */
+}
+
+/* Dial Circle - Black outline, colored fill */
+.mixer-dial circle.dial-bg {
+    fill: var(--dial-color, var(--highlight-color));
+    stroke: var(--text-secondary);
+    stroke-width: 1.5;
+}
+
+/* Dial Pointer - Black line extending in/out */
+.mixer-dial line.dial-pointer {
+    stroke: var(--text-secondary);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+}
+
+/* Mixer Dial Value Display */
+.mixer-dial-value {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+    min-width: 45px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Color Variants - Using Theme CSS Variables */
+.mixer-dial.dial-teal {
+    --dial-color: var(--accent-color);
+}
+
+.mixer-dial.dial-mint {
+    --dial-color: var(--hover-color);
+}
+
+.mixer-dial.dial-gold {
+    --dial-color: var(--highlight-color);
+}
+
+.mixer-dial.dial-orange {
+    --dial-color: var(--error-color);
+}
+
+.mixer-dial.dial-burgundy {
+    --dial-color: var(--accent-secondary);
+}
+
+/* Hover state - slightly lighter */
+.mixer-dial:hover circle.dial-bg {
+    filter: brightness(1.1);
+}
+
+/* Active/dragging state */
+.mixer-dial.dragging {
+    cursor: ns-resize;
+}
+
+.mixer-dial.dragging circle.dial-bg {
+    filter: brightness(0.9);
 }
 
 

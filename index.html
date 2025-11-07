@@ -31,6 +31,8 @@
     <script src="https://content.app-sources.com/s/30493493849384938/uploads/music-metadata-browser.min.js"></script>
     <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="freque.css">
+    <link rel="stylesheet" href="https://use.typekit.net/zvb4axh.css">
+
     
     <!-- JavaScript Modules -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -423,6 +425,92 @@
     <script src="js/ui-controls.js"></script>
     <script src="js/playlist-manager.js"></script>
     <script src="js/theme-system.js"></script>
+    <script>
+        // Mixer Dial Component - Rotary knob control for mixer channel strips
+        function initMixerDials() {
+            document.querySelectorAll('.mixer-dial').forEach(dial => {
+                const pointer = dial.querySelector('.dial-pointer');
+                const valueDisplay = dial.parentElement.querySelector('.mixer-dial-value');
+                
+                const min = parseFloat(dial.dataset.min) || 0;
+                const max = parseFloat(dial.dataset.max) || 1;
+                const step = parseFloat(dial.dataset.step) || 0.01;
+                let value = parseFloat(dial.dataset.value) || min;
+                
+                let isDragging = false;
+                let startY = 0;
+                let startValue = 0;
+                
+                // Update dial visual and value display
+                function updateDial(newValue) {
+                    value = Math.max(min, Math.min(max, newValue));
+                    value = Math.round(value / step) * step; // Snap to step
+                    
+                    // Calculate rotation (-135° to +135° = 270° total range)
+                    const range = max - min;
+                    const normalizedValue = (value - min) / range;
+                    const rotation = -135 + (normalizedValue * 270);
+                    
+                    // Update pointer rotation
+                    pointer.setAttribute('transform', `rotate(${rotation} 25 25)`);
+                    
+                    // Update value display
+                    const decimals = step < 0.1 ? 2 : (step < 1 ? 1 : 0);
+                    valueDisplay.textContent = value.toFixed(decimals);
+                    
+                    // Store current value
+                    dial.dataset.value = value;
+                    
+                    // Dispatch change event
+                    dial.dispatchEvent(new CustomEvent('dialchange', { 
+                        detail: { value, min, max } 
+                    }));
+                }
+                
+                // Mouse down - start dragging
+                dial.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    isDragging = true;
+                    startY = e.clientY;
+                    startValue = value;
+                    dial.classList.add('dragging');
+                    document.body.style.cursor = 'ns-resize';
+                });
+                
+                // Mouse move - update value
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    // Drag up = increase, drag down = decrease
+                    const deltaY = startY - e.clientY;
+                    const sensitivity = 0.5; // Adjust drag sensitivity
+                    const range = max - min;
+                    const valueChange = (deltaY * sensitivity * range) / 100;
+                    
+                    updateDial(startValue + valueChange);
+                });
+                
+                // Mouse up - stop dragging
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        dial.classList.remove('dragging');
+                        document.body.style.cursor = '';
+                    }
+                });
+                
+                // Initialize dial position
+                updateDial(value);
+            });
+        }
+        
+        // Initialize dials when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMixerDials);
+        } else {
+            initMixerDials();
+        }
+    </script>
     <script src="js/multi-display-manager.js"></script>
     <script src="js/nebula-visualization.js"></script>
     <!-- Official AudioMotion Analyzer v4.5.1 (Local) -->
@@ -1314,6 +1402,7 @@
         <div class="theme-switcher">
             <select id="themeSelector" class="theme-select">
                 <option value="steel-gray">Steel Gray</option>
+                <option value="light-vibrant">Light Vibrant</option>
                 <option value="sunset">Sunset</option>
                 <option value="aurora">Aurora</option>
             </select>
@@ -3599,14 +3688,18 @@
                         </select>
                     </div>
                     
-                    <!-- Background Opacity Slider -->
+                    <!-- Background Opacity Dial -->
                     <div class="control-mini-group">
-                        <div class="control-mini-header">
-                            <div class="control-mini-label">Background</div>
-                            <div class="control-mini-value" id="mixerFluidityBackgroundValue">0.00</div>
+                        <div class="control-mini-label">Background</div>
+                        <div class="mixer-dial-container">
+                            <svg class="mixer-dial dial-gold" id="mixerFluidityBackgroundDial" 
+                                 data-min="0" data-max="1" data-step="0.01" data-value="0"
+                                 viewBox="0 0 50 50">
+                                <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                            </svg>
+                            <div class="mixer-dial-value" id="mixerFluidityBackgroundValue">0.00</div>
                         </div>
-                        <input type="range" class="mini-slider" id="mixerFluidityBackgroundSlider" 
-                               min="0" max="1" step="0.01" value="0">
                     </div>
                 </div>
                 
@@ -4008,8 +4101,8 @@
                             <select id="mixerDisplay1ResolutionSelect" class="dropdown-selector-mixer">
                                 <option value="canvas">Canvas Size</option>
                                 <option value="720p">720p (1280×720)</option>
-                                <option value="1080p" selected>1080p (1920×1080)</option>
-                                <option value="4k">4K (3840×2160)</option>
+                                <option value="1080p">1080p (1920×1080)</option>
+                                <option value="4k" selected>4K (3840×2160)</option>
                             </select>
                         </div>
                         <div class="control-mini-group">
@@ -4020,12 +4113,11 @@
                         </div>
                         <div class="control-mini-group">
                             <select id="mixerDisplay1VideoQualitySelect" class="dropdown-selector-mixer">
-                                <option value="auto" selected>Auto</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                                <option value="4k">4K</option>
-                                <option value="4k-ultra">4K Ultra</option>
+                                <option value="good">60 Mbps</option>
+                                <option value="excellent">150 Mbps</option>
+                                <option value="master" selected>250 Mbps</option>
+                                <option value="ultra">400 Mbps</option>
+                                <option value="maximum">500 Mbps</option>
                             </select>
                         </div>
                         
@@ -4132,8 +4224,8 @@
                             <select id="mixerDisplay2ResolutionSelect" class="dropdown-selector-mixer">
                                 <option value="canvas">Canvas Size</option>
                                 <option value="720p">720p (1280×720)</option>
-                                <option value="1080p" selected>1080p (1920×1080)</option>
-                                <option value="4k">4K (3840×2160)</option>
+                                <option value="1080p">1080p (1920×1080)</option>
+                                <option value="4k" selected>4K (3840×2160)</option>
                             </select>
                         </div>
                         <div class="control-mini-group">
@@ -4144,12 +4236,11 @@
                         </div>
                         <div class="control-mini-group">
                             <select id="mixerDisplay2VideoQualitySelect" class="dropdown-selector-mixer">
-                                <option value="auto" selected>Auto</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                                <option value="4k">4K</option>
-                                <option value="4k-ultra">4K Ultra</option>
+                                <option value="good">60 Mbps</option>
+                                <option value="excellent">150 Mbps</option>
+                                <option value="master" selected>250 Mbps</option>
+                                <option value="ultra">400 Mbps</option>
+                                <option value="maximum">500 Mbps</option>
                             </select>
                         </div>
                         
@@ -4256,8 +4347,8 @@
                             <select id="mixerDisplay3ResolutionSelect" class="dropdown-selector-mixer">
                                 <option value="canvas">Canvas Size</option>
                                 <option value="720p">720p (1280×720)</option>
-                                <option value="1080p" selected>1080p (1920×1080)</option>
-                                <option value="4k">4K (3840×2160)</option>
+                                <option value="1080p">1080p (1920×1080)</option>
+                                <option value="4k" selected>4K (3840×2160)</option>
                             </select>
                         </div>
                         <div class="control-mini-group">
@@ -4268,12 +4359,11 @@
                         </div>
                         <div class="control-mini-group">
                             <select id="mixerDisplay3VideoQualitySelect" class="dropdown-selector-mixer">
-                                <option value="auto" selected>Auto</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                                <option value="4k">4K</option>
-                                <option value="4k-ultra">4K Ultra</option>
+                                <option value="good">60 Mbps</option>
+                                <option value="excellent">150 Mbps</option>
+                                <option value="master" selected>250 Mbps</option>
+                                <option value="ultra">400 Mbps</option>
+                                <option value="maximum">500 Mbps</option>
                             </select>
                         </div>
                         

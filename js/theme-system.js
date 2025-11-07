@@ -18,7 +18,7 @@ function initializeThemeSystem() {
 
 function applyTheme(themeName) {
     // Remove existing theme classes
-    document.body.classList.remove('theme-steel-gray', 'theme-sunset', 'theme-aurora');
+    document.body.classList.remove('theme-steel-gray', 'theme-light-vibrant', 'theme-sunset', 'theme-aurora');
     
     // Apply new theme
     document.body.setAttribute('data-theme', themeName);
@@ -35,6 +35,15 @@ function updateThemeElements(themeName) {
             primary: '#111827',
             secondary: '#1f2937',
             accent: '#6b7280'
+        },
+        'light-vibrant': {
+            primary: '#ffffff',
+            secondary: '#f8f9fa',
+            accent: '#2BAF90',
+            highlight: '#F1A512',
+            error: '#DD4111',
+            success: '#2BAF90',
+            burgundy: '#8C0027'
         },
         'sunset': {
             primary: '#1c1917',
