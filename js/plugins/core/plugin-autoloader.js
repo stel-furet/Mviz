@@ -112,11 +112,14 @@ class PluginAutoLoader {
                 this.missingPlugins.delete(newPlugin);
             }
             
-            // Handle missing plugins (mark as missing, don't cleanup until manual refresh)
+            // Handle missing plugins - immediately unload them
             for (const missingPlugin of missingPlugins) {
                 if (!this.missingPlugins.has(missingPlugin)) {
+                    console.log(`🔌 Plugin removed: ${missingPlugin} - auto-unloading...`);
                     this.missingPlugins.add(missingPlugin);
-                    this.markPluginAsMissing(missingPlugin);
+                    
+                    // Immediately unload the plugin
+                    await this.unloadPlugin(missingPlugin);
                 }
             }
             

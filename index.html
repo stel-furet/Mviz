@@ -79,6 +79,74 @@
                 return true;
             }
             
+            unregisterPlugin(pluginName) {
+                if (!pluginName) return false;
+                
+                const plugin = this.plugins.get(pluginName);
+                if (!plugin) {
+                    console.warn(`🔌 Plugin '${pluginName}' not found for unregistration`);
+                    return false;
+                }
+                
+                console.log(`🔌 Unregistering plugin: ${pluginName}`);
+                
+                // Remove from plugin manager
+                this.plugins.delete(pluginName);
+                
+                // Remove channel strip
+                if (window.pluginMixerIntegration) {
+                    window.pluginMixerIntegration.removePluginChannelStrip(pluginName);
+                }
+                
+                // Remove kaleidoscope toggles
+                this.removeKaleidoscopeIntegration(pluginName);
+                
+                // Clean up state variable
+                if (window.visualizer) {
+                    const stateVarName = `kaleidoscopeApplyTo${pluginName.charAt(0).toUpperCase() + pluginName.slice(1)}`;
+                    delete window.visualizer[stateVarName];
+                }
+                
+                // Update localStorage
+                this.savePluginState();
+                
+                console.log(`🔌 Plugin '${pluginName}' successfully unregistered`);
+                return true;
+            }
+            
+            removeKaleidoscopeIntegration(pluginName) {
+                // Remove mixer kaleidoscope toggle
+                const mixerToggleId = `mixerKaleidoscope${pluginName.charAt(0).toUpperCase() + pluginName.slice(1)}Toggle`;
+                const mixerToggle = document.getElementById(mixerToggleId);
+                if (mixerToggle) {
+                    mixerToggle.remove();
+                }
+                
+                // Remove header kaleidoscope toggle
+                const headerToggleId = `headerKaleidoscope${pluginName.charAt(0).toUpperCase() + pluginName.slice(1)}Btn`;
+                const headerToggle = document.getElementById(headerToggleId);
+                if (headerToggle) {
+                    headerToggle.remove();
+                }
+                
+                // Remove display capture toggles
+                for (let i = 1; i <= 3; i++) {
+                    const captureToggleId = `mixerDisplay${i}Capture${pluginName.charAt(0).toUpperCase() + pluginName.slice(1)}Toggle`;
+                    const captureToggle = document.getElementById(captureToggleId);
+                    if (captureToggle) {
+                        captureToggle.remove();
+                    }
+                }
+            }
+            
+            savePluginState() {
+                // This would save current plugin states to localStorage
+                // Implementation depends on existing persistence system
+                if (window.pluginMixerIntegration && typeof window.pluginMixerIntegration.saveChannelOrder === 'function') {
+                    window.pluginMixerIntegration.saveChannelOrder();
+                }
+            }
+            
             createChannelStrip(plugin) {
                 // Use the proper mixer integration if available
                 if (window.pluginMixerIntegration) {

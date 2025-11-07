@@ -113,6 +113,33 @@ class PluginMixerIntegration {
     }
     
     /**
+     * Remove a plugin's channel strip from the mixer
+     */
+    removePluginChannelStrip(pluginName) {
+        console.log(`🔌 Removing channel strip for plugin: ${pluginName}`);
+        
+        const channelStrip = this.channelStrips.get(pluginName);
+        if (!channelStrip) {
+            console.warn(`🔌 No channel strip found for plugin: ${pluginName}`);
+            return false;
+        }
+        
+        // Remove the DOM element
+        if (channelStrip.parentNode) {
+            channelStrip.parentNode.removeChild(channelStrip);
+        }
+        
+        // Remove from tracking map
+        this.channelStrips.delete(pluginName);
+        
+        // Recalculate z-indexes for remaining plugins
+        this.recalculateZIndexes();
+        
+        console.log(`🔌 Channel strip removed successfully for: ${pluginName}`);
+        return true;
+    }
+    
+    /**
      * Create channel strip HTML following the existing mixer pattern (Infinite Zoom style)
      */
     createChannelStripHTML(plugin) {
