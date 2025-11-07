@@ -3,6 +3,7 @@
 ## Current Issues
 
 ### High Priority
+- **AM Preset Export Causes App Relaunch**: When exporting the AM visualizations user-generated presets list, an "export successful" toaster message appears, then the app immediately relaunches/reloads. This should not happen - export should complete without reload.
 - **Smooth Color Morphing When Morph ON**: AM visualization morph transitions are abrupt - need smooth color interpolation between presets. Requires changes to core AM library.
 - **Background Opacity Slider for All AM Viz**: Add universal background opacity slider that covers all AudioMotion visualizations (regular and advanced)
 - **Fix Background Slider in Fluidity and IZ**: Background opacity sliders not working correctly in Fluidity and Infinite Zoom visualizations
@@ -10,6 +11,7 @@
 - **Audio Priority System Bug**: When video from file and playlist audio are both playing, visualizations are incorrectly driven by video file audio instead of playlist audio. Simple fix needed: If playlist play buttons are toggled on, video from file should be muted. When playlist is toggled off, video from file should stay muted. Live audio input should mute everything else and take priority.
 - **Debug Code Cleanup Required**: Remove all debug code completely (not commented) and remove all previously commented code throughout entire codebase
 - **Background Color Not Respected by Record/Live Display**: Background color (B button in header) not respected by record or live display
+- **Mixer Panel Collapsible**: Make mixer collapsible to just handles, labels, and ON/OFF toggles with expand button
 
 ### Recently Completed (Latest Session)
 - ✅ **Display List Quality Too Low**: Implemented Option A Enhanced with 5 critical fixes: 1) Increased all bitrates dramatically (1080p: 15/35/60 Mbps, 4K: 100/150/200 Mbps), 2) Changed default preset to "Broadcast" (60 Mbps), 3) Added pixel-perfect 1080p rendering (`imageSmoothingEnabled = false`), 4) Added high-quality 4K Lanczos upscaling (`imageSmoothingQuality = 'high'`), 5) Forced h264-high codec for all presets. Result: ~100% quality improvement for 1080p, ~145% for 4K. Applied to both Recording and Live Display.
@@ -27,6 +29,7 @@
 - ✅ **Drop indicators**: Showing left border highlight during drag operations
 
 ### Medium Priority  
+- **Drop indicators**: need to create better indicators and ensure proper drop position
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues
 - **Display Channel Drop Prevention**: Prevent dropping onto display channel strips and to the right of Kaleidoscope
 - **Last Used Visualization Persistence**: Make the last used visualization persistent across sessions
@@ -34,16 +37,23 @@
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
 
 ### Low Priority
+- **ADD Global settings
+- **ADD Timeline functionality or some other way to stage longer visual presentations
 - **Mixer Panel Detachment**: Add ability to detach mixer panel from main interface
-- **Mixer Panel Collapsible**: Make mixer collapsible to just handles, labels, and ON/OFF toggles with expand button
-- **Remove Plugin Buttons**: Remove the "Remove Plugin" buttons from channel strips as they are no longer needed
 
 ## Planned Plugin Conversions
-- **Convert Fluidity to Plugin**: Migrate all 13 Fluidity controls + preset system to plugin architecture
-- **Convert IZ to Plugin**: Migrate Infinite Zoom controls to plugin architecture
+
 - **Convert WebGL/Starfall to Plugin**: Migrate WebGL visualization to plugin architecture
 
 ## Architecture Notes
 - **Single Kaleidoscope Canvas**: All sources (video, native viz, plugins) composite to one canvas at z-index 100. Z-index ordering fully dynamic and mixer-controlled.
 - **Plugin-Agnostic Rendering**: Future plugins work seamlessly with zero code changes. Generic property handling for opacity, blend modes, backgrounds.
 - **Shared Canvas Architecture**: Both custom and official AudioMotion analyzers share the same canvas for seamless switching.
+
+### FEATURE ENHANCEMENTS
+- **MAO VIDEO onto sphere, cube, otehr obljects that spin, rotate to audio
+- **MAP VIDEO onto fluidity shader
+- **HChange Window size sent to OBS to 9:16 with safe zone overlay
+
+###*DOCUMENTATION
+-How to use in livestreams - enhance, OBS, TIK etc
