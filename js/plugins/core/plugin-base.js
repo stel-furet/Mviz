@@ -31,6 +31,11 @@ class FrequePluginBase {
         this.opacity = 1.0;
         this.controls = new Map();
         this.presets = new Map();
+        this.presetsLoaded = false; // Track if presets have been loaded from storage
+        this.savedPresetsCache = null; // Cache for saved presets from localStorage
+        
+        // User presets (separate from hardcoded presets)
+        this.userPresets = [];
         
         // Performance tracking
         this.lastFrameTime = 0;
@@ -49,6 +54,13 @@ class FrequePluginBase {
         
         // Auto-register with Plugin Manager
         this.registerWithPluginManager();
+        
+        // Load presets from storage BEFORE setupPresets() runs
+        // This allows hardcoded presets to merge with saved presets
+        this.loadPresetsFromStorage();
+        
+        // Load user presets from storage
+        this.loadUserPresetsFromStorage();
     }
     
     /**
@@ -417,10 +429,85 @@ class FrequePluginBase {
      * Add preset to plugin
      */
     addPreset(presetId, presetConfig) {
-        this.presets.set(presetId, presetConfig);
+        // If we have saved presets from localStorage, merge saved values with hardcoded config
+        if (this.savedPresetsCache && this.savedPresetsCache[presetId]) {
+            const savedPreset = this.savedPresetsCache[presetId];
+            
+            // Merge: hardcoded config provides defaults, saved preset provides overrides
+            const mergedPreset = {
+                ...presetConfig, // Start with hardcoded defaults
+                ...savedPreset,  // Override with saved values
+                // Preserve functions from hardcoded config (can't be saved to localStorage)
+                onClick: presetConfig.onClick || savedPreset.onClick,
+                onChange: presetConfig.onChange || savedPreset.onChange,
+                // Merge values: saved values override hardcoded defaults
+                values: {
+                    ...presetConfig.values,
+                    ...savedPreset.values
+                }
+            };
+            this.presets.set(presetId, mergedPreset);
+        } else {
+            // No saved preset, use hardcoded config
+            this.presets.set(presetId, presetConfig);
+        }
+        
+        // Don't save during initial setup - only save when presets are modified by user
+        // Saving will happen when user applies a preset and modifies settings
         
         // Don't immediately update UI - let registration process handle it
         // This prevents timing issues where presets are added before channel strip exists
+    }
+    
+    /**
+     * Save all presets to localStorage
+     * Called automatically after each addPreset() call
+     */
+    savePresetsToStorage() {
+        try {
+            const presetsData = {};
+            this.presets.forEach((preset, presetId) => {
+                presetsData[presetId] = {
+                    name: preset.name,
+                    values: preset.values,
+                    label: preset.label,
+                    onClick: null, // Don't save functions
+                    onChange: null // Don't save functions
+                };
+            });
+            
+            const storageKey = `freque_plugin_${this.pluginName}_presets`;
+            localStorage.setItem(storageKey, JSON.stringify(presetsData));
+        } catch (error) {
+            console.warn(`Plugin ${this.pluginName}: Failed to save presets to localStorage:`, error);
+        }
+    }
+    
+    /**
+     * Load presets from localStorage
+     * Called automatically before setupPresets() runs
+     * Saved presets will be merged with hardcoded defaults when addPreset() is called
+     */
+    loadPresetsFromStorage() {
+        if (this.presetsLoaded) return; // Only load once
+        
+        try {
+            const storageKey = `freque_plugin_${this.pluginName}_presets`;
+            const saved = localStorage.getItem(storageKey);
+            
+            if (saved) {
+                const savedPresets = JSON.parse(saved);
+                
+                // Store saved presets temporarily (will be merged when addPreset() is called)
+                // This allows hardcoded presets to provide defaults while saved presets override values
+                this.savedPresetsCache = savedPresets;
+            }
+            
+            this.presetsLoaded = true;
+        } catch (error) {
+            console.warn(`Plugin ${this.pluginName}: Failed to load presets from localStorage:`, error);
+            this.presetsLoaded = true; // Mark as loaded even on error to prevent retries
+        }
     }
     
     /**
@@ -433,9 +520,18 @@ class FrequePluginBase {
         // Apply preset values to controls
         if (preset.values) {
             Object.entries(preset.values).forEach(([controlId, value]) => {
+                // First update plugin property (for internal state)
+                if (this[controlId] !== undefined) {
+                    this[controlId] = value;
+                }
+                
+                // Then update UI control
                 const control = this.controls.get(controlId);
                 if (control && control.setValue) {
                     control.setValue(value);
+                } else if (control && control.onChange) {
+                    // Fallback: call onChange directly if setValue doesn't exist
+                    control.onChange(value);
                 }
             });
         }
@@ -443,6 +539,258 @@ class FrequePluginBase {
         // Call plugin-specific preset handler
         if (this.onPresetApply) {
             this.onPresetApply(presetId, preset);
+        }
+    }
+    
+    /**
+     * Save current settings as a preset
+     * Useful for allowing users to save their current configuration
+     */
+    saveCurrentAsPreset(presetId, presetName = null) {
+        if (!this.presets.has(presetId)) {
+            console.warn(`Plugin ${this.pluginName}: Cannot save to non-existent preset ${presetId}`);
+            return;
+        }
+        
+        // Collect current values from all controls
+        const currentValues = {};
+        this.controls.forEach((control, controlId) => {
+            // For buttons, prefer plugin property value (state) over button text
+            // For other controls, try getValue() first, then fall back to plugin property
+            if (control.type === 'button' && this[controlId] !== undefined) {
+                currentValues[controlId] = this[controlId];
+            } else if (control.getValue) {
+                currentValues[controlId] = control.getValue();
+            } else if (this[controlId] !== undefined) {
+                currentValues[controlId] = this[controlId];
+            }
+        });
+        
+        // Update preset with current values
+        const preset = this.presets.get(presetId);
+        preset.values = currentValues;
+        if (presetName) {
+            preset.name = presetName;
+        }
+        
+        // Save to localStorage
+        this.savePresetsToStorage();
+    }
+    
+    /**
+     * Save current settings as a user preset
+     * Prompts user for preset name and saves to userPresets array
+     */
+    saveCurrentAsUserPreset(presetName) {
+        if (!presetName || presetName.trim() === '') {
+            return;
+        }
+        
+        // Collect current values from all controls
+        const currentValues = {};
+        this.controls.forEach((control, controlId) => {
+            // For buttons, prefer plugin property value (state) over button text
+            // For other controls, try getValue() first, then fall back to plugin property
+            if (control.type === 'button' && this[controlId] !== undefined) {
+                currentValues[controlId] = this[controlId];
+            } else if (control.getValue) {
+                currentValues[controlId] = control.getValue();
+            } else if (this[controlId] !== undefined) {
+                currentValues[controlId] = this[controlId];
+            }
+        });
+        
+        // Create user preset object
+        const userPreset = {
+            name: presetName.trim(),
+            timestamp: Date.now(),
+            values: currentValues
+        };
+        
+        // Add to user presets array
+        this.userPresets.push(userPreset);
+        
+        // Save to localStorage
+        this.saveUserPresetsToStorage();
+        
+        // Update dropdown
+        this.updateUserPresetSelector();
+    }
+    
+    /**
+     * Load a user preset by index
+     */
+    loadUserPreset(index) {
+        if (index < 0 || index >= this.userPresets.length) {
+            return;
+        }
+        
+        const preset = this.userPresets[index];
+        if (!preset || !preset.values) {
+            return;
+        }
+        
+        // Apply preset values to controls
+        Object.entries(preset.values).forEach(([controlId, value]) => {
+            // First update plugin property (for internal state)
+            if (this[controlId] !== undefined) {
+                this[controlId] = value;
+            }
+            
+            // Then update UI control
+            const control = this.controls.get(controlId);
+            if (control && control.setValue) {
+                control.setValue(value);
+            } else if (control && control.onChange) {
+                control.onChange(value);
+            }
+        });
+        
+        // Call plugin-specific preset handler
+        if (this.onPresetApply) {
+            this.onPresetApply(`user_${index}`, preset);
+        }
+    }
+    
+    /**
+     * Export user presets to JSON file
+     */
+    exportUserPresets() {
+        try {
+            const dataStr = JSON.stringify(this.userPresets, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${this.pluginName}_presets_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(`Plugin ${this.pluginName}: Failed to export user presets:`, error);
+        }
+    }
+    
+    /**
+     * Import user presets from JSON file
+     */
+    importUserPresets(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedPresets = JSON.parse(e.target.result);
+                
+                if (!Array.isArray(importedPresets)) {
+                    console.error(`Plugin ${this.pluginName}: Imported file must contain an array of presets`);
+                    return;
+                }
+                
+                // Check for duplicate names
+                const existingNames = new Set(this.userPresets.map(p => p.name.toLowerCase()));
+                const duplicates = importedPresets.filter(p => existingNames.has(p.name.toLowerCase()));
+                
+                if (duplicates.length > 0) {
+                    const duplicateNames = duplicates.map(p => p.name).join(', ');
+                    if (!confirm(`The following preset names already exist: ${duplicateNames}\n\nWould you like to replace them?`)) {
+                        return;
+                    }
+                    // Remove duplicates from existing presets
+                    const duplicateNamesSet = new Set(duplicates.map(p => p.name.toLowerCase()));
+                    this.userPresets = this.userPresets.filter(p => !duplicateNamesSet.has(p.name.toLowerCase()));
+                }
+                
+                // Add imported presets
+                importedPresets.forEach(preset => {
+                    if (preset.name && preset.values) {
+                        this.userPresets.push({
+                            name: preset.name,
+                            timestamp: preset.timestamp || Date.now(),
+                            values: preset.values
+                        });
+                    }
+                });
+                
+                // Save to localStorage
+                this.saveUserPresetsToStorage();
+                
+                // Update dropdown
+                this.updateUserPresetSelector();
+            } catch (error) {
+                console.error(`Plugin ${this.pluginName}: Failed to import user presets:`, error);
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    /**
+     * Update user preset selector dropdown
+     */
+    updateUserPresetSelector() {
+        const selector = document.getElementById(`${this.pluginName}PresetSelector`);
+        if (!selector) return;
+        
+        // Clear existing options except default
+        const defaultOption = selector.querySelector('option[value=""]');
+        selector.innerHTML = '';
+        if (defaultOption) {
+            selector.appendChild(defaultOption);
+        } else {
+            const newDefaultOption = document.createElement('option');
+            newDefaultOption.value = '';
+            newDefaultOption.textContent = 'Load Preset...';
+            selector.appendChild(newDefaultOption);
+        }
+        
+        // Add user presets
+        if (this.userPresets && this.userPresets.length > 0) {
+            // Sort by name
+            const sortedPresets = [...this.userPresets].sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+            
+            sortedPresets.forEach((preset, sortedIndex) => {
+                // Find original index for value
+                const originalIndex = this.userPresets.findIndex(p => p === preset);
+                
+                const option = document.createElement('option');
+                option.value = originalIndex.toString();
+                option.textContent = preset.name || `Preset ${originalIndex + 1}`;
+                selector.appendChild(option);
+            });
+        }
+    }
+    
+    /**
+     * Save user presets to localStorage
+     */
+    saveUserPresetsToStorage() {
+        try {
+            const storageKey = `freque_plugin_${this.pluginName}_userPresets`;
+            localStorage.setItem(storageKey, JSON.stringify(this.userPresets));
+        } catch (error) {
+            console.warn(`Plugin ${this.pluginName}: Failed to save user presets to localStorage:`, error);
+        }
+    }
+    
+    /**
+     * Load user presets from localStorage
+     */
+    loadUserPresetsFromStorage() {
+        try {
+            const storageKey = `freque_plugin_${this.pluginName}_userPresets`;
+            const saved = localStorage.getItem(storageKey);
+            
+            if (saved) {
+                this.userPresets = JSON.parse(saved);
+            } else {
+                this.userPresets = [];
+            }
+        } catch (error) {
+            console.warn(`Plugin ${this.pluginName}: Failed to load user presets from localStorage:`, error);
+            this.userPresets = [];
         }
     }
     

@@ -3,6 +3,12 @@
 ## Current Issues
 
 ### High Priority
+- **Plugin Settings Persistence**: Make ChromeSphere plugin settings (and all current/future plugins) persistent automatically without requiring plugin developer changes. Settings should be saved to localStorage and restored on app restart.
+- **Fix ChromeSphere Presets**: Fix current chromesphere presets
+- **Fix ChromeSphere Beat React**: Fix chromesphere beat react functionality
+- **AM Viz Opacity Fix**: Fix opacity on all AM visualizations - set to full opacity (1.0) by default
+- **Video Folder Playlist**: Add ability to load folder of videos and duplicate audio playlist functionality. Make "Video From File" choice persistent in the same manner as Background Image (save to localStorage and restore on app restart)
+- **Mixer Sliders to Dials**: Change all mixer horizontal sliders to dials for better UX and consistency
 - **AM Preset Export Causes App Relaunch**: When exporting the AM visualizations user-generated presets list, an "export successful" toaster message appears, then the app immediately relaunches/reloads. This should not happen - export should complete without reload.
 - **Smooth Color Morphing When Morph ON**: AM visualization morph transitions are abrupt - need smooth color interpolation between presets. Requires changes to core AM library.
 - **Background Opacity Slider for All AM Viz**: Add universal background opacity slider that covers all AudioMotion visualizations (regular and advanced)

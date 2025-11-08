@@ -1,5 +1,5 @@
 /**
- * Chrome Spheres Plugin - VIDEO TEXTURE FIX
+ * ChromoSpheres Plugin - VIDEO TEXTURE FIX
  * Reflective metallic spheres with video/image mapping
  * 
  * @version 1.3.0
@@ -18,9 +18,9 @@
  * - Added visual feedback mode for debugging
  */
 
-class ChromeSpheresPlugin extends FrequePluginBase {
+class ChromoSpheresPlugin extends FrequePluginBase {
     constructor(visualizer) {
-        super('chromespheres', visualizer, {
+        super('chromospheres', visualizer, {
             version: '1.3.0',
             author: 'Freque Team',
             description: 'Chrome Spheres with Video Mapping',
@@ -1260,7 +1260,7 @@ class ChromeSpheresPlugin extends FrequePluginBase {
 }
 
 // Make globally available
-window.ChromeSpheresPlugin = ChromeSpheresPlugin;
+window.ChromoSpheresPlugin = ChromoSpheresPlugin;
 
 // Auto-register
 setTimeout(() => {
@@ -1273,14 +1273,14 @@ setTimeout(() => {
         return;
     }
     
-    const existingPlugin = window.pluginManager?.getPlugin('chromespheres');
+    const existingPlugin = window.pluginManager?.getPlugin('chrom0spheres');
     
     if (existingPlugin) {
         return;
     }
     
     try {
-        new ChromeSpheresPlugin(window.visualizer);
+        new ChromoSpheresPlugin(window.visualizer);
     } catch (error) {
         console.error('Failed to load Chrome Spheres:', error);
     }

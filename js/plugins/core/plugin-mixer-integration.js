@@ -407,9 +407,18 @@ class PluginMixerIntegration {
         // Add each control
         controls.forEach((controlConfig, controlId) => {
             // Control creation debug disabled
-            const controlElement = this.createControlElement(controlId, controlConfig);
-            if (controlElement) {
+            const result = this.createControlElement(controlId, controlConfig);
+            if (result) {
+                const controlElement = result.element || result;
                 controlsContainer.appendChild(controlElement);
+                
+                // Store setValue/getValue methods in control config if they exist
+                if (result.setValue) {
+                    controlConfig.setValue = result.setValue;
+                }
+                if (result.getValue) {
+                    controlConfig.getValue = result.getValue;
+                }
                 // Control added debug disabled
             } else {
                 // Control creation error debug disabled
@@ -547,6 +556,115 @@ class PluginMixerIntegration {
                 presetsContainer.appendChild(presetButton);
             }
         });
+        
+        // Add User Presets dropdown and action buttons after hardcoded presets
+        this.addUserPresetsUI(pluginName, presetsContainer);
+    }
+    
+    /**
+     * Add User Presets dropdown and action buttons to plugin presets container
+     */
+    addUserPresetsUI(pluginName, presetsContainer) {
+        const plugin = window.pluginManager?.getPlugin(pluginName);
+        if (!plugin) return;
+        
+        // User Presets Dropdown
+        const userPresetsGroup = document.createElement('div');
+        userPresetsGroup.className = 'control-mini-group';
+        
+        const userPresetsLabel = document.createElement('div');
+        userPresetsLabel.className = 'control-mini-label';
+        userPresetsLabel.textContent = 'User Presets';
+        userPresetsGroup.appendChild(userPresetsLabel);
+        
+        const userPresetsSelect = document.createElement('select');
+        userPresetsSelect.className = 'dropdown-selector-mixer';
+        userPresetsSelect.id = `${pluginName}PresetSelector`;
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Load Preset...';
+        userPresetsSelect.appendChild(defaultOption);
+        
+        // Add change event listener
+        userPresetsSelect.addEventListener('change', (e) => {
+            if (plugin && e.target.value !== '') {
+                const presetIndex = parseInt(e.target.value);
+                plugin.loadUserPreset(presetIndex);
+                // Reset dropdown
+                e.target.value = '';
+            }
+        });
+        
+        userPresetsGroup.appendChild(userPresetsSelect);
+        presetsContainer.appendChild(userPresetsGroup);
+        
+        // Preset Action Buttons
+        const actionButtonsGroup = document.createElement('div');
+        actionButtonsGroup.className = 'control-mini-group';
+        
+        // Save button
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-preset';
+        saveBtn.id = `${pluginName}SavePresetBtn`;
+        saveBtn.textContent = 'Save';
+        saveBtn.title = 'Save Current as Preset';
+        saveBtn.addEventListener('click', () => {
+            const presetName = prompt('Enter preset name:');
+            if (presetName && presetName.trim() !== '') {
+                plugin.saveCurrentAsUserPreset(presetName.trim());
+            }
+        });
+        actionButtonsGroup.appendChild(saveBtn);
+        
+        // Export button
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'btn-preset';
+        exportBtn.id = `${pluginName}ExportPresetsBtn`;
+        exportBtn.textContent = 'Export';
+        exportBtn.title = 'Export All Presets';
+        exportBtn.addEventListener('click', () => {
+            if (plugin) {
+                plugin.exportUserPresets();
+            }
+        });
+        actionButtonsGroup.appendChild(exportBtn);
+        
+        // Import button
+        const importBtn = document.createElement('button');
+        importBtn.className = 'btn-preset';
+        importBtn.id = `${pluginName}ImportPresetsBtn`;
+        importBtn.textContent = 'Import';
+        importBtn.title = 'Import Presets';
+        
+        // Hidden file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        fileInput.style.display = 'none';
+        fileInput.id = `${pluginName}ImportPresetsFile`;
+        
+        importBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && plugin) {
+                plugin.importUserPresets(file);
+            }
+            // Reset file input
+            e.target.value = '';
+        });
+        
+        actionButtonsGroup.appendChild(importBtn);
+        actionButtonsGroup.appendChild(fileInput);
+        presetsContainer.appendChild(actionButtonsGroup);
+        
+        // Initial update of dropdown
+        if (plugin.updateUserPresetSelector) {
+            plugin.updateUserPresetSelector();
+        }
     }
     
     /**
@@ -577,6 +695,7 @@ class PluginMixerIntegration {
         const header = document.createElement('div');
         header.className = 'control-section-header';
         header.textContent = config.label;
+        // Section headers don't need setValue/getValue
         return header;
     }
     
@@ -598,7 +717,8 @@ class PluginMixerIntegration {
         
         const valueDisplay = document.createElement('div');
         valueDisplay.className = 'control-mini-value';
-        valueDisplay.textContent = `${config.value || config.min || 0}${config.unit || ''}`;
+        const initialValue = config.value !== undefined ? config.value : (config.min || 0);
+        valueDisplay.textContent = `${initialValue}${config.unit || ''}`;
         
         header.appendChild(label);
         header.appendChild(valueDisplay);
@@ -610,7 +730,7 @@ class PluginMixerIntegration {
         slider.min = config.min || 0;
         slider.max = config.max || 100;
         slider.step = config.step || 1;
-        slider.value = config.value || config.min || 0;
+        slider.value = initialValue;
         
         slider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
@@ -631,7 +751,19 @@ class PluginMixerIntegration {
         controlGroup.appendChild(header);
         controlGroup.appendChild(slider);
         
-        return controlGroup;
+        // Return element and setValue/getValue methods
+        return {
+            element: controlGroup,
+            setValue: (value) => {
+                const numValue = parseFloat(value);
+                slider.value = numValue;
+                valueDisplay.textContent = `${numValue}${config.unit || ''}`;
+                if (config.onChange) {
+                    config.onChange(numValue);
+                }
+            },
+            getValue: () => parseFloat(slider.value)
+        };
     }
     
     /**
@@ -640,14 +772,34 @@ class PluginMixerIntegration {
     createButtonControl(controlId, config) {
         const button = document.createElement('button');
         button.className = config.className || 'btn-preset';
-        button.textContent = config.label || controlId;
+        const initialLabel = config.label || controlId;
+        button.textContent = initialLabel;
         button.setAttribute('data-control', controlId);  // Add data-control attribute for selector
         
         if (config.onClick) {
             button.addEventListener('click', config.onClick);
         }
         
-        return button;
+        // Return element and setValue/getValue methods
+        return {
+            element: button,
+            setValue: (value) => {
+                // For buttons, value can be the label text or a boolean/state
+                if (typeof value === 'string') {
+                    button.textContent = value;
+                } else if (typeof value === 'boolean') {
+                    // Update button state (for toggle buttons)
+                    if (value) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                }
+                // Store current label for getValue
+                config._currentLabel = button.textContent;
+            },
+            getValue: () => button.textContent || config._currentLabel || initialLabel
+        };
     }
     
     /**
@@ -666,13 +818,28 @@ class PluginMixerIntegration {
             });
         }
         
+        // Set initial value if provided
+        if (config.value !== undefined) {
+            select.value = config.value;
+        }
+        
         if (config.onChange) {
             select.addEventListener('change', (e) => {
                 config.onChange(e.target.value);
             });
         }
         
-        return select;
+        // Return element and setValue/getValue methods
+        return {
+            element: select,
+            setValue: (value) => {
+                select.value = value;
+                if (config.onChange) {
+                    config.onChange(value);
+                }
+            },
+            getValue: () => select.value
+        };
     }
     
     /**
@@ -699,10 +866,9 @@ class PluginMixerIntegration {
         
         const toggleText = document.createElement('span');
         toggleText.className = 'toggle-text';
-        toggleText.textContent = config.checked ? 'ON' : 'OFF';
-        toggleButton.appendChild(toggleText);
-        
         let isChecked = config.checked || false;
+        toggleText.textContent = isChecked ? 'ON' : 'OFF';
+        toggleButton.appendChild(toggleText);
         
         toggleButton.addEventListener('click', () => {
             isChecked = !isChecked;
@@ -715,7 +881,18 @@ class PluginMixerIntegration {
         controlGroup.appendChild(header);
         controlGroup.appendChild(toggleButton);
         
-        return controlGroup;
+        // Return element and setValue/getValue methods
+        return {
+            element: controlGroup,
+            setValue: (value) => {
+                isChecked = !!value;
+                toggleText.textContent = isChecked ? 'ON' : 'OFF';
+                if (config.onChange) {
+                    config.onChange(isChecked);
+                }
+            },
+            getValue: () => isChecked
+        };
     }
     
     /**
