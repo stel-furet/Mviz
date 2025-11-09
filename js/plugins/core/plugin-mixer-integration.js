@@ -472,9 +472,18 @@ class PluginMixerIntegration {
         
         // Add each input control
         inputControls.forEach((controlConfig, controlId) => {
-            const controlElement = this.createControlElement(controlId, controlConfig);
-            if (controlElement) {
+            const result = this.createControlElement(controlId, controlConfig);
+            if (result) {
+                const controlElement = result.element || result;
                 inputContainer.appendChild(controlElement);
+                
+                // Store setValue/getValue methods in control config if they exist
+                if (result.setValue) {
+                    controlConfig.setValue = result.setValue;
+                }
+                if (result.getValue) {
+                    controlConfig.getValue = result.getValue;
+                }
             } else {
                 console.error(`Failed to create input control element for "${controlId}"`);
             }

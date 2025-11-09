@@ -10396,7 +10396,9 @@ class FrequeVisualizer {
         this.volume = 1.0;
         this.previousVolume = 1.0;
         this.isMuted = false;
-        this.currentMode = 4;
+        // Load currentMode from localStorage, default to 1 if not found
+        const savedMode = localStorage.getItem('freque_am_currentMode');
+        this.currentMode = savedMode !== null ? Math.max(0, Math.min(10, parseInt(savedMode))) : 1;
         this.loopMode = 'off';
         this.currentColorScheme = 'default';
         this.backgroundColor = '#000000';
@@ -10865,9 +10867,9 @@ class FrequeVisualizer {
                 gradient: 'prism',
                 gravity: 5.241110765118057,
                 ledBars: false,
-                lineWidth: 1.9277868849548745,
+                lineWidth: 4.0,
                 linearAmplitude: true,
-                linearBoost: 2.4,
+                linearBoost: 1.8,
                 loRes: false,
                 lumiBars: false,
                 maxDecibels: -22.957439488374686,
@@ -10901,7 +10903,7 @@ class FrequeVisualizer {
                 splitGradient: false,
                 trueLeds: false,
                 useCanvas: true,
-                volume: 0.7515247792883378,
+                volume: 1.0,
                 weightingFilter: 'D'
             },
             // 5 - Energy
@@ -11083,7 +11085,7 @@ class FrequeVisualizer {
                     colorMode: 'bar-level',
                     fadePeaks: false,
                     fftSize: 8192,
-                    fillAlpha: 0.6,
+                    fillAlpha: 0.9,
                     frequencyScale: "log",
                     gradient: 'rainbow',
                     gravity: 3.8,
@@ -11102,7 +11104,7 @@ class FrequeVisualizer {
                     mode: 10,
                     noteLabels: false,
                     outlineBars: false,
-                    overlay: true,
+                    overlay: false,
                     peakFadeTime: 750,
                     peakHoldTime: 500,
                     peakLine: false,
@@ -11339,6 +11341,17 @@ class FrequeVisualizer {
             }, 100);
 
             await this.initAudioMotion();
+            
+            // If saved mode is a Pro preset (7-10), load it
+            if (this.currentMode >= 7 && this.currentMode <= 10) {
+                const proPresetIndex = this.currentMode - 7;
+                if (this.officialAudioMotionPresets && this.officialAudioMotionPresets[proPresetIndex]) {
+                    // Small delay to ensure officialAudioMotion is ready
+                    setTimeout(() => {
+                        this.setOfficialAudioMotionPreset(proPresetIndex);
+                    }, 100);
+                }
+            }
 
             this.streamManager = new StreamManager(this);
             this.recordManager = new RecordManager(this);
@@ -11536,7 +11549,7 @@ class FrequeVisualizer {
     async initAudioMotion() {
         try {
             // Initialize custom SpectrumAnalyzer (existing system)
-            this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[4]);
+            this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[this.currentMode]);
 
             // Initialize official AudioMotion (new hybrid system)
             // console.log('🔍 Checking for AudioMotionAnalyzer:', typeof AudioMotionAnalyzer);
@@ -19204,6 +19217,8 @@ https://rogueamoeba.com/loopback/
         // console.log(`🎨 setVisualizationMode called: ${this.currentMode} → ${modeIndex}`);
         // console.trace('🎨 setVisualizationMode call stack');
         this.currentMode = modeIndex;
+        // Save to localStorage for persistence
+        localStorage.setItem('freque_am_currentMode', modeIndex.toString());
 
         if (this.audioMotion && modeIndex >= 0 && modeIndex < this.visualizationModes.length) {
             const config = {
@@ -22793,6 +22808,12 @@ https://rogueamoeba.com/loopback/
         if (!this.useOfficialAudioMotion && this.currentMode !== undefined) {
             this.lastRegularMode = this.currentMode;
         }
+
+        // Update currentMode to Pro preset index (7-10) and save to localStorage
+        // Pro presets are indexed 0-3, which map to modes 7-10
+        const proModeIndex = 7 + presetIndex;
+        this.currentMode = proModeIndex;
+        localStorage.setItem('freque_am_currentMode', proModeIndex.toString());
 
         if (!this.officialAudioMotion) {
             // Try to initialize it now if the library is available
