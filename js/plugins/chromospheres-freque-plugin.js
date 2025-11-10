@@ -100,31 +100,82 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     setupControls() {
         // Mapping mode toggle
         this.addControl('mappingMode', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Reflection',
-            className: 'btn-toggle active',
-            onClick: () => {
-                this.toggleMappingMode();
+            checked: true,  // Default is 'reflection' mode
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.mappingMode = value ? 'reflection' : 'direct';
+                console.log('🔮 ChromeSphere Mapping:', this.mappingMode);
+                
+                this.applyTextureToSpheres();
+                
+                // If switching to reflection mode with video, force cube camera update
+                if (this.mappingMode === 'reflection' && this.envMapSource === 'video' && this.cubeCamera && this.videoSphere) {
+                    // Temporarily restore base rotation for cube camera capture
+                    const originalRotationY = this.videoSphere.rotation.y;
+                    if (this.bgSphereVisible) {
+                        this.videoSphere.rotation.y = this.videoSphereBaseRotationY;
+                    }
+                    
+                    // Update cube camera immediately to populate cube map
+                    this.spheres.forEach(sphere => {
+                        sphere.mesh.visible = false;
+                    });
+                    this.videoSphere.visible = true;
+                    this.cubeCamera.update(this.renderer, this.scene);
+                    this.spheres.forEach(sphere => {
+                        sphere.mesh.visible = true;
+                    });
+                    
+                    // Restore rotation for viewing if BG Sphere is visible
+                    if (this.bgSphereVisible) {
+                        this.videoSphere.rotation.y = originalRotationY;
+                    }
+                }
             }
         });
         
         // Environment source toggle
         this.addControl('envSource', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Video',
-            className: 'btn-toggle active',
-            onClick: () => {
-                this.toggleEnvSource();
+            checked: true,  // Default is 'video'
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.envMapSource = value ? 'video' : 'bgimg';
+                console.log('🎬 ChromeSphere Source:', this.envMapSource);
+                
+                this.updateTextureNeeded = true;
+                // Force immediate update instead of waiting for next frame
+                this.updateTexture();
             }
         });
         
         // Background sphere toggle (show/hide video sphere)
         this.addControl('bgSphere', {
-            type: 'button',
-            label: 'Bg Sphere: OFF',
-            className: 'btn-toggle',
-            onClick: () => {
-                this.toggleBgSphere();
+            type: 'checkbox',
+            label: 'Bg Sphere',
+            checked: false,  // Default is hidden
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.bgSphereVisible = value;
+                console.log('🌍 ChromeSphere Bg Sphere:', value);
+                
+                // Toggle video sphere visibility by changing its layer and rotation
+                if (this.videoSphere) {
+                    if (this.bgSphereVisible) {
+                        // Show video sphere in background - move to layer 0 so main camera can see it
+                        this.videoSphere.layers.set(0);
+                        // Rotate 180 degrees so center of video is visible (not the seam)
+                        this.videoSphere.rotation.y = this.videoSphereBaseRotationY + Math.PI;
+                    } else {
+                        // Hide from main camera but keep visible to cube camera - move to layer 1
+                        this.videoSphere.layers.set(1);
+                        // Reset to base rotation for cube camera
+                        this.videoSphere.rotation.y = this.videoSphereBaseRotationY;
+                    }
+                }
             }
         });
         
@@ -242,6 +293,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Audio Reactive',
             checked: this.audioReactive,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.audioReactive = checked;
             }
@@ -252,6 +304,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Bass → Scale',
             checked: this.bassScale,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.bassScale = checked;
             }
@@ -262,6 +315,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Mid → Movement',
             checked: this.midMovement,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.midMovement = checked;
             }
@@ -272,6 +326,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Treble → Shine',
             checked: this.trebleShine,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.trebleShine = checked;
             }
@@ -282,6 +337,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Beat Pulse',
             checked: this.beatPulse,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.beatPulse = checked;
             }
@@ -292,6 +348,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             type: 'checkbox',
             label: 'Auto-Rotate Camera',
             checked: this.cameraAutoRotate,
+            className: 'btn-primary-mixer',
             onChange: (checked) => {
                 this.cameraAutoRotate = checked;
             }

@@ -1,16 +1,16 @@
 /**
- * PSYCH - Professional Liquid Bubble Visualizer Plugin for Freque
- * Version: 1.0.0
+ * PSYQUE - Professional Liquid Bubble Visualizer Plugin for Freque
+ * Version: 1.1.0
  * Author: Freque Team
  * 
  * WebGL2-based shader visualization with smooth noise-driven animation morphing
- * and comprehensive audio reactivity.
+ * and comprehensive beat reactivity.
  */
 
-class PsychPlugin extends FrequePluginBase {
+class PsyquePlugin extends FrequePluginBase {
     constructor(visualizer) {
-        super('psych', visualizer, {
-            version: '1.0.0',
+        super('psyque', visualizer, {
+            version: '1.1.0',
             author: 'Freque Team',
             description: 'Professional liquid bubble visualizer with WebGL2 shaders',
             targetFPS: 60
@@ -30,7 +30,7 @@ class PsychPlugin extends FrequePluginBase {
         
         // Base values for animation morph
         this.baseSpeed = 1.0;
-        this.baseDensity = 1.5;
+        this.baseDensity = 1.0;
         this.baseRoundness = 0.5;
         this.baseSeparation = 3.5;
         this.baseBgSpeed = 1.0;
@@ -53,6 +53,11 @@ class PsychPlugin extends FrequePluginBase {
         this.smoothedEnergy = 0;
         this.energyHistory = [];
         
+        // Beat detection
+        this.lastBeatTime = 0;
+        this.beatDecay = 0;
+        this.beatThreshold = 1.3;
+        
         this.setupControls();
         this.setupPresets();
     }
@@ -62,23 +67,35 @@ class PsychPlugin extends FrequePluginBase {
         this.addControl('colorScheme', {
             type: 'dropdown',
             label: 'Color Scheme',
+            className: 'dropdown-selector-mixer',
             options: this.colorSchemes.map(s => ({ value: s.id, label: s.name })),
             value: 0,
             onChange: (value) => {
                 this.colorScheme = parseInt(value);
+                // CRITICAL: Reset colorTime when changing schemes (unless morphing)
+                // This ensures each scheme starts from its base colors
+                if (!this.colorMorph) {
+                    this.colorTime = 0;
+                }
+                console.log(`🎨 PSYQUE Color Scheme: ${this.colorSchemes[this.colorScheme].name}`);
             }
         });
         
         // Color Morph Toggle
         this.colorMorph = false;
         this.addControl('colorMorph', {
-            type: 'button',
-            label: 'Color Morph: OFF',
+            type: 'checkbox',
+            label: 'Color Morph',
+            checked: false,
+            className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.colorMorph = value;
-                const btn = document.querySelector(`[data-control="colorMorph"]`);
-                if (btn) {
-                    btn.textContent = value ? 'Color Morph: ON' : 'Color Morph: OFF';
+                // CRITICAL: Reset colorTime when turning OFF to ensure consistent base colors
+                if (!value) {
+                    this.colorTime = 0;
+                    console.log('🎨 PSYQUE Color Morph OFF - colorTime reset');
+                } else {
+                    console.log('🎨 PSYQUE Color Morph ON');
                 }
             }
         });
@@ -88,6 +105,7 @@ class PsychPlugin extends FrequePluginBase {
         this.addControl('colorMorphSpeed', {
             type: 'dropdown',
             label: 'Color Morph Speed',
+            className: 'dropdown-selector-mixer',
             options: [
                 { value: 0.5, label: 'Slow' },
                 { value: 1.0, label: 'Medium' },
@@ -103,13 +121,18 @@ class PsychPlugin extends FrequePluginBase {
         // Animation Morph Toggle
         this.animationMorph = false;
         this.addControl('animationMorph', {
-            type: 'button',
-            label: 'Animation Morph: OFF',
+            type: 'checkbox',
+            label: 'Animation Morph',
+            checked: false,
+            className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.animationMorph = value;
-                const btn = document.querySelector(`[data-control="animationMorph"]`);
-                if (btn) {
-                    btn.textContent = value ? 'Animation Morph: ON' : 'Animation Morph: OFF';
+                // CRITICAL: Reset animationMorphTime when turning OFF for consistent base state
+                if (!value) {
+                    this.animationMorphTime = 0;
+                    console.log('🌀 PSYQUE Animation Morph OFF - morphTime reset');
+                } else {
+                    console.log('🌀 PSYQUE Animation Morph ON');
                 }
             }
         });
@@ -119,6 +142,7 @@ class PsychPlugin extends FrequePluginBase {
         this.addControl('animationMorphSpeed', {
             type: 'dropdown',
             label: 'Animation Morph Speed',
+            className: 'dropdown-selector-mixer',
             options: [
                 { value: 0.5, label: 'Slow' },
                 { value: 1.0, label: 'Medium' },
@@ -134,7 +158,7 @@ class PsychPlugin extends FrequePluginBase {
         // Animation Speed Slider
         this.speed = 1.0;
         this.addControl('speed', {
-            type: 'slider',
+            type: 'dial',
             label: 'Animation Speed',
             min: 0,
             max: 3,
@@ -151,7 +175,7 @@ class PsychPlugin extends FrequePluginBase {
         // Rotation Speed Slider
         this.rotation = 0;
         this.addControl('rotation', {
-            type: 'slider',
+            type: 'dial',
             label: 'Rotation Speed',
             min: -20,
             max: 20,
@@ -163,14 +187,14 @@ class PsychPlugin extends FrequePluginBase {
         });
         
         // Bubble Density
-        this.density = 1.5;
+        this.density = 1.0;
         this.addControl('density', {
-            type: 'slider',
+            type: 'dial',
             label: 'Bubble Density',
             min: 0.3,
-            max: 2.5,
+            max: 1.5,
             step: 0.1,
-            value: 1.5,
+            value: 1.0,
             onChange: (value) => {
                 if (!this.animationMorph) {
                     this.baseDensity = value;
@@ -182,7 +206,7 @@ class PsychPlugin extends FrequePluginBase {
         // Flow Complexity
         this.complexity = 1.0;
         this.addControl('complexity', {
-            type: 'slider',
+            type: 'dial',
             label: 'Flow Complexity',
             min: 0.2,
             max: 2.0,
@@ -196,7 +220,7 @@ class PsychPlugin extends FrequePluginBase {
         // Bubble Separation
         this.separation = 3.5;
         this.addControl('separation', {
-            type: 'slider',
+            type: 'dial',
             label: 'Bubble Separation',
             min: 1.5,
             max: 8.0,
@@ -213,7 +237,7 @@ class PsychPlugin extends FrequePluginBase {
         // Bubble Roundness
         this.roundness = 0.5;
         this.addControl('roundness', {
-            type: 'slider',
+            type: 'dial',
             label: 'Bubble Roundness',
             min: 0.0,
             max: 2.0,
@@ -230,7 +254,7 @@ class PsychPlugin extends FrequePluginBase {
         // Background Speed
         this.bgSpeed = 1.0;
         this.addControl('bgSpeed', {
-            type: 'slider',
+            type: 'dial',
             label: 'Background Speed',
             min: 0.0,
             max: 3.0,
@@ -247,7 +271,7 @@ class PsychPlugin extends FrequePluginBase {
         // Background Intensity
         this.bgIntensity = 0.5;
         this.addControl('bgIntensity', {
-            type: 'slider',
+            type: 'dial',
             label: 'Background Intensity',
             min: 0.0,
             max: 2.0,
@@ -261,10 +285,23 @@ class PsychPlugin extends FrequePluginBase {
             }
         });
         
+        // Background Toggle
+        this.showBackground = true;
+        this.addControl('showBackground', {
+            type: 'checkbox',
+            label: 'Background',
+            checked: true,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.showBackground = value;
+                console.log('🌊 PSYQUE Background:', value);
+            }
+        });
+        
         // Edge Brightness
         this.edge = 1.5;
         this.addControl('edge', {
-            type: 'slider',
+            type: 'dial',
             label: 'Edge Brightness',
             min: 0,
             max: 5,
@@ -281,7 +318,7 @@ class PsychPlugin extends FrequePluginBase {
         // Color Intensity
         this.intensity = 1.5;
         this.addControl('intensity', {
-            type: 'slider',
+            type: 'dial',
             label: 'Color Intensity',
             min: 0.5,
             max: 3,
@@ -298,7 +335,7 @@ class PsychPlugin extends FrequePluginBase {
         // Zoom
         this.zoom = 4.0;
         this.addControl('zoom', {
-            type: 'slider',
+            type: 'dial',
             label: 'Zoom',
             min: 1.0,
             max: 10.0,
@@ -312,42 +349,104 @@ class PsychPlugin extends FrequePluginBase {
         // Solid Fill Toggle
         this.solidFill = false;
         this.addControl('solidFill', {
-            type: 'button',
-            label: 'Solid Interior: OFF',
+            type: 'checkbox',
+            label: 'Solid Interior',
+            checked: false,
+            className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.solidFill = value;
-                const btn = document.querySelector(`[data-control="solidFill"]`);
-                if (btn) {
-                    btn.textContent = value ? 'Solid Interior: ON' : 'Solid Interior: OFF';
-                }
+                console.log('🔲 PSYQUE Solid Interior:', value);
             }
         });
         
         // Depth Layers Toggle
         this.depthLayers = false;
         this.addControl('depthLayers', {
-            type: 'button',
-            label: 'Depth Layers: OFF',
+            type: 'checkbox',
+            label: 'Depth Layers',
+            checked: false,
+            className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.depthLayers = value;
-                const btn = document.querySelector(`[data-control="depthLayers"]`);
-                if (btn) {
-                    btn.textContent = value ? 'Depth Layers: ON' : 'Depth Layers: OFF';
-                }
+                console.log('📐 PSYQUE Depth Layers:', value);
             }
         });
         
-        // Audio Reactivity
-        this.audioReactive = true;
-        this.addControl('audioReactive', {
-            type: 'button',
-            label: 'Audio Reactive: ON',
+        // Sharp Edges Toggle
+        this.sharpEdges = false;
+        this.addControl('sharpEdges', {
+            type: 'checkbox',
+            label: 'Sharp Edges',
+            checked: false,
+            className: 'btn-primary-mixer',
             onChange: (value) => {
-                this.audioReactive = value;
-                const btn = document.querySelector(`[data-control="audioReactive"]`);
-                if (btn) {
-                    btn.textContent = value ? 'Audio Reactive: ON' : 'Audio Reactive: OFF';
-                }
+                this.sharpEdges = value;
+                console.log('✂️ PSYQUE Sharp Edges:', value);
+            }
+        });
+        
+        // Beat Reactivity Master Toggle
+        this.beatReactive = false;
+        this.addControl('beatReactive', {
+            type: 'checkbox',
+            label: 'Beat React',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.beatReactive = value;
+                console.log('🎵 PSYQUE Beat React:', value);
+            }
+        });
+        
+        // Edge Boost Toggle (energy-based)
+        this.edgesBoost = false;
+        this.addControl('edgesBoost', {
+            type: 'checkbox',
+            label: 'Edges',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.edgesBoost = value;
+                console.log('✨ PSYQUE Edges Boost:', value);
+            }
+        });
+        
+        // Background Boost Toggle (energy-based)
+        this.bgBoost = false;
+        this.addControl('bgBoost', {
+            type: 'checkbox',
+            label: 'BG Boost',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.bgBoost = value;
+                console.log('🌊 PSYQUE BG Boost:', value);
+            }
+        });
+        
+        // Animation Speed Boost Toggle (energy-based)
+        this.animSpeedBoost = false;
+        this.addControl('animSpeedBoost', {
+            type: 'checkbox',
+            label: 'Anim Speed',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.animSpeedBoost = value;
+                console.log('⚡ PSYQUE Anim Speed Boost:', value);
+            }
+        });
+        
+        // Rotation Boost Toggle (energy-based)
+        this.rotationBoost = false;
+        this.addControl('rotationBoost', {
+            type: 'checkbox',
+            label: 'Rotation',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.rotationBoost = value;
+                console.log('🔄 PSYQUE Rotation Boost:', value);
             }
         });
     }
@@ -357,6 +456,10 @@ class PsychPlugin extends FrequePluginBase {
             name: 'Acid Orange/Cyan',
             values: {
                 colorScheme: 0,
+                colorMorph: false,
+                colorMorphSpeed: 1.0,
+                animationMorph: false,
+                animationMorphSpeed: 1.0,
                 speed: 1.0,
                 rotation: 0,
                 density: 1.5,
@@ -367,14 +470,26 @@ class PsychPlugin extends FrequePluginBase {
                 bgIntensity: 0.5,
                 edge: 1.5,
                 intensity: 1.5,
-                zoom: 4.0
+                zoom: 4.0,
+                solidFill: false,
+                depthLayers: false,
+                showBackground: true,
+                beatReactive: false,
+                edgesBoost: false,
+                bgBoost: false,
+                animSpeedBoost: false,
+                rotationBoost: false
             }
         });
         
         this.addPreset('soap', {
-            name: 'Blue Bubbles',
+            name: 'Blue Soap Bubbles',
             values: {
                 colorScheme: 1,
+                colorMorph: false,
+                colorMorphSpeed: 1.0,
+                animationMorph: false,
+                animationMorphSpeed: 1.0,
                 speed: 1.2,
                 rotation: 0,
                 density: 1.2,
@@ -385,7 +500,15 @@ class PsychPlugin extends FrequePluginBase {
                 bgIntensity: 0.5,
                 edge: 2.5,
                 intensity: 1.8,
-                zoom: 4.5
+                zoom: 4.5,
+                solidFill: false,
+                depthLayers: false,
+                showBackground: true,
+                beatReactive: false,
+                edgesBoost: false,
+                bgBoost: false,
+                animSpeedBoost: false,
+                rotationBoost: false
             }
         });
         
@@ -393,6 +516,10 @@ class PsychPlugin extends FrequePluginBase {
             name: 'Red Lava',
             values: {
                 colorScheme: 2,
+                colorMorph: false,
+                colorMorphSpeed: 1.0,
+                animationMorph: false,
+                animationMorphSpeed: 1.0,
                 speed: 0.8,
                 rotation: 0,
                 density: 1.8,
@@ -403,7 +530,15 @@ class PsychPlugin extends FrequePluginBase {
                 bgIntensity: 1.0,
                 edge: 2.0,
                 intensity: 2.2,
-                zoom: 4.8
+                zoom: 4.8,
+                solidFill: false,
+                depthLayers: false,
+                showBackground: true,
+                beatReactive: false,
+                edgesBoost: false,
+                bgBoost: false,
+                animSpeedBoost: false,
+                rotationBoost: false
             }
         });
         
@@ -411,27 +546,100 @@ class PsychPlugin extends FrequePluginBase {
             name: 'Purple Dream',
             values: {
                 colorScheme: 3,
+                colorMorph: false,
+                colorMorphSpeed: 1.0,
+                animationMorph: false,
+                animationMorphSpeed: 1.0,
                 speed: 1.0,
                 rotation: 0,
                 density: 1.1,
-                complexity: 1.5,
-                separation: 2.5,
-                roundness: 1.2,
+                complexity: 1.2,
+                separation: 3.0,
+                roundness: 0.8,
                 bgSpeed: 0.8,
                 bgIntensity: 0.8,
                 edge: 2.2,
                 intensity: 2.5,
-                zoom: 4.3
+                zoom: 4.3,
+                solidFill: false,
+                depthLayers: false,
+                showBackground: true,
+                beatReactive: false,
+                edgesBoost: false,
+                bgBoost: false,
+                animSpeedBoost: false,
+                rotationBoost: false
+            }
+        });
+        
+        this.addPreset('rainbow', {
+            name: 'Rainbow',
+            values: {
+                colorScheme: 4,
+                colorMorph: true,
+                colorMorphSpeed: 1.0,
+                animationMorph: false,
+                animationMorphSpeed: 1.0,
+                speed: 1.0,
+                rotation: 0,
+                density: 1.5,
+                complexity: 1.0,
+                separation: 3.5,
+                roundness: 0.5,
+                bgSpeed: 1.2,
+                bgIntensity: 0.6,
+                edge: 1.8,
+                intensity: 1.8,
+                zoom: 4.0,
+                solidFill: false,
+                depthLayers: false,
+                showBackground: true,
+                beatReactive: false,
+                edgesBoost: false,
+                bgBoost: false,
+                animSpeedBoost: false,
+                rotationBoost: false
             }
         });
     }
 
+    // Lifecycle method called after preset is loaded
+    onPresetLoad(presetName, presetValues) {
+        console.log(`🎨 PSYQUE: Loading preset "${presetName}"`);
+        
+        // CRITICAL: Reset all time accumulators to ensure consistent preset appearance
+        // Without this, colors/animations vary based on when the preset is loaded
+        this.time = 0;
+        this.colorTime = 0;
+        this.bgTime = 0;
+        this.rotationTime = 0;
+        this.animationMorphTime = 0;
+        
+        // CRITICAL FIX: Apply colorScheme to actually change colors between presets!
+        this.colorScheme = presetValues.colorScheme !== undefined ? presetValues.colorScheme : this.colorScheme;
+        
+        // Reset base values to match the preset
+        this.baseSpeed = presetValues.speed || this.speed;
+        this.baseDensity = presetValues.density || this.density;
+        this.baseRoundness = presetValues.roundness || this.roundness;
+        this.baseSeparation = presetValues.separation || this.separation;
+        this.baseBgSpeed = presetValues.bgSpeed || this.bgSpeed;
+        this.baseBgIntensity = presetValues.bgIntensity || this.bgIntensity;
+        this.baseEdge = presetValues.edge || this.edge;
+        this.baseIntensity = presetValues.intensity || this.intensity;
+        
+        console.log(`✅ PSYQUE: Preset "${presetName}" loaded - Color Scheme ${this.colorScheme}`);
+    }
+
+    // Toggle Methods - REMOVED (now using checkbox controls with onChange)
+
     onInitialize() {
-        console.log('PSYCH Plugin initializing...');
+        console.log('PSYQUE Plugin initializing...');
         
         // Initialize WebGL2
         this.gl = this.canvas.getContext('webgl2', {
-            alpha: false,
+            alpha: true,              // ✅ Enable alpha for transparency
+            premultipliedAlpha: false,
             antialias: true,
             powerPreference: 'high-performance',
             preserveDrawingBuffer: false
@@ -443,9 +651,14 @@ class PsychPlugin extends FrequePluginBase {
         }
         
         this.initShaders();
+        
+        // Enable blending for transparency
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        
         this.resizeCanvas();
         
-        console.log('PSYCH Plugin initialized successfully');
+        console.log('PSYQUE Plugin initialized successfully');
     }
 
     initShaders() {
@@ -478,6 +691,8 @@ class PsychPlugin extends FrequePluginBase {
             uniform float intensity;
             uniform int solidFill;
             uniform int depthLayers;
+            uniform int sharpEdges;
+            uniform int showBackground;
             uniform float zoom;
             uniform int colorScheme;
             
@@ -603,7 +818,8 @@ class PsychPlugin extends FrequePluginBase {
                 float tBg = bgTime;
                 
                 // Domain warping for organic flow
-                vec2 warpedUV = warp(uv * complexity, 0.3);
+                // Use complexity to control warp intensity, not UV scaling (fixes zoom bug)
+                vec2 warpedUV = warp(uv, 0.3 * complexity);
                 
                 // Create metaball field with depth layering
                 float field = 0.0;
@@ -635,10 +851,11 @@ class PsychPlugin extends FrequePluginBase {
                         // Size variation
                         float size = 0.5 + 0.5 * sin(seed * 3.0 + t * 0.2);
                         
-                        // Depth scaling
+                        // Enhanced depth scaling for more pronounced 3D effect
                         float depthScale = 1.0;
                         if(depthLayers == 1) {
-                            depthScale = 1.0 - layerDepth * 0.3;
+                            // More dramatic size difference between layers
+                            depthScale = 1.0 - layerDepth * 0.6;
                         }
                         float finalSize = size * depthScale;
                         
@@ -646,9 +863,9 @@ class PsychPlugin extends FrequePluginBase {
                         float bubble = finalSize * density * 0.6 * exp(-dist * separation * 1.2);
                         field += bubble;
                         
-                        // Accumulate depth mask
+                        // Accumulate depth mask with stronger weighting
                         if(depthLayers == 1) {
-                            depthMask += bubble * (1.0 - layerDepth * 0.5);
+                            depthMask += bubble * (1.0 - layerDepth * 0.8);
                         }
                     }
                 }
@@ -656,34 +873,35 @@ class PsychPlugin extends FrequePluginBase {
                 // Smooth the field to eliminate banding
                 field = smoothstep(0.0, 1.0, field);
                 
-                // Edge detection with smooth gradients (no banding)
+                // Edge detection - support both smooth gradients and sharp edges
                 float edgeThreshold = 0.35;
-                float edgeWidth = 0.12;
+                float edgeWidth = (sharpEdges == 1) ? 0.02 : 0.12;
                 
-                // Smooth edge transition
+                // Edge transition (sharp or smooth based on toggle)
                 float edge1 = smoothstep(edgeThreshold - edgeWidth, edgeThreshold, field) - 
                              smoothstep(edgeThreshold, edgeThreshold + edgeWidth, field);
                 
-                // Secondary edge for depth
-                float edge2 = smoothstep(edgeThreshold + 0.15, edgeThreshold + 0.2, field) - 
-                             smoothstep(edgeThreshold + 0.2, edgeThreshold + 0.25, field);
+                // Secondary edge for depth (also affected by sharp edges mode)
+                float depthEdgeWidth = (sharpEdges == 1) ? 0.01 : 0.05;
+                float edge2 = smoothstep(edgeThreshold + 0.15, edgeThreshold + 0.15 + depthEdgeWidth, field) - 
+                             smoothstep(edgeThreshold + 0.15 + depthEdgeWidth, edgeThreshold + 0.15 + depthEdgeWidth * 2.0, field);
                 
                 float edgeMask = edge1 * 1.5 + edge2 * 0.3;
                 
-                // Base color with variation
-                float colorVal = field * 0.3 + fbm(warpedUV * 2.0 + tColor * 0.1, 3) * 0.2 + tColor * 0.03;
+                // Base color with less noise variation (reduces cloudiness)
+                float colorVal = field * 0.5 + fbm(warpedUV * 2.0 + tColor * 0.1, 3) * 0.08 + tColor * 0.03;
                 
                 // For solid fill: completely replace with solid color in interiors
                 if(solidFill == 1) {
                     // Sharp cutoff - field > 0.35 gets solid color
                     float interiorMask = step(0.35, field); // Hard edge at 0.35
-                    float solidColorVal = field * 0.5 + tColor * 0.03;
+                    float solidColorVal = field * 0.6 + tColor * 0.03;
                     colorVal = mix(colorVal, solidColorVal, interiorMask);
                 }
                 
                 vec3 baseColor = palette(colorVal, colorScheme);
                 
-                // Boost saturation smoothly
+                // Boost saturation smoothly for more solid colors
                 float luminance = dot(baseColor, vec3(0.299, 0.587, 0.114));
                 baseColor = mix(vec3(luminance), baseColor, intensity);
                 
@@ -694,44 +912,60 @@ class PsychPlugin extends FrequePluginBase {
                 // Blend colors smoothly
                 vec3 color = mix(baseColor, edgeColor, edgeMask * edge);
                 
-                // Interior effects
+                // Interior effects (reduced for more solid appearance)
                 if(solidFill == 0) {
-                    // Smooth interior gradient (creates depth)
+                    // Lighter interior darkening for less smokey look
                     float interior = smoothstep(0.2, 0.6, field);
-                    color = mix(color * 0.4, color, interior);
+                    color = mix(color * 0.6, color, interior);
                     
-                    // Add subtle iridescent shimmer
-                    float shimmer = fbm(warpedUV * 8.0 + tColor * 0.08, 3) * 0.15;
+                    // Reduced shimmer effect
+                    float shimmer = fbm(warpedUV * 8.0 + tColor * 0.08, 2) * 0.08;
                     color += shimmer * field;
                 } else {
-                    // Solid fill: keep gradient for depth
+                    // Solid fill: keep gradient for depth but cleaner
                     float interior = smoothstep(0.2, 0.6, field);
-                    color = mix(color * 0.4, color, interior);
+                    color = mix(color * 0.6, color, interior);
                     
-                    // Hard cutoff - no shimmer where field > 0.35
+                    // Minimal shimmer outside solid areas
                     float interiorMask = step(0.35, field);
-                    float shimmer = fbm(warpedUV * 8.0 + tColor * 0.08, 3) * 0.15;
+                    float shimmer = fbm(warpedUV * 8.0 + tColor * 0.08, 2) * 0.06;
                     color += shimmer * field * (1.0 - interiorMask);
                 }
                 
-                // Add background texture as visible flowing patterns
-                float bgTexture1 = fbm(uv * 2.0 + vec2(tBg * 0.6, tBg * 0.5), 4);
-                float bgTexture2 = fbm(uv * 3.5 - vec2(tBg * 0.4, tBg * 0.7), 3);
-                
-                // Combine textures and normalize to -1 to 1 range
-                float bgPattern = (bgTexture1 + bgTexture2 * 0.5 - 0.75) * 2.0;
-                
-                // Create visible flowing patterns that don't change overall brightness
-                vec3 bgEffect = vec3(bgPattern * 0.15);
-                color += bgEffect * bgIntensity;
-                
-                // Apply depth darkening (bubbles behind others are darker)
-                if(depthLayers == 1) {
-                    float depthDarken = smoothstep(0.0, 0.5, depthMask) * 0.3;
-                    color *= (1.0 - depthDarken);
+                // Add background texture as subtle flowing patterns (if enabled)
+                if (showBackground == 1) {
+                    float bgTexture1 = fbm(uv * 2.0 + vec2(tBg * 0.6, tBg * 0.5), 3);
+                    float bgTexture2 = fbm(uv * 3.5 - vec2(tBg * 0.4, tBg * 0.7), 2);
+                    
+                    // Combine textures with reduced intensity
+                    float bgPattern = (bgTexture1 + bgTexture2 * 0.3 - 0.65) * 1.5;
+                    
+                    // Subtle flowing patterns
+                    vec3 bgEffect = vec3(bgPattern * 0.08);
+                    color += bgEffect * bgIntensity;
                 }
                 
-                fragColor = vec4(color, 1.0);
+                // Calculate alpha based on bubble presence
+                float bubbleMask = smoothstep(0.0, 0.05, field);
+                float alpha = 1.0;
+                
+                if (showBackground == 0) {
+                    // Background OFF: Make non-bubble areas transparent
+                    alpha = bubbleMask;
+                }
+                
+                // Apply enhanced depth effect (bubbles behind others are darker with subtle highlights)
+                if(depthLayers == 1) {
+                    // Stronger darkening for back layers
+                    float depthDarken = smoothstep(0.0, 0.5, depthMask) * 0.5;
+                    color *= (1.0 - depthDarken);
+                    
+                    // Add subtle rim lighting on front layers for pop
+                    float rimLight = (1.0 - depthMask) * 0.15 * field;
+                    color += vec3(rimLight);
+                }
+                
+                fragColor = vec4(color, alpha);
             }
         `;
         
@@ -802,6 +1036,8 @@ class PsychPlugin extends FrequePluginBase {
             intensity: gl.getUniformLocation(this.program, 'intensity'),
             solidFill: gl.getUniformLocation(this.program, 'solidFill'),
             depthLayers: gl.getUniformLocation(this.program, 'depthLayers'),
+            sharpEdges: gl.getUniformLocation(this.program, 'sharpEdges'),
+            showBackground: gl.getUniformLocation(this.program, 'showBackground'),
             zoom: gl.getUniformLocation(this.program, 'zoom'),
             colorScheme: gl.getUniformLocation(this.program, 'colorScheme')
         };
@@ -809,11 +1045,29 @@ class PsychPlugin extends FrequePluginBase {
 
     resizeCanvas() {
         if (!this.gl) return;
-        
+
+        // CRITICAL: Get dimensions from container, NOT from canvas.clientWidth
+        // canvas.clientWidth returns CSS dimensions which may be wrong/0
+        const container = document.getElementById('visualizationContainer');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        const width = rect.width || window.innerWidth;
+        const height = rect.height || window.innerHeight;
+
+        // Set CSS size (what the browser displays)
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+
+        // Set actual canvas buffer size (accounts for pixel ratio)
         const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = this.canvas.clientWidth * dpr;
-        this.canvas.height = this.canvas.clientHeight * dpr;
+        this.canvas.width = width * dpr;
+        this.canvas.height = height * dpr;
+
+        // Update WebGL viewport
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+        console.log(`PSYQUE: Resized to ${this.canvas.width}x${this.canvas.height} (display: ${width}x${height}, DPR: ${dpr})`);
     }
 
     onUpdate(deltaTime, timestamp, sharedAudioData) {
@@ -831,10 +1085,22 @@ class PsychPlugin extends FrequePluginBase {
             this.colorTime += deltaTime * 0.001 * this.colorMorphSpeed;
         }
         
-        // Audio reactivity
-        if (this.audioReactive && sharedAudioData) {
+        // Beat Reactivity - use MAL's sharedAudioData
+        if (this.beatReactive && sharedAudioData && sharedAudioData.frequencies) {
+            // Debug: Log audio data once every 120 frames (~2 seconds)
+            if (Math.random() < 0.0083) {
+                console.log('🎵 PSYQUE Audio Data:', {
+                    energy: sharedAudioData.energy?.toFixed(3),
+                    freqLength: sharedAudioData.frequencies?.length,
+                    beatReactive: this.beatReactive
+                });
+            }
+            
+            // Get frequency bands from MAL data
             this.frequencyBands = this.getFrequencyBands(sharedAudioData.frequencies);
-            this.currentEnergy = this.getAudioEnergy();
+            
+            // Use MAL's energy data
+            this.currentEnergy = sharedAudioData.energy || 0;
             
             // Smooth energy
             this.energyHistory.push(this.currentEnergy);
@@ -842,6 +1108,23 @@ class PsychPlugin extends FrequePluginBase {
                 this.energyHistory.shift();
             }
             this.smoothedEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / this.energyHistory.length;
+            
+            // Beat detection - check if current energy significantly exceeds smoothed energy
+            const currentTime = timestamp;
+            const timeSinceLastBeat = currentTime - this.lastBeatTime;
+            
+            if (this.currentEnergy > this.smoothedEnergy * this.beatThreshold && timeSinceLastBeat > 100) {
+                this.lastBeatTime = currentTime;
+                this.beatDecay = 1.0; // Full intensity on beat
+            }
+            
+            // Decay beat effect over time (fast decay for punchy feel)
+            this.beatDecay *= 0.92; // Decays to near zero in about 300ms
+            if (this.beatDecay < 0.01) this.beatDecay = 0;
+        } else {
+            // No beat reactive, decay to zero
+            this.beatDecay *= 0.85;
+            if (this.beatDecay < 0.01) this.beatDecay = 0;
         }
         
         // Animation Morph - use noise-based smooth random values
@@ -921,15 +1204,56 @@ class PsychPlugin extends FrequePluginBase {
             this.intensity = Math.max(0.8, Math.min(2.5, this.baseIntensity + intensityNoise));
         }
         
-        // Audio-driven effects
-        if (this.audioReactive && this.frequencyBands) {
-            // Boost density with bass
-            const audioDensity = this.animationMorph ? this.density : this.baseDensity;
-            this.density = audioDensity * (1 + this.frequencyBands.bass * 0.5);
+        // Apply individual boost effects when Beat React is ON
+        if (this.beatReactive) {
+            // Normalized energy value (0-1 range) for smooth scaling
+            const energyScale = Math.min(this.smoothedEnergy / 128, 1.0);
             
-            // Boost edge brightness with treble
-            const audioEdge = this.animationMorph ? this.edge : this.baseEdge;
-            this.edge = audioEdge * (1 + this.frequencyBands.treble * 0.3);
+            // Edge Boost - more apparent effect based on energy
+            if (this.edgesBoost) {
+                const baseEdge = this.animationMorph ? this.edge : this.baseEdge;
+                // Combine beat punch with sustained energy boost
+                const edgeBoost = (this.beatDecay * 2.0) + (energyScale * 1.5);
+                this.edge = baseEdge * (1 + edgeBoost);
+            }
+            
+            // Background Speed/Intensity Boost
+            if (this.bgBoost) {
+                const baseBgSpeed = this.animationMorph ? this.bgSpeed : this.baseBgSpeed;
+                const baseBgIntensity = this.animationMorph ? this.bgIntensity : this.baseBgIntensity;
+                
+                // Speed boost with beat reaction
+                const bgSpeedBoost = (this.beatDecay * 1.5) + (energyScale * 1.2);
+                this.bgSpeed = baseBgSpeed * (1 + bgSpeedBoost);
+                
+                // Intensity boost
+                const bgIntensityBoost = (this.beatDecay * 0.8) + (energyScale * 0.6);
+                this.bgIntensity = baseBgIntensity * (1 + bgIntensityBoost);
+            }
+            
+            // Animation Speed Boost
+            if (this.animSpeedBoost) {
+                const baseSpeed = this.animationMorph ? this.speed : this.baseSpeed;
+                // Strong beat reaction + sustained energy boost
+                const speedBoost = (this.beatDecay * 3.0) + (energyScale * 1.5);
+                this.speed = baseSpeed * (1 + speedBoost);
+            }
+            
+            // Rotation Speed Boost
+            if (this.rotationBoost) {
+                const baseRotation = this.rotation;
+                // Apply boost to rotation (can be positive or negative rotation)
+                const rotationBoost = (this.beatDecay * 15.0) + (energyScale * 8.0);
+                if (baseRotation !== 0) {
+                    // Boost existing rotation in same direction
+                    this.rotation = baseRotation > 0 ? 
+                        baseRotation + rotationBoost : 
+                        baseRotation - rotationBoost;
+                } else {
+                    // If no base rotation, create subtle energy-driven rotation
+                    this.rotation = energyScale * 5.0;
+                }
+            }
         }
     }
 
@@ -956,6 +1280,8 @@ class PsychPlugin extends FrequePluginBase {
         gl.uniform1f(this.uniforms.intensity, this.intensity);
         gl.uniform1i(this.uniforms.solidFill, this.solidFill ? 1 : 0);
         gl.uniform1i(this.uniforms.depthLayers, this.depthLayers ? 1 : 0);
+        gl.uniform1i(this.uniforms.sharpEdges, this.sharpEdges ? 1 : 0);
+        gl.uniform1i(this.uniforms.showBackground, this.showBackground ? 1 : 0);
         gl.uniform1f(this.uniforms.zoom, this.zoom);
         gl.uniform1i(this.uniforms.colorScheme, this.colorScheme);
         
@@ -974,20 +1300,6 @@ class PsychPlugin extends FrequePluginBase {
     }
 
     // Audio utility methods
-    getAudioEnergy() {
-        if (!this.analyser) return 0;
-        
-        const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-        this.analyser.getByteFrequencyData(dataArray);
-        
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-            sum += dataArray[i] / 255;
-        }
-        
-        return sum / dataArray.length;
-    }
-
     getFrequencyBands(frequencies) {
         if (!frequencies || frequencies.length === 0) {
             return { bass: 0, mid: 0, treble: 0 };
@@ -1020,8 +1332,8 @@ class PsychPlugin extends FrequePluginBase {
 // Auto-register plugin
 setTimeout(() => {
     if (window.visualizer && window.FrequePluginBase) {
-        console.log('Registering PSYCH Plugin...');
-        new PsychPlugin(window.visualizer);
+        console.log('Registering PSYQUE Plugin...');
+        new PsyquePlugin(window.visualizer);
     } else {
         console.error('Freque visualizer not found. Make sure FrequePluginBase is loaded.');
     }

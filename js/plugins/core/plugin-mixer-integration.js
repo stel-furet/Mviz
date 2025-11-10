@@ -683,6 +683,8 @@ class PluginMixerIntegration {
         switch (controlConfig.type) {
             case 'slider':
                 return this.createSliderControl(controlId, controlConfig);
+            case 'dial':
+                return this.createDialControl(controlId, controlConfig);
             case 'button':
                 return this.createButtonControl(controlId, controlConfig);
             case 'dropdown':
@@ -776,6 +778,98 @@ class PluginMixerIntegration {
     }
     
     /**
+     * Create dial control (rotary knob) for mixer channel strips
+     */
+    createDialControl(controlId, config) {
+        const controlGroup = document.createElement('div');
+        controlGroup.className = 'control-mini-group';
+        controlGroup.setAttribute('data-control', controlId);
+        
+        // Label
+        const label = document.createElement('div');
+        label.className = 'control-mini-label';
+        label.textContent = config.label || controlId;
+        
+        // Dial container
+        const dialContainer = document.createElement('div');
+        dialContainer.className = 'mixer-dial-container';
+        
+        // SVG Dial
+        const dial = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        dial.setAttribute('class', 'mixer-dial dial-gold');
+        dial.setAttribute('viewBox', '0 0 50 50');
+        dial.setAttribute('data-min', config.min || 0);
+        dial.setAttribute('data-max', config.max || 100);
+        dial.setAttribute('data-step', config.step || 1);
+        const initialValue = config.value !== undefined ? config.value : (config.min || 0);
+        dial.setAttribute('data-value', initialValue);
+        
+        // Dial background circle
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('class', 'dial-bg');
+        circle.setAttribute('cx', '25');
+        circle.setAttribute('cy', '25');
+        circle.setAttribute('r', '18');
+        
+        // Dial pointer line
+        const pointer = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        pointer.setAttribute('class', 'dial-pointer');
+        pointer.setAttribute('x1', '25');
+        pointer.setAttribute('y1', '7');
+        pointer.setAttribute('x2', '25');
+        pointer.setAttribute('y2', '1');
+        
+        dial.appendChild(circle);
+        dial.appendChild(pointer);
+        
+        // Value display
+        const valueDisplay = document.createElement('div');
+        valueDisplay.className = 'mixer-dial-value';
+        const decimals = (config.step || 1) < 0.1 ? 2 : ((config.step || 1) < 1 ? 1 : 0);
+        valueDisplay.textContent = initialValue.toFixed(decimals);
+        
+        dialContainer.appendChild(dial);
+        dialContainer.appendChild(valueDisplay);
+        
+        controlGroup.appendChild(label);
+        controlGroup.appendChild(dialContainer);
+        
+        // Initialize dial after adding to DOM
+        setTimeout(() => {
+            // Re-initialize all dials to include this new one
+            if (window.initMixerDials) {
+                window.initMixerDials();
+            }
+        }, 0);
+        
+        // Listen for dialchange events
+        dial.addEventListener('dialchange', (e) => {
+            const value = e.detail.value;
+            const decimals = (config.step || 1) < 0.1 ? 2 : ((config.step || 1) < 1 ? 1 : 0);
+            valueDisplay.textContent = value.toFixed(decimals) + (config.unit || '');
+            if (config.onChange) {
+                config.onChange(value);
+            }
+        });
+        
+        // Return element and setValue/getValue methods
+        return {
+            element: controlGroup,
+            setValue: (value) => {
+                const numValue = parseFloat(value);
+                dial.setAttribute('data-value', numValue);
+                const decimals = (config.step || 1) < 0.1 ? 2 : ((config.step || 1) < 1 ? 1 : 0);
+                valueDisplay.textContent = numValue.toFixed(decimals) + (config.unit || '');
+                // Trigger dial update by re-initializing
+                if (window.initMixerDials) {
+                    window.initMixerDials();
+                }
+            },
+            getValue: () => parseFloat(dial.getAttribute('data-value'))
+        };
+    }
+    
+    /**
      * Create button control (using existing preset button style)
      */
     createButtonControl(controlId, config) {
@@ -816,7 +910,7 @@ class PluginMixerIntegration {
      */
     createDropdownControl(controlId, config) {
         const select = document.createElement('select');
-        select.className = 'dropdown-mini';
+        select.className = config.className || 'dropdown-mini';
         
         if (config.options) {
             config.options.forEach(option => {
@@ -869,7 +963,7 @@ class PluginMixerIntegration {
         
         // Toggle button styled as checkbox
         const toggleButton = document.createElement('button');
-        toggleButton.className = 'btn-toggle';
+        toggleButton.className = config.className || 'btn-toggle';
         toggleButton.style.fontSize = '10px';
         toggleButton.style.padding = '2px 6px';
         

@@ -14,9 +14,24 @@ class FrequePluginBase {
         
         // Canvas management
         this.canvas = null;
-        this.ctx = null;
+        this._ctx = null; // Private storage for lazy-loaded 2D context
         this.canvasId = `${pluginName}-plugin-canvas`;
         this.zIndex = 11; // Will be auto-assigned by plugin manager
+        
+        // Lazy-load 2D context for backwards compatibility
+        // This allows WebGL plugins to get their context before 2D is created
+        Object.defineProperty(this, 'ctx', {
+            get: function() {
+                if (!this._ctx && this.canvas) {
+                    console.log(`🎨 Plugin ${this.pluginName}: Creating 2D context on first access`);
+                    this._ctx = this.canvas.getContext('2d');
+                }
+                return this._ctx;
+            },
+            set: function(value) {
+                this._ctx = value;
+            }
+        });
         
         // Plugin metadata
         this.metadata = {
@@ -189,7 +204,10 @@ class FrequePluginBase {
         
         this.canvas.width = width;
         this.canvas.height = height;
-        this.ctx = this.canvas.getContext('2d');
+        
+        // Don't create 2D context here - let plugins decide what context they need
+        // 2D context will be auto-created when this.ctx is accessed (lazy loading)
+        // WebGL plugins can create their context in onInitialize() before accessing this.ctx
         
         // Call plugin-specific resize handler
         if (this.onResize) {
@@ -217,7 +235,7 @@ class FrequePluginBase {
      * Override this method in your plugin
      */
     render(deltaTime, timestamp, sharedAudioData) {
-        if (!this.isActive || !this.isInitialized || !this.ctx) return;
+        if (!this.isActive || !this.isInitialized) return;
         
         const currentTime = timestamp;
         if (currentTime - this.lastFrameTime < this.frameInterval) {
@@ -232,8 +250,9 @@ class FrequePluginBase {
         }
         
         try {
-            // Clear canvas (only if plugin wants it cleared - WebGL/Three.js plugins don't need this)
-            if (this.shouldClearCanvas() && this.ctx) {
+            // Clear canvas only if using 2D context and plugin wants it cleared
+            // WebGL/Three.js plugins don't need this
+            if (this.shouldClearCanvas() && this._ctx) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             }
             

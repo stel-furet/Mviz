@@ -5,7 +5,7 @@
 ### High Priority
 - ✅ **Plugin Settings Persistence**: COMPLETE - Implemented automatic preset persistence system for all plugins. User presets (Save/Export/Import) now work automatically for all current and future plugins without requiring plugin developer changes. Presets are saved to localStorage and restored on app restart. Control values update correctly when presets are loaded.
 - **Fix ChromeSphere Presets**: Fix current chromesphere presets
-- **Fix ChromeSphere Beat React**: Fix chromesphere beat react functionality
+- ✅ **Fix ChromeSphere Beat React**: COMPLETE - Fixed by adding `frequencies` and `dataArray` properties to `generateBasicAudioFeatures()` in spectrum-analyzer.js. The Master Animation Loop now provides complete audio data (including frequency arrays) to all plugins via `sharedAudioData`, enabling beat reactivity and all audio-driven effects to work correctly.
 - ✅ **AM Viz Opacity Fix**: COMPLETE - Opacity set to full opacity (1.0) by default (handled by user)
 - ✅ **AM Visualization Mode Persistence**: COMPLETE - Visualization mode selection (0-10) now persists across sessions. `currentMode` is saved to localStorage whenever changed via `setVisualizationMode()` or `setOfficialAudioMotionPreset()`. On app restart, the saved mode is restored - regular modes (0-6) load via `initAudioMotion()`, Pro presets (7-10) load automatically after initialization. Fixed plugin-mixer-integration.js error that was preventing proper control creation.
 - **Video Folder Playlist**: Add ability to load folder of videos and duplicate audio playlist functionality. Make "Video From File" choice persistent in the same manner as Background Image (save to localStorage and restore on app restart)
@@ -19,6 +19,10 @@
 - **Debug Code Cleanup Required**: Remove all debug code completely (not commented) and remove all previously commented code throughout entire codebase
 - **Background Color Not Respected by Record/Live Display**: Background color (B button in header) not respected by record or live display
 - **Mixer Panel Collapsible**: Make mixer collapsible to just handles, labels, and ON/OFF toggles with expand button
+- **Dial Double-Click Reset**: Double clicking on a dial should set the value back to its default setting
+- **Video Playlist Auto-Play**: When selecting the V button, video playlist starts playing automatically. It should not play until one of the play buttons is selected
+- **PSYCH Plugin Flow Complexity Bug**: PSYCH plugin flow complexity causes animation to zoom (should not affect zoom)
+- **Remove Console Code from Plugins**: Remove all console.log and debug code from all plugins
 
 ### Recently Completed (Latest Session)
 - ✅ **Plugin Removal Not Detected**: Fixed missing `unregisterPlugin()` method in FrequePluginManager and `removePluginChannelStrip()` in PluginMixerIntegration. Modified PluginAutoLoader polling to immediately unload missing plugins instead of just marking them. When plugins are removed from the plugins folder, they now automatically disappear from the mixer within 12 seconds (polling interval), or immediately when "Refresh Plugins" is clicked. The complete cleanup chain removes channel strips, all kaleidoscope toggles (mixer, header, display captures), state variables, and updates localStorage.

@@ -20,7 +20,9 @@ class SpectrumAnalyzer {
             energy: 0,
             beat: false,
             tempo: 120,
-            dominantFrequency: 0
+            dominantFrequency: 0,
+            frequencies: null,  // Add frequencies array for plugins
+            dataArray: null     // Add raw dataArray for plugins
         };
         this.lastBeatTime = 0;
 
@@ -446,6 +448,8 @@ class SpectrumAnalyzer {
             this.cachedAudioFeatures.beat = false;
             this.cachedAudioFeatures.tempo = 0;
             this.cachedAudioFeatures.dominantFrequency = 0;
+            this.cachedAudioFeatures.frequencies = null;
+            this.cachedAudioFeatures.dataArray = null;
             return this.cachedAudioFeatures;
         }
         
@@ -496,6 +500,8 @@ class SpectrumAnalyzer {
         this.cachedAudioFeatures.beat = beat;
         this.cachedAudioFeatures.tempo = 120; // Default tempo
         this.cachedAudioFeatures.dominantFrequency = dominantFrequency;
+        this.cachedAudioFeatures.frequencies = this.dataArray;  // Pass frequency data for plugins
+        this.cachedAudioFeatures.dataArray = this.dataArray;    // Pass raw dataArray for plugins
         
         // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
         

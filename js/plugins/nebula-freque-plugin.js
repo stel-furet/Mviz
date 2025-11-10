@@ -206,17 +206,13 @@ class NebulaPlugin extends FrequePluginBase {
         
         // Camera Controls (4 controls)
         this.addControl('cameraOrbitToggle', {
-            type: 'button',
-            label: 'Orbit: OFF',
-            wrapperClass: 'btn-primary-mixer',
-            onClick: () => {
-                this.cameraOrbit = !this.cameraOrbit;
-                this.updateNebulaSetting('cameraOrbit', this.cameraOrbit);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="cameraOrbitToggle"]`);
-                if (button) {
-                    button.textContent = `Orbit: ${this.cameraOrbit ? 'ON' : 'OFF'}`;
-                }
+            type: 'checkbox',
+            label: 'Orbit',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.cameraOrbit = value;
+                this.updateNebulaSetting('cameraOrbit', value);
             }
         });
         
@@ -234,17 +230,13 @@ class NebulaPlugin extends FrequePluginBase {
         });
         
         this.addControl('flyThroughToggle', {
-            type: 'button',
-            label: 'Fly Through: OFF',
-            wrapperClass: 'btn-primary-mixer',
-            onClick: () => {
-                this.flyThrough = !this.flyThrough;
-                this.updateNebulaSetting('flyThrough', this.flyThrough);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="flyThroughToggle"]`);
-                if (button) {
-                    button.textContent = `Fly Through: ${this.flyThrough ? 'ON' : 'OFF'}`;
-                }
+            type: 'checkbox',
+            label: 'Fly Through',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.flyThrough = value;
+                this.updateNebulaSetting('flyThrough', value);
             }
         });
         
@@ -539,17 +531,14 @@ class NebulaPlugin extends FrequePluginBase {
         
         // Audio Reactive Controls (9 controls)
         this.addControl('audioReactive', {
-            type: 'button',
-            label: 'Audio React: ON',
-            wrapperClass: 'btn-primary-mixer',
-            onClick: () => {
-                this.audioReactive = !this.audioReactive;
-                this.updateNebulaSetting('audioReactive', this.audioReactive);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioReactive"]`);
-                if (button) {
-                    button.textContent = `Audio React: ${this.audioReactive ? 'ON' : 'OFF'}`;
-                }
+            type: 'checkbox',
+            label: 'Audio React',
+            checked: true,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.audioReactive = value;
+                this.updateNebulaSetting('audioReactive', value);
+                console.log('🎵 Nebula Audio React:', value);
             }
         });
         
@@ -567,107 +556,79 @@ class NebulaPlugin extends FrequePluginBase {
         });
         
         this.addControl('audioColor', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Color',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioColor = !this.audioColor;
-                this.updateNebulaSetting('audioPresets', this.audioColor, 'color');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioColor"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioColor);
-                }
+            checked: false,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioColor = value;
+                this.updateNebulaSetting('audioPresets', value, 'color');
             }
         });
         
         this.addControl('audioRotation', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Rotation',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioRotation = !this.audioRotation;
-                this.updateNebulaSetting('audioPresets', this.audioRotation, 'rotation');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioRotation"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioRotation);
-                }
+            checked: false,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioRotation = value;
+                this.updateNebulaSetting('audioPresets', value, 'rotation');
             }
         });
         
         this.addControl('audioDistance', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Distance',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioDistance = !this.audioDistance;
-                this.updateNebulaSetting('audioPresets', this.audioDistance, 'distance');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioDistance"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioDistance);
-                }
+            checked: false,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioDistance = value;
+                this.updateNebulaSetting('audioPresets', value, 'distance');
             }
         });
         
         this.addControl('audioPulsar', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Pulsar',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioPulsar = !this.audioPulsar;
-                this.updateNebulaSetting('audioPresets', this.audioPulsar, 'pulsar');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioPulsar"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioPulsar);
-                }
+            checked: true,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioPulsar = value;
+                this.updateNebulaSetting('audioPresets', value, 'pulsar');
             }
         });
         
         this.addControl('audioDensity', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Density',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioDensity = !this.audioDensity;
-                this.updateNebulaSetting('audioPresets', this.audioDensity, 'filamentDensity');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioDensity"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioDensity);
-                }
+            checked: true,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioDensity = value;
+                this.updateNebulaSetting('audioPresets', value, 'filamentDensity');
             }
         });
         
         this.addControl('audioChaos', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Chaos',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioChaos = !this.audioChaos;
-                this.updateNebulaSetting('audioPresets', this.audioChaos, 'chaos');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioChaos"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioChaos);
-                }
+            checked: true,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioChaos = value;
+                this.updateNebulaSetting('audioPresets', value, 'chaos');
             }
         });
         
         this.addControl('audioExpansion', {
-            type: 'button',
+            type: 'checkbox',
             label: 'Expansion',
-            wrapperClass: 'btn-preset',
-            onClick: () => {
-                this.audioExpansion = !this.audioExpansion;
-                this.updateNebulaSetting('audioPresets', this.audioExpansion, 'expansion');
-                // Update button styling
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="audioExpansion"]`);
-                if (button) {
-                    button.classList.toggle('active', this.audioExpansion);
-                }
+            checked: true,
+            className: 'btn-preset',
+            onChange: (value) => {
+                this.audioExpansion = value;
+                this.updateNebulaSetting('audioPresets', value, 'expansion');
             }
         });
         
@@ -675,17 +636,13 @@ class NebulaPlugin extends FrequePluginBase {
         
         // Camera Controls (4 controls)
         this.addControl('cameraOrbit', {
-            type: 'button',
-            label: 'Camera Orbit: OFF',
-            wrapperClass: 'btn-primary-mixer',
-            onClick: () => {
-                this.cameraOrbit = !this.cameraOrbit;
-                this.updateNebulaSetting('cameraOrbit', this.cameraOrbit);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="cameraOrbit"]`);
-                if (button) {
-                    button.textContent = `Camera Orbit: ${this.cameraOrbit ? 'ON' : 'OFF'}`;
-                }
+            type: 'checkbox',
+            label: 'Camera Orbit',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.cameraOrbit = value;
+                this.updateNebulaSetting('cameraOrbit', value);
             }
         });
         
@@ -703,17 +660,13 @@ class NebulaPlugin extends FrequePluginBase {
         });
         
         this.addControl('flyThrough', {
-            type: 'button',
-            label: 'Fly Through: OFF',
-            wrapperClass: 'btn-primary-mixer',
-            onClick: () => {
-                this.flyThrough = !this.flyThrough;
-                this.updateNebulaSetting('flyThrough', this.flyThrough);
-                // Update button text
-                const button = document.querySelector(`[data-plugin="nebula"] [data-control="flyThrough"]`);
-                if (button) {
-                    button.textContent = `Fly Through: ${this.flyThrough ? 'ON' : 'OFF'}`;
-                }
+            type: 'checkbox',
+            label: 'Fly Through',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.flyThrough = value;
+                this.updateNebulaSetting('flyThrough', value);
             }
         });
         

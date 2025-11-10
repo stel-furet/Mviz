@@ -495,7 +495,7 @@
     <script src="js/theme-system.js"></script>
     <script>
         // Mixer Dial Component - Rotary knob control for mixer channel strips
-        function initMixerDials() {
+        window.initMixerDials = function() {
             document.querySelectorAll('.mixer-dial').forEach(dial => {
                 const pointer = dial.querySelector('.dial-pointer');
                 const valueDisplay = dial.parentElement.querySelector('.mixer-dial-value');
@@ -503,7 +503,11 @@
                 const min = parseFloat(dial.dataset.min) || 0;
                 const max = parseFloat(dial.dataset.max) || 1;
                 const step = parseFloat(dial.dataset.step) || 0.01;
-                let value = parseFloat(dial.dataset.value) || min;
+                // Fix: Handle 0 correctly - don't use || operator which treats 0 as falsy
+                let value = parseFloat(dial.dataset.value);
+                if (isNaN(value) || dial.dataset.value === null || dial.dataset.value === undefined) {
+                    value = min;
+                }
                 
                 let isDragging = false;
                 let startY = 0;
@@ -574,9 +578,9 @@
         
         // Initialize dials when DOM is ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initMixerDials);
+            document.addEventListener('DOMContentLoaded', window.initMixerDials);
         } else {
-            initMixerDials();
+            window.initMixerDials();
         }
     </script>
     <script src="js/multi-display-manager.js"></script>
