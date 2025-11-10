@@ -6,7 +6,8 @@
 - ✅ **Plugin Settings Persistence**: COMPLETE - Implemented automatic preset persistence system for all plugins. User presets (Save/Export/Import) now work automatically for all current and future plugins without requiring plugin developer changes. Presets are saved to localStorage and restored on app restart. Control values update correctly when presets are loaded.
 - **Fix ChromeSphere Presets**: Fix current chromesphere presets
 - **Fix ChromeSphere Beat React**: Fix chromesphere beat react functionality
-- **AM Viz Opacity Fix**: Fix opacity on all AM visualizations - set to full opacity (1.0) by default
+- ✅ **AM Viz Opacity Fix**: COMPLETE - Opacity set to full opacity (1.0) by default (handled by user)
+- ✅ **AM Visualization Mode Persistence**: COMPLETE - Visualization mode selection (0-10) now persists across sessions. `currentMode` is saved to localStorage whenever changed via `setVisualizationMode()` or `setOfficialAudioMotionPreset()`. On app restart, the saved mode is restored - regular modes (0-6) load via `initAudioMotion()`, Pro presets (7-10) load automatically after initialization. Fixed plugin-mixer-integration.js error that was preventing proper control creation.
 - **Video Folder Playlist**: Add ability to load folder of videos and duplicate audio playlist functionality. Make "Video From File" choice persistent in the same manner as Background Image (save to localStorage and restore on app restart)
 - **Mixer Sliders to Dials**: Change all mixer horizontal sliders to dials for better UX and consistency
 - **AM Preset Export Causes App Relaunch**: When exporting the AM visualizations user-generated presets list, an "export successful" toaster message appears, then the app immediately relaunches/reloads. This should not happen - export should complete without reload.
@@ -39,7 +40,7 @@
 - **Drop indicators**: need to create better indicators and ensure proper drop position
 - **Channel Order Persistence**: Fluidity and other channels not maintaining correct positions after app restart due to localStorage timing issues
 - **Display Channel Drop Prevention**: Prevent dropping onto display channel strips and to the right of Kaleidoscope
-- **Last Used Visualization Persistence**: Make the last used visualization persistent across sessions
+- ✅ **Last Used Visualization Persistence**: COMPLETE - Last used visualization mode (0-10) now persists across sessions via localStorage. Implemented as part of AM Visualization Mode Persistence fix.
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
 

@@ -2781,21 +2781,25 @@ class RecordManager {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    // Toggle loop state
-                    this.visualizer.videoFileLoop = !this.visualizer.videoFileLoop;
+                    // Cycle through loop modes: 'off' -> 'one' -> 'all' -> 'off'
+                    const modes = ['off', 'one', 'all'];
+                    const currentIndex = modes.indexOf(this.visualizer.videoFileLoopMode);
+                    const nextIndex = (currentIndex + 1) % modes.length;
+                    this.visualizer.videoFileLoopMode = modes[nextIndex];
                     
                     // Update video element loop property
                     if (this.visualizer.videoElement && this.visualizer.videoMode === 'file') {
-                        this.visualizer.videoElement.loop = this.visualizer.videoFileLoop;
+                        this.visualizer.videoElement.loop = this.visualizer.videoFileLoopMode === 'one';
                     }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('freque_video_loop_mode', this.visualizer.videoFileLoopMode);
                     
                     // Update both mixer and header buttons
                     if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoFileButtons) {
                         window.multiDisplayManager.updateMixerVideoFileButtons();
                     }
                     this.updateHeaderVideoFileButtons();
-                    
-                    // console.log('🔘 Mixer video file loop toggled to:', this.visualizer.videoFileLoop);
                 }
             });
         } else {
@@ -6871,9 +6875,10 @@ class RecordManager {
         
         if (headerLoopBtn && headerMuteBtn && this.visualizer) {
             // Update loop button
-            const loop = this.visualizer.videoFileLoop;
-            headerLoopBtn.textContent = loop ? 'Loop' : 'No Loop';
-            headerLoopBtn.classList.toggle('active', loop);
+            const loopMode = this.visualizer.videoFileLoopMode;
+            const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+            headerLoopBtn.textContent = modeLabels[loopMode] || 'Loop:1';
+            headerLoopBtn.classList.toggle('active', loopMode !== 'off');
             
             // Update mute button
             const muted = this.visualizer.videoFileMuted;
@@ -10484,8 +10489,9 @@ class FrequeVisualizer {
         
         // Video file properties
         this.videoFile = null;
-        this.videoFileLoop = true;
+        this.videoFileLoopMode = 'one'; // 'off', 'one', 'all'
         this.videoFileMuted = true;
+        this.videoFileSize = 'fit'; // 'fit', 'fill', 'stretch', 'original'
         this.videoAudioSource = null;
         this.videoAudioGain = null;
         this.matchVisualizationAspect = true; // Match visualization to video aspect ratio
@@ -11356,6 +11362,15 @@ class FrequeVisualizer {
             this.streamManager = new StreamManager(this);
             this.recordManager = new RecordManager(this);
             
+            // Load saved video input mode and restore playlist video if applicable
+            setTimeout(() => {
+                const savedMode = this.loadVideoInputMode();
+                if (savedMode === 'file' && this.videoPlaylistManager) {
+                    // Video playlist manager will auto-load and play saved video
+                    // This is handled in VideoPlaylistManager constructor
+                }
+            }, 500);
+            
             // Update codec compatibility indicator now that RecordManager is ready
             setTimeout(() => {
                 if (typeof this.updateCodecCompatibility === 'function') {
@@ -11370,6 +11385,10 @@ class FrequeVisualizer {
             // Test Phase 1 functionality
             testLiveDisplayManager();
             this.playlistManager = new PlaylistManager(this);
+            // Initialize VideoPlaylistManager early so it's available immediately
+            if (window.VideoPlaylistManager) {
+                this.videoPlaylistManager = new VideoPlaylistManager(this);
+            }
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
             this.fluidDynamics = new FluidDynamicsVisualization(this);
@@ -13372,7 +13391,7 @@ class FrequeVisualizer {
                     name: this.videoFile?.name || 'Unknown',
                     resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
                     duration: this.videoElement.duration,
-                    loop: this.videoFileLoop
+                    loop: this.videoFileLoopMode
                 };
                 this.updateVideoFileStats(videoInfo);
                 
@@ -13818,13 +13837,21 @@ class FrequeVisualizer {
         const fileInfo = document.createElement('div');
         fileInfo.id = 'headerVideoFileInfo';
         fileInfo.style.cssText = `
-            display: none;
+            display: block;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px;
             margin-top: 8px;
             margin-bottom: 8px;
+        `;
+        
+        // File info section (only shown when video is loaded)
+        const fileInfoSection = document.createElement('div');
+        fileInfoSection.id = 'headerVideoFileInfoSection';
+        fileInfoSection.style.cssText = `
+            display: none;
+            margin-bottom: 12px;
         `;
         
         const fileName = document.createElement('span');
@@ -13844,52 +13871,8 @@ class FrequeVisualizer {
             gap: 8px;
         `;
         
-        const loopBtn = document.createElement('button');
-        loopBtn.id = 'headerVideoFileLoopBtn';
-        loopBtn.className = 'video-file-control-btn btn-toggle active';
-        loopBtn.textContent = 'Loop';
-        loopBtn.style.fontSize = '10px';
-        loopBtn.style.padding = '4px 8px';
-        loopBtn.style.flex = '1';
-        
-        const muteBtn = document.createElement('button');
-        muteBtn.id = 'headerVideoFileMuteBtn';
-        muteBtn.className = 'video-file-control-btn btn-toggle active';
-        muteBtn.textContent = 'Muted';
-        muteBtn.style.fontSize = '10px';
-        muteBtn.style.padding = '4px 8px';
-        muteBtn.style.flex = '1';
-        
-        // Add event prevention to file control buttons
-        loopBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Let the original JavaScript handle the functionality
-            if (window.visualizer) {
-                window.visualizer.videoFileLoop = !window.visualizer.videoFileLoop;
-                loopBtn.classList.toggle('active', window.visualizer.videoFileLoop);
-                loopBtn.textContent = window.visualizer.videoFileLoop ? 'Loop' : 'No Loop';
-            }
-        };
-        
-        muteBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Toggle mute state and update audio gain
-            if (window.visualizer) {
-                window.visualizer.videoFileMuted = !window.visualizer.videoFileMuted;
-                muteBtn.textContent = window.visualizer.videoFileMuted ? 'Muted' : 'Sound';
-                muteBtn.classList.toggle('active', window.visualizer.videoFileMuted);
-                
-                // Update the audio gain node to actually mute/unmute the video audio
-                if (window.visualizer.videoAudioGain) {
-                    window.visualizer.videoAudioGain.gain.value = window.visualizer.videoFileMuted ? 0 : window.visualizer.volume;
-                }
-            }
-        };
-        
-        fileControlsInline.appendChild(loopBtn);
-        fileControlsInline.appendChild(muteBtn);
+        // NOTE: Loop and Mute buttons have been moved to the playlist section
+        // They are now always visible in the playlist controls
         
         // Progress bar container
         const progressContainer = document.createElement('div');
@@ -13925,9 +13908,257 @@ class FrequeVisualizer {
         progressContainer.appendChild(progressBar);
         progressContainer.appendChild(timeDisplay);
         
-        fileInfo.appendChild(fileName);
-        fileInfo.appendChild(fileControlsInline);
-        fileInfo.appendChild(progressContainer);
+        fileInfoSection.appendChild(fileName);
+        // fileControlsInline removed - buttons moved to playlist section
+        fileInfoSection.appendChild(progressContainer);
+        
+        fileInfo.appendChild(fileInfoSection);
+        
+        // Video Playlist Section (always visible)
+        const playlistSection = document.createElement('div');
+        playlistSection.id = 'videoPlaylistContainer';
+        playlistSection.style.cssText = `
+            margin-top: 0;
+            padding-top: 0;
+        `;
+        
+        // Video Sizing Controls (above playlist)
+        const sizingSection = document.createElement('div');
+        sizingSection.style.cssText = `
+            margin-bottom: 8px;
+        `;
+        
+        const sizingLabel = document.createElement('div');
+        sizingLabel.textContent = 'Sizing';
+        sizingLabel.style.cssText = `
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        `;
+        
+        const sizingButtons = document.createElement('div');
+        sizingButtons.style.cssText = `
+            display: flex;
+            gap: 4px;
+        `;
+        
+        const sizes = ['fit', 'fill', 'stretch', 'original'];
+        sizes.forEach(size => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-secondary';
+            btn.id = `videoFileSize${size.charAt(0).toUpperCase() + size.slice(1)}`;
+            btn.setAttribute('data-size', size);
+            btn.textContent = size.charAt(0).toUpperCase() + size.slice(1);
+            btn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+            
+            if (size === this.videoFileSize) {
+                btn.classList.add('active');
+            }
+            
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.visualizer) {
+                    window.visualizer.videoFileSize = size;
+                    window.visualizer.updateVideoFileSize();
+                    
+                    // Update button states
+                    sizingButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Save to localStorage
+                    localStorage.setItem('freque_video_file_size', size);
+                }
+            };
+            
+            sizingButtons.appendChild(btn);
+        });
+        
+        sizingSection.appendChild(sizingLabel);
+        sizingSection.appendChild(sizingButtons);
+        playlistSection.appendChild(sizingSection);
+        
+        // Playlist Controls (Loop and Mute - always visible)
+        const playlistControls = document.createElement('div');
+        playlistControls.style.cssText = `
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        `;
+        
+        const loopBtn = document.createElement('button');
+        loopBtn.id = 'headerVideoFileLoopBtn';
+        loopBtn.className = 'video-file-control-btn btn-toggle active';
+        loopBtn.textContent = 'Loop';
+        loopBtn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+        
+        const muteBtn = document.createElement('button');
+        muteBtn.id = 'headerVideoFileMuteBtn';
+        muteBtn.className = 'video-file-control-btn btn-toggle active';
+        muteBtn.textContent = 'Muted';
+        muteBtn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+        
+        // Add event prevention to file control buttons
+        loopBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.visualizer) {
+                // Cycle through loop modes: 'off' -> 'one' -> 'all' -> 'off'
+                const modes = ['off', 'one', 'all'];
+                const currentIndex = modes.indexOf(window.visualizer.videoFileLoopMode);
+                const nextIndex = (currentIndex + 1) % modes.length;
+                window.visualizer.videoFileLoopMode = modes[nextIndex];
+                
+                // Update button text and active state
+                const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+                loopBtn.textContent = modeLabels[window.visualizer.videoFileLoopMode];
+                loopBtn.classList.toggle('active', window.visualizer.videoFileLoopMode !== 'off');
+                
+                // Apply loop mode to video element
+                if (window.visualizer.videoElement) {
+                    window.visualizer.videoElement.loop = window.visualizer.videoFileLoopMode === 'one';
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('freque_video_loop_mode', window.visualizer.videoFileLoopMode);
+            }
+        };
+        
+        // Load saved loop mode
+        const savedLoopMode = localStorage.getItem('freque_video_loop_mode');
+        if (savedLoopMode && ['off', 'one', 'all'].includes(savedLoopMode)) {
+            if (window.visualizer) {
+                window.visualizer.videoFileLoopMode = savedLoopMode;
+                const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+                loopBtn.textContent = modeLabels[savedLoopMode];
+                loopBtn.classList.toggle('active', savedLoopMode !== 'off');
+            }
+        } else {
+            // Set default
+            if (window.visualizer) {
+                const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+                loopBtn.textContent = modeLabels[window.visualizer.videoFileLoopMode];
+                loopBtn.classList.toggle('active', window.visualizer.videoFileLoopMode !== 'off');
+            }
+        }
+        
+        muteBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Toggle mute state and update audio gain
+            if (window.visualizer) {
+                window.visualizer.videoFileMuted = !window.visualizer.videoFileMuted;
+                muteBtn.textContent = window.visualizer.videoFileMuted ? 'Muted' : 'Sound';
+                muteBtn.classList.toggle('active', window.visualizer.videoFileMuted);
+                
+                // Update the audio gain node to actually mute/unmute the video audio
+                if (window.visualizer.videoAudioGain) {
+                    window.visualizer.videoAudioGain.gain.value = window.visualizer.videoFileMuted ? 0 : window.visualizer.volume;
+                }
+            }
+        };
+        
+        playlistControls.appendChild(loopBtn);
+        playlistControls.appendChild(muteBtn);
+        playlistSection.appendChild(playlistControls);
+        
+        // Playlist Actions
+        const playlistActions = document.createElement('div');
+        playlistActions.className = 'playlist-actions-dropdown';
+        playlistActions.style.cssText = `
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        `;
+        
+        const addFolderBtn = document.createElement('button');
+        addFolderBtn.className = 'btn-primary';
+        addFolderBtn.id = 'videoPlaylistScanBtn';
+        addFolderBtn.textContent = 'Add Folder';
+        addFolderBtn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+        
+        const importBtn = document.createElement('button');
+        importBtn.className = 'btn-secondary';
+        importBtn.id = 'videoPlaylistImportBtn';
+        importBtn.textContent = 'Import';
+        importBtn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+        
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'btn-secondary';
+        exportBtn.id = 'videoPlaylistExportBtn';
+        exportBtn.textContent = 'Export';
+        exportBtn.style.cssText = 'font-size: 10px; padding: 4px 8px; flex: 1;';
+        
+        playlistActions.appendChild(addFolderBtn);
+        playlistActions.appendChild(importBtn);
+        playlistActions.appendChild(exportBtn);
+        
+        // Scanning Progress (hidden by default)
+        const progressDiv = document.createElement('div');
+        progressDiv.id = 'videoPlaylistProgress';
+        progressDiv.className = 'playlist-progress';
+        progressDiv.style.display = 'none';
+        progressDiv.innerHTML = `
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="videoPlaylistProgressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span class="progress-text" id="videoPlaylistProgressText">Scanning video folder...</span>
+                <span class="progress-count" id="videoPlaylistProgressCount">0/0 files</span>
+                <span class="progress-eta" id="videoPlaylistProgressEta">Est: calculating...</span>
+            </div>
+            <button class="btn-secondary progress-cancel-btn" id="videoPlaylistCancelBtn">Cancel</button>
+        `;
+        
+        // Playlist Stats
+        const playlistStats = document.createElement('div');
+        playlistStats.className = 'playlist-stats';
+        playlistStats.id = 'videoPlaylistStats';
+        playlistStats.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        `;
+        playlistStats.innerHTML = `
+            <span id="videoPlaylistCount">No videos loaded</span>
+            <span id="videoPlaylistDuration">0:00:00</span>
+        `;
+        
+        // Tracks Container
+        const tracksContainer = document.createElement('div');
+        tracksContainer.className = 'playlist-tracks-container';
+        tracksContainer.id = 'videoPlaylistTracksContainer';
+        tracksContainer.style.cssText = `
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px;
+        `;
+        
+        const tracksInner = document.createElement('div');
+        tracksInner.className = 'playlist-tracks';
+        tracksInner.id = 'videoPlaylistTracks';
+        tracksInner.innerHTML = `
+            <div class="empty-playlist">
+                <div class="empty-playlist-icon">🎬</div>
+                <div class="empty-playlist-text">No videos loaded</div>
+                <div class="empty-playlist-subtext">Click "Add Folder" to scan your video library</div>
+            </div>
+        `;
+        tracksContainer.appendChild(tracksInner);
+        
+        playlistSection.appendChild(playlistActions);
+        playlistSection.appendChild(progressDiv);
+        playlistSection.appendChild(playlistStats);
+        playlistSection.appendChild(tracksContainer);
+        
+        fileInfo.appendChild(playlistSection);
         container.appendChild(fileInfo);
         
         // Hidden file input (already exists in HTML, but we need it available)
@@ -13937,6 +14168,146 @@ class FrequeVisualizer {
         fileInput.accept = 'video/*';
         fileInput.style.display = 'none';
         container.appendChild(fileInput);
+        
+        // Hidden import input
+        const importInput = document.createElement('input');
+        importInput.type = 'file';
+        importInput.id = 'videoPlaylistImportInput';
+        importInput.accept = '.json';
+        importInput.style.display = 'none';
+        container.appendChild(importInput);
+        
+        // Initialize video playlist UI (manager already initialized in init())
+        // Use setTimeout to ensure DOM is fully updated before attaching handlers
+        console.log('About to initialize video playlist UI in 50ms...');
+        console.log('this.videoPlaylistManager exists:', !!this.videoPlaylistManager);
+        console.log('window.VideoPlaylistManager exists:', typeof window.VideoPlaylistManager);
+        
+        // Store reference to visualizer for use in timeout
+        const visualizer = this;
+        
+        setTimeout(() => {
+            console.log('Timeout fired, checking videoPlaylistManager:', !!visualizer.videoPlaylistManager);
+            console.log('Visualizer is:', visualizer);
+            
+            if (visualizer.videoPlaylistManager) {
+                visualizer.initializeVideoPlaylistUI();
+                // Display playlist (empty or with videos) now that UI elements are created
+                setTimeout(() => {
+                    console.log('Displaying playlist...');
+                    visualizer.videoPlaylistManager.displayPlaylist();
+                    // Load and play current video if saved
+                    if (visualizer.videoPlaylistManager.currentPlaylist && visualizer.videoPlaylistManager.currentPlaylist.videos.length > 0) {
+                        visualizer.videoPlaylistManager.loadCurrentVideo();
+                    }
+                }, 50);
+            } else {
+                console.error('videoPlaylistManager not available after timeout!');
+                console.error('window.VideoPlaylistManager:', typeof window.VideoPlaylistManager);
+                console.error('Trying to create it now...');
+                
+                // Try to create it now if the class exists
+                if (window.VideoPlaylistManager && !visualizer.videoPlaylistManager) {
+                    visualizer.videoPlaylistManager = new VideoPlaylistManager(visualizer);
+                    console.log('Created videoPlaylistManager, retrying initialization...');
+                    visualizer.initializeVideoPlaylistUI();
+                    setTimeout(() => {
+                        visualizer.videoPlaylistManager.displayPlaylist();
+                    }, 50);
+                }
+            }
+        }, 50);
+    }
+    
+    initializeVideoPlaylistUI() {
+        console.log('=== initializeVideoPlaylistUI called ===');
+        console.log('this is:', this);
+        console.log('this.videoPlaylistManager:', this.videoPlaylistManager);
+        
+        if (!this.videoPlaylistManager) {
+            console.error('VideoPlaylistManager not initialized!');
+            console.error('window.visualizer:', window.visualizer);
+            console.error('window.visualizer.videoPlaylistManager:', window.visualizer?.videoPlaylistManager);
+            return;
+        }
+        console.log('VideoPlaylistManager exists:', !!this.videoPlaylistManager);
+        
+        // Store reference for use in event handlers
+        const manager = this.videoPlaylistManager;
+        
+        // Video playlist scan button - use getElementById like audio playlist
+        const scanBtn = document.getElementById('videoPlaylistScanBtn');
+        console.log('scanBtn found:', !!scanBtn, scanBtn);
+        
+        if (scanBtn) {
+            // Remove any existing listeners to prevent duplicates
+            const newScanBtn = scanBtn.cloneNode(true);
+            scanBtn.parentNode.replaceChild(newScanBtn, scanBtn);
+            
+            newScanBtn.addEventListener('click', (e) => {
+                console.log('=== VIDEO PLAYLIST BUTTON CLICKED ===');
+                e.stopPropagation();
+                console.log('manager:', !!manager);
+                console.log('scanFolder method:', !!(manager && manager.scanFolder));
+                
+                if (manager && manager.scanFolder) {
+                    // Use setTimeout to ensure user activation is preserved
+                    setTimeout(() => {
+                        console.log('Calling scanFolder...');
+                        manager.scanFolder();
+                    }, 0);
+                } else {
+                    console.error('manager not available when button clicked!');
+                }
+            });
+            console.log('Event listener attached to new button');
+        } else {
+            console.error('videoPlaylistScanBtn NOT FOUND in DOM');
+        }
+        
+        // Video playlist import button
+        const importBtn = document.getElementById('videoPlaylistImportBtn');
+        const importInput = document.getElementById('videoPlaylistImportInput');
+        if (importBtn && importInput) {
+            const newImportBtn = importBtn.cloneNode(true);
+            importBtn.parentNode.replaceChild(newImportBtn, importBtn);
+            
+            newImportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                importInput.click();
+            });
+            importInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.videoPlaylistManager.importPlaylist(file);
+                }
+                e.target.value = ''; // Reset input
+            };
+        }
+        
+        // Video playlist export button
+        const exportBtn = document.getElementById('videoPlaylistExportBtn');
+        if (exportBtn) {
+            const newExportBtn = exportBtn.cloneNode(true);
+            exportBtn.parentNode.replaceChild(newExportBtn, exportBtn);
+            
+            newExportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.videoPlaylistManager.exportPlaylist();
+            });
+        }
+        
+        // Video playlist cancel button
+        const cancelBtn = document.getElementById('videoPlaylistCancelBtn');
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            
+            newCancelBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.videoPlaylistManager.cancelScan();
+            });
+        }
     }
 
     addStreamStatsGroup(container) {
@@ -16123,6 +16494,23 @@ class FrequeVisualizer {
         localStorage.setItem('mviz_video_source', JSON.stringify(videoSource));
         // console.log('Video source saved:', videoSource);
     }
+    
+    saveVideoInputMode() {
+        const mode = this.videoMode || 'none';
+        localStorage.setItem('freque_video_input_mode', mode);
+    }
+    
+    loadVideoInputMode() {
+        try {
+            const saved = localStorage.getItem('freque_video_input_mode');
+            if (saved && ['camera', 'file', 'none'].includes(saved)) {
+                return saved;
+            }
+        } catch (e) {
+            console.error('Error loading video input mode:', e);
+        }
+        return null;
+    }
 
     loadVideoSource() {
         try {
@@ -16248,15 +16636,20 @@ class FrequeVisualizer {
 
     disconnectVideoAudio() {
         try {
-            if (this.videoAudioSource) {
-                this.videoAudioSource.disconnect();
-                this.videoAudioSource = null;
-            }
+            // Disconnect gain node first
             if (this.videoAudioGain) {
+                console.log('Disconnecting video audio gain node');
                 this.videoAudioGain.disconnect();
                 this.videoAudioGain = null;
             }
-            // console.log('Video audio disconnected');
+            
+            // IMPORTANT: Don't call disconnect() on MediaElementSourceNode
+            // Just null it - the audio context manages cleanup
+            // Calling disconnect() causes issues when recreating the source
+            if (this.videoAudioSource) {
+                console.log('Nulling video audio source (not disconnecting)');
+                this.videoAudioSource = null;
+            }
         } catch (error) {
             console.error('Error disconnecting video audio:', error);
         }
@@ -17480,12 +17873,27 @@ class FrequeVisualizer {
 
     async startVideoFile(file) {
         try {
-            // console.log('startVideoFile called with file:', file.name);
+            console.log('startVideoFile called with file:', file.name);
+            
+            // CRITICAL: Disconnect audio FIRST before any video element changes
+            this.disconnectVideoAudio();
             
             // Check if we're switching sources
             const isSourceSwitch = this.videoElement && (this.videoStream || this.videoFile);
 
             if (isSourceSwitch) {
+                console.log('Source switch detected, pausing current video');
+                
+                // Pause and reset current video
+                if (this.videoElement) {
+                    this.videoElement.pause();
+                    this.videoElement.currentTime = 0;
+                }
+                if (this.captureVideoElement) {
+                    this.captureVideoElement.pause();
+                    this.captureVideoElement.currentTime = 0;
+                }
+                
                 // Store current opacity for smooth transition
                 const currentOpacity = this.videoElement.style.opacity || this.videoOpacity;
 
@@ -17505,6 +17913,12 @@ class FrequeVisualizer {
 
             // Store the file
             this.videoFile = file;
+            
+            // Load saved size
+            const savedSize = localStorage.getItem('freque_video_file_size');
+            if (savedSize && ['fit', 'fill', 'stretch', 'original'].includes(savedSize)) {
+                this.videoFileSize = savedSize;
+            }
 
             // Get container reference
             const container = document.getElementById('visualizationContainer');
@@ -17535,7 +17949,7 @@ class FrequeVisualizer {
                 this.videoElement.muted = false; // Keep unmuted, control via gain node
                 this.videoElement.playsInline = true;
                 this.videoElement.autoplay = true;
-                this.videoElement.loop = this.videoFileLoop;
+                this.videoElement.loop = this.videoFileLoopMode === 'one';
 
                 this.videoElement.style.cssText = `
                     position: absolute;
@@ -17549,6 +17963,9 @@ class FrequeVisualizer {
                     transition: opacity ${this.videoFadeTime}s linear;
                     pointer-events: none;
                 `;
+                
+                // Apply current size setting
+                this.applyVideoFileSize();
 
                 const backdrop = document.getElementById('videoBackdrop');
                 console.log('Backdrop found:', !!backdrop);
@@ -17561,9 +17978,45 @@ class FrequeVisualizer {
                 }
             } else {
                 // console.log('Reusing existing video element...');
-                // Update settings for existing element
+                // For video file switching, we need to remove and recreate the video element
+                // because once a MediaElementSourceNode is created, it can't be disconnected properly
+                console.log('Removing old video element for clean audio reconnection...');
+                
+                if (this.videoElement) {
+                    this.videoElement.pause();
+                    this.videoElement.src = '';
+                    this.videoElement.load(); // Reset the element
+                    this.videoElement.remove();
+                    this.videoElement = null;
+                }
+                
+                // Create fresh video element
+                console.log('Creating fresh video element...');
+                this.videoElement = document.createElement('video');
+                this.videoElement.id = 'bgVideo';
                 this.videoElement.muted = false; // Keep unmuted, control via gain node
-                this.videoElement.loop = this.videoFileLoop;
+                this.videoElement.playsInline = true;
+                this.videoElement.autoplay = true;
+                this.videoElement.loop = this.videoFileLoopMode === 'one';
+
+                this.videoElement.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    z-index: 1;
+                    opacity: 0;
+                    transition: opacity ${this.videoFadeTime}s linear;
+                    pointer-events: none;
+                `;
+                
+                // Apply current size setting
+                this.applyVideoFileSize();
+
+                const backdrop = document.getElementById('videoBackdrop');
+                container.insertBefore(this.videoElement, backdrop.nextSibling);
             }
 
             // Create capture video element for clean video (no effects) - same as camera setup
@@ -17573,7 +18026,7 @@ class FrequeVisualizer {
                 this.captureVideoElement.muted = true; // Capture video is always muted
                 this.captureVideoElement.playsInline = true;
                 this.captureVideoElement.autoplay = true;
-                this.captureVideoElement.loop = this.videoFileLoop;
+                this.captureVideoElement.loop = this.videoFileLoopMode === 'one';
                 
                 this.captureVideoElement.style.cssText = `
                     position: absolute;
@@ -17593,13 +18046,40 @@ class FrequeVisualizer {
             // Set video source for both elements
             const url = URL.createObjectURL(file);
             this.videoElement.src = url;
-            this.videoElement.loop = this.videoFileLoop;
+            this.videoElement.loop = this.videoFileLoopMode === 'one';
             this.videoElement.muted = false; // Keep unmuted, control via gain node
             
             // Set same source for capture element (clean, no effects)
             this.captureVideoElement.src = url;
-            this.captureVideoElement.loop = this.videoFileLoop;
+            this.captureVideoElement.loop = this.videoFileLoopMode === 'one';
+            
+            // Save current video if from playlist
+            if (this.videoPlaylistManager) {
+                this.videoPlaylistManager.saveCurrentVideo();
+            }
+            
+            // Save video input mode
+            this.saveVideoInputMode();
             this.captureVideoElement.muted = true; // Capture video is always muted
+            
+            // Add ended event handler for playlist loop mode 'all'
+            this.videoElement.onended = () => {
+                console.log('Video ended. Loop mode:', this.videoFileLoopMode);
+                if (this.videoFileLoopMode === 'all' && this.videoPlaylistManager && this.videoPlaylistManager.currentPlaylist) {
+                    const playlist = this.videoPlaylistManager.currentPlaylist;
+                    console.log('Playlist has', playlist.videos.length, 'videos. Current:', this.videoPlaylistManager.currentVideoIndex);
+                    
+                    if (playlist.videos.length > 0) {
+                        const nextIndex = (this.videoPlaylistManager.currentVideoIndex + 1) % playlist.videos.length;
+                        console.log('Playing next video at index:', nextIndex);
+                        
+                        // Small delay to ensure clean transition
+                        setTimeout(() => {
+                            this.videoPlaylistManager.playVideo(nextIndex);
+                        }, 100);
+                    }
+                }
+            };
 
             // Make containers transparent if not already done (same as camera video)
             if (!container.classList.contains('video-active')) {
@@ -17644,7 +18124,7 @@ class FrequeVisualizer {
             }
 
             // Wait for metadata and play
-            // console.log('Setting up video loading...');
+            console.log('Setting up video loading for file:', file.name);
             await new Promise((resolve, reject) => {
                 let resolved = false;
                 const timeout = setTimeout(() => {
@@ -17658,21 +18138,34 @@ class FrequeVisualizer {
                     if (!resolved) {
                         resolved = true;
                         clearTimeout(timeout);
-                        this.videoElement.play().then(() => {
-                            // Also ensure capture video is playing
-                            return this.captureVideoElement.play();
-                        }).then(() => {
-                            this.applyVideoFilters();
-                            
-                            // Fade in after short delay
-                            setTimeout(() => {
-                                if (this.videoElement) {
-                                    this.videoElement.style.opacity = this.videoOpacity.toString();
-                                }
-                            }, 100);
-                            
-                            resolve();
-                        }).catch(reject);
+                        console.log('Video metadata loaded, attempting play...');
+                        
+                        // Force play with explicit promise handling
+                        const playPromise = this.videoElement.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                console.log('Main video playing');
+                                // Also ensure capture video is playing
+                                return this.captureVideoElement.play();
+                            }).then(() => {
+                                console.log('Capture video playing');
+                            }).catch(error => {
+                                console.error('Error during video play:', error);
+                                // Try to play anyway for capture element
+                                this.captureVideoElement.play().catch(e => console.error('Capture play error:', e));
+                            });
+                        }
+                        
+                        this.applyVideoFilters();
+                        
+                        // Fade in after short delay
+                        setTimeout(() => {
+                            if (this.videoElement) {
+                                this.videoElement.style.opacity = this.videoOpacity.toString();
+                            }
+                        }, 100);
+                        
+                        resolve();
                     }
                 };
 
@@ -17801,7 +18294,7 @@ class FrequeVisualizer {
                 name: this.videoFile?.name || 'Unknown',
                 resolution: `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}`,
                 duration: this.videoElement.duration,
-                loop: this.videoFileLoop
+                loop: this.videoFileLoopMode
             };
 
             // console.log('📹 Video File Info:', videoInfo);
@@ -25902,13 +26395,23 @@ https://rogueamoeba.com/loopback/
         const videoFileLoopBtn = document.getElementById('videoFileLoopBtn');
         if (videoFileLoopBtn) {
             videoFileLoopBtn.addEventListener('click', () => {
-                this.videoFileLoop = !this.videoFileLoop;
-                videoFileLoopBtn.classList.toggle('active', this.videoFileLoop);
+                // Cycle through loop modes: 'off' -> 'one' -> 'all' -> 'off'
+                const modes = ['off', 'one', 'all'];
+                const currentIndex = modes.indexOf(this.videoFileLoopMode);
+                const nextIndex = (currentIndex + 1) % modes.length;
+                this.videoFileLoopMode = modes[nextIndex];
+                
+                const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+                videoFileLoopBtn.textContent = modeLabels[this.videoFileLoopMode];
+                videoFileLoopBtn.classList.toggle('active', this.videoFileLoopMode !== 'off');
                 
                 // Update loop setting on video elements
                 if (this.videoElement && this.videoMode === 'file') {
-                    this.videoElement.loop = this.videoFileLoop;
+                    this.videoElement.loop = this.videoFileLoopMode === 'one';
                 }
+                
+                // Save to localStorage
+                localStorage.setItem('freque_video_loop_mode', this.videoFileLoopMode);
                 
                 // Update stats if visible
                 if (this.videoMode === 'file') {
@@ -25999,20 +26502,22 @@ https://rogueamoeba.com/loopback/
         this.updateVideoFileControls = (file) => {
             // Update File Controls section in Video panel
             const fileInfo = document.getElementById('headerVideoFileInfo');
+            const fileInfoSection = document.getElementById('headerVideoFileInfoSection');
             const fileName = document.getElementById('headerVideoFileName');
             const loopBtn = document.getElementById('headerVideoFileLoopBtn');
             const muteBtn = document.getElementById('headerVideoFileMuteBtn');
             
-            if (fileInfo && fileName && loopBtn && muteBtn) {
-                // Show the file info section
-                fileInfo.style.display = 'block';
+            if (fileInfo && fileInfoSection && fileName && loopBtn && muteBtn) {
+                // Show the file info section (file name, controls, progress)
+                fileInfoSection.style.display = 'block';
                 
                 // Update file name
                 fileName.textContent = file.name;
                 
                 // Update loop button state
-                loopBtn.classList.toggle('active', this.videoFileLoop);
-                loopBtn.textContent = this.videoFileLoop ? 'Loop' : 'No Loop';
+                const modeLabels = { 'off': 'Loop:OFF', 'one': 'Loop:1', 'all': 'Loop:ALL' };
+                loopBtn.textContent = modeLabels[this.videoFileLoopMode] || 'Loop:1';
+                loopBtn.classList.toggle('active', this.videoFileLoopMode !== 'off');
                 
                 // Update mute button state
                 muteBtn.classList.toggle('active', this.videoFileMuted);
@@ -26035,9 +26540,10 @@ https://rogueamoeba.com/loopback/
             const fileInfo = document.getElementById('headerVideoFileInfo');
             const fileName = document.getElementById('headerVideoFileName');
             
-            if (fileInfo && fileName) {
-                // Hide the file info section
-                fileInfo.style.display = 'none';
+            const fileInfoSection = document.getElementById('headerVideoFileInfoSection');
+            if (fileInfoSection && fileName) {
+                // Hide the file info section (but keep playlist visible)
+                fileInfoSection.style.display = 'none';
                 
                 // Reset file name
                 fileName.textContent = 'No file selected';
@@ -28050,6 +28556,33 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 errorDiv.onclick = () => {
                     errorDiv.style.display = 'none';
                 };
+            }
+            
+            applyVideoFileSize() {
+                if (!this.videoElement) return;
+                
+                let objectFit = 'cover';
+                switch (this.videoFileSize) {
+                    case 'fit':
+                        objectFit = 'contain';
+                        break;
+                    case 'fill':
+                        objectFit = 'cover';
+                        break;
+                    case 'stretch':
+                        objectFit = 'fill';
+                        break;
+                    case 'original':
+                        objectFit = 'none';
+                        break;
+                    default:
+                        objectFit = 'cover';
+                }
+                this.videoElement.style.objectFit = objectFit;
+            }
+            
+            updateVideoFileSize() {
+                this.applyVideoFileSize();
             }
         }
 
