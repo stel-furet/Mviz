@@ -348,10 +348,27 @@ class VideoPlaylistManager {
                 
                 if (videoIndex >= 0) {
                     this.currentVideoIndex = videoIndex;
-                    // Auto-play the video if playlist is loaded
-                    if (this.currentPlaylist.videos[videoIndex].url) {
-                        this.playVideo(videoIndex);
+                    
+                    // Restore UI state (highlight current video) but DO NOT auto-play
+                    // User must click play button to start playback
+                    document.querySelectorAll('.track-item[data-video-id]').forEach(item => {
+                        item.classList.remove('current-video');
+                    });
+                    const videoItem = document.querySelector(`[data-video-index="${videoIndex}"][data-video-id]`);
+                    if (videoItem) {
+                        videoItem.classList.add('current-video');
+                        // Scroll into view
+                        videoItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
+                    
+                    // Update file name display
+                    const video = this.currentPlaylist.videos[videoIndex];
+                    const fileNameDisplay = document.getElementById('headerVideoFileName');
+                    if (fileNameDisplay && video) {
+                        fileNameDisplay.textContent = video.title || video.filename;
+                    }
+                    
+                    // DO NOT call playVideo() - user must click play button
                 }
             }
         } catch (error) {

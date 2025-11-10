@@ -571,6 +571,21 @@
                     }
                 });
                 
+                // Double-click to reset to default value
+                dial.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Get default value from data attribute
+                    let defaultValue = parseFloat(dial.dataset.default);
+                    if (isNaN(defaultValue) || dial.dataset.default === null || dial.dataset.default === undefined) {
+                        defaultValue = min; // Fallback to min if no default stored
+                    }
+                    
+                    // Reset to default
+                    updateDial(defaultValue);
+                });
+                
                 // Initialize dial position
                 updateDial(value);
             });
@@ -3765,7 +3780,7 @@
                         <div class="control-mini-label">Background</div>
                         <div class="mixer-dial-container">
                             <svg class="mixer-dial dial-gold" id="mixerFluidityBackgroundDial" 
-                                 data-min="0" data-max="1" data-step="0.01" data-value="0"
+                                 data-min="0" data-max="1" data-step="0.01" data-value="0" data-default="0"
                                  viewBox="0 0 50 50">
                                 <circle class="dial-bg" cx="25" cy="25" r="18"/>
                                 <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>

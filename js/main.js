@@ -14192,15 +14192,16 @@ class FrequeVisualizer {
             
             if (visualizer.videoPlaylistManager) {
                 visualizer.initializeVideoPlaylistUI();
-                // Display playlist (empty or with videos) now that UI elements are created
-                setTimeout(() => {
-                    console.log('Displaying playlist...');
-                    visualizer.videoPlaylistManager.displayPlaylist();
-                    // Load and play current video if saved
-                    if (visualizer.videoPlaylistManager.currentPlaylist && visualizer.videoPlaylistManager.currentPlaylist.videos.length > 0) {
-                        visualizer.videoPlaylistManager.loadCurrentVideo();
-                    }
-                }, 50);
+                    // Display playlist (empty or with videos) now that UI elements are created
+                    setTimeout(() => {
+                        console.log('Displaying playlist...');
+                        visualizer.videoPlaylistManager.displayPlaylist();
+                        // Load and restore current video selection if saved (but do NOT auto-play)
+                        // User must click play button to start playback
+                        if (visualizer.videoPlaylistManager.currentPlaylist && visualizer.videoPlaylistManager.currentPlaylist.videos.length > 0) {
+                            visualizer.videoPlaylistManager.loadCurrentVideo();
+                        }
+                    }, 50);
             } else {
                 console.error('videoPlaylistManager not available after timeout!');
                 console.error('window.VideoPlaylistManager:', typeof window.VideoPlaylistManager);

@@ -803,6 +803,7 @@ class PluginMixerIntegration {
         dial.setAttribute('data-step', config.step || 1);
         const initialValue = config.value !== undefined ? config.value : (config.min || 0);
         dial.setAttribute('data-value', initialValue);
+        dial.setAttribute('data-default', initialValue); // Store default for double-click reset
         
         // Dial background circle
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
