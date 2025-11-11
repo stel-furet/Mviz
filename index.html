@@ -3530,62 +3530,86 @@
                     <div class="collapsible-content" id="infiniteZoomControls">
                         <!-- Color Randomness Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Color Randm</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomColorRandomValue">0.5</div>
+                            <div class="control-mini-label">Color Randm</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomColorRandomDial" 
+                                     data-min="0" data-max="1" data-step="0.1" data-value="0.5" data-default="0.5"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomColorRandomValue">0.5</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomColorRandomSlider" 
-                                   min="0" max="1" step="0.1" value="0.5">
                         </div>
                         
                         <!-- Min Size Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Min Size</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomMinSizeValue">2</div>
+                            <div class="control-mini-label">Min Size</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomMinSizeDial" 
+                                     data-min="1" data-max="10" data-step="1" data-value="2" data-default="2"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomMinSizeValue">2</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomMinSizeSlider" 
-                                   min="1" max="10" step="1" value="2">
                         </div>
                         
                         <!-- Max Size Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Max Size</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomMaxSizeValue">20</div>
+                            <div class="control-mini-label">Max Size</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomMaxSizeDial" 
+                                     data-min="10" data-max="50" data-step="5" data-value="20" data-default="20"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomMaxSizeValue">20</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomMaxSizeSlider" 
-                                   min="10" max="50" step="5" value="20">
                         </div>
                         
                         <!-- Density Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Density</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomDensityValue">50</div>
+                            <div class="control-mini-label">Density</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomDensityDial" 
+                                     data-min="1" data-max="100" data-step="1" data-value="50" data-default="50"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomDensityValue">50</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomDensitySlider" 
-                                   min="1" max="100" step="1" value="50">
                         </div>
                         
                         <!-- Speed Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Speed</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomSpeedValue">50</div>
+                            <div class="control-mini-label">Speed</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomSpeedDial" 
+                                     data-min="-100" data-max="100" data-step="1" data-value="50" data-default="50"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomSpeedValue">50</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomSpeedSlider" 
-                                   min="-100" max="100" step="1" value="50">
                         </div>
                         
                         <!-- Rotation Slider -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Rotation</div>
-                                <div class="control-mini-value" id="mixerInfiniteZoomRotationValue">0.0</div>
+                            <div class="control-mini-label">Rotation</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerInfiniteZoomRotationDial" 
+                                     data-min="-10" data-max="10" data-step="0.1" data-value="0" data-default="0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerInfiniteZoomRotationValue">0.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerInfiniteZoomRotationSlider" 
-                                   min="-10" max="10" step="0.1" value="0">
                         </div>
                     </div>
                 </div>
@@ -3657,74 +3681,114 @@
                     <div class="collapsible-content" id="starfallControls">
                         <!-- Particle Count -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Particle Count</div>
-                                <div class="control-mini-value" id="mixerStarfallParticleCountValue">500</div>
+                            <div class="control-mini-label">Particle Count</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallParticleCountDial" 
+                                     data-min="100" data-max="2000" data-step="50" data-value="500" data-default="500"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallParticleCountValue">500</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallParticleCountSlider" min="100" max="2000" step="50" value="500">
                         </div>
                         
                         <!-- Particle Size -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Particle Size</div>
-                                <div class="control-mini-value" id="mixerStarfallParticleSizeValue">10px</div>
+                            <div class="control-mini-label">Particle Size</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallParticleSizeDial" 
+                                     data-min="1" data-max="20" data-step="0.5" data-value="10" data-default="10"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallParticleSizeValue">10px</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallParticleSizeSlider" min="1" max="20" step="0.5" value="10">
                         </div>
                         
                         <!-- Speed -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Speed</div>
-                                <div class="control-mini-value" id="mixerStarfallSpeedValue">1.0</div>
+                            <div class="control-mini-label">Speed</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallSpeedDial" 
+                                     data-min="0" data-max="5" data-step="0.1" data-value="1" data-default="1"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallSpeedValue">1.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallSpeedSlider" min="0" max="5" step="0.1" value="1">
                         </div>
                         
                         <!-- Gravity -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Gravity</div>
-                                <div class="control-mini-value" id="mixerStarfallGravityValue">0.5</div>
+                            <div class="control-mini-label">Gravity</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallGravityDial" 
+                                     data-min="0" data-max="2" data-step="0.1" data-value="0.5" data-default="0.5"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallGravityValue">0.5</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallGravitySlider" min="0" max="2" step="0.1" value="0.5">
                         </div>
                         
                         <!-- Saturation -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Saturation</div>
-                                <div class="control-mini-value" id="mixerStarfallSaturationValue">0%</div>
+                            <div class="control-mini-label">Saturation</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallSaturationDial" 
+                                     data-min="0" data-max="100" data-step="1" data-value="0" data-default="0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallSaturationValue">0%</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallSaturationSlider" min="0" max="100" step="1" value="0">
                         </div>
                         
                         <!-- Twinkle Intensity -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Twinkle Intensity</div>
-                                <div class="control-mini-value" id="mixerStarfallTwinkleValue">30%</div>
+                            <div class="control-mini-label">Twinkle Intensity</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallTwinkleDial" 
+                                     data-min="0" data-max="100" data-step="1" data-value="30" data-default="30"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallTwinkleValue">30%</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallTwinkleSlider" min="0" max="100" step="1" value="30">
                         </div>
                         
                         <!-- Star Percentage -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Star Percentage</div>
-                                <div class="control-mini-value" id="mixerStarfallStarPercentageValue">0%</div>
+                            <div class="control-mini-label">Star Percentage</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallStarPercentageDial" 
+                                     data-min="0" data-max="100" data-step="1" data-value="0" data-default="0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallStarPercentageValue">0%</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallStarPercentageSlider" min="0" max="100" step="1" value="0">
                         </div>
                         
                         <!-- Audio Reactivity -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Audio Reactivity</div>
-                                <div class="control-mini-value" id="mixerStarfallAudioReactivityValue">50%</div>
+                            <div class="control-mini-label">Audio Reactivity</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerStarfallAudioReactivityDial" 
+                                     data-min="0" data-max="100" data-step="1" data-value="50" data-default="50"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerStarfallAudioReactivityValue">50%</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerStarfallAudioReactivitySlider" min="0" max="100" step="1" value="50">
                         </div>
                     </div>
                 </div>

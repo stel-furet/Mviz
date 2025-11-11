@@ -3078,6 +3078,9 @@ class RecordManager {
                             this.visualizer.switchToCustomAnalyzer();
                         }
                         
+                        // Update lastRegularMode so switchToCustomAnalyzer doesn't override our explicit choice
+                        this.visualizer.lastRegularMode = presetIndex;
+                        
                         this.visualizer.setVisualizationMode(presetIndex);
                         
                         // Update active state
@@ -3218,6 +3221,9 @@ class RecordManager {
                         if (this.visualizer.useOfficialAudioMotion) {
                             this.visualizer.switchToCustomAnalyzer();
                         }
+                        
+                        // Update lastRegularMode so switchToCustomAnalyzer doesn't override our explicit choice
+                        this.visualizer.lastRegularMode = presetIndex;
                         
                         this.visualizer.setVisualizationMode(presetIndex);
                         
@@ -3475,13 +3481,13 @@ class RecordManager {
 
         // ========== INFINITE ZOOM SLIDERS ==========
 
-        // Mixer Infinite Zoom Color Randomness Slider
-        const mixerInfiniteZoomColorRandomSlider = document.getElementById('mixerInfiniteZoomColorRandomSlider');
+        // Mixer Infinite Zoom Color Randomness Dial
+        const mixerInfiniteZoomColorRandomDial = document.getElementById('mixerInfiniteZoomColorRandomDial');
         const mixerInfiniteZoomColorRandomValue = document.getElementById('mixerInfiniteZoomColorRandomValue');
-        if (mixerInfiniteZoomColorRandomSlider && mixerInfiniteZoomColorRandomValue) {
-            mixerInfiniteZoomColorRandomSlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomColorRandomDial && mixerInfiniteZoomColorRandomValue) {
+            mixerInfiniteZoomColorRandomDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerInfiniteZoomColorRandomValue.textContent = value.toFixed(1);
                     
                     this.visualizer.infiniteZoom.colorRandomness = value;
@@ -3501,14 +3507,14 @@ class RecordManager {
             });
         }
 
-        // Mixer Infinite Zoom Min Size Slider
-        const mixerInfiniteZoomMinSizeSlider = document.getElementById('mixerInfiniteZoomMinSizeSlider');
+        // Mixer Infinite Zoom Min Size Dial
+        const mixerInfiniteZoomMinSizeDial = document.getElementById('mixerInfiniteZoomMinSizeDial');
         const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
-        if (mixerInfiniteZoomMinSizeSlider && mixerInfiniteZoomMinSizeValue) {
-            // console.log('✅ Mixer Infinite Zoom min size slider found, adding event listener');
-            mixerInfiniteZoomMinSizeSlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomMinSizeDial && mixerInfiniteZoomMinSizeValue) {
+            // console.log('✅ Mixer Infinite Zoom min size dial found, adding event listener');
+            mixerInfiniteZoomMinSizeDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerInfiniteZoomMinSizeValue.textContent = value;
                     
                     this.visualizer.infiniteZoom.minSize = value;
@@ -3529,14 +3535,14 @@ class RecordManager {
             });
         }
 
-        // Mixer Infinite Zoom Max Size Slider
-        const mixerInfiniteZoomMaxSizeSlider = document.getElementById('mixerInfiniteZoomMaxSizeSlider');
+        // Mixer Infinite Zoom Max Size Dial
+        const mixerInfiniteZoomMaxSizeDial = document.getElementById('mixerInfiniteZoomMaxSizeDial');
         const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
-        if (mixerInfiniteZoomMaxSizeSlider && mixerInfiniteZoomMaxSizeValue) {
-            // console.log('✅ Mixer Infinite Zoom max size slider found, adding event listener');
-            mixerInfiniteZoomMaxSizeSlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomMaxSizeDial && mixerInfiniteZoomMaxSizeValue) {
+            // console.log('✅ Mixer Infinite Zoom max size dial found, adding event listener');
+            mixerInfiniteZoomMaxSizeDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerInfiniteZoomMaxSizeValue.textContent = value;
                     
                     this.visualizer.infiniteZoom.maxSize = value;
@@ -3557,14 +3563,14 @@ class RecordManager {
             });
         }
 
-        // Mixer Infinite Zoom Density Slider
-        const mixerInfiniteZoomDensitySlider = document.getElementById('mixerInfiniteZoomDensitySlider');
+        // Mixer Infinite Zoom Density Dial
+        const mixerInfiniteZoomDensityDial = document.getElementById('mixerInfiniteZoomDensityDial');
         const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
-        if (mixerInfiniteZoomDensitySlider && mixerInfiniteZoomDensityValue) {
-            // console.log('✅ Mixer Infinite Zoom density slider found, adding event listener');
-            mixerInfiniteZoomDensitySlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomDensityDial && mixerInfiniteZoomDensityValue) {
+            // console.log('✅ Mixer Infinite Zoom density dial found, adding event listener');
+            mixerInfiniteZoomDensityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerInfiniteZoomDensityValue.textContent = value;
                     
                     // Calculate density based on screen area
@@ -3589,14 +3595,14 @@ class RecordManager {
             });
         }
 
-        // Mixer Infinite Zoom Speed Slider
-        const mixerInfiniteZoomSpeedSlider = document.getElementById('mixerInfiniteZoomSpeedSlider');
+        // Mixer Infinite Zoom Speed Dial
+        const mixerInfiniteZoomSpeedDial = document.getElementById('mixerInfiniteZoomSpeedDial');
         const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
-        if (mixerInfiniteZoomSpeedSlider && mixerInfiniteZoomSpeedValue) {
-            // console.log('✅ Mixer Infinite Zoom speed slider found, adding event listener');
-            mixerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomSpeedDial && mixerInfiniteZoomSpeedValue) {
+            // console.log('✅ Mixer Infinite Zoom speed dial found, adding event listener');
+            mixerInfiniteZoomSpeedDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerInfiniteZoomSpeedValue.textContent = value;
                     
                     // Convert -100 to 100 range to zoom speed
@@ -3622,14 +3628,14 @@ class RecordManager {
             });
         }
 
-        // Mixer Infinite Zoom Rotation Slider
-        const mixerInfiniteZoomRotationSlider = document.getElementById('mixerInfiniteZoomRotationSlider');
+        // Mixer Infinite Zoom Rotation Dial
+        const mixerInfiniteZoomRotationDial = document.getElementById('mixerInfiniteZoomRotationDial');
         const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
-        if (mixerInfiniteZoomRotationSlider && mixerInfiniteZoomRotationValue) {
-            // console.log('✅ Mixer Infinite Zoom rotation slider found, adding event listener');
-            mixerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
+        if (mixerInfiniteZoomRotationDial && mixerInfiniteZoomRotationValue) {
+            // console.log('✅ Mixer Infinite Zoom rotation dial found, adding event listener');
+            mixerInfiniteZoomRotationDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerInfiniteZoomRotationValue.textContent = value.toFixed(1);
                     
                     this.visualizer.infiniteZoom.rotationSpeed = value;
@@ -3646,6 +3652,35 @@ class RecordManager {
                 }
             });
         }
+
+        // Initialize Infinite Zoom dials on startup
+        setTimeout(() => {
+            if (window.initMixerDials) {
+                window.initMixerDials();
+                
+                // Trigger initial dialchange events for Infinite Zoom dials
+                const infiniteZoomDials = [
+                    'mixerInfiniteZoomColorRandomDial',
+                    'mixerInfiniteZoomMinSizeDial',
+                    'mixerInfiniteZoomMaxSizeDial',
+                    'mixerInfiniteZoomDensityDial',
+                    'mixerInfiniteZoomSpeedDial',
+                    'mixerInfiniteZoomRotationDial'
+                ];
+                
+                infiniteZoomDials.forEach(dialId => {
+                    const dialElement = document.getElementById(dialId);
+                    if (dialElement) {
+                        const initialValue = parseFloat(dialElement.getAttribute('data-value'));
+                        if (!isNaN(initialValue)) {
+                            dialElement.dispatchEvent(new CustomEvent('dialchange', {
+                                detail: { value: initialValue }
+                            }));
+                        }
+                    }
+                });
+            }
+        }, 100);
 
         // ========== BLOBS CHANNEL ==========
 
@@ -3987,109 +4022,140 @@ class RecordManager {
             // console.error('❌ Mixer Starfall color scheme dropdown not found');
         }
 
-        // Particle Count Slider
-        const mixerStarfallParticleCountSlider = document.getElementById('mixerStarfallParticleCountSlider');
+        // Particle Count Dial
+        const mixerStarfallParticleCountDial = document.getElementById('mixerStarfallParticleCountDial');
         const mixerStarfallParticleCountValue = document.getElementById('mixerStarfallParticleCountValue');
-        if (mixerStarfallParticleCountSlider && mixerStarfallParticleCountValue) {
-            mixerStarfallParticleCountSlider.addEventListener('input', (e) => {
+        if (mixerStarfallParticleCountDial && mixerStarfallParticleCountValue) {
+            mixerStarfallParticleCountDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerStarfallParticleCountValue.textContent = value;
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ particleCount: value });
                 }
             });
         }
 
-        // Particle Size Slider
-        const mixerStarfallParticleSizeSlider = document.getElementById('mixerStarfallParticleSizeSlider');
+        // Particle Size Dial
+        const mixerStarfallParticleSizeDial = document.getElementById('mixerStarfallParticleSizeDial');
         const mixerStarfallParticleSizeValue = document.getElementById('mixerStarfallParticleSizeValue');
-        if (mixerStarfallParticleSizeSlider && mixerStarfallParticleSizeValue) {
-            mixerStarfallParticleSizeSlider.addEventListener('input', (e) => {
+        if (mixerStarfallParticleSizeDial && mixerStarfallParticleSizeValue) {
+            mixerStarfallParticleSizeDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerStarfallParticleSizeValue.textContent = value + 'px';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ particleSize: value });
                 }
             });
         }
 
-        // Speed Slider
-        const mixerStarfallSpeedSlider = document.getElementById('mixerStarfallSpeedSlider');
+        // Speed Dial
+        const mixerStarfallSpeedDial = document.getElementById('mixerStarfallSpeedDial');
         const mixerStarfallSpeedValue = document.getElementById('mixerStarfallSpeedValue');
-        if (mixerStarfallSpeedSlider && mixerStarfallSpeedValue) {
-            mixerStarfallSpeedSlider.addEventListener('input', (e) => {
+        if (mixerStarfallSpeedDial && mixerStarfallSpeedValue) {
+            mixerStarfallSpeedDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerStarfallSpeedValue.textContent = value.toFixed(1);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ speed: value });
                 }
             });
         }
 
-        // Gravity Slider
-        const mixerStarfallGravitySlider = document.getElementById('mixerStarfallGravitySlider');
+        // Gravity Dial
+        const mixerStarfallGravityDial = document.getElementById('mixerStarfallGravityDial');
         const mixerStarfallGravityValue = document.getElementById('mixerStarfallGravityValue');
-        if (mixerStarfallGravitySlider && mixerStarfallGravityValue) {
-            mixerStarfallGravitySlider.addEventListener('input', (e) => {
+        if (mixerStarfallGravityDial && mixerStarfallGravityValue) {
+            mixerStarfallGravityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerStarfallGravityValue.textContent = value.toFixed(1);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ gravity: value });
                 }
             });
         }
 
-        // Saturation Slider
-        const mixerStarfallSaturationSlider = document.getElementById('mixerStarfallSaturationSlider');
+        // Saturation Dial
+        const mixerStarfallSaturationDial = document.getElementById('mixerStarfallSaturationDial');
         const mixerStarfallSaturationValue = document.getElementById('mixerStarfallSaturationValue');
-        if (mixerStarfallSaturationSlider && mixerStarfallSaturationValue) {
-            mixerStarfallSaturationSlider.addEventListener('input', (e) => {
+        if (mixerStarfallSaturationDial && mixerStarfallSaturationValue) {
+            mixerStarfallSaturationDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerStarfallSaturationValue.textContent = value + '%';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ saturation: value });
                 }
             });
         }
 
-        // Twinkle Intensity Slider
-        const mixerStarfallTwinkleSlider = document.getElementById('mixerStarfallTwinkleSlider');
+        // Twinkle Intensity Dial
+        const mixerStarfallTwinkleDial = document.getElementById('mixerStarfallTwinkleDial');
         const mixerStarfallTwinkleValue = document.getElementById('mixerStarfallTwinkleValue');
-        if (mixerStarfallTwinkleSlider && mixerStarfallTwinkleValue) {
-            mixerStarfallTwinkleSlider.addEventListener('input', (e) => {
+        if (mixerStarfallTwinkleDial && mixerStarfallTwinkleValue) {
+            mixerStarfallTwinkleDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerStarfallTwinkleValue.textContent = value + '%';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ twinkleIntensity: value });
                 }
             });
         }
 
-        // Star Percentage Slider
-        const mixerStarfallStarPercentageSlider = document.getElementById('mixerStarfallStarPercentageSlider');
+        // Star Percentage Dial
+        const mixerStarfallStarPercentageDial = document.getElementById('mixerStarfallStarPercentageDial');
         const mixerStarfallStarPercentageValue = document.getElementById('mixerStarfallStarPercentageValue');
-        if (mixerStarfallStarPercentageSlider && mixerStarfallStarPercentageValue) {
-            mixerStarfallStarPercentageSlider.addEventListener('input', (e) => {
+        if (mixerStarfallStarPercentageDial && mixerStarfallStarPercentageValue) {
+            mixerStarfallStarPercentageDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerStarfallStarPercentageValue.textContent = value + '%';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ starPercentage: value });
                 }
             });
         }
 
-        // Audio Reactivity Slider
-        const mixerStarfallAudioReactivitySlider = document.getElementById('mixerStarfallAudioReactivitySlider');
+        // Audio Reactivity Dial
+        const mixerStarfallAudioReactivityDial = document.getElementById('mixerStarfallAudioReactivityDial');
         const mixerStarfallAudioReactivityValue = document.getElementById('mixerStarfallAudioReactivityValue');
-        if (mixerStarfallAudioReactivitySlider && mixerStarfallAudioReactivityValue) {
-            mixerStarfallAudioReactivitySlider.addEventListener('input', (e) => {
+        if (mixerStarfallAudioReactivityDial && mixerStarfallAudioReactivityValue) {
+            mixerStarfallAudioReactivityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerStarfallAudioReactivityValue.textContent = value + '%';
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ audioReactivity: value });
                 }
             });
         }
+
+        // Initialize Starfall dials on startup
+        setTimeout(() => {
+            if (window.initMixerDials) {
+                window.initMixerDials();
+                
+                // Trigger initial dialchange events for Starfall dials
+                const starfallDials = [
+                    'mixerStarfallParticleCountDial',
+                    'mixerStarfallParticleSizeDial',
+                    'mixerStarfallSpeedDial',
+                    'mixerStarfallGravityDial',
+                    'mixerStarfallSaturationDial',
+                    'mixerStarfallTwinkleDial',
+                    'mixerStarfallStarPercentageDial',
+                    'mixerStarfallAudioReactivityDial'
+                ];
+                
+                starfallDials.forEach(dialId => {
+                    const dialElement = document.getElementById(dialId);
+                    if (dialElement) {
+                        const initialValue = parseFloat(dialElement.getAttribute('data-value'));
+                        if (!isNaN(initialValue)) {
+                            dialElement.dispatchEvent(new CustomEvent('dialchange', {
+                                detail: { value: initialValue }
+                            }));
+                        }
+                    }
+                });
+            }
+        }, 100);
 
         // ========== FLUIDITY CHANNEL ==========
 
@@ -15032,6 +15098,9 @@ class FrequeVisualizer {
                     if (this.useOfficialAudioMotion) {
                         this.switchToCustomAnalyzer();
                     }
+                    
+                    // Update lastRegularMode so switchToCustomAnalyzer doesn't override our explicit choice
+                    this.lastRegularMode = mode;
                     
                     this.setVisualizationMode(mode);
                     
