@@ -4301,97 +4301,79 @@ class RecordManager {
             });
         }
 
-        // ========== FLUIDITY CONTROL SLIDERS ==========
+        // ========== FLUIDITY CONTROL DIALS ==========
 
-        // Saturation Slider
-        const mixerFluditySaturationSlider = document.getElementById('mixerFluditySaturationSlider');
+        // Helper function to sync dial with header slider
+        const syncFluidityDialToHeader = (dialValue, headerSliderId, headerValueId) => {
+            const headerSlider = document.getElementById(headerSliderId);
+            const headerValue = document.getElementById(headerValueId);
+            if (headerSlider && headerValue) {
+                headerSlider.value = dialValue;
+                headerValue.textContent = dialValue.toFixed(1);
+                headerSlider.dispatchEvent(new Event('input'));
+            }
+        };
+
+        // Saturation Dial
+        const mixerFluditySaturationDial = document.getElementById('mixerFluditySaturationDial');
         const mixerFluditySaturationValue = document.getElementById('mixerFluditySaturationValue');
-        if (mixerFluditySaturationSlider && mixerFluditySaturationValue) {
-            mixerFluditySaturationSlider.addEventListener('input', (e) => {
+        if (mixerFluditySaturationDial && mixerFluditySaturationValue) {
+            mixerFluditySaturationDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluditySaturationValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsSaturationSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsSaturationValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsSaturationSlider', 'headerFluidDynamicsSaturationValue');
                 }
             });
         }
 
-        // Speed Slider
-        const mixerFluiditySpeedSlider = document.getElementById('mixerFluiditySpeedSlider');
+        // Speed Dial
+        const mixerFluiditySpeedDial = document.getElementById('mixerFluiditySpeedDial');
         const mixerFluiditySpeedValue = document.getElementById('mixerFluiditySpeedValue');
-        if (mixerFluiditySpeedSlider && mixerFluiditySpeedValue) {
-            mixerFluiditySpeedSlider.addEventListener('input', (e) => {
+        if (mixerFluiditySpeedDial && mixerFluiditySpeedValue) {
+            mixerFluiditySpeedDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluiditySpeedValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsSpeedSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsSpeedValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsSpeedSlider', 'headerFluidDynamicsSpeedValue');
                 }
             });
         }
 
-        // Viscosity Slider
-        const mixerFluidityViscositySlider = document.getElementById('mixerFluidityViscositySlider');
+        // Viscosity Dial
+        const mixerFluidityViscosityDial = document.getElementById('mixerFluidityViscosityDial');
         const mixerFluidityViscosityValue = document.getElementById('mixerFluidityViscosityValue');
-        if (mixerFluidityViscositySlider && mixerFluidityViscosityValue) {
-            mixerFluidityViscositySlider.addEventListener('input', (e) => {
+        if (mixerFluidityViscosityDial && mixerFluidityViscosityValue) {
+            mixerFluidityViscosityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluidityViscosityValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsViscositySlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsViscosityValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsViscositySlider', 'headerFluidDynamicsViscosityValue');
                 }
             });
         }
 
-        // Pressure Slider
-        const mixerFluidityPressureSlider = document.getElementById('mixerFluidityPressureSlider');
+        // Pressure Dial
+        const mixerFluidityPressureDial = document.getElementById('mixerFluidityPressureDial');
         const mixerFluidityPressureValue = document.getElementById('mixerFluidityPressureValue');
-        if (mixerFluidityPressureSlider && mixerFluidityPressureValue) {
-            mixerFluidityPressureSlider.addEventListener('input', (e) => {
+        if (mixerFluidityPressureDial && mixerFluidityPressureValue) {
+            mixerFluidityPressureDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluidityPressureValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsPressureSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsPressureValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsPressureSlider', 'headerFluidDynamicsPressureValue');
                 }
             });
         }
 
-        // Curl Slider
-        const mixerFludityCurlSlider = document.getElementById('mixerFludityCurlSlider');
+        // Curl Dial
+        const mixerFludityCurlDial = document.getElementById('mixerFludityCurlDial');
         const mixerFludityCurlValue = document.getElementById('mixerFludityCurlValue');
-        if (mixerFludityCurlSlider && mixerFludityCurlValue) {
-            mixerFludityCurlSlider.addEventListener('input', (e) => {
+        if (mixerFludityCurlDial && mixerFludityCurlValue) {
+            mixerFludityCurlDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerFludityCurlValue.textContent = value;
-                    // Sync with header slider
                     const headerSlider = document.getElementById('headerFluidDynamicsCurlSlider');
                     const headerValue = document.getElementById('headerFluidDynamicsCurlValue');
                     if (headerSlider && headerValue) {
@@ -4403,15 +4385,14 @@ class RecordManager {
             });
         }
 
-        // Splat Force Slider
-        const mixerFluditySplatForceSlider = document.getElementById('mixerFluditySplatForceSlider');
+        // Splat Force Dial
+        const mixerFluditySplatForceDial = document.getElementById('mixerFluditySplatForceDial');
         const mixerFluditySplatForceValue = document.getElementById('mixerFluditySplatForceValue');
-        if (mixerFluditySplatForceSlider && mixerFluditySplatForceValue) {
-            mixerFluditySplatForceSlider.addEventListener('input', (e) => {
+        if (mixerFluditySplatForceDial && mixerFluditySplatForceValue) {
+            mixerFluditySplatForceDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseInt(e.target.value);
+                    const value = parseInt(e.detail.value);
                     mixerFluditySplatForceValue.textContent = value;
-                    // Sync with header slider
                     const headerSlider = document.getElementById('headerFluidDynamicsSplatForceSlider');
                     const headerValue = document.getElementById('headerFluidDynamicsSplatForceValue');
                     if (headerSlider && headerValue) {
@@ -4436,85 +4417,93 @@ class RecordManager {
             });
         }
 
-        // Energy Sensitivity Slider
-        const mixerFluidityEnergySensitivitySlider = document.getElementById('mixerFluidityEnergySensitivitySlider');
+        // Energy Sensitivity Dial
+        const mixerFluidityEnergySensitivityDial = document.getElementById('mixerFluidityEnergySensitivityDial');
         const mixerFluidityEnergySensitivityValue = document.getElementById('mixerFluidityEnergySensitivityValue');
-        if (mixerFluidityEnergySensitivitySlider && mixerFluidityEnergySensitivityValue) {
-            mixerFluidityEnergySensitivitySlider.addEventListener('input', (e) => {
+        if (mixerFluidityEnergySensitivityDial && mixerFluidityEnergySensitivityValue) {
+            mixerFluidityEnergySensitivityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluidityEnergySensitivityValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsEnergySensitivitySlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsEnergySensitivityValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsEnergySensitivitySlider', 'headerFluidDynamicsEnergySensitivityValue');
                 }
             });
         }
 
-        // Viscosity Response Slider
-        const mixerFluidityViscosityResponseSlider = document.getElementById('mixerFluidityViscosityResponseSlider');
+        // Viscosity Response Dial
+        const mixerFluidityViscosityResponseDial = document.getElementById('mixerFluidityViscosityResponseDial');
         const mixerFluidityViscosityResponseValue = document.getElementById('mixerFluidityViscosityResponseValue');
-        if (mixerFluidityViscosityResponseSlider && mixerFluidityViscosityResponseValue) {
-            mixerFluidityViscosityResponseSlider.addEventListener('input', (e) => {
+        if (mixerFluidityViscosityResponseDial && mixerFluidityViscosityResponseValue) {
+            mixerFluidityViscosityResponseDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluidityViscosityResponseValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsViscosityResponseSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsViscosityResponseValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsViscosityResponseSlider', 'headerFluidDynamicsViscosityResponseValue');
                 }
             });
         }
 
-        // Curl Response Slider
-        const mixerFludityCurlResponseSlider = document.getElementById('mixerFludityCurlResponseSlider');
+        // Curl Response Dial
+        const mixerFludityCurlResponseDial = document.getElementById('mixerFludityCurlResponseDial');
         const mixerFludityCurlResponseValue = document.getElementById('mixerFludityCurlResponseValue');
-        if (mixerFludityCurlResponseSlider && mixerFludityCurlResponseValue) {
-            mixerFludityCurlResponseSlider.addEventListener('input', (e) => {
+        if (mixerFludityCurlResponseDial && mixerFludityCurlResponseValue) {
+            mixerFludityCurlResponseDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFludityCurlResponseValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsCurlResponseSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsCurlResponseValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsCurlResponseSlider', 'headerFluidDynamicsCurlResponseValue');
                 }
             });
         }
 
-        // Pressure Response Slider
-        const mixerFluidityPressureResponseSlider = document.getElementById('mixerFluidityPressureResponseSlider');
+        // Pressure Response Dial
+        const mixerFluidityPressureResponseDial = document.getElementById('mixerFluidityPressureResponseDial');
         const mixerFluidityPressureResponseValue = document.getElementById('mixerFluidityPressureResponseValue');
-        if (mixerFluidityPressureResponseSlider && mixerFluidityPressureResponseValue) {
-            mixerFluidityPressureResponseSlider.addEventListener('input', (e) => {
+        if (mixerFluidityPressureResponseDial && mixerFluidityPressureResponseValue) {
+            mixerFluidityPressureResponseDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer) {
-                    const value = parseFloat(e.target.value);
+                    const value = parseFloat(e.detail.value);
                     mixerFluidityPressureResponseValue.textContent = value.toFixed(1);
-                    // Sync with header slider
-                    const headerSlider = document.getElementById('headerFluidDynamicsPressureResponseSlider');
-                    const headerValue = document.getElementById('headerFluidDynamicsPressureResponseValue');
-                    if (headerSlider && headerValue) {
-                        headerSlider.value = value;
-                        headerValue.textContent = value.toFixed(1);
-                        headerSlider.dispatchEvent(new Event('input'));
-                    }
+                    syncFluidityDialToHeader(value, 'headerFluidDynamicsPressureResponseSlider', 'headerFluidDynamicsPressureResponseValue');
                 }
             });
         }
+
+        // Initialize Fluidity dial values after dials are ready
+        // This ensures FluidDynamics values are set correctly on startup
+        setTimeout(() => {
+            if (window.initMixerDials) {
+                window.initMixerDials();
+                
+                // Trigger initial values for all Fluidity dials
+                const fluityDials = [
+                    { dial: 'mixerFluditySaturationDial', header: 'headerFluidDynamicsSaturationSlider' },
+                    { dial: 'mixerFluiditySpeedDial', header: 'headerFluidDynamicsSpeedSlider' },
+                    { dial: 'mixerFluidityViscosityDial', header: 'headerFluidDynamicsViscositySlider' },
+                    { dial: 'mixerFluidityPressureDial', header: 'headerFluidDynamicsPressureSlider' },
+                    { dial: 'mixerFludityCurlDial', header: 'headerFluidDynamicsCurlSlider' },
+                    { dial: 'mixerFluditySplatForceDial', header: 'headerFluidDynamicsSplatForceSlider' },
+                    { dial: 'mixerFluidityEnergySensitivityDial', header: 'headerFluidDynamicsEnergySensitivitySlider' },
+                    { dial: 'mixerFluidityViscosityResponseDial', header: 'headerFluidDynamicsViscosityResponseSlider' },
+                    { dial: 'mixerFludityCurlResponseDial', header: 'headerFluidDynamicsCurlResponseSlider' },
+                    { dial: 'mixerFluidityPressureResponseDial', header: 'headerFluidDynamicsPressureResponseSlider' }
+                ];
+                
+                fluityDials.forEach(({ dial: dialId, header: headerId }) => {
+                    const dialElement = document.getElementById(dialId);
+                    const headerSlider = document.getElementById(headerId);
+                    if (dialElement && headerSlider) {
+                        const initialValue = parseFloat(dialElement.getAttribute('data-value'));
+                        if (!isNaN(initialValue)) {
+                            // Manually trigger the dialchange event to set initial FluidDynamics values
+                            dialElement.dispatchEvent(new CustomEvent('dialchange', {
+                                detail: { value: initialValue }
+                            }));
+                        }
+                    }
+                });
+            }
+        }, 100);
 
         // ========== NEBULA CHANNEL ==========
 

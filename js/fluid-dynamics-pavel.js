@@ -818,16 +818,18 @@ class FluidDynamicsVisualization {
             this.processBeatDetection(audioFeatures);
         }
         
-        // Multi-frequency zone splats (only if beat react is enabled for complex schemes)
-        if (audioFeatures.frequencies && audioFeatures.frequencies !== 'none') {
-            const currentScheme = this.getCurrentColorScheme();
-            const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
-            
-            // Pure schemes always get frequency zones, complex schemes only if beat react is on
-            if (pureSchemes.includes(currentScheme) || this.beatReactEnabled) {
-                this.addFrequencyZoneSplats(audioFeatures);
-            }
-        }
+        // Multi-frequency zone splats - DISABLED
+        // This feature was never active before frequencies were added to sharedAudioData for plugins.
+        // Commenting out to restore previous FluidDynamics behavior while plugins use frequency data.
+        // if (audioFeatures.frequencies && audioFeatures.frequencies !== 'none') {
+        //     const currentScheme = this.getCurrentColorScheme();
+        //     const pureSchemes = ['fire', 'jerry', 'waterCaustic'];
+        //     
+        //     // Pure schemes always get frequency zones, complex schemes only if beat react is on
+        //     if (pureSchemes.includes(currentScheme) || this.beatReactEnabled) {
+        //         this.addFrequencyZoneSplats(audioFeatures);
+        //     }
+        // }
         
         // More frequent splats with lower energy threshold for richer visuals
         // Only use beat detection if beat react is enabled
@@ -999,10 +1001,12 @@ class FluidDynamicsVisualization {
             this.beatDetection.lastBeatTime = now;
         }
         
-        // Detect specific beat types and apply effects
-        if (frequencies && frequencies !== 'none') {
-            this.detectAndApplyBeatEffects(audioFeatures);
-        }
+        // Detect specific beat types and apply effects - DISABLED
+        // This feature was never active before frequencies were added to sharedAudioData for plugins.
+        // Commenting out to restore previous FluidDynamics behavior while plugins use frequency data.
+        // if (frequencies && frequencies !== 'none') {
+        //     this.detectAndApplyBeatEffects(audioFeatures);
+        // }
     }
     
     detectAndApplyBeatEffects(audioFeatures) {

@@ -3832,56 +3832,86 @@
                         
                         <!-- Saturation -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Saturation</div>
-                                <div class="control-mini-value" id="mixerFluditySaturationValue">1.0</div>
+                            <div class="control-mini-label">Saturation</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluditySaturationDial" 
+                                     data-min="0.0" data-max="2.0" data-step="0.1" data-value="1.0" data-default="1.0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluditySaturationValue">1.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluditySaturationSlider" min="0.0" max="2.0" step="0.1" value="1.0">
                         </div>
                         
                         <!-- Speed -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Speed</div>
-                                <div class="control-mini-value" id="mixerFluiditySpeedValue">1.0</div>
+                            <div class="control-mini-label">Speed</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluiditySpeedDial" 
+                                     data-min="0.1" data-max="3.0" data-step="0.1" data-value="1.0" data-default="1.0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluiditySpeedValue">1.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluiditySpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0">
                         </div>
                         
                         <!-- Viscosity -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Viscosity</div>
-                                <div class="control-mini-value" id="mixerFluidityViscosityValue">0.2</div>
+                            <div class="control-mini-label">Viscosity</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluidityViscosityDial" 
+                                     data-min="0.1" data-max="2.0" data-step="0.1" data-value="0.2" data-default="0.2"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluidityViscosityValue">0.2</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluidityViscositySlider" min="0.1" max="2.0" step="0.1" value="0.2">
                         </div>
                         
                         <!-- Pressure -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Pressure</div>
-                                <div class="control-mini-value" id="mixerFluidityPressureValue">0.8</div>
+                            <div class="control-mini-label">Pressure</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluidityPressureDial" 
+                                     data-min="0.1" data-max="2.0" data-step="0.1" data-value="0.8" data-default="0.8"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluidityPressureValue">0.8</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluidityPressureSlider" min="0.1" max="2.0" step="0.1" value="0.8">
                         </div>
                         
                         <!-- Curl -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Curl</div>
-                                <div class="control-mini-value" id="mixerFludityCurlValue">30</div>
+                            <div class="control-mini-label">Curl</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFludityCurlDial" 
+                                     data-min="0" data-max="50" data-step="1" data-value="30" data-default="30"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFludityCurlValue">30</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFludityCurlSlider" min="0" max="50" step="1" value="30">
                         </div>
                         
                         <!-- Splat Force -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Splat Force</div>
-                                <div class="control-mini-value" id="mixerFluditySplatForceValue">6000</div>
+                            <div class="control-mini-label">Splat Force</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluditySplatForceDial" 
+                                     data-min="1000" data-max="10000" data-step="500" data-value="6000" data-default="6000"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluditySplatForceValue">6000</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluditySplatForceSlider" min="1000" max="10000" step="500" value="6000">
                         </div>
                         
                         <!-- Beat React Button -->
@@ -3894,38 +3924,58 @@
                         
                         <!-- Energy Sensitivity -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Energy Sensitivity</div>
-                                <div class="control-mini-value" id="mixerFluidityEnergySensitivityValue">1.0</div>
+                            <div class="control-mini-label">Energy Sensitivity</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluidityEnergySensitivityDial" 
+                                     data-min="0.1" data-max="3.0" data-step="0.1" data-value="1.0" data-default="1.0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluidityEnergySensitivityValue">1.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluidityEnergySensitivitySlider" min="0.1" max="3.0" step="0.1" value="1.0">
                         </div>
                         
                         <!-- Viscosity Response -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Viscosity Response</div>
-                                <div class="control-mini-value" id="mixerFluidityViscosityResponseValue">2.0</div>
+                            <div class="control-mini-label">Viscosity Response</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluidityViscosityResponseDial" 
+                                     data-min="0.5" data-max="4.0" data-step="0.1" data-value="2.0" data-default="2.0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluidityViscosityResponseValue">2.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluidityViscosityResponseSlider" min="0.5" max="4.0" step="0.1" value="2.0">
                         </div>
                         
                         <!-- Curl Response -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Curl Response</div>
-                                <div class="control-mini-value" id="mixerFludityCurlResponseValue">3.0</div>
+                            <div class="control-mini-label">Curl Response</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFludityCurlResponseDial" 
+                                     data-min="1.0" data-max="5.0" data-step="0.1" data-value="3.0" data-default="3.0"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFludityCurlResponseValue">3.0</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFludityCurlResponseSlider" min="1.0" max="5.0" step="0.1" value="3.0">
                         </div>
                         
                         <!-- Pressure Response -->
                         <div class="control-mini-group">
-                            <div class="control-mini-header">
-                                <div class="control-mini-label">Pressure Response</div>
-                                <div class="control-mini-value" id="mixerFluidityPressureResponseValue">0.5</div>
+                            <div class="control-mini-label">Pressure Response</div>
+                            <div class="mixer-dial-container">
+                                <svg class="mixer-dial dial-gold" id="mixerFluidityPressureResponseDial" 
+                                     data-min="0.1" data-max="1.0" data-step="0.1" data-value="0.5" data-default="0.5"
+                                     viewBox="0 0 50 50">
+                                    <circle class="dial-bg" cx="25" cy="25" r="18"/>
+                                    <line class="dial-pointer" x1="25" y1="7" x2="25" y2="1"/>
+                                </svg>
+                                <div class="mixer-dial-value" id="mixerFluidityPressureResponseValue">0.5</div>
                             </div>
-                            <input type="range" class="mini-slider" id="mixerFluidityPressureResponseSlider" min="0.1" max="1.0" step="0.1" value="0.5">
                         </div>
                     </div>
                 </div>
