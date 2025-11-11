@@ -100,18 +100,18 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 1. Saturation (0-200%)
         this.addControl('saturation', {
-            type: 'slider',
+            type: 'dial',
             label: 'Saturation',
             min: 0,
             max: 200,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setSaturation(value / 100)
+            onChange: (value) => this.setSaturation(value)
         });
         
         // 2. Posterize (2-16)
         this.addControl('posterize', {
-            type: 'slider',
+            type: 'dial',
             label: 'Posterize',
             min: 2,
             max: 16,
@@ -121,40 +121,40 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 3. Contrast (10-300%)
         this.addControl('contrast', {
-            type: 'slider',
+            type: 'dial',
             label: 'Contrast',
             min: 10,
             max: 300,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setContrast(value / 100)
+            onChange: (value) => this.setContrast(value)
         });
         
         // 4. Brightness (10-300%)
         this.addControl('brightness', {
-            type: 'slider',
+            type: 'dial',
             label: 'Brightness',
             min: 10,
             max: 300,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setBrightness(value / 100)
+            onChange: (value) => this.setBrightness(value)
         });
         
         // 5. Intensity (10-200%)
         this.addControl('intensity', {
-            type: 'slider',
+            type: 'dial',
             label: 'Intensity',
             min: 10,
             max: 200,
             value: 100,
             unit: '%',
-            onChange: (value) => this.setIntensity(value / 100)
+            onChange: (value) => this.setIntensity(value)
         });
         
         // 6. Min Size (0.5-10.0)
         this.addControl('minSize', {
-            type: 'slider',
+            type: 'dial',
             label: 'Min Size',
             min: 0.5,
             max: 10,
@@ -165,7 +165,7 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 7. Max Size (1-10, with pixel conversion)
         this.addControl('maxSize', {
-            type: 'slider',
+            type: 'dial',
             label: 'Max Size',
             min: 1,
             max: 10,
@@ -177,7 +177,7 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 8. Agitate (10-500%)
         this.addControl('agitate', {
-            type: 'slider',
+            type: 'dial',
             label: 'Agitate',
             min: 10,
             max: 500,
@@ -188,7 +188,7 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 9. Density (100-500)
         this.addControl('density', {
-            type: 'slider',
+            type: 'dial',
             label: 'Density',
             min: 100,
             max: 500,
@@ -198,7 +198,7 @@ class BlobsPlugin extends FrequePluginBase {
         
         // 10. Lifespan/Decay (1-10x)
         this.addControl('decay', {
-            type: 'slider',
+            type: 'dial',
             label: 'Lifespan',
             min: 1,
             max: 10,

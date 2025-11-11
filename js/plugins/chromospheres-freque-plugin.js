@@ -106,7 +106,6 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.mappingMode = value ? 'reflection' : 'direct';
-                console.log('🔮 ChromeSphere Mapping:', this.mappingMode);
                 
                 this.applyTextureToSpheres();
                 
@@ -144,7 +143,6 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.envMapSource = value ? 'video' : 'bgimg';
-                console.log('🎬 ChromeSphere Source:', this.envMapSource);
                 
                 this.updateTextureNeeded = true;
                 // Force immediate update instead of waiting for next frame
@@ -160,7 +158,6 @@ class ChromoSpheresPlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.bgSphereVisible = value;
-                console.log('🌍 ChromeSphere Bg Sphere:', value);
                 
                 // Toggle video sphere visibility by changing its layer and rotation
                 if (this.videoSphere) {
@@ -181,7 +178,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Sphere count
         this.addControl('sphereCount', {
-            type: 'slider',
+            type: 'dial',
             label: 'Sphere Count',
             min: 1,
             max: 50,
@@ -194,7 +191,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Size range
         this.addControl('maxSize', {
-            type: 'slider',
+            type: 'dial',
             label: 'Max Size',
             min: 5.0,
             max: 10.0,
@@ -208,7 +205,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Spread
         this.addControl('spreadRadius', {
-            type: 'slider',
+            type: 'dial',
             label: 'Spread',
             min: 5,
             max: 30,
@@ -221,7 +218,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Float speed
         this.addControl('floatSpeed', {
-            type: 'slider',
+            type: 'dial',
             label: 'Float Speed',
             min: 0,
             max: 10,
@@ -235,7 +232,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Metalness
         this.addControl('metalness', {
-            type: 'slider',
+            type: 'dial',
             label: 'Metalness',
             min: 0.0,
             max: 1.0,
@@ -249,7 +246,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Roughness
         this.addControl('roughness', {
-            type: 'slider',
+            type: 'dial',
             label: 'Roughness',
             min: 0.0,
             max: 1.0,
@@ -263,7 +260,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Environment map intensity (for reflection mode)
         this.addControl('envMapIntensity', {
-            type: 'slider',
+            type: 'dial',
             label: 'Reflection Intensity',
             min: 0.0,
             max: 3.0,
@@ -277,7 +274,7 @@ class ChromoSpheresPlugin extends FrequePluginBase {
         
         // Camera distance
         this.addControl('cameraDistance', {
-            type: 'slider',
+            type: 'dial',
             label: 'Camera Distance',
             min: 10,
             max: 40,
@@ -501,6 +498,11 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     }
     
     createSpheres() {
+        // Don't create spheres if scene hasn't been initialized yet
+        if (!this.scene) {
+            return;
+        }
+        
         for (let i = 0; i < this.sphereCount; i++) {
             const sphere = this.createSphere();
             this.spheres.push(sphere);
@@ -929,6 +931,11 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     }
     
     recreateSpheres() {
+        // Don't recreate spheres if scene hasn't been initialized yet
+        if (!this.scene) {
+            return;
+        }
+        
         this.spheres.forEach(sphere => {
             this.scene.remove(sphere.mesh);
             sphere.mesh.geometry.dispose();
@@ -944,6 +951,11 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     }
     
     updateSphereSizes() {
+        // Don't update if scene hasn't been initialized yet
+        if (!this.scene || !this.spheres || this.spheres.length === 0) {
+            return;
+        }
+        
         this.spheres.forEach((sphere) => {
             const newSize = this.minSphereSize + Math.random() * (this.maxSphereSize - this.minSphereSize);
             
@@ -962,6 +974,11 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     }
     
     updateSpherePositions() {
+        // Don't update if scene hasn't been initialized yet
+        if (!this.scene || !this.spheres || this.spheres.length === 0) {
+            return;
+        }
+        
         this.spheres.forEach((sphere) => {
             // Generate new random position within current spread radius
             const angle = Math.random() * Math.PI * 2;
@@ -984,6 +1001,11 @@ class ChromoSpheresPlugin extends FrequePluginBase {
     }
     
     updateSphereMaterials() {
+        // Don't update if scene hasn't been initialized yet
+        if (!this.scene || !this.spheres || this.spheres.length === 0) {
+            return;
+        }
+        
         this.spheres.forEach(sphere => {
             sphere.mesh.material.metalness = this.metalness;
             sphere.mesh.material.roughness = this.roughness;
@@ -1326,7 +1348,6 @@ setTimeout(() => {
     }
     
     if (typeof THREE === 'undefined') {
-        console.error('Chrome Spheres: Three.js not loaded!');
         return;
     }
     
@@ -1339,6 +1360,5 @@ setTimeout(() => {
     try {
         new ChromoSpheresPlugin(window.visualizer);
     } catch (error) {
-        console.error('Failed to load Chrome Spheres:', error);
     }
 }, 500);

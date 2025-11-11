@@ -77,7 +77,6 @@ class PsyquePlugin extends FrequePluginBase {
                 if (!this.colorMorph) {
                     this.colorTime = 0;
                 }
-                console.log(`🎨 PSYQUE Color Scheme: ${this.colorSchemes[this.colorScheme].name}`);
             }
         });
         
@@ -93,9 +92,7 @@ class PsyquePlugin extends FrequePluginBase {
                 // CRITICAL: Reset colorTime when turning OFF to ensure consistent base colors
                 if (!value) {
                     this.colorTime = 0;
-                    console.log('🎨 PSYQUE Color Morph OFF - colorTime reset');
                 } else {
-                    console.log('🎨 PSYQUE Color Morph ON');
                 }
             }
         });
@@ -130,9 +127,7 @@ class PsyquePlugin extends FrequePluginBase {
                 // CRITICAL: Reset animationMorphTime when turning OFF for consistent base state
                 if (!value) {
                     this.animationMorphTime = 0;
-                    console.log('🌀 PSYQUE Animation Morph OFF - morphTime reset');
                 } else {
-                    console.log('🌀 PSYQUE Animation Morph ON');
                 }
             }
         });
@@ -294,7 +289,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.showBackground = value;
-                console.log('🌊 PSYQUE Background:', value);
             }
         });
         
@@ -355,7 +349,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.solidFill = value;
-                console.log('🔲 PSYQUE Solid Interior:', value);
             }
         });
         
@@ -368,7 +361,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.depthLayers = value;
-                console.log('📐 PSYQUE Depth Layers:', value);
             }
         });
         
@@ -381,7 +373,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.sharpEdges = value;
-                console.log('✂️ PSYQUE Sharp Edges:', value);
             }
         });
         
@@ -394,7 +385,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.beatReactive = value;
-                console.log('🎵 PSYQUE Beat React:', value);
             }
         });
         
@@ -407,7 +397,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.edgesBoost = value;
-                console.log('✨ PSYQUE Edges Boost:', value);
             }
         });
         
@@ -420,7 +409,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.bgBoost = value;
-                console.log('🌊 PSYQUE BG Boost:', value);
             }
         });
         
@@ -433,7 +421,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.animSpeedBoost = value;
-                console.log('⚡ PSYQUE Anim Speed Boost:', value);
             }
         });
         
@@ -446,7 +433,6 @@ class PsyquePlugin extends FrequePluginBase {
             className: 'btn-primary-mixer',
             onChange: (value) => {
                 this.rotationBoost = value;
-                console.log('🔄 PSYQUE Rotation Boost:', value);
             }
         });
     }
@@ -605,7 +591,6 @@ class PsyquePlugin extends FrequePluginBase {
 
     // Lifecycle method called after preset is loaded
     onPresetLoad(presetName, presetValues) {
-        console.log(`🎨 PSYQUE: Loading preset "${presetName}"`);
         
         // CRITICAL: Reset all time accumulators to ensure consistent preset appearance
         // Without this, colors/animations vary based on when the preset is loaded
@@ -628,13 +613,11 @@ class PsyquePlugin extends FrequePluginBase {
         this.baseEdge = presetValues.edge || this.edge;
         this.baseIntensity = presetValues.intensity || this.intensity;
         
-        console.log(`✅ PSYQUE: Preset "${presetName}" loaded - Color Scheme ${this.colorScheme}`);
     }
 
     // Toggle Methods - REMOVED (now using checkbox controls with onChange)
 
     onInitialize() {
-        console.log('PSYQUE Plugin initializing...');
         
         // Initialize WebGL2
         this.gl = this.canvas.getContext('webgl2', {
@@ -646,7 +629,6 @@ class PsyquePlugin extends FrequePluginBase {
         });
         
         if (!this.gl) {
-            console.error('WebGL2 not supported!');
             return;
         }
         
@@ -658,7 +640,6 @@ class PsyquePlugin extends FrequePluginBase {
         
         this.resizeCanvas();
         
-        console.log('PSYQUE Plugin initialized successfully');
     }
 
     initShaders() {
@@ -975,7 +956,6 @@ class PsyquePlugin extends FrequePluginBase {
         gl.compileShader(vs);
         
         if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-            console.error('Vertex shader error:', gl.getShaderInfoLog(vs));
             return;
         }
         
@@ -984,7 +964,6 @@ class PsyquePlugin extends FrequePluginBase {
         gl.compileShader(fs);
         
         if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-            console.error('Fragment shader error:', gl.getShaderInfoLog(fs));
             return;
         }
         
@@ -995,7 +974,6 @@ class PsyquePlugin extends FrequePluginBase {
         gl.linkProgram(this.program);
         
         if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            console.error('Program link error:', gl.getProgramInfoLog(this.program));
             return;
         }
         
@@ -1067,7 +1045,6 @@ class PsyquePlugin extends FrequePluginBase {
         // Update WebGL viewport
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
-        console.log(`PSYQUE: Resized to ${this.canvas.width}x${this.canvas.height} (display: ${width}x${height}, DPR: ${dpr})`);
     }
 
     onUpdate(deltaTime, timestamp, sharedAudioData) {
@@ -1087,14 +1064,6 @@ class PsyquePlugin extends FrequePluginBase {
         
         // Beat Reactivity - use MAL's sharedAudioData
         if (this.beatReactive && sharedAudioData && sharedAudioData.frequencies) {
-            // Debug: Log audio data once every 120 frames (~2 seconds)
-            if (Math.random() < 0.0083) {
-                console.log('🎵 PSYQUE Audio Data:', {
-                    energy: sharedAudioData.energy?.toFixed(3),
-                    freqLength: sharedAudioData.frequencies?.length,
-                    beatReactive: this.beatReactive
-                });
-            }
             
             // Get frequency bands from MAL data
             this.frequencyBands = this.getFrequencyBands(sharedAudioData.frequencies);
@@ -1332,9 +1301,7 @@ class PsyquePlugin extends FrequePluginBase {
 // Auto-register plugin
 setTimeout(() => {
     if (window.visualizer && window.FrequePluginBase) {
-        console.log('Registering PSYQUE Plugin...');
         new PsyquePlugin(window.visualizer);
     } else {
-        console.error('Freque visualizer not found. Make sure FrequePluginBase is loaded.');
     }
 }, 500);

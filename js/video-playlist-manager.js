@@ -1,5 +1,4 @@
 // VideoPlaylistManager Class - Handles dynamic video playlist creation and management
-console.log('=== video-playlist-manager.js is loading ===');
 
 class VideoPlaylistManager {
     constructor(visualizer) {
@@ -26,30 +25,25 @@ class VideoPlaylistManager {
         try {
             const handle = await this.loadFolderHandle();
             if (handle) {
-                console.log('Found saved folder handle, attempting to restore...');
                 
                 // Request permission
                 const permission = await handle.queryPermission({ mode: 'read' });
                 if (permission === 'granted') {
-                    console.log('Permission already granted, auto-rescanning folder...');
                     this.folderHandle = handle;
                     // Small delay to ensure UI is ready
                     setTimeout(() => {
                         this.rescanSavedFolder();
                     }, 1000);
                 } else {
-                    console.log('Permission not granted, user will need to manually add folder');
                 }
             }
         } catch (error) {
-            console.log('Could not auto-load folder:', error.message);
         }
     }
     
     async rescanSavedFolder() {
         if (!this.folderHandle) return;
         
-        console.log('Rescanning saved folder...');
         this.isScanning = true;
         this.scanCancelled = false;
         
@@ -75,11 +69,9 @@ class VideoPlaylistManager {
             if (videoFiles.length === 0) {
                 this.hideProgress();
                 this.isScanning = false;
-                console.log('No video files found in folder');
                 return;
             }
             
-            console.log(`Found ${videoFiles.length} video files, processing...`);
             
             // Process the files
             const videos = await this.processFilesWithProgress(videoFiles);
@@ -93,7 +85,6 @@ class VideoPlaylistManager {
                 hasCustomOrder: false
             };
             
-            console.log(`Processed ${this.currentPlaylist.videos.length} videos successfully`);
             
             // Save and display
             this.savePlaylist();
@@ -101,7 +92,6 @@ class VideoPlaylistManager {
             this.hideProgress();
             
         } catch (error) {
-            console.error('Error rescanning folder:', error);
             this.hideProgress();
         } finally {
             this.isScanning = false;
@@ -209,12 +199,10 @@ class VideoPlaylistManager {
                     // Create object store for folder handles
                     if (!db.objectStoreNames.contains('folderHandles')) {
                         const store = db.createObjectStore('folderHandles', { keyPath: 'id' });
-                        console.log('Created folderHandles object store for video playlist');
                     }
                 };
             });
         } catch (error) {
-            console.error('IndexedDB initialization failed:', error);
             return null;
         }
     }
@@ -237,7 +225,6 @@ class VideoPlaylistManager {
             await store.put(folderData);
             
         } catch (error) {
-            console.error('Error storing folder handle:', error);
         }
     }
     
@@ -263,7 +250,6 @@ class VideoPlaylistManager {
             });
             
         } catch (error) {
-            console.error('Error loading folder handle:', error);
             return null;
         }
     }
@@ -284,7 +270,6 @@ class VideoPlaylistManager {
                 }
             }
         } catch (error) {
-            console.error('Error loading cached video playlist:', error);
             this.currentPlaylist = null;
         }
     }
@@ -316,7 +301,6 @@ class VideoPlaylistManager {
                 localStorage.setItem('freque_video_playlist', JSON.stringify(serializablePlaylist));
             }
         } catch (error) {
-            console.error('Error saving video playlist:', error);
         }
     }
     
@@ -332,7 +316,6 @@ class VideoPlaylistManager {
                 localStorage.setItem('freque_video_current_file', JSON.stringify(currentVideoData));
             }
         } catch (error) {
-            console.error('Error saving current video:', error);
         }
     }
     
@@ -372,13 +355,11 @@ class VideoPlaylistManager {
                 }
             }
         } catch (error) {
-            console.error('Error loading current video:', error);
         }
     }
     
     async scanFolder() {
         if (this.isScanning) {
-            console.log('Scan already in progress');
             return;
         }
         
@@ -434,9 +415,7 @@ class VideoPlaylistManager {
             
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Folder selection cancelled');
             } else {
-                console.error('Error scanning folder:', error);
                 alert(`Error scanning folder: ${error.message}`);
             }
             this.hideProgress();
@@ -453,7 +432,6 @@ class VideoPlaylistManager {
                     const ext = entry.name.split('.').pop().toLowerCase();
                     if (this.supportedFormats.includes(ext)) {
                         if (files.length >= this.maxFiles) {
-                            console.warn(`Maximum file limit (${this.maxFiles}) reached`);
                             break;
                         }
                         const file = await entry.getFile();
@@ -472,7 +450,6 @@ class VideoPlaylistManager {
                 if (this.scanCancelled) break;
             }
         } catch (error) {
-            console.error('Error scanning directory:', error);
             throw new Error('Failed to scan directory. Please check folder permissions.');
         }
         
@@ -497,7 +474,6 @@ class VideoPlaylistManager {
                     this.updateProgress(i + index, totalFiles, `Processing: ${file.name}`);
                     return await this.extractMetadata(file);
                 } catch (error) {
-                    console.warn(`Skipping file ${file.name}:`, error);
                     return null;
                 }
             });
@@ -563,7 +539,6 @@ class VideoPlaylistManager {
     cancelScan() {
         this.scanCancelled = true;
         this.isScanning = false;
-        console.log('Video playlist scan cancelled by user');
         
         const progress = document.getElementById('videoPlaylistProgress');
         if (progress) {
@@ -598,7 +573,6 @@ class VideoPlaylistManager {
             return video;
             
         } catch (error) {
-            console.error(`Failed to process ${file.name}:`, error);
             return null;
         }
     }
@@ -661,26 +635,18 @@ class VideoPlaylistManager {
     }
     
     displayPlaylist() {
-        console.log('=== displayPlaylist called ===');
         const container = document.getElementById('videoPlaylistContainer');
-        console.log('Container found:', !!container);
         if (!container) return;
         
-        console.log('Current playlist:', this.currentPlaylist);
-        console.log('Videos count:', this.currentPlaylist?.videos?.length);
-        
         if (!this.currentPlaylist || !this.currentPlaylist.videos || this.currentPlaylist.videos.length === 0) {
-            console.log('Displaying empty playlist');
             this.displayEmptyPlaylist();
             return;
         }
         
         const videos = this.currentPlaylist.videos;
         const containerInner = document.getElementById('videoPlaylistTracks');
-        console.log('Tracks container found:', !!containerInner);
         if (!containerInner) return;
         
-        console.log('Rendering', videos.length, 'videos');
         let html = '';
         videos.forEach((video, index) => {
             // Check if video has file object (means it's playable)
@@ -707,12 +673,9 @@ class VideoPlaylistManager {
             `;
         });
         
-        console.log('Setting innerHTML...');
         containerInner.innerHTML = html;
-        console.log('Updating stats and initializing handlers...');
         this.updatePlaylistStats();
         this.initializeVideoHandlers();
-        console.log('displayPlaylist complete');
     }
     
     displayEmptyPlaylist() {
@@ -883,14 +846,10 @@ class VideoPlaylistManager {
     playVideo(index) {
         const video = this.findVideoByIndex(index);
         if (!video) {
-            console.error('Video not found at index:', index);
             return;
         }
         
-        console.log('Playing video:', video.filename, 'File object:', !!video.file);
-        
         if (!video.file) {
-            console.error('Video file object is missing!');
             alert('This video needs to be re-scanned. Click "Add Folder" and select the same folder to make videos playable again.');
             return;
         }
@@ -917,13 +876,7 @@ class VideoPlaylistManager {
         
         // Play video using visualizer's video file system
         if (this.visualizer && video.file) {
-            console.log('Calling startVideoFile with file object');
             this.visualizer.startVideoFile(video.file);
-        } else {
-            console.error('Visualizer or file missing:', {
-                hasVisualizer: !!this.visualizer,
-                hasFile: !!video.file
-            });
         }
     }
     
@@ -993,7 +946,6 @@ class VideoPlaylistManager {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } catch (error) {
-            console.error('Error exporting playlist:', error);
             alert('Failed to export playlist');
         }
     }
@@ -1024,7 +976,6 @@ class VideoPlaylistManager {
             this.displayPlaylist();
             
         } catch (error) {
-            console.error('Error importing playlist:', error);
             alert(`Failed to import playlist: ${error.message}`);
         }
     }
@@ -1032,5 +983,4 @@ class VideoPlaylistManager {
 
 // Explicitly attach to window object
 window.VideoPlaylistManager = VideoPlaylistManager;
-console.log('=== VideoPlaylistManager attached to window ===', typeof window.VideoPlaylistManager);
 
