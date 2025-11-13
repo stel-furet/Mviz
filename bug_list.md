@@ -8,8 +8,10 @@
 - ✅ **Fix ChromeSphere Beat React**: COMPLETE - Fixed by adding `frequencies` and `dataArray` properties to `generateBasicAudioFeatures()` in spectrum-analyzer.js. The Master Animation Loop now provides complete audio data (including frequency arrays) to all plugins via `sharedAudioData`, enabling beat reactivity and all audio-driven effects to work correctly.
 - ✅ **AM Viz Opacity Fix**: COMPLETE - Opacity set to full opacity (1.0) by default (handled by user)
 - ✅ **AM Visualization Mode Persistence**: COMPLETE - Visualization mode selection (0-10) now persists across sessions. `currentMode` is saved to localStorage whenever changed via `setVisualizationMode()` or `setOfficialAudioMotionPreset()`. On app restart, the saved mode is restored - regular modes (0-6) load via `initAudioMotion()`, Pro presets (7-10) load automatically after initialization. Fixed plugin-mixer-integration.js error that was preventing proper control creation.
-- **Video Folder Playlist**: Add ability to load folder of videos and duplicate audio playlist functionality. Make "Video From File" choice persistent in the same manner as Background Image (save to localStorage and restore on app restart)
-- **Mixer Sliders to Dials**: Change all mixer horizontal sliders to dials for better UX and consistency
+- ✅ **Video Folder Playlist**: COMPLETE - Implemented full video playlist functionality with folder scanning, thumbnail generation, metadata parsing, persistence, and auto-rescan. Video file choice persists in localStorage and restores on app restart.
+- ✅ **Mixer Sliders to Dials**: COMPLETE - Converted 70 sliders to dials across 7 visualization systems (Chromospheres, Psyque, Nebula, Blobs, Fluidity, Starfall, Infinite Zoom). All with proper initialization, value handling, and sync where needed. Kaleidoscope sliders left as-is (would require creating new event handlers from scratch).
+- **AM Vis ON/OFF Toggle Not Working for Advanced Visualizations**: The AM Visualizer ON/OFF toggle button does not turn on/off advanced (Pro) visualizations, only regular AM visualizations work with the toggle.
+- **Kaleidoscope Toggle Affects Plugins**: In the Kaleidoscope header section, turning off AM viz also incorrectly toggles off plugins. The AM viz toggle should only affect AudioMotion visualizations, not plugin visualizations.
 - **AM Preset Export Causes App Relaunch**: When exporting the AM visualizations user-generated presets list, an "export successful" toaster message appears, then the app immediately relaunches/reloads. This should not happen - export should complete without reload.
 - **Smooth Color Morphing When Morph ON**: AM visualization morph transitions are abrupt - need smooth color interpolation between presets. Requires changes to core AM library.
 - **Background Opacity Slider for All AM Viz**: Add universal background opacity slider that covers all AudioMotion visualizations (regular and advanced)
@@ -18,11 +20,11 @@
 - **Audio Priority System Bug**: When video from file and playlist audio are both playing, visualizations are incorrectly driven by video file audio instead of playlist audio. Simple fix needed: If playlist play buttons are toggled on, video from file should be muted. When playlist is toggled off, video from file should stay muted. Live audio input should mute everything else and take priority.
 - **Debug Code Cleanup Required**: Remove all debug code completely (not commented) and remove all previously commented code throughout entire codebase
 - **Background Color Not Respected by Record/Live Display**: Background color (B button in header) not respected by record or live display
-- **Mixer Panel Collapsible**: Make mixer collapsible to just handles, labels, and ON/OFF toggles with expand button
-- **Dial Double-Click Reset**: Double clicking on a dial should set the value back to its default setting
-- **Video Playlist Auto-Play**: When selecting the V button, video playlist starts playing automatically. It should not play until one of the play buttons is selected
-- **PSYCH Plugin Flow Complexity Bug**: PSYCH plugin flow complexity causes animation to zoom (should not affect zoom)
-- **Remove Console Code from Plugins**: Remove all console.log and debug code from all plugins
+- ✅ **Mixer Panel Collapsible**: COMPLETE - Added collapse button next to Peek button. When collapsed, mixer shows only handle, name, and ON/OFF toggle. Smooth height transition animation. Channels remain horizontally scrollable and reorderable. State persists to localStorage. Collapsed state changes header styling with subtle background highlight.
+- ✅ **Dial Double-Click Reset**: COMPLETE - Double clicking on a dial sets value back to default setting stored in data-default attribute
+- ✅ **Video Playlist Auto-Play**: COMPLETE - Video playlist no longer auto-plays when V button selected
+- ✅ **PSYCH Plugin Flow Complexity Bug**: COMPLETE - Fixed shader code to prevent flow complexity from affecting zoom
+- ✅ **Remove Console Code from Plugins**: COMPLETE - Removed all console.log and debug code from all plugins
 
 ### Recently Completed (Latest Session)
 - ✅ **Plugin Removal Not Detected**: Fixed missing `unregisterPlugin()` method in FrequePluginManager and `removePluginChannelStrip()` in PluginMixerIntegration. Modified PluginAutoLoader polling to immediately unload missing plugins instead of just marking them. When plugins are removed from the plugins folder, they now automatically disappear from the mixer within 12 seconds (polling interval), or immediately when "Refresh Plugins" is clicked. The complete cleanup chain removes channel strips, all kaleidoscope toggles (mixer, header, display captures), state variables, and updates localStorage.

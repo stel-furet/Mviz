@@ -151,12 +151,12 @@ class PluginMixerIntegration {
                     <path d="M4 3 L12 3 L12 5 L4 5 Z" fill="currentColor" opacity="0.5"/>
                 </svg>
             </div>
-            <div class="channel-header">${plugin.metadata.name}</div>
+            <div class="channel-header" data-hide-label="true">${plugin.metadata.name}</div>
             
             <!-- ON/OFF Toggle -->
             <div class="channel-toggle-section">
                 <button class="btn-toggle plugin-power-btn" data-plugin="${plugin.pluginName}" title="Toggle ${plugin.metadata.name}">
-                    <span class="toggle-text">OFF</span>
+                    <span class="toggle-text">${plugin.metadata.name}</span>
                 </button>
             </div>
             
@@ -371,15 +371,13 @@ class PluginMixerIntegration {
         if (!plugin || !channelStrip) return;
         
         const powerBtn = channelStrip.querySelector('.plugin-power-btn');
-        const toggleText = channelStrip.querySelector('.toggle-text');
         
-        if (powerBtn && toggleText) {
+        if (powerBtn) {
+            // Update button state only - text stays as plugin name
             if (plugin.isActive) {
                 powerBtn.classList.add('active');
-                toggleText.textContent = 'ON';
             } else {
                 powerBtn.classList.remove('active');
-                toggleText.textContent = 'OFF';
             }
         }
     }

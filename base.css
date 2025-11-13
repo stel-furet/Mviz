@@ -203,8 +203,8 @@ body {
 }
 
 .btn-toggle.active {
-    background: var(--accent-color);
-    color: white;
+    background: var(--info-color);
+    color: var(--text-secondary);
 }
 
 /* Special case for visualization buttons - use info-color for active state */
@@ -1458,6 +1458,34 @@ html body .slider-2-wrapper .slider-2-value {
     text-overflow: ellipsis;
 }
 
+/* Hide channel headers that have data-hide-label attribute - CRITICAL RULE */
+.channel-header[data-hide-label="true"],
+.channel-strip .channel-header[data-hide-label="true"],
+.mixer-channels .channel-header[data-hide-label="true"] {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    max-height: 0 !important;
+}
+
+/* Ensure hidden headers stay hidden in minimized state */
+.mixer-channels.mixer-minimized .channel-header[data-hide-label="true"],
+.mixer-channels.mixer-minimized .channel-strip .channel-header[data-hide-label="true"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Ensure hidden headers stay hidden in expanded state */
+.channel-strip.expanded .channel-header[data-hide-label="true"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
 /* Channel Drag Button */
 .channel-drag-button {
     height: 10px;
@@ -1495,6 +1523,11 @@ html body .slider-2-wrapper .slider-2-value {
 .channel-drag-button.placeholder:hover {
     background: var(--bg-secondary);
     opacity: 0.8;
+}
+
+/* In minimized mixer, placeholder handles should be clickable for expand */
+.mixer-channels.mixer-minimized .channel-drag-button.placeholder {
+    cursor: pointer !important;
 }
 
 .drag-placeholder {
@@ -1587,6 +1620,188 @@ html body .slider-2-wrapper .slider-2-value {
 .btn-toggle-peek.peeking {
     background: rgba(255, 255, 255, 0.8);
     color: var(--primary-bg);
+}
+
+/* Mixer Minimized State */
+.mixer-panel-floating.mixer-minimized {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: auto !important;
+    max-height: 148px !important;
+    overflow: visible !important; /* CRITICAL: Allow expanded strips to show */
+    transition: all 0.3s ease;
+    /* NO position: relative - must stay fixed for JS positioning */
+}
+
+.mixer-panel-floating.mixer-minimized .panel-header {
+    display: none !important;
+}
+
+/* Frame styling applied directly to panel-content */
+.mixer-panel-floating.mixer-minimized .panel-content {
+    background: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    padding: 12px 8px 4px 4px !important; /* Frame padding: 12px top, 8px right, 4px bottom, 4px left */
+    height: auto !important;
+    max-height: 122px !important;
+    overflow: visible !important; /* CRITICAL: Allow expanded strips to show */
+    transition: all 0.3s ease;
+}
+
+.mixer-channels.mixer-minimized {
+    height: auto !important;
+    max-height: 148px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important; /* CRITICAL: Allow strips to expand upward */
+    /* NO position: relative - strips will be positioned at body level when expanded */
+}
+
+.mixer-channels.mixer-minimized .channel-strip {
+    height: auto !important;
+    min-height: auto !important;
+    padding: 8px;
+    background: var(--secondary-bg) !important;
+    transition: all 0.3s ease;
+    overflow-y: auto !important; /* Allow scrolling within strip */
+    max-height: 148px !important; /* Match container height */
+}
+
+/* Exception: Expanded strips override minimized height constraints */
+.mixer-channels.mixer-minimized .channel-strip.expanded {
+    height: 85vh !important;
+    padding: 16px !important;
+    max-height: 85vh !important;
+}
+
+/* Hide mixer info panel when minimized */
+.mixer-minimized .mixer-info-panel,
+.mixer-minimized #mixer-info-panel {
+    display: none !important;
+}
+
+/* Keep channel-toggle-section visible */
+.mixer-channels.mixer-minimized .channel-toggle-section {
+    display: flex !important;
+}
+
+/* Keep header visible but compact in minimized state */
+.mixer-channels.mixer-minimized .channel-header {
+    margin-bottom: 8px;
+    padding: 6px 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    height: auto !important;
+    min-height: fit-content !important;
+    line-height: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* Keep channel name, toggle section, and handle visible when minimized */
+.mixer-channels.mixer-minimized .channel-name,
+.mixer-channels.mixer-minimized .channel-toggle-section,
+.mixer-channels.mixer-minimized .channel-toggle,
+.mixer-channels.mixer-minimized .channel-drag-button {
+    display: flex !important;
+}
+
+/* Make drag button clickable and show it's interactive */
+.mixer-channels.mixer-minimized .channel-drag-button {
+    cursor: pointer;
+}
+
+.mixer-channels.mixer-minimized .channel-drag-button:hover {
+    opacity: 0.7;
+}
+
+/* Individual Channel Strip Expanded State */
+/* When expanded, strip is moved to body level with position: fixed */
+/* Positioning is applied via inline styles in JavaScript */
+.channel-strip.expanded {
+    /* Base styles only - position/left/bottom set via JS */
+    height: 85vh !important;
+    width: var(--expanded-width) !important;
+    min-width: var(--expanded-width) !important;
+    max-width: var(--expanded-width) !important;
+    background: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    transition: height 0.3s ease, box-shadow 0.3s ease !important;
+    flex-shrink: 0 !important;
+    z-index: 10002 !important; /* Above everything */
+    padding: 12px 8px !important; /* Restore normal padding */
+    box-sizing: border-box !important;
+}
+
+/* Fix vertical slider centering in expanded strips */
+.channel-strip.expanded .vertical-slider-container {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.channel-strip.expanded .vertical-slider-wrapper {
+    margin: 0 auto !important;
+}
+
+/* Fix collapsible header arrow display and layout */
+.channel-strip.expanded .collapsible-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.channel-strip.expanded .collapse-indicator {
+    display: block !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 4px solid var(--text-secondary) !important;
+    border-top: 3px solid transparent !important;
+    border-bottom: 3px solid transparent !important;
+    flex-shrink: 0 !important;
+}
+
+/* Placeholder for expanded strips - maintains space in flow */
+.expanded-placeholder {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    flex-shrink: 0 !important;
+}
+
+/* Show all controls when individual strip is expanded */
+.channel-strip.expanded .channel-controls-section,
+.channel-strip.expanded .vertical-slider-container,
+.channel-strip.expanded .channel-presets,
+.channel-strip.expanded .control-mini-group,
+.channel-strip.expanded .collapsible-content,
+.channel-strip.expanded .collapsible-header,
+.channel-strip.expanded .control-group,
+.channel-strip.expanded .channel-input-section,
+.channel-strip.expanded .energy-container,
+.channel-strip.expanded .energy-bar,
+.channel-strip.expanded [data-control="knockoutBackgroundToggle"],
+.channel-strip.expanded .btn-toggle,
+.channel-strip.expanded .control-btn,
+.channel-strip.expanded button {
+    display: block !important;
+}
+
+/* Make handle cursor indicate it's clickable */
+.mixer-channels.mixer-minimized .channel-handle {
+    cursor: pointer;
+}
+
+.mixer-channels.mixer-minimized .channel-handle:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Close Panel Button */

@@ -549,13 +549,10 @@ class MultiDisplayManager {
     updateMixerVideoToggleButton() {
         const mixerVideoToggle = document.getElementById('mixerVideoToggle');
         if (mixerVideoToggle) {
-            const text = mixerVideoToggle.querySelector('.video-text');
-            if (text && this.visualizer) {
+            if (this.visualizer) {
                 const isOn = this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file';
                 
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
+                // Update button state only - text stays as "Video Input"
                 if (isOn) {
                     mixerVideoToggle.classList.add('active');
                 } else {
@@ -768,14 +765,12 @@ class MultiDisplayManager {
         if (mixerFluidityToggle && this.visualizer) {
             // Check the actual fluid dynamics state, not fluidDynamicsEnabled
             const isActive = this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive;
-            const toggleText = mixerFluidityToggle.querySelector('.toggle-text');
             
+            // Update button state only - text stays as "Fluidity"
             if (isActive) {
                 mixerFluidityToggle.classList.add('active');
-                if (toggleText) toggleText.textContent = 'ON';
             } else {
                 mixerFluidityToggle.classList.remove('active');
-                if (toggleText) toggleText.textContent = 'OFF';
             }
         } else {
             console.error('❌ Mixer Fluidity toggle not found for update');
@@ -907,10 +902,8 @@ class MultiDisplayManager {
         const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
         if (mixerInfiniteZoomToggle && this.visualizer) {
             const isActive = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
-            const toggleText = mixerInfiniteZoomToggle.querySelector('.toggle-text');
-            if (toggleText) {
-                toggleText.textContent = isActive ? 'ON' : 'OFF';
-            }
+            
+            // Update button state only - text stays as "Infinite Zoom"
             if (isActive) {
                 mixerInfiniteZoomToggle.classList.add('active');
             } else {
@@ -1022,18 +1015,13 @@ class MultiDisplayManager {
     updateMixerStarfallToggle() {
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle && this.visualizer) {
-            const text = mixerStarfallToggle.querySelector('.toggle-text');
-            if (text) {
-                const isOn = this.visualizer.webglEnabled;
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerStarfallToggle.classList.add('active');
-                } else {
-                    mixerStarfallToggle.classList.remove('active');
-                }
+            const isOn = this.visualizer.webglEnabled;
+            
+            // Update button state only - text stays as "Starfall"
+            if (isOn) {
+                mixerStarfallToggle.classList.add('active');
+            } else {
+                mixerStarfallToggle.classList.remove('active');
             }
         }
     }

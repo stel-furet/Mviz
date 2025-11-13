@@ -5597,14 +5597,11 @@ class RecordManager {
         
         const mixerBackgroundToggle = document.getElementById('mixerBackgroundToggle');
         if (mixerBackgroundToggle) {
-            const text = mixerBackgroundToggle.querySelector('.background-text');
-            if (text && this.visualizer) {
+            if (this.visualizer) {
                 const isEnabled = this.visualizer.backgroundImageEnabled;
                 const hasImage = !!this.visualizer.backgroundImage;
                 
-                text.textContent = isEnabled ? 'ON' : 'OFF';
-                
-                // Update button state
+                // Update button state only - text stays as "Background Image"
                 if (isEnabled && hasImage) {
                     mixerBackgroundToggle.classList.add('active');
                 } else {
@@ -6030,18 +6027,13 @@ class RecordManager {
     updateMixerAudioToggle() {
         const mixerAudioToggle = document.getElementById('mixerAudioToggle');
         if (mixerAudioToggle && this.visualizer) {
-            const text = mixerAudioToggle.querySelector('.toggle-text');
-            if (text) {
-                const isOn = this.visualizer.liveAudioEnabled;
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerAudioToggle.classList.add('active');
-                } else {
-                    mixerAudioToggle.classList.remove('active');
-                }
+            const isOn = this.visualizer.liveAudioEnabled;
+            
+            // Update button state only - text stays as "Audio Input"
+            if (isOn) {
+                mixerAudioToggle.classList.add('active');
+            } else {
+                mixerAudioToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer audio toggle not found for update');
@@ -6102,18 +6094,13 @@ class RecordManager {
     updateMixerAMToggle() {
         const mixerAMToggle = document.getElementById('mixerAMToggle');
         if (mixerAMToggle && this.visualizer) {
-            const text = mixerAMToggle.querySelector('.toggle-text');
-            if (text) {
-                const isOn = this.visualizer.visualizationEnabled;
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerAMToggle.classList.add('active');
-                } else {
-                    mixerAMToggle.classList.remove('active');
-                }
+            const isOn = this.visualizer.visualizationEnabled;
+            
+            // Update button state only - text stays as "AM Visualizer"
+            if (isOn) {
+                mixerAMToggle.classList.add('active');
+            } else {
+                mixerAMToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer AM toggle not found for update');
@@ -6258,18 +6245,13 @@ class RecordManager {
     updateMixerInfiniteZoomToggle() {
         const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
         if (mixerInfiniteZoomToggle && this.visualizer) {
-            const text = mixerInfiniteZoomToggle.querySelector('.toggle-text');
-            if (text) {
-                const isOn = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerInfiniteZoomToggle.classList.add('active');
-        } else {
-                    mixerInfiniteZoomToggle.classList.remove('active');
-                }
+            const isOn = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
+            
+            // Update button state only - text stays as "Infinite Zoom"
+            if (isOn) {
+                mixerInfiniteZoomToggle.classList.add('active');
+            } else {
+                mixerInfiniteZoomToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer Infinite Zoom toggle not found for update');
@@ -6527,18 +6509,13 @@ class RecordManager {
     updateMixerStarfallToggle() {
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle && this.visualizer) {
-            const text = mixerStarfallToggle.querySelector('.toggle-text');
-            if (text) {
-                const isOn = this.visualizer.webglEnabled;
-                
-                text.textContent = isOn ? 'ON' : 'OFF';
-                
-                // Update button state
-                if (isOn) {
-                    mixerStarfallToggle.classList.add('active');
-                } else {
-                    mixerStarfallToggle.classList.remove('active');
-                }
+            const isOn = this.visualizer.webglEnabled;
+            
+            // Update button state only - text stays as "Starfall"
+            if (isOn) {
+                mixerStarfallToggle.classList.add('active');
+            } else {
+                mixerStarfallToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer Starfall toggle not found for update');
@@ -6656,14 +6633,12 @@ class RecordManager {
         if (mixerFluidityToggle && this.visualizer) {
             // Check the actual fluid dynamics state, not fluidDynamicsEnabled
             const isActive = this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive;
-            const toggleText = mixerFluidityToggle.querySelector('.toggle-text');
             
+            // Update button state only - text stays as "Fluidity"
             if (isActive) {
                 mixerFluidityToggle.classList.add('active');
-                if (toggleText) toggleText.textContent = 'ON';
             } else {
                 mixerFluidityToggle.classList.remove('active');
-                if (toggleText) toggleText.textContent = 'OFF';
             }
         } else {
             // console.error('❌ Mixer Fluidity toggle not found for update');
@@ -21076,6 +21051,12 @@ https://rogueamoeba.com/loopback/
                 // Setup peek button functionality when mixer opens
                 this.setupPeekButton();
                 
+                // Setup minimize functionality when mixer opens
+                this.setupMixerMinimize();
+                
+                // Setup keyboard shortcut (only once)
+                this.setupMixerKeyboardShortcut();
+                
                 // Setup collapsible preset sections with small delay to ensure DOM is ready
                 setTimeout(() => {
                 this.setupCollapsiblePresets();
@@ -21148,6 +21129,299 @@ https://rogueamoeba.com/loopback/
             document.addEventListener('keydown', this.handlePeekKeyDown);
             document.addEventListener('keyup', this.handlePeekKeyUp);
         }
+    }
+
+    setupMixerMinimize() {
+        const mixerPanel = document.getElementById('mixerPanel');
+        const mixerChannels = document.querySelector('.mixer-channels');
+        const panelHeader = mixerPanel ? mixerPanel.querySelector('.panel-header') : null;
+        
+        if (!mixerPanel || !mixerChannels || !panelHeader) return;
+        
+        // Load saved minimized state from localStorage
+        const savedState = localStorage.getItem('freque_mixer_minimized');
+        const isMinimized = savedState === 'true';
+        
+        if (isMinimized) {
+            mixerPanel.classList.add('mixer-minimized');
+            mixerChannels.classList.add('mixer-minimized');
+        }
+        
+        // Function to toggle minimize/maximize
+        const toggleMixerMinimize = () => {
+            const isCurrentlyMinimized = mixerPanel.classList.contains('mixer-minimized');
+            
+            if (isCurrentlyMinimized) {
+                // Maximize
+                mixerPanel.classList.remove('mixer-minimized');
+                mixerChannels.classList.remove('mixer-minimized');
+                localStorage.setItem('freque_mixer_minimized', 'false');
+                
+                // Collapse any expanded individual strips
+                document.querySelectorAll('.channel-strip.expanded').forEach(strip => {
+                    strip.classList.remove('expanded');
+                    strip.style.removeProperty('--expanded-left');
+                    strip.style.removeProperty('--expanded-width');
+                    
+                    // Remove placeholder
+                    const placeholder = strip.previousElementSibling;
+                    if (placeholder && placeholder.classList.contains('expanded-placeholder')) {
+                        placeholder.remove();
+                    }
+                });
+            } else {
+                // Minimize
+                mixerPanel.classList.add('mixer-minimized');
+                mixerChannels.classList.add('mixer-minimized');
+                localStorage.setItem('freque_mixer_minimized', 'true');
+            }
+        };
+        
+        // Store the toggle function on the instance so we can use it elsewhere
+        this.toggleMixerMinimize = toggleMixerMinimize;
+        
+        // Double-click on panel header to toggle minimize/maximize
+        panelHeader.addEventListener('dblclick', (e) => {
+            // Don't trigger if double-clicking on buttons
+            if (e.target.closest('button')) return;
+            toggleMixerMinimize();
+        });
+        
+        // Setup double-click on channel handles to expand individual strips
+        this.setupChannelHandleExpand();
+    }
+    
+    setupMixerKeyboardShortcut() {
+        // Keyboard shortcut: 'v' key to toggle mixer minimize/maximize
+        // Only set up once, not every time mixer opens
+        if (this._mixerKeyboardSet) return;
+        this._mixerKeyboardSet = true;
+        
+        document.addEventListener('keydown', (e) => {
+            const mixerPanel = document.getElementById('mixerPanel');
+            if (!mixerPanel) return;
+            
+            // Only if mixer panel is visible and no input elements are focused
+            const computedStyle = window.getComputedStyle(mixerPanel);
+            const isVisible = computedStyle.display !== 'none';
+            
+            if (isVisible && 
+                !['INPUT', 'TEXTAREA'].includes(e.target.tagName) &&
+                e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+                
+                // Call the toggle function if it exists
+                if (this.toggleMixerMinimize) {
+                    this.toggleMixerMinimize();
+                }
+            }
+        });
+    }
+    
+    setupChannelHandleExpand() {
+        const mixerChannels = document.querySelector('.mixer-channels');
+        if (!mixerChannels) return;
+        
+        // Use event delegation for dynamically added strips
+        mixerChannels.addEventListener('dblclick', (e) => {
+            const handle = e.target.closest('.channel-drag-button');
+            if (!handle) return;
+            
+            // Only work when mixer is minimized
+            if (!mixerChannels.classList.contains('mixer-minimized')) return;
+            
+            const channelStrip = handle.closest('.channel-strip');
+            if (!channelStrip) return;
+            
+            // Prevent drag behavior
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Toggle expanded state on this strip
+            const isExpanded = channelStrip.classList.contains('expanded');
+            
+            if (isExpanded) {
+                // Collapse this strip - return to container
+                channelStrip.classList.remove('expanded');
+                channelStrip.style.removeProperty('--expanded-width');
+                
+                // Return strip to original position in container
+                if (channelStrip._originalParent && channelStrip._originalNextSibling) {
+                    channelStrip._originalParent.insertBefore(channelStrip, channelStrip._originalNextSibling);
+                } else if (channelStrip._originalParent) {
+                    channelStrip._originalParent.appendChild(channelStrip);
+                }
+                
+                // Clear inline positioning styles
+                channelStrip.style.position = '';
+                channelStrip.style.left = '';
+                channelStrip.style.bottom = '';
+                
+                // Clear stored references
+                delete channelStrip._originalParent;
+                delete channelStrip._originalNextSibling;
+                
+                // Remove placeholder if exists
+                const placeholder = document.querySelector('.expanded-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+            } else {
+                // Collapse all other expanded strips first
+                document.querySelectorAll('.channel-strip.expanded').forEach(strip => {
+                    strip.classList.remove('expanded');
+                    strip.style.removeProperty('--expanded-width');
+                    
+                    // Return to original parent
+                    if (strip._originalParent && strip._originalNextSibling) {
+                        strip._originalParent.insertBefore(strip, strip._originalNextSibling);
+                    } else if (strip._originalParent) {
+                        strip._originalParent.appendChild(strip);
+                    }
+                    
+                    // Clear inline styles
+                    strip.style.position = '';
+                    strip.style.left = '';
+                    strip.style.bottom = '';
+                    
+                    // Clear stored references
+                    delete strip._originalParent;
+                    delete strip._originalNextSibling;
+                    
+                    // Remove their placeholders
+                    const ph = document.querySelector('.expanded-placeholder');
+                    if (ph) {
+                        ph.remove();
+                    }
+                });
+                
+                // Get strip's exact width and viewport position BEFORE moving it
+                const stripWidth = channelStrip.offsetWidth;
+                const stripRect = channelStrip.getBoundingClientRect();
+                const viewportLeft = stripRect.left;
+                const viewportBottom = window.innerHeight - stripRect.bottom;
+                
+                console.log('Expanding strip:', { 
+                    viewportLeft: viewportLeft,
+                    viewportBottom: viewportBottom,
+                    stripWidth: stripWidth
+                });
+                
+                // Store original parent and position for collapse
+                channelStrip._originalParent = mixerChannels;
+                channelStrip._originalNextSibling = channelStrip.nextSibling;
+                
+                // Create a placeholder to maintain the space in the flow
+                const placeholder = document.createElement('div');
+                placeholder.className = 'channel-strip expanded-placeholder';
+                placeholder.style.width = `${stripWidth}px`;
+                placeholder.style.minWidth = `${stripWidth}px`;
+                placeholder.style.maxWidth = `${stripWidth}px`;
+                placeholder.style.height = 'auto';
+                placeholder.style.visibility = 'hidden';
+                placeholder.style.flexShrink = '0';
+                placeholder.style.pointerEvents = 'none';
+                
+                // Insert placeholder where strip was
+                mixerChannels.insertBefore(placeholder, channelStrip);
+                
+                // Move strip to body level
+                document.body.appendChild(channelStrip);
+                
+                // Set CSS variable for width
+                channelStrip.style.setProperty('--expanded-width', `${stripWidth}px`);
+                
+                // Apply fixed positioning at viewport coordinates
+                channelStrip.style.position = 'fixed';
+                channelStrip.style.left = `${viewportLeft}px`;
+                channelStrip.style.bottom = `${viewportBottom}px`;
+                
+                // Add expanded class
+                channelStrip.classList.add('expanded');
+                
+                // Add scroll listener to update position when container scrolls
+                const scrollHandler = () => {
+                    if (!channelStrip.classList.contains('expanded')) {
+                        // Strip was collapsed, remove listener
+                        mixerChannels.removeEventListener('scroll', scrollHandler);
+                        return;
+                    }
+                    
+                    // Recalculate viewport position based on placeholder's current position
+                    const placeholderRect = placeholder.getBoundingClientRect();
+                    const newLeft = placeholderRect.left;
+                    
+                    // Update strip's position
+                    channelStrip.style.left = `${newLeft}px`;
+                };
+                
+                mixerChannels.addEventListener('scroll', scrollHandler);
+                
+                // Add resize listener to update position when window resizes
+                const resizeHandler = () => {
+                    if (!channelStrip.classList.contains('expanded')) {
+                        // Strip was collapsed, remove listener
+                        window.removeEventListener('resize', resizeHandler);
+                        return;
+                    }
+                    
+                    // Recalculate viewport position based on placeholder's current position
+                    const placeholderRect = placeholder.getBoundingClientRect();
+                    const newLeft = placeholderRect.left;
+                    const newBottom = window.innerHeight - placeholderRect.bottom;
+                    
+                    // Update strip's position
+                    channelStrip.style.left = `${newLeft}px`;
+                    channelStrip.style.bottom = `${newBottom}px`;
+                };
+                
+                window.addEventListener('resize', resizeHandler);
+                
+                // Add direct double-click listener to this strip (since it's no longer in .mixer-channels)
+                const collapseHandler = (e) => {
+                    const handle = e.target.closest('.channel-drag-button');
+                    if (!handle) return;
+                    
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Collapse this strip
+                    channelStrip.classList.remove('expanded');
+                    channelStrip.style.removeProperty('--expanded-width');
+                    
+                    // Remove scroll and resize listeners
+                    mixerChannels.removeEventListener('scroll', scrollHandler);
+                    window.removeEventListener('resize', resizeHandler);
+                    
+                    // Return strip to original position in container
+                    if (channelStrip._originalParent && channelStrip._originalNextSibling) {
+                        channelStrip._originalParent.insertBefore(channelStrip, channelStrip._originalNextSibling);
+                    } else if (channelStrip._originalParent) {
+                        channelStrip._originalParent.appendChild(channelStrip);
+                    }
+                    
+                    // Clear inline positioning styles
+                    channelStrip.style.position = '';
+                    channelStrip.style.left = '';
+                    channelStrip.style.bottom = '';
+                    
+                    // Clear stored references
+                    delete channelStrip._originalParent;
+                    delete channelStrip._originalNextSibling;
+                    
+                    // Remove placeholder if exists
+                    const placeholder = document.querySelector('.expanded-placeholder');
+                    if (placeholder) {
+                        placeholder.remove();
+                    }
+                    
+                    // Remove this listener
+                    channelStrip.removeEventListener('dblclick', collapseHandler);
+                };
+                
+                channelStrip.addEventListener('dblclick', collapseHandler);
+            }
+        });
     }
 
     setupCollapsiblePresets() {
@@ -24319,8 +24593,18 @@ https://rogueamoeba.com/loopback/
         if (button.id === 'footerAutopilotSettingsBtn' || button.id === 'mixerBtn') {
             panel.style.left = 'auto';
             panel.style.right = `${window.innerWidth - buttonRect.right}px`;
-            panel.style.top = `${buttonRect.top - 4}px`;
-            panel.style.transform = 'translateY(-100%)';
+            
+            // For mixer panel, use fixed bottom positioning to prevent jump on resize
+            if (button.id === 'mixerBtn') {
+                // Bottom edge should always be 4px above footer button top
+                const bottomOffset = window.innerHeight - buttonRect.top + 8;
+                panel.style.bottom = `${bottomOffset}px`;
+                panel.style.top = 'auto';
+                panel.style.transform = 'none';
+            } else {
+                panel.style.top = `${buttonRect.top - 4}px`;
+                panel.style.transform = 'translateY(-100%)';
+            }
         } else {
             // Default left-aligned positioning
             panel.style.left = `${buttonRect.left}px`;
