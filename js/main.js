@@ -23574,7 +23574,8 @@ https://rogueamoeba.com/loopback/
         // Update footer toggle button state
         this.updateFooterVisualizerToggleButton();
 
-        if (this.audioMotion) {
+        // Handle regular AudioMotion analyzer (only if not using official/advanced)
+        if (this.audioMotion && !this.useOfficialAudioMotion) {
             if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                 this.audioMotion.animate();
             } else { // Stop main visualization but keep animation loop for Infinite Zoom
@@ -23586,6 +23587,23 @@ https://rogueamoeba.com/loopback/
                 // Hide kaleidoscope viz canvas if active (but NOT video kaleidoscope)
                 if (this.kaleidoscopeVizCanvas) {
                     this.kaleidoscopeVizCanvas.style.display = 'none';
+                }
+            }
+        }
+        
+        // Handle official AudioMotion analyzer (Advanced/Pro visualizations)
+        if (this.officialAudioMotion && this.useOfficialAudioMotion) {
+            if (this.visualizationEnabled) {
+                // Show and resume advanced visualization
+                if (this.officialAudioMotion.canvas) {
+                    this.officialAudioMotion.canvas.style.display = 'block';
+                }
+                // Reconnect audio if needed
+                this.reconnectOfficialAudioMotion();
+            } else {
+                // Hide advanced visualization
+                if (this.officialAudioMotion.canvas) {
+                    this.officialAudioMotion.canvas.style.display = 'none';
                 }
             }
         }
