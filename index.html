@@ -33,8 +33,19 @@
     <link rel="stylesheet" href="https://use.typekit.net/zvb4axh.css">
 
     
+    <!-- Import map to resolve 'three' module -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./js/three.module.js"
+        }
+    }
+    </script>
+    
     <!-- JavaScript Modules -->
     <script src="js/three.min.js"></script>
+    <!-- GLTFLoader for Three.js plugins (ES6 module) -->
+    <script type="module" src="js/GLTFLoader-es6-bridge.js"></script>
     <script src="js/memory-profiler.js"></script>
     <script src="js/master-animation-controller.js"></script>
     <script src="js/audiomotion-master-wrapper.js"></script>

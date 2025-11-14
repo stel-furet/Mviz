@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chique Character - Test Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #1a1a2e, #0f0f1e);
+            font-family: Arial, sans-serif;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 100;
+        }
+        
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        #bones-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div id="info">
+        <h3 style="margin: 0 0 10px 0;">Chique Character Test</h3>
+        <p style="margin: 5px 0;">This page tests if your GLTF loads correctly.</p>
+        <div id="status">
+            <span class="warning">⏳ Loading...</span>
+        </div>
+        <div id="bones-list"></div>
+    </div>
+    
+    <div id="controls">
+        <button onclick="toggleRotation()">Toggle Rotation</button>
+        <button onclick="testAnimation()">Test Animation</button>
+        <button onclick="resetView()">Reset View</button>
+    </div>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let scene, camera, renderer, character;
+        let rotating = true;
+        let animating = false;
+        let bones = {};
+        
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = null;
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 2, 8);
+            camera.lookAt(0, 0, 0);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                alpha: true,
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const light1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            light1.position.set(10, 10, 10);
+            scene.add(light1);
+            
+            const light2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            light2.position.set(-10, -5, -10);
+            scene.add(light2);
+            
+            // Load character
+            loadCharacter();
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation loop
+            animate();
+        }
+        
+        function loadCharacter() {
+            const loader = new THREE.GLTFLoader();
+            
+            // Try to load from current directory
+            // Adjust path if needed: './moho_char.gltf' or './chique/moho_char.gltf'
+            loader.load(
+                './moho_char.gltf',
+                
+                // Success
+                (gltf) => {
+                    character = gltf.scene;
+                    character.position.set(0, -5, 0);
+                    character.scale.set(5, 5, 5);
+                    scene.add(character);
+                    
+                    // Index bones
+                    indexBones(character);
+                    
+                    // Update status
+                    const statusEl = document.getElementById('status');
+                    statusEl.innerHTML = `
+                        <span class="success">✓ Character loaded successfully!</span><br>
+                        <span style="color: #aaa;">Bones found: ${Object.keys(bones).length}</span>
+                    `;
+                    
+                    // List bones
+                    const bonesList = document.getElementById('bones-list');
+                    bonesList.innerHTML = '<strong>Bones:</strong><br>' + 
+                        Object.keys(bones).map(name => `• ${name}`).join('<br>');
+                    
+                    console.log('Character loaded:', character);
+                    console.log('Bones:', bones);
+                },
+                
+                // Progress
+                (progress) => {
+                    const percent = (progress.loaded / progress.total) * 100;
+                    document.getElementById('status').innerHTML = 
+                        `<span class="warning">⏳ Loading: ${percent.toFixed(0)}%</span>`;
+                },
+                
+                // Error
+                (error) => {
+                    console.error('Error loading GLTF:', error);
+                    document.getElementById('status').innerHTML = 
+                        `<span class="error">✗ Failed to load character</span><br>` +
+                        `<span style="color: #aaa; font-size: 11px;">Check console for details</span>`;
+                }
+            );
+        }
+        
+        function indexBones(object) {
+            let count = 0;
+            object.traverse((child) => {
+                // Debug: log all node names
+                if (child.name) {
+                    console.log('Found node:', child.name);
+                }
+                
+                if (child.name && child.name.includes('L|')) {
+                    const match = child.name.match(/L\|([^_]+)/);
+                    if (match) {
+                        const boneName = match[1];
+                        bones[boneName] = child;
+                        count++;
+                        console.log(`  → Indexed as bone: "${boneName}"`);
+                    }
+                }
+            });
+            console.log(`Total bones indexed: ${count}`);
+        }
+        
+        function toggleRotation() {
+            rotating = !rotating;
+        }
+        
+        function testAnimation() {
+            animating = !animating;
+            console.log('Animation toggled:', animating);
+            console.log('Available bones:', Object.keys(bones));
+            if (animating && Object.keys(bones).length === 0) {
+                alert('No bones found! Character may not have loaded correctly.');
+            }
+        }
+        
+        function resetView() {
+            camera.position.set(0, 2, 8);
+            camera.lookAt(0, 0, 0);
+            if (character) {
+                character.rotation.set(0, 0, 0);
+            }
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (character) {
+                // Rotate character
+                if (rotating) {
+                    character.rotation.y += 0.005;
+                }
+                
+                // Test animation
+                if (animating && bones['cabeza copy']) {
+                    const time = Date.now() * 0.001;
+                    bones['cabeza copy'].rotation.z = Math.sin(time * 2) * 0.3;
+                    
+                    if (bones['torso']) {
+                        bones['torso'].rotation.x = Math.sin(time) * 0.2;
+                    }
+                    
+                    // Animate feathers
+                    for (let i = 1; i <= 8; i++) {
+                        const feather = bones[`plumas 1 ${i}`];
+                        if (feather) {
+                            feather.rotation.z = Math.sin(time * 3 + i * 0.3) * 0.4;
+                        }
+                    }
+                }
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Start
+        init();
+    </script>
+</body>
+</html>

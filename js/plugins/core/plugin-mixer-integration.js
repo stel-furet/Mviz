@@ -908,6 +908,21 @@ class PluginMixerIntegration {
      * Create dropdown control (using existing dropdown-mini style)
      */
     createDropdownControl(controlId, config) {
+        const controlGroup = document.createElement('div');
+        controlGroup.className = 'control-mini-group';
+        
+        // Header with label
+        const header = document.createElement('div');
+        header.className = 'control-mini-header';
+        
+        const label = document.createElement('div');
+        label.className = 'control-mini-label';
+        label.textContent = config.label || controlId;
+        header.appendChild(label);
+        
+        controlGroup.appendChild(header);
+        
+        // Dropdown select element
         const select = document.createElement('select');
         select.className = config.className || 'dropdown-mini';
         
@@ -931,9 +946,11 @@ class PluginMixerIntegration {
             });
         }
         
+        controlGroup.appendChild(select);
+        
         // Return element and setValue/getValue methods
         return {
-            element: select,
+            element: controlGroup,
             setValue: (value) => {
                 select.value = value;
                 if (config.onChange) {

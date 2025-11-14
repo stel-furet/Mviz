@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test GLB Loader</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // Create scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add lights
+        const light = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(light);
+        const directional = new THREE.DirectionalLight(0xffffff, 0.5);
+        directional.position.set(5, 5, 5);
+        scene.add(directional);
+
+        // Position camera
+        camera.position.set(0, 0.5, 2);
+        camera.lookAt(0, 0.5, 0);
+
+        // Load GLB
+        const loader = new GLTFLoader();
+        let mixer, currentAction;
+        
+        loader.load('/js/plugins/chique_characters/spacewoman.glb', (gltf) => {
+            console.log('Loaded GLB');
+            const character = gltf.scene;
+            scene.add(character);
+            
+            // Setup animation mixer
+            mixer = new THREE.AnimationMixer(character);
+            const idleAnim = gltf.animations.find(a => a.name === 'Idle');
+            if (idleAnim) {
+                currentAction = mixer.clipAction(idleAnim);
+                currentAction.play();
+                console.log('Playing Idle animation');
+            }
+            
+            console.log('Character added to scene');
+        });
+
+        // Animation loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (mixer) {
+                mixer.update(clock.getDelta());
+            }
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+
