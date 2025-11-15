@@ -34,6 +34,17 @@ class RetroePlugin extends FrequePluginBase {
         this.smoothedEnergy = 0;
         this.audioSmoothingFactor = 0.15; // Lower = smoother, higher = more responsive
         
+        // Audio reactivity controls (Option C - Hybrid)
+        this.audioSensitivity = 1.0; // Global multiplier (0-2.0 = 0-200%)
+        this.audioSmoothing = 0.15; // Smoothing factor (0-1)
+        this.colorIntensity = 1.0; // Color reactivity intensity (0-2.0 = 0-200%)
+        this.speedIntensity = 1.0; // Speed reactivity intensity (0-2.0 = 0-200%)
+        this.segmentIntensity = 1.0; // Segment reactivity intensity (0-2.0 = 0-200%)
+        this.bassRotation = false; // Bass → Rotation toggle
+        this.bassSpawn = false; // Bass → Spawn toggle
+        this.midGlow = false; // Mid → Glow toggle
+        this.trebleThickness = false; // Treble → Thickness toggle
+        
         // VHS glitch state
         this.glitchTime = 0;
         this.glitchActive = false;
@@ -397,6 +408,110 @@ class RetroePlugin extends FrequePluginBase {
             }
         });
         
+        // Audio reactivity global controls
+        this.addControl('audioSensitivity', {
+            type: 'dial',
+            label: 'Audio Sensitivity',
+            min: 0,
+            max: 200,
+            step: 5,
+            value: 100,
+            onChange: (value) => {
+                this.audioSensitivity = value / 100; // Convert 0-200% to 0-2.0
+            }
+        });
+        
+        this.addControl('audioSmoothing', {
+            type: 'dial',
+            label: 'Audio Smoothing',
+            min: 0,
+            max: 100,
+            step: 5,
+            value: 15,
+            onChange: (value) => {
+                this.audioSmoothing = value / 100; // Convert 0-100% to 0-1.0
+                this.audioSmoothingFactor = this.audioSmoothing; // Update smoothing factor
+            }
+        });
+        
+        // Intensity dials for existing reactivity options
+        this.addControl('colorIntensity', {
+            type: 'dial',
+            label: 'Color Intensity',
+            min: 0,
+            max: 200,
+            step: 5,
+            value: 100,
+            onChange: (value) => {
+                this.colorIntensity = value / 100; // Convert 0-200% to 0-2.0
+            }
+        });
+        
+        this.addControl('speedIntensity', {
+            type: 'dial',
+            label: 'Speed Intensity',
+            min: 0,
+            max: 200,
+            step: 5,
+            value: 100,
+            onChange: (value) => {
+                this.speedIntensity = value / 100; // Convert 0-200% to 0-2.0
+            }
+        });
+        
+        this.addControl('segmentIntensity', {
+            type: 'dial',
+            label: 'Segment Intensity',
+            min: 0,
+            max: 200,
+            step: 5,
+            value: 100,
+            onChange: (value) => {
+                this.segmentIntensity = value / 100; // Convert 0-200% to 0-2.0
+            }
+        });
+        
+        // Frequency-specific reactivity toggles
+        this.addControl('bassRotation', {
+            type: 'checkbox',
+            label: 'Bass → Rotation',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.bassRotation = value;
+            }
+        });
+        
+        this.addControl('bassSpawn', {
+            type: 'checkbox',
+            label: 'Bass → Spawn',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.bassSpawn = value;
+            }
+        });
+        
+        this.addControl('midGlow', {
+            type: 'checkbox',
+            label: 'Mid → Glow',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.midGlow = value;
+            }
+        });
+        
+        this.addControl('trebleThickness', {
+            type: 'checkbox',
+            label: 'Treble → Thickness',
+            checked: false,
+            className: 'btn-primary-mixer',
+            onChange: (value) => {
+                this.trebleThickness = value;
+            }
+        });
+        
         this.addControl('showScanlines', {
             type: 'checkbox',
             label: 'Scanlines',
@@ -661,10 +776,10 @@ class RetroePlugin extends FrequePluginBase {
         // Draw radial lines connecting consecutive rings
         // OPTIMIZED: Only draw every 2nd vertex to reduce draw calls
         
-        // Color shift if audio reactive
+        // Color shift if audio reactive (with intensity multiplier)
         let gridColor = colors.primary;
         if (this.beatReact && this.audioColor) {
-            const hueShift = audioData.energy * 120;
+            const hueShift = audioData.energy * 120 * this.colorIntensity;
             gridColor = this.shiftHue(colors.primary, hueShift);
         }
         
@@ -682,10 +797,10 @@ class RetroePlugin extends FrequePluginBase {
             const radius1 = this.getRingRadius(ring1.age, audioData);
             const radius2 = this.getRingRadius(ring2.age, audioData);
             
-            // Get segment count for this ring
+            // Get segment count for this ring (with intensity multiplier)
             let sides = this.segmentCount;
             if (this.beatReact && this.audioSegments) {
-                sides = Math.max(this.segmentCount + Math.floor(audioData.energy * 24), 3);
+                sides = Math.max(this.segmentCount + Math.floor(audioData.energy * 24 * this.segmentIntensity), 3);
             }
             
             // Draw lines every 2 vertices (every other one) for performance
@@ -721,10 +836,10 @@ class RetroePlugin extends FrequePluginBase {
         const maxRadius = Math.max(this.canvas.width, this.canvas.height) * 1.2;
         const radius = minRadius + (maxRadius - minRadius) * growthFactor * this.scale;
         
-        // Audio speed multiplier
+        // Audio speed multiplier (with intensity multiplier)
         let speedMultiplier = 1.0;
         if (this.beatReact && this.audioSpeed) {
-            speedMultiplier = 1.0 + (audioData.energy * 0.5);
+            speedMultiplier = 1.0 + (audioData.energy * 0.5 * this.speedIntensity);
         }
         
         return radius * speedMultiplier;
@@ -741,30 +856,44 @@ class RetroePlugin extends FrequePluginBase {
         const maxRadius = Math.max(this.canvas.width, this.canvas.height) * 1.2;
         const radius = minRadius + (maxRadius - minRadius) * growthFactor * this.scale;
         
-        // AUDIO SPEED: Only affects ring scale if enabled
+        // AUDIO SPEED: Only affects ring scale if enabled (with intensity multiplier)
         let speedMultiplier = 1.0;
         if (this.beatReact && this.audioSpeed) {
-            speedMultiplier = 1.0 + (audioData.energy * 0.5);
+            speedMultiplier = 1.0 + (audioData.energy * 0.5 * this.speedIntensity);
         }
         const finalRadius = radius * speedMultiplier;
         
-        // AUDIO SEGMENTS: Dynamic segment count if enabled
+        // AUDIO SEGMENTS: Dynamic segment count if enabled (with intensity multiplier)
         let sides = this.segmentCount;
         if (this.beatReact && this.audioSegments) {
-            const extraSegments = Math.floor(audioData.energy * 24);
+            const extraSegments = Math.floor(audioData.energy * 24 * this.segmentIntensity);
             sides = Math.max(this.segmentCount + extraSegments, 3);
         }
         
-        // AUDIO COLOR: Color shifting if enabled
+        // AUDIO COLOR: Color shifting if enabled (with intensity multiplier)
         let primaryColor = colors.primary;
         let secondaryColor = colors.secondary;
         let tertiaryColor = colors.tertiary;
         
         if (this.beatReact && this.audioColor) {
-            const hueShift = audioData.energy * 120;
+            const hueShift = audioData.energy * 120 * this.colorIntensity;
             primaryColor = this.shiftHue(colors.primary, hueShift);
             secondaryColor = this.shiftHue(colors.secondary, hueShift);
             tertiaryColor = this.shiftHue(colors.tertiary, hueShift);
+        }
+        
+        // TREBLE → THICKNESS: Dynamic ring thickness if enabled
+        let ringThickness = this.ringThickness;
+        if (this.beatReact && this.trebleThickness) {
+            const thicknessBoost = 1.0 + (audioData.treble * 0.5);
+            ringThickness = this.ringThickness * thicknessBoost;
+        }
+        
+        // MID → GLOW: Dynamic glow intensity if enabled
+        let glowIntensity = this.glowIntensity;
+        if (this.beatReact && this.midGlow) {
+            const glowBoost = 1.0 + (audioData.mid * 0.5);
+            glowIntensity = this.glowIntensity * glowBoost;
         }
         
         // Smooth fade in at birth, fade out at death
@@ -800,12 +929,12 @@ class RetroePlugin extends FrequePluginBase {
         
         // SMOOTH GRADIENT GLOW: Multiple passes with decreasing width and increasing opacity
         // Each pass needs its own path for proper blending
-        if (this.glowIntensity > 0) {
+        if (glowIntensity > 0) {
             const glowPasses = 6; // More passes = smoother glow
             for (let pass = glowPasses; pass > 0; pass--) {
                 const normalizedPass = pass / glowPasses; // 1.0 to 0.166...
-                const glowWidth = this.ringThickness + (normalizedPass * 16 * this.glowIntensity);
-                const glowAlpha = (1 - normalizedPass) * 0.3 * this.glowIntensity * alpha; // Outer layers fainter
+                const glowWidth = ringThickness + (normalizedPass * 16 * glowIntensity);
+                const glowAlpha = (1 - normalizedPass) * 0.3 * glowIntensity * alpha; // Outer layers fainter
                 
                 // Cycle through gradient colors for smooth color blending
                 const glowColor = pass > 4 ? primaryColor : (pass > 2 ? secondaryColor : tertiaryColor);
@@ -825,7 +954,7 @@ class RetroePlugin extends FrequePluginBase {
         gradient.addColorStop(1, tertiaryColor);
         
         this.ctx.strokeStyle = gradient;
-        this.ctx.lineWidth = this.ringThickness;
+        this.ctx.lineWidth = ringThickness;
         this.ctx.globalAlpha = alpha;
         this.ctx.stroke();
         
@@ -1211,17 +1340,18 @@ class RetroePlugin extends FrequePluginBase {
         // Calculate overall energy (0-1)
         const energy = (rawBass + rawMid + rawTreble) / 3;
         
-        // Apply exponential smoothing to prevent jumpy movement
-        this.smoothedBass += (rawBass - this.smoothedBass) * this.audioSmoothingFactor;
-        this.smoothedMid += (rawMid - this.smoothedMid) * this.audioSmoothingFactor;
-        this.smoothedTreble += (rawTreble - this.smoothedTreble) * this.audioSmoothingFactor;
-        this.smoothedEnergy += (energy - this.smoothedEnergy) * this.audioSmoothingFactor;
+        // Apply exponential smoothing to prevent jumpy movement (uses audioSmoothing dial)
+        this.smoothedBass += (rawBass - this.smoothedBass) * this.audioSmoothing;
+        this.smoothedMid += (rawMid - this.smoothedMid) * this.audioSmoothing;
+        this.smoothedTreble += (rawTreble - this.smoothedTreble) * this.audioSmoothing;
+        this.smoothedEnergy += (energy - this.smoothedEnergy) * this.audioSmoothing;
         
+        // Apply global sensitivity multiplier
         return {
-            bass: this.smoothedBass,
-            mid: this.smoothedMid,
-            treble: this.smoothedTreble,
-            energy: this.smoothedEnergy
+            bass: this.smoothedBass * this.audioSensitivity,
+            mid: this.smoothedMid * this.audioSensitivity,
+            treble: this.smoothedTreble * this.audioSensitivity,
+            energy: this.smoothedEnergy * this.audioSensitivity
         };
     }
     
@@ -1235,7 +1365,13 @@ class RetroePlugin extends FrequePluginBase {
         
         // Spawn new rings based on interval
         this.timeSinceLastRing += deltaSeconds;
-        const spawnInterval = this.ringSpawnInterval / (this.tunnelSpeed / 5); // Faster speed = more frequent spawns
+        let spawnInterval = this.ringSpawnInterval / (this.tunnelSpeed / 5); // Faster speed = more frequent spawns
+        
+        // BASS → SPAWN: Bass affects spawn rate (more bass = faster spawns)
+        if (this.beatReact && this.bassSpawn) {
+            const bassBoost = 1.0 - (audioData.bass * 0.5); // Reduce interval (faster spawns) with more bass
+            spawnInterval *= Math.max(0.3, bassBoost); // Clamp minimum to prevent too fast
+        }
         
         if (this.timeSinceLastRing >= spawnInterval) {
             this.rings.push({
@@ -1259,7 +1395,15 @@ class RetroePlugin extends FrequePluginBase {
         }
         
         // ROTATION SPEED - Global rotation applied to all rings
-        this.rotation += this.rotationSpeed * deltaSeconds;
+        let rotationSpeed = this.rotationSpeed;
+        
+        // BASS → ROTATION: Bass affects rotation speed
+        if (this.beatReact && this.bassRotation) {
+            const rotationBoost = 1.0 + (audioData.bass * 0.5);
+            rotationSpeed = this.rotationSpeed * rotationBoost;
+        }
+        
+        this.rotation += rotationSpeed * deltaSeconds;
     }
     
     onRender(deltaTime, timestamp, sharedAudioData) {

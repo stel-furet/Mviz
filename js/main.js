@@ -2034,7 +2034,7 @@ class RecordManager {
                 this.updateMixerAudioToggle();
                 this.updateMixerAudioVolumeSlider();
                 this.updateMixerAudioDeviceSelect();
-                this.updateAudioMonitorButton();
+                // Monitor button state is set when created in HTML, no init needed
                 
                 // AM Visualizer controls initialization
                 this.updateMixerAMToggle();
@@ -12995,6 +12995,31 @@ class FrequeVisualizer {
             }
         };
         
+        // Monitor Input Button (between ON/OFF toggle and Clear Input)
+        const monitorBtn = document.createElement('button');
+        monitorBtn.className = 'btn-toggle';
+        monitorBtn.id = 'headerAudioMonitorBtn';
+        monitorBtn.style.cssText = `
+            margin-top: 10px;
+            width: 100%;
+        `;
+        
+        // Set initial state from visualizer
+        // In createAudioInputDropdown(), 'this' is already the visualizer
+        const isMonitorOn = this.audioMonitoringEnabled;
+        monitorBtn.textContent = isMonitorOn ? 'Monitor Input: ON' : 'Monitor Input: OFF';
+        if (isMonitorOn) {
+            monitorBtn.classList.add('active');
+        }
+        
+        // Use addEventListener like mixer button
+        monitorBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // In createAudioInputDropdown(), 'this' is already the visualizer
+            this.toggleAudioMonitoring();
+        });
+        
         // Clear Input Button
         const clearAudioInputBtn = document.createElement('button');
         clearAudioInputBtn.className = 'btn-danger';
@@ -13012,6 +13037,7 @@ class FrequeVisualizer {
         };
         
         toggleSection.appendChild(audioToggle);
+        toggleSection.appendChild(monitorBtn);
         toggleSection.appendChild(clearAudioInputBtn);
         settingsSection.appendChild(toggleSection);
         
@@ -19494,15 +19520,28 @@ class FrequeVisualizer {
     
     updateAudioMonitorButton() {
         const mixerBtn = document.getElementById('mixerAudioMonitorBtn');
+        const headerBtn = document.getElementById('headerAudioMonitorBtn');
         
+        const isOn = this.audioMonitoringEnabled;
+        const buttonText = isOn ? 'Monitor Input: ON' : 'Monitor Input: OFF';
+        
+        // Update mixer button
         if (mixerBtn) {
-            const isOn = this.audioMonitoringEnabled;
-            mixerBtn.textContent = isOn ? 'Monitor Input: ON' : 'Monitor Input: OFF';
-            
+            mixerBtn.textContent = buttonText;
             if (isOn) {
                 mixerBtn.classList.add('active');
             } else {
                 mixerBtn.classList.remove('active');
+            }
+        }
+        
+        // Update header button
+        if (headerBtn) {
+            headerBtn.textContent = buttonText;
+            if (isOn) {
+                headerBtn.classList.add('active');
+            } else {
+                headerBtn.classList.remove('active');
             }
         }
     }
