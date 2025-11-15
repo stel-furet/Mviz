@@ -14,22 +14,23 @@
 
 ## 🆕 What's New in v2.4
 
-### Procedural Skeletal Animation Guide
+### GLB/GLTF Character Integration Guide
 
-**NEW CAPABILITY:** Complete implementation guide for audio-reactive bone manipulation!
+**NEW CAPABILITY:** Complete implementation guide for audio-reactive character animation!
 
+- ✅ **GLB/GLTF Model Loading** - Load and integrate character models
 - ✅ **Procedural Animation Patterns** - Real-time bone rotation systems
 - ✅ **Multi-Cycle Rhythm Layering** - Organic, non-repetitive movement
 - ✅ **Relative Transformations** - Preserve base animation poses
-- ✅ **Audio-Reactive Dance Systems** - Beat detection and energy mapping
-- ✅ **Complete Code Examples** - From Chique plugin's Dance Mode
-- ✅ **Common Pitfalls & Solutions** - Proven troubleshooting guide
+- ✅ **Audio-Reactive Systems** - Beat detection and energy mapping
+- ✅ **Generic Patterns** - Applicable to any animation style
+- ✅ **Complete Code Examples** - Ready-to-adapt implementations
 
-**Example:** The Chique plugin's Dance Mode demonstrates 5-layer rhythm system with feet-planted sway running at 60fps.
+**Example Use Cases:** Any character animation style - dancing, gesturing, idle motion, reactive poses, etc.
 
 ### Documentation Updates
 
-- **Dance Mode Addendum** → NEW (25 KB) - Procedural skeletal animation guide
+- **Character Integration Guide** → NEW (32 KB) - GLB/GLTF character animation guide
 - **v2.4 Summary** → NEW (7 KB) - Update overview and implementation details
 
 ---
@@ -124,26 +125,26 @@ this.addControl('audioReactive', {
 
 ---
 
-### 3️⃣ [CHIQUE_PLUGIN_DANCE_MODE_ADDENDUM.md](CHIQUE_PLUGIN_DANCE_MODE_ADDENDUM.md) (25 KB) ⭐ NEW
-**Complete guide to procedural skeletal animation in Three.js**
+### 3️⃣ [GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md](GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md) (32 KB) ⭐ NEW
+**Complete guide to GLB/GLTF character animation in Three.js**
 
 **Contents:**
 - Core concepts (procedural vs pre-baked animations)
 - Implementation architecture (bone systems, state machine)
 - Critical technical patterns (relative transforms, feet planting, multi-cycle layering)
 - Audio reactivity (energy mapping, beat detection, state transitions)
-- UI controls (Dance Mode toggle, sensitivity)
+- UI controls (mode toggles, sensitivity, positioning)
 - Common pitfalls & solutions (character rotation, feet movement, repetition)
-- Complete code examples (full dance method, integration)
+- Complete code examples (full procedural method, integration, bone extraction)
 - Best practices for skeletal animation
 - Performance considerations
 - Testing checklist
-- Prompting Claude for similar systems
+- Prompting Claude for character plugins
 
 **Who should read this:**
-- Developers creating character animation plugins
+- Developers creating GLB/GLTF character plugins
 - Anyone implementing procedural bone manipulation
-- Those needing audio-reactive dance systems
+- Those needing audio-reactive animation systems
 - Troubleshooting skeletal animation issues
 
 ---
@@ -289,9 +290,9 @@ this.addControl('audioReactive', {
 **...understand what's new in v2.4**
 → Read [DOCUMENTATION_UPDATES_V2_4_SUMMARY.md](DOCUMENTATION_UPDATES_V2_4_SUMMARY.md)
 
-**...implement procedural skeletal animation**
-→ Read [CHIQUE_PLUGIN_DANCE_MODE_ADDENDUM.md](CHIQUE_PLUGIN_DANCE_MODE_ADDENDUM.md)
-→ See Chique plugin source code for working example
+**...implement GLB/GLTF character animation**
+→ Read [GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md](GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md)
+→ See example character plugins for working implementations
 
 **...understand what's new in v2.2**
 → Read [DOCUMENTATION_UPDATES_V2_2_SUMMARY.md](DOCUMENTATION_UPDATES_V2_2_SUMMARY.md)

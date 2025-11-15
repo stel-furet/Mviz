@@ -24,7 +24,7 @@ class FrequePluginBase {
             get: function() {
                 if (!this._ctx && this.canvas) {
                     console.log(`🎨 Plugin ${this.pluginName}: Creating 2D context on first access`);
-                    this._ctx = this.canvas.getContext('2d');
+                    this._ctx = this.canvas.getContext('2d', { willReadFrequently: true });
                 }
                 return this._ctx;
             },
@@ -468,7 +468,7 @@ class FrequePluginBase {
             this.presets.set(presetId, mergedPreset);
         } else {
             // No saved preset, use hardcoded config
-            this.presets.set(presetId, presetConfig);
+        this.presets.set(presetId, presetConfig);
         }
         
         // Don't save during initial setup - only save when presets are modified by user

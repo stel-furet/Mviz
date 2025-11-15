@@ -19,7 +19,7 @@ class ChiquePlugin extends FrequePluginBase {
             description: 'Audio-reactive animated character visualizer',
             targetFPS: 60
         });
-        
+
         // Three.js components
         this.scene = null;
         this.camera = null;
@@ -77,7 +77,7 @@ class ChiquePlugin extends FrequePluginBase {
         this.setupControls();
         this.setupPresets();
     }
-    
+
     setupControls() {
         // Character selection
         this.addControl('character', {
@@ -91,7 +91,7 @@ class ChiquePlugin extends FrequePluginBase {
                 this.loadCharacter();
             }
         });
-        
+
         // Audio sensitivity
         this.addControl('audioSensitivity', {
             type: 'slider',
@@ -104,7 +104,7 @@ class ChiquePlugin extends FrequePluginBase {
                 this.audioSensitivity = value;
             }
         });
-        
+
         // Camera distance (adjusted so 0 = character fills ~70% of screen)
         this.addControl('cameraDistance', {
             type: 'slider',
@@ -118,7 +118,7 @@ class ChiquePlugin extends FrequePluginBase {
                 this.updateCameraPosition();
             }
         });
-        
+
         // Character X position
         this.addControl('characterX', {
             type: 'slider',
@@ -134,7 +134,7 @@ class ChiquePlugin extends FrequePluginBase {
                 }
             }
         });
-        
+
         // Character Y position
         this.addControl('characterY', {
             type: 'slider',
@@ -185,7 +185,7 @@ class ChiquePlugin extends FrequePluginBase {
             }
         });
     }
-    
+
     setupPresets() {
         this.addPreset('chillVibes', {
             name: 'Chill Vibes',
@@ -235,7 +235,7 @@ class ChiquePlugin extends FrequePluginBase {
             }
         });
     }
-    
+
     /**
      * Override applyPreset to track active preset and update UI
      */
@@ -315,7 +315,7 @@ class ChiquePlugin extends FrequePluginBase {
         // Scene
         this.scene = new THREE.Scene();
         this.scene.background = null; // Transparent
-        
+
         // Camera - will be positioned after character loads
         this.camera = new THREE.PerspectiveCamera(
             50,
@@ -324,7 +324,7 @@ class ChiquePlugin extends FrequePluginBase {
             100000  // Increased far plane for large characters
         );
         this.camera.position.set(0, 1, 10); // Temporary position
-        
+
         // Renderer
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
@@ -434,10 +434,10 @@ class ChiquePlugin extends FrequePluginBase {
                     this.mixer.stopAllAction();
                 }
                 this.mixer = new THREE.AnimationMixer(this.character);
-                
-                // Add to scene
-                this.scene.add(this.character);
-                
+                    
+                    // Add to scene
+                    this.scene.add(this.character);
+                    
                 // Set initial character position
                 this.character.position.x = this.characterX;
                 this.character.position.y = this.characterY;
@@ -471,11 +471,11 @@ class ChiquePlugin extends FrequePluginBase {
                 // console.log('Chique: Loaded character', this.currentCharacter);
                 // console.log('Chique: Character in scene, children:', this.scene.children.length);
                 // console.log('Chique: Scene children:', this.scene.children.map(c => c.type));
-            },
-            (progress) => {
+                },
+                (progress) => {
                 // Loading progress
-            },
-            (error) => {
+                },
+                (error) => {
                 console.error('Chique: Error loading character', error);
             }
         );
@@ -883,7 +883,7 @@ class ChiquePlugin extends FrequePluginBase {
         
         const startBin = Math.floor(startFreq / nyquist * binCount);
         const endBin = Math.floor(endFreq / nyquist * binCount);
-        
+
         let sum = 0;
         for (let i = startBin; i < endBin && i < frequencyData.length; i++) {
             sum += frequencyData[i];
@@ -1309,7 +1309,7 @@ class ChiquePlugin extends FrequePluginBase {
             }
         }
     }
-    
+
     onRender(deltaTime, timestamp, sharedAudioData) {
         if (!this.renderer || !this.scene || !this.camera) {
             return;
@@ -1346,17 +1346,17 @@ class ChiquePlugin extends FrequePluginBase {
         //     });
         // }
     }
-    
+
     onResize(width, height) {
         if (this.camera) {
-            this.camera.aspect = width / height;
-            this.camera.updateProjectionMatrix();
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
         }
         
         if (this.renderer) {
-            this.renderer.setSize(width, height);
-        }
-        
+        this.renderer.setSize(width, height);
+    }
+
         // Recenter character
         if (this.character) {
             this.centerCharacter();

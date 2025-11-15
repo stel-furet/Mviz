@@ -2034,6 +2034,7 @@ class RecordManager {
                 this.updateMixerAudioToggle();
                 this.updateMixerAudioVolumeSlider();
                 this.updateMixerAudioDeviceSelect();
+                this.updateAudioMonitorButton();
                 
                 // AM Visualizer controls initialization
                 this.updateMixerAMToggle();
@@ -2959,6 +2960,18 @@ class RecordManager {
             });
         } else {
             // console.error('❌ Mixer audio clear input button not found');
+        }
+        
+        // Mixer audio monitor button
+        const mixerAudioMonitorBtn = document.getElementById('mixerAudioMonitorBtn');
+        if (mixerAudioMonitorBtn) {
+            mixerAudioMonitorBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.visualizer) {
+                    this.visualizer.toggleAudioMonitoring();
+                }
+            });
         }
 
         // ========== AM VISUALIZER CHANNEL ==========
@@ -4565,10 +4578,10 @@ class RecordManager {
                             dialElement.dispatchEvent(new CustomEvent('dialchange', {
                                 detail: { value: initialValue }
                             }));
-                        }
                     }
-                });
-            }
+                }
+            });
+        }
         }, 100);
 
         // ========== NEBULA CHANNEL ==========
@@ -6027,13 +6040,13 @@ class RecordManager {
     updateMixerAudioToggle() {
         const mixerAudioToggle = document.getElementById('mixerAudioToggle');
         if (mixerAudioToggle && this.visualizer) {
-            const isOn = this.visualizer.liveAudioEnabled;
-            
+                const isOn = this.visualizer.liveAudioEnabled;
+                
             // Update button state only - text stays as "Audio Input"
-            if (isOn) {
-                mixerAudioToggle.classList.add('active');
-            } else {
-                mixerAudioToggle.classList.remove('active');
+                if (isOn) {
+                    mixerAudioToggle.classList.add('active');
+                } else {
+                    mixerAudioToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer audio toggle not found for update');
@@ -6094,13 +6107,13 @@ class RecordManager {
     updateMixerAMToggle() {
         const mixerAMToggle = document.getElementById('mixerAMToggle');
         if (mixerAMToggle && this.visualizer) {
-            const isOn = this.visualizer.visualizationEnabled;
-            
+                const isOn = this.visualizer.visualizationEnabled;
+                
             // Update button state only - text stays as "AM Visualizer"
-            if (isOn) {
-                mixerAMToggle.classList.add('active');
-            } else {
-                mixerAMToggle.classList.remove('active');
+                if (isOn) {
+                    mixerAMToggle.classList.add('active');
+                } else {
+                    mixerAMToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer AM toggle not found for update');
@@ -6245,13 +6258,13 @@ class RecordManager {
     updateMixerInfiniteZoomToggle() {
         const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
         if (mixerInfiniteZoomToggle && this.visualizer) {
-            const isOn = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
-            
+                const isOn = this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive;
+                
             // Update button state only - text stays as "Infinite Zoom"
-            if (isOn) {
-                mixerInfiniteZoomToggle.classList.add('active');
-            } else {
-                mixerInfiniteZoomToggle.classList.remove('active');
+                if (isOn) {
+                    mixerInfiniteZoomToggle.classList.add('active');
+        } else {
+                    mixerInfiniteZoomToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer Infinite Zoom toggle not found for update');
@@ -6509,13 +6522,13 @@ class RecordManager {
     updateMixerStarfallToggle() {
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle && this.visualizer) {
-            const isOn = this.visualizer.webglEnabled;
-            
+                const isOn = this.visualizer.webglEnabled;
+                
             // Update button state only - text stays as "Starfall"
-            if (isOn) {
-                mixerStarfallToggle.classList.add('active');
-            } else {
-                mixerStarfallToggle.classList.remove('active');
+                if (isOn) {
+                    mixerStarfallToggle.classList.add('active');
+                } else {
+                    mixerStarfallToggle.classList.remove('active');
             }
         } else {
             // console.error('❌ Mixer Starfall toggle not found for update');
@@ -10448,6 +10461,17 @@ class FrequeVisualizer {
         this.audioStream = null;
         this.streamSource = null;
         this.availableDevices = [];
+        
+        // Audio monitoring properties
+        this.audioMonitoringEnabled = false;
+        this.monitorGainNode = null;
+        
+        // Load audio monitoring state from localStorage
+        const savedMonitorState = localStorage.getItem('audioMonitoringEnabled');
+        if (savedMonitorState !== null) {
+            this.audioMonitoringEnabled = savedMonitorState === 'true';
+        }
+
 
         // Video input properties
         this.videoInputMode = 'none';
@@ -18179,9 +18203,9 @@ class FrequeVisualizer {
                         if (playPromise !== undefined) {
                             playPromise.then(() => {
                                 console.log('Main video playing');
-                                // Also ensure capture video is playing
-                                return this.captureVideoElement.play();
-                            }).then(() => {
+                            // Also ensure capture video is playing
+                            return this.captureVideoElement.play();
+                        }).then(() => {
                                 console.log('Capture video playing');
                             }).catch(error => {
                                 console.error('Error during video play:', error);
@@ -18190,16 +18214,16 @@ class FrequeVisualizer {
                             });
                         }
                         
-                        this.applyVideoFilters();
-                        
-                        // Fade in after short delay
-                        setTimeout(() => {
-                            if (this.videoElement) {
-                                this.videoElement.style.opacity = this.videoOpacity.toString();
-                            }
-                        }, 100);
-                        
-                        resolve();
+                            this.applyVideoFilters();
+                            
+                            // Fade in after short delay
+                            setTimeout(() => {
+                                if (this.videoElement) {
+                                    this.videoElement.style.opacity = this.videoOpacity.toString();
+                                }
+                            }, 100);
+                            
+                            resolve();
                     }
                 };
 
@@ -19321,6 +19345,9 @@ class FrequeVisualizer {
 
                 this.audioMotion.isConnected = true;
                 
+                // Setup audio monitoring if enabled
+                this.setupAudioMonitoring();
+                
                 // Reconnect official AudioMotion if it needs connection
                 this.reconnectOfficialAudioMotion();
             }
@@ -19387,6 +19414,9 @@ class FrequeVisualizer {
             }
             this.streamSource = null;
         }
+        
+        // Disconnect monitoring if active
+        this.disconnectAudioMonitoring();
 
         // Update footer Live Audio button state
         this.updateFooterLiveAudioButton();
@@ -19406,6 +19436,75 @@ class FrequeVisualizer {
         
         // Update live audio state
         this.liveAudioEnabled = false;
+    }
+    
+    // Audio Monitoring Methods
+    setupAudioMonitoring() {
+        // Only setup monitoring if enabled and we have a stream source
+        if (!this.audioMonitoringEnabled || !this.streamSource || !this.audioMotion || !this.audioMotion.audioCtx) {
+            return;
+        }
+        
+        try {
+            // Disconnect any existing monitoring
+            this.disconnectAudioMonitoring();
+            
+            // Create a gain node for monitoring
+            this.monitorGainNode = this.audioMotion.audioCtx.createGain();
+            this.monitorGainNode.gain.value = 1.0;
+            
+            // Connect stream source to monitor gain node to destination (speakers)
+            this.streamSource.connect(this.monitorGainNode);
+            this.monitorGainNode.connect(this.audioMotion.audioCtx.destination);
+            
+            console.log('✅ Audio monitoring enabled');
+        } catch (e) {
+            console.error('Failed to setup audio monitoring:', e);
+        }
+    }
+    
+    disconnectAudioMonitoring() {
+        if (this.monitorGainNode) {
+            try {
+                this.monitorGainNode.disconnect();
+            } catch (e) { // Ignore
+            }
+            this.monitorGainNode = null;
+        }
+    }
+    
+    toggleAudioMonitoring() {
+        this.audioMonitoringEnabled = !this.audioMonitoringEnabled;
+        
+        // Save state to localStorage
+        localStorage.setItem('audioMonitoringEnabled', this.audioMonitoringEnabled.toString());
+        
+        // Update monitoring connection
+        if (this.audioMonitoringEnabled && this.streamSource) {
+            this.setupAudioMonitoring();
+        } else {
+            this.disconnectAudioMonitoring();
+        }
+        
+        // Update UI
+        this.updateAudioMonitorButton();
+        
+        console.log('🔊 Audio monitoring:', this.audioMonitoringEnabled ? 'ON' : 'OFF');
+    }
+    
+    updateAudioMonitorButton() {
+        const mixerBtn = document.getElementById('mixerAudioMonitorBtn');
+        
+        if (mixerBtn) {
+            const isOn = this.audioMonitoringEnabled;
+            mixerBtn.textContent = isOn ? 'Monitor Input: ON' : 'Monitor Input: OFF';
+            
+            if (isOn) {
+                mixerBtn.classList.add('active');
+            } else {
+                mixerBtn.classList.remove('active');
+            }
+        }
     }
 
     resumePlaylist() {
@@ -24620,8 +24719,8 @@ https://rogueamoeba.com/loopback/
                 panel.style.top = 'auto';
                 panel.style.transform = 'none';
             } else {
-                panel.style.top = `${buttonRect.top - 4}px`;
-                panel.style.transform = 'translateY(-100%)';
+            panel.style.top = `${buttonRect.top - 4}px`;
+            panel.style.transform = 'translateY(-100%)';
             }
         } else {
             // Default left-aligned positioning

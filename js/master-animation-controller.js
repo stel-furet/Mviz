@@ -229,7 +229,7 @@ class MasterAnimationController {
                 system.errorCount++;
                 system.lastError = error;
                 
-                console.error(`MasterAnimationController: Error in system '${system.name}'`, error);
+                    console.error(`MasterAnimationController: Error in system '${system.name}'`, error);
                 
                 // Call system error handler
                 try {

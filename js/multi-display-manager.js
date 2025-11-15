@@ -1015,13 +1015,13 @@ class MultiDisplayManager {
     updateMixerStarfallToggle() {
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle && this.visualizer) {
-            const isOn = this.visualizer.webglEnabled;
-            
+                const isOn = this.visualizer.webglEnabled;
+                
             // Update button state only - text stays as "Starfall"
-            if (isOn) {
-                mixerStarfallToggle.classList.add('active');
-            } else {
-                mixerStarfallToggle.classList.remove('active');
+                if (isOn) {
+                    mixerStarfallToggle.classList.add('active');
+                } else {
+                    mixerStarfallToggle.classList.remove('active');
             }
         }
     }
