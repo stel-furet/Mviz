@@ -52,6 +52,24 @@ this.addControl('name', {
 });
 ```
 
+### ✅ Custom Dial Fill Color (Plugin Config)
+```javascript
+// In constructor - applies to ALL dials in plugin
+super('myplugin', visualizer, {
+    version: '1.0.0',
+    dialFillColor: '--accent-color' // Optional: CSS variable for dial fill
+});
+```
+
+**Available CSS Variables:**
+- `--accent-color` - Theme accent color (recommended)
+- `--highlight-color` - Theme highlight color
+- `--error-color` - Error color
+- `--success-color` - Success color
+- Any other CSS variable in your theme
+
+**Note:** Dial outline (stroke) remains unchanged. Only fill color is customized.
+
 ### ✅ Mode Button
 ```javascript
 this.addControl('name', {
@@ -238,4 +256,4 @@ Before submitting your plugin:
 
 ---
 
-**Quick Reference v2.3 - Use These Patterns! ✅**
+**Quick Reference v2.4 - Use These Patterns! ✅**

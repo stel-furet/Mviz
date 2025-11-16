@@ -177,6 +177,30 @@ class PluginMixerIntegration {
             
             <!-- Channel Input Section (for dropdowns if needed) -->
             <div class="channel-input-section">
+                <!-- Color Morphing Controls -->
+                <div class="control-mini-group plugin-color-morph-group" data-plugin="${plugin.pluginName}" style="display: none;">
+                    <button class="btn-morph plugin-color-morph-btn" data-plugin="${plugin.pluginName}" title="Color Morph">
+                        <span class="morph-btn-text">Start Morph</span>
+                    </button>
+                </div>
+                <div class="control-mini-group plugin-color-morph-speed-group" data-plugin="${plugin.pluginName}" style="display: none;">
+                    <select class="dropdown-selector-mixer plugin-color-morph-speed" data-plugin="${plugin.pluginName}">
+                        <option value="slow">Slow</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="fast">Fast</option>
+                        <option value="ultra">Ultra</option>
+                        <option value="energy">Energy</option>
+                    </select>
+                </div>
+                
+                <!-- Energy Bar (hidden by default, shown when speed is 'energy') -->
+                <div class="energy-container plugin-color-morph-energy" data-plugin="${plugin.pluginName}" style="display: none;">
+                    <div class="energy-label">Energy</div>
+                    <div class="energy-bar">
+                        <div class="energy-fill plugin-color-morph-energy-fill" data-plugin="${plugin.pluginName}"></div>
+                    </div>
+                </div>
+                
                 <!-- Plugin-specific input controls will be added here -->
             </div>
             
@@ -225,6 +249,51 @@ class PluginMixerIntegration {
                 plugin.setOpacity(value);
                 opacityValue.textContent = `${value}`;
             });
+        }
+        
+        // Color Morph button
+        const colorMorphBtn = channelStrip.querySelector('.plugin-color-morph-btn');
+        if (colorMorphBtn) {
+            colorMorphBtn.addEventListener('click', () => {
+                const isActive = plugin.toggleColorMorphing();
+                this.updateColorMorphButton(plugin.pluginName, isActive);
+            });
+        }
+        
+        // Color Morph speed selector
+        const colorMorphSpeed = channelStrip.querySelector('.plugin-color-morph-speed');
+        if (colorMorphSpeed) {
+            colorMorphSpeed.addEventListener('change', (e) => {
+                plugin.setColorMorphSpeed(e.target.value);
+                this.updateColorMorphEnergyBar(plugin.pluginName, e.target.value);
+            });
+        }
+        
+        // Check if plugin supports color morphing and show/hide controls
+        if (plugin.getColorSchemes && typeof plugin.getColorSchemes === 'function') {
+            const schemes = plugin.getColorSchemes();
+            if (schemes && schemes.length > 1) {
+                // Show color morph controls
+                const morphGroup = channelStrip.querySelector('.plugin-color-morph-group');
+                const speedGroup = channelStrip.querySelector('.plugin-color-morph-speed-group');
+                if (morphGroup) morphGroup.style.display = '';
+                if (speedGroup) speedGroup.style.display = '';
+            }
+        }
+    }
+    
+    /**
+     * Update color morph energy bar visibility and value
+     */
+    updateColorMorphEnergyBar(pluginName, speed) {
+        const channelStrip = this.channelStrips.get(pluginName);
+        if (!channelStrip) return;
+        
+        const energyContainer = channelStrip.querySelector('.plugin-color-morph-energy');
+        
+        if (energyContainer) {
+            // Show energy bar only when speed is 'energy'
+            energyContainer.style.display = (speed === 'energy') ? 'block' : 'none';
         }
     }
     
@@ -383,6 +452,28 @@ class PluginMixerIntegration {
     }
     
     /**
+     * Update color morph button state
+     */
+    updateColorMorphButton(pluginName, isActive) {
+        const channelStrip = this.channelStrips.get(pluginName);
+        if (!channelStrip) return;
+        
+        const morphBtn = channelStrip.querySelector('.plugin-color-morph-btn');
+        
+        if (morphBtn) {
+            const btnText = morphBtn.querySelector('.morph-btn-text');
+            
+            if (isActive) {
+                morphBtn.classList.add('active');
+                if (btnText) btnText.textContent = 'Stop Morph';
+            } else {
+                morphBtn.classList.remove('active');
+                if (btnText) btnText.textContent = 'Start Morph';
+            }
+        }
+    }
+    
+    /**
      * Add plugin controls to the channel strip
      */
     addPluginControls(pluginName, controls) {
@@ -399,8 +490,14 @@ class PluginMixerIntegration {
             return;
         }
         
+        // Get plugin reference for dial color customization
+        const plugin = window.pluginManager?.getPlugin(pluginName);
+        
         // Clear existing controls
         controlsContainer.innerHTML = '';
+        
+        // Store current plugin temporarily for dial color access
+        this.currentRenderingPlugin = plugin || null;
         
         // Add each control
         controls.forEach((controlConfig, controlId) => {
@@ -422,6 +519,9 @@ class PluginMixerIntegration {
                 // Control creation error debug disabled
             }
         });
+        
+        // Clear plugin reference after controls are created
+        this.currentRenderingPlugin = null;
         
         // Controls finished debug disabled
         
@@ -465,8 +565,14 @@ class PluginMixerIntegration {
             return;
         }
         
+        // Get plugin reference for dial color customization
+        const plugin = window.pluginManager?.getPlugin(pluginName);
+        
         // Clear existing input controls
         inputContainer.innerHTML = '';
+        
+        // Store current plugin temporarily for dial color access
+        this.currentRenderingPlugin = plugin || null;
         
         // Add each input control
         inputControls.forEach((controlConfig, controlId) => {
@@ -486,6 +592,9 @@ class PluginMixerIntegration {
                 console.error(`Failed to create input control element for "${controlId}"`);
             }
         });
+        
+        // Clear plugin reference after input controls are created
+        this.currentRenderingPlugin = null;
     }
     
     /**
@@ -802,6 +911,13 @@ class PluginMixerIntegration {
         const initialValue = config.value !== undefined ? config.value : (config.min || 0);
         dial.setAttribute('data-value', initialValue);
         dial.setAttribute('data-default', initialValue); // Store default for double-click reset
+        
+        // Apply custom dial fill color if plugin specifies one
+        if (this.currentRenderingPlugin?.metadata?.dialFillColor) {
+            const cssVar = this.currentRenderingPlugin.metadata.dialFillColor;
+            // Set CSS custom property to override default --dial-color
+            dial.style.setProperty('--dial-color', `var(${cssVar})`);
+        }
         
         // Dial background circle
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');

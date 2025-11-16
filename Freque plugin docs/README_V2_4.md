@@ -28,10 +28,29 @@
 
 **Example Use Cases:** Any character animation style - dancing, gesturing, idle motion, reactive poses, etc.
 
+### UI Enhancement: Custom Dial Fill Colors
+
+**NEW FEATURE:** Plugins can now specify custom dial fill colors using CSS variables!
+
+- ✅ **Theme-Aware Colors** - Use any CSS variable (e.g., `--accent-color`)
+- ✅ **Automatic Theme Support** - Colors change with theme selection
+- ✅ **Simple API** - One property in plugin config: `dialFillColor: '--accent-color'`
+- ✅ **Visual Consistency** - Easy to identify plugin dials
+
+**Example:**
+```javascript
+super('myplugin', visualizer, {
+    dialFillColor: '--accent-color' // All dials use accent color
+});
+```
+
 ### Documentation Updates
 
 - **Character Integration Guide** → NEW (32 KB) - GLB/GLTF character animation guide
 - **v2.4 Summary** → NEW (7 KB) - Update overview and implementation details
+- **Development Guide** → Updated with dial fill color documentation
+- **Claude Guide** → Updated with dial color prompting examples
+- **Quick Reference Card** → Updated to v2.4 with dial color patterns
 
 ---
 

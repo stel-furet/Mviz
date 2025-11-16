@@ -14,7 +14,8 @@ class RetroePlugin extends FrequePluginBase {
             version: '1.0.0',
             author: 'Steve - CrashMonkeys',
             description: 'Retro 80s/90s arcade tunnel with glitchy VHS effects',
-            targetFPS: 60
+            targetFPS: 60,
+            dialFillColor: '--accent-color' // Custom dial fill color using theme variable
         });
         
         // Animation state

@@ -1,12 +1,35 @@
-# Freque Plugin Development Guide v2.2
+# Freque Plugin Development Guide v2.5
 
 **Complete guide for creating audio-reactive visualizations with advanced Three.js and WebGL techniques**
 
 ---
 
+## What's New in v2.5
+
+- **Audio Integration Clarification** - Clear documentation on how to properly access audio data ⭐ NEW
+- **Dropdown Format Requirements** - Complete guide with correct format examples ⭐ NEW
+- **Control Variable Initialization** - Critical pattern for preventing undefined variables ⭐ NEW
+- **Making Controls Work** - Ensuring controls actually affect visualization ⭐ NEW
+- **Audio Reactivity Best Practices** - Base value + multiplier pattern for responsive controls ⭐ NEW
+- **Common Mistakes Section** - Side-by-side wrong vs. correct examples ⭐ NEW
+
+## What's New in v2.4
+
+- **Ring Spawning System** - Efficient pattern for continuous tunnel effects ⭐ NEW
+- **Post-Processing Effects** - Pixelation and color banding for retro aesthetics ⭐ NEW
+- **Advanced Audio Reactivity** - Granular controls with sensitivity, smoothing, and per-feature intensity ⭐ NEW
+- **Frequency-Specific Reactivity** - Map bass/mid/treble to specific visual effects ⭐ NEW
+- **Custom Dial Fill Colors** - Per-plugin dial color customization using CSS variables ⭐ NEW
+
+## What's New in v2.3
+
+- **Enhanced Retro Effects** - Improved VHS glitch, RGB shift with vertical component ⭐ NEW
+- **Film Grain Static** - Clustered noise with color artifacts for authenticity ⭐ NEW
+- **Extended Color Palettes** - 10 retro color schemes (C64, Game Boy, CRT, etc.) ⭐ NEW
+
 ## What's New in v2.2
 
-- **WebGL/WebGL2 Plugin Architecture** - Raw WebGL and WebGL2 shader plugins now supported âœ…
+- **WebGL/WebGL2 Plugin Architecture** - Raw WebGL and WebGL2 shader plugins now supported ✅
 - **Context Type Flexibility** - Plugins can choose 2D, WebGL, or WebGL2 contexts
 - **Lazy Context Loading** - Base class no longer forces 2D context creation
 - **Backwards Compatible** - Existing 2D and Three.js plugins work unchanged
@@ -30,15 +53,18 @@
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Canvas Context Types](#canvas-context-types) â­ NEW
+2. [Canvas Context Types](#canvas-context-types) ⭐ NEW
 3. [2D Canvas Plugins](#2d-canvas-plugins)
-4. [WebGL/WebGL2 Plugins](#webglwebgl2-plugins) â­ NEW
+4. [WebGL/WebGL2 Plugins](#webglwebgl2-plugins) ⭐ NEW
 5. [Three.js Integration](#threejs-integration)
 6. [Advanced Three.js Techniques](#advanced-threejs-techniques)
 7. [Audio Integration](#audio-integration)
-8. [UI Controls](#ui-controls)
-9. [Performance Optimization](#performance-optimization)
-10. [Best Practices](#best-practices)
+8. [Advanced Audio Reactivity](#advanced-audio-reactivity) ⭐ NEW
+9. [Ring Spawning System](#ring-spawning-system) ⭐ NEW
+10. [Post-Processing Effects](#post-processing-effects) ⭐ NEW
+11. [UI Controls](#ui-controls)
+12. [Performance Optimization](#performance-optimization)
+13. [Best Practices](#best-practices)
 
 ---
 
@@ -53,7 +79,8 @@ class MyPlugin extends FrequePluginBase {
             version: '1.0.0',
             author: 'Your Name',
             description: 'My Awesome Plugin',
-            targetFPS: 60
+            targetFPS: 60,
+            dialFillColor: '--accent-color' // Optional: Custom dial fill color (CSS variable)
         });
         
         this.setupControls();
@@ -1155,6 +1182,131 @@ if (this.mappingMode === 'reflection') {
 
 # Audio Integration
 
+## Understanding Audio Data Access (v2.5)
+
+### CRITICAL: Two Ways to Access Audio Data
+
+Freque provides audio data through both **base class methods** and **sharedAudioData properties**. Understanding which to use is essential.
+
+### ✅ CORRECT: Recommended Approach
+
+```javascript
+onUpdate(deltaTime, timestamp, sharedAudioData) {
+    // ✅ For overall energy - use base class method
+    this.audioLevel = this.getAudioEnergy();
+    
+    // ✅ For frequency bands - use sharedAudioData properties
+    this.bassLevel = sharedAudioData.bass || 0;
+    this.midLevel = sharedAudioData.mid || 0;
+    this.trebleLevel = sharedAudioData.treble || 0;
+    this.beatDetected = sharedAudioData.beat || false;
+    
+    // Now use these values in your visualization
+    this.updateVisualization();
+}
+```
+
+### Available Audio Sources
+
+**From Base Class Methods:**
+- `this.getAudioEnergy()` - Returns overall energy level (0.0-1.0)
+- `this.getAudioFrequencies()` - Returns raw frequency data array (Uint8Array)
+
+**From sharedAudioData Parameter:**
+- `sharedAudioData.bass` - Bass level (0.0-1.0)
+- `sharedAudioData.mid` - Mid-range level (0.0-1.0)  
+- `sharedAudioData.treble` - Treble level (0.0-1.0)
+- `sharedAudioData.beat` - Beat detected (boolean)
+
+### Complete Audio Integration Example
+
+```javascript
+class MyAudioPlugin extends FrequePluginBase {
+    constructor(visualizer) {
+        super('myaudioplugin', visualizer, {
+            version: '1.0.0',
+            author: 'Your Name',
+            description: 'Audio-reactive visualization'
+        });
+        
+        // Initialize audio variables in constructor
+        this.audioLevel = 0;
+        this.bassLevel = 0;
+        this.midLevel = 0;
+        this.trebleLevel = 0;
+        this.beatDetected = false;
+        
+        this.setupControls();
+    }
+    
+    onUpdate(deltaTime, timestamp, sharedAudioData) {
+        // Get audio data
+        this.audioLevel = this.getAudioEnergy();
+        this.bassLevel = sharedAudioData.bass || 0;
+        this.midLevel = sharedAudioData.mid || 0;
+        this.trebleLevel = sharedAudioData.treble || 0;
+        this.beatDetected = sharedAudioData.beat || false;
+        
+        // React to audio
+        this.size = 100 + (this.bassLevel * 200);        // Bass affects size
+        this.rotation += this.midLevel * 0.1;             // Mid affects rotation
+        this.brightness = 0.5 + (this.trebleLevel * 0.5); // Treble affects brightness
+        
+        if (this.beatDetected) {
+            this.triggerPulse();
+        }
+    }
+    
+    triggerPulse() {
+        // Special effect on beat
+        this.pulseScale = 1.5;
+    }
+    
+    onRender(deltaTime, timestamp, sharedAudioData) {
+        // Use audio-reactive variables in rendering
+        this.ctx.fillStyle = `hsl(${this.midLevel * 360}, 100%, ${this.brightness * 100}%)`;
+        // ... render visualization
+    }
+}
+```
+
+### Audio Reactivity Mapping Patterns
+
+**Pattern 1: Bass → Size/Scale**
+```javascript
+const scale = 1.0 + (this.bassLevel * 2.0);
+sphere.scale.set(scale, scale, scale);
+```
+
+**Pattern 2: Mid → Movement/Speed**
+```javascript
+this.velocity = this.midLevel * 5.0;
+this.position += this.velocity * deltaTime;
+```
+
+**Pattern 3: Treble → Brightness/Detail**
+```javascript
+this.brightness = 0.5 + (this.trebleLevel * 0.5);
+material.emissiveIntensity = this.trebleLevel;
+```
+
+**Pattern 4: Beat → Trigger Events**
+```javascript
+if (this.beatDetected) {
+    this.createExplosion();
+    this.flashScreen();
+}
+```
+
+**Pattern 5: Overall Energy → Global Intensity**
+```javascript
+const energy = this.getAudioEnergy();
+this.globalIntensity = energy;
+this.particleCount = Math.floor(10 + energy * 100);
+```
+
+---
+
 ## Getting Audio Data
 
 ```javascript
@@ -1379,15 +1531,83 @@ const scaledOutput = controlValue <= centerValue
 
 ## Dropdowns
 
-### Basic Dropdown
+### CRITICAL Requirements for Dropdowns
 
-**CRITICAL:** Always specify `className` for proper styling:
+Dropdowns must have:
+1. `type: 'dropdown'`
+2. `className: 'dropdown-selector-mixer'` **(REQUIRED for proper display)**
+3. `options` array with objects containing `value` and `label` properties
+4. Initial `value` that matches one of the option values
+5. `onChange` callback
+
+### ❌ WRONG Dropdown Formats
+
+```javascript
+// ❌ WRONG - Simple array (won't work)
+options: ['Option 1', 'Option 2', 'Option 3']
+
+// ❌ WRONG - Object with key-value pairs (won't work)
+options: {
+    'value1': 'Label 1',
+    'value2': 'Label 2'
+}
+
+// ❌ WRONG - Missing className (dropdown won't render items)
+this.addControl('myDropdown', {
+    type: 'dropdown',
+    options: [{ value: 0, label: 'Option' }]
+    // Missing className!
+});
+```
+
+### ✅ CORRECT Dropdown Format
 
 ```javascript
 this.addControl('colorScheme', {
     type: 'dropdown',
     label: 'Color Scheme',
-    className: 'dropdown-selector-mixer',  // ✅ REQUIRED for proper styling
+    className: 'dropdown-selector-mixer',  // ✅ REQUIRED
+    options: [
+        { value: 'classic', label: 'Classic' },
+        { value: 'rainbow', label: 'Rainbow' },
+        { value: 'neon', label: 'Neon' },
+        { value: 'retro', label: 'Retro' }
+    ],
+    value: 'classic',  // Must match one of the values above
+    onChange: (value) => {
+        this.colorScheme = value;  // value will be 'classic', 'rainbow', etc.
+    }
+});
+```
+
+### Dropdown Value Types
+
+**String Values (Recommended for named options):**
+```javascript
+// ✅ Best for mode selection
+this.addControl('mode', {
+    type: 'dropdown',
+    label: 'Mode',
+    className: 'dropdown-selector-mixer',
+    options: [
+        { value: 'slow', label: 'Slow' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'fast', label: 'Fast' }
+    ],
+    value: 'medium',
+    onChange: (value) => {
+        this.mode = value;  // value is 'slow', 'medium', or 'fast'
+    }
+});
+```
+
+**Numeric Values (For indexed options):**
+```javascript
+// ✅ Works for scheme indexes
+this.addControl('colorScheme', {
+    type: 'dropdown',
+    label: 'Color Scheme',
+    className: 'dropdown-selector-mixer',
     options: [
         { value: 0, label: 'Acid Orange/Cyan' },
         { value: 1, label: 'Blue Soap Bubbles' },
@@ -1397,10 +1617,100 @@ this.addControl('colorScheme', {
     ],
     value: 0,
     onChange: (value) => {
-        this.colorScheme = parseInt(value);
+        this.colorScheme = parseInt(value);  // Convert to number
     }
 });
 ```
+
+**Float Values (For preset speeds/multipliers):**
+```javascript
+// ✅ Works for speed multipliers
+this.addControl('morphSpeed', {
+    type: 'dropdown',
+    label: 'Morph Speed',
+    className: 'dropdown-selector-mixer',
+    options: [
+        { value: 0.5, label: 'Slow' },
+        { value: 1.0, label: 'Medium' },
+        { value: 4.0, label: 'Fast' },
+        { value: 12.0, label: 'Ultra' }
+    ],
+    value: 1.0,
+    onChange: (value) => {
+        this.morphSpeed = parseFloat(value);  // Convert to float
+    }
+});
+```
+
+### Complete Dropdown Example with Usage
+
+```javascript
+class MyPlugin extends FrequePluginBase {
+    constructor(visualizer) {
+        super('myplugin', visualizer, {...});
+        
+        // ✅ CRITICAL: Initialize dropdown variable in constructor
+        this.colorScheme = 'classic';
+        
+        this.setupControls();
+    }
+    
+    setupControls() {
+        this.addControl('colorScheme', {
+            type: 'dropdown',
+            label: 'Color Scheme',
+            className: 'dropdown-selector-mixer',  // REQUIRED
+            options: [
+                { value: 'classic', label: 'Classic Green' },
+                { value: 'rainbow', label: 'Rainbow' },
+                { value: 'neon', label: 'Neon Pink' },
+                { value: 'retro', label: 'Retro Orange' },
+                { value: 'plasma', label: 'Plasma Purple' },
+                { value: 'monochrome', label: 'Monochrome' }
+            ],
+            value: 'classic',  // Must match initialized value
+            onChange: (value) => {
+                this.colorScheme = value;
+                // Colors will update automatically on next render
+            }
+        });
+    }
+    
+    // ✅ Use the dropdown value in your rendering
+    getColor(index) {
+        const schemes = {
+            classic: ['#0f0', '#0ff', '#fff'],
+            rainbow: ['#f0f', '#0ff', '#ff0', '#f00', '#0f0'],
+            neon: ['#f0f', '#0ff', '#ff0'],
+            retro: ['#ff6b35', '#f7931e', '#fdc82f'],
+            plasma: ['#ff006e', '#8338ec', '#3a86ff'],
+            monochrome: ['#fff', '#ccc', '#999']
+        };
+        
+        const colors = schemes[this.colorScheme] || schemes.classic;
+        return colors[index % colors.length];
+    }
+}
+```
+
+### Dropdown Troubleshooting
+
+**Problem: Dropdown shows no items**
+- ✅ Check that `className: 'dropdown-selector-mixer'` is present
+- ✅ Verify options format: `[{ value: 'x', label: 'X' }, ...]`
+- ✅ Ensure options array is not empty
+- ✅ Check browser console for errors
+
+**Problem: onChange receives undefined**
+- ✅ Check that option `value` properties are set correctly
+- ✅ Verify initial `value` matches one of the option values exactly
+- ✅ Make sure you're not using a simple array format
+
+**Problem: Selected value doesn't update visualization**
+- ✅ Ensure the variable is initialized in constructor  
+- ✅ Check that the value is being used in onRender() or onUpdate()
+- ✅ Verify the mapping logic (like color schemes object) is correct
+- ✅ Add console.log in onChange to verify it's being called
 
 ### Dropdown with Object Options
 
@@ -1425,26 +1735,6 @@ this.addControl('colorScheme', {
 });
 ```
 
-### Speed Control Dropdowns
-
-```javascript
-this.addControl('morphSpeed', {
-    type: 'dropdown',
-    label: 'Morph Speed',
-    className: 'dropdown-selector-mixer',
-    options: [
-        { value: 0.5, label: 'Slow' },
-        { value: 1.0, label: 'Medium' },
-        { value: 4.0, label: 'Fast' },
-        { value: 12.0, label: 'Ultra' }
-    ],
-    value: 1.0,
-    onChange: (value) => {
-        this.morphSpeed = parseFloat(value);
-    }
-});
-```
-
 ### Why className is Required
 
 **Before v2.2 Fix:**
@@ -1453,7 +1743,7 @@ this.addControl('morphSpeed', {
 this.addControl('myDropdown', {
     type: 'dropdown',
     options: [...],
-    // Missing className!
+    // Missing className causes broken display!
 });
 ```
 
@@ -1680,6 +1970,47 @@ this.addControl('floatSpeed', {
 
 **Note:** Dials (rotary controls) have replaced sliders in v2.3 for better visual consistency with professional audio/video software.
 
+### Custom Dial Fill Colors
+
+Plugins can specify a custom fill color for all their dials using CSS variables:
+
+```javascript
+super('myplugin', visualizer, {
+    version: '1.0.0',
+    author: 'Your Name',
+    description: 'My Awesome Plugin',
+    dialFillColor: '--accent-color' // All dials will use accent color from theme
+});
+```
+
+**How It Works:**
+- Set `dialFillColor` in plugin config (constructor's second parameter)
+- Value should be a CSS variable name (e.g., `'--accent-color'`, `'--highlight-color'`, `'--error-color'`)
+- All dials in the plugin will use this color for their fill
+- Dial outline (stroke) remains unchanged (uses `--text-secondary`)
+- If not specified, dials use default `dial-gold` styling
+- Works with all themes (color changes automatically with theme)
+
+**Available CSS Variables:**
+- `--accent-color` - Theme accent color (teal in Light-Vibrant)
+- `--highlight-color` - Theme highlight color
+- `--error-color` - Error/warning color
+- `--success-color` - Success color
+- `--warning-color` - Warning color
+- Any other CSS variable defined in your theme
+
+**Example:**
+```javascript
+class MyPlugin extends FrequePluginBase {
+    constructor(visualizer) {
+        super('myplugin', visualizer, {
+            version: '1.0.0',
+            dialFillColor: '--accent-color' // All dials will be teal in Light-Vibrant theme
+        });
+    }
+}
+```
+
 ---
 
 ## Additional Checkbox Examples
@@ -1699,6 +2030,123 @@ this.addControl('showGrid', {
     }
 });
 ```
+
+---
+
+## Control Variable Initialization (v2.5)
+
+### CRITICAL: Initialize All Control Variables in Constructor
+
+When controls are created, their `onChange` callbacks don't fire until the user interacts with them. If you don't initialize the variables in the constructor, they'll be `undefined` until the user touches the control.
+
+### ❌ WRONG - Variables Not Initialized
+
+```javascript
+class MyPlugin extends FrequePluginBase {
+    constructor(visualizer) {
+        super('myplugin', visualizer, {...});
+        
+        // ❌ No initialization - variables are undefined!
+        this.setupControls();
+    }
+    
+    setupControls() {
+        this.addControl('laserFreq', {
+            type: 'dial',
+            min: 0,
+            max: 100,
+            value: 30,
+            onChange: (value) => {
+                this.laserFreq = value;  // Only runs when user changes it!
+            }
+        });
+    }
+    
+    onUpdate() {
+        // ❌ this.laserFreq is undefined until user touches the dial!
+        const fireChance = this.laserFreq / 100;  // NaN!
+    }
+}
+```
+
+### ✅ CORRECT - All Variables Initialized
+
+```javascript
+class MyPlugin extends FrequePluginBase {
+    constructor(visualizer) {
+        super('myplugin', visualizer, {...});
+        
+        // ✅ Initialize ALL control variables with default values
+        this.alienSize = 40;
+        this.alienCount = 33;
+        this.moveSpeed = 1.0;
+        this.laserFreq = 30;
+        this.colorScheme = 'classic';
+        this.displayScore = true;
+        this.displayBarriers = true;
+        
+        this.setupControls();
+    }
+    
+    setupControls() {
+        this.addControl('laserFreq', {
+            type: 'dial',
+            min: 0,
+            max: 100,
+            value: 30,  // Should match the initialized value above
+            onChange: (value) => {
+                this.laserFreq = value;
+            }
+        });
+        
+        // ... more controls
+    }
+    
+    onUpdate() {
+        // ✅ this.laserFreq is always defined (30 initially)
+        const fireChance = this.laserFreq / 100;  // Works immediately!
+    }
+}
+```
+
+### Best Practice Pattern
+
+```javascript
+constructor(visualizer) {
+    super('myplugin', visualizer, {...});
+    
+    // STEP 1: Initialize data structures
+    this.particles = [];
+    this.effects = [];
+    
+    // STEP 2: Initialize control variables with defaults
+    // (Match the 'value' you'll use in addControl)
+    this.particleCount = 100;
+    this.size = 5.0;
+    this.speed = 1.0;
+    this.colorScheme = 'rainbow';
+    this.audioReactive = true;
+    
+    // STEP 3: Initialize audio variables
+    this.audioLevel = 0;
+    this.bassLevel = 0;
+    this.midLevel = 0;
+    this.trebleLevel = 0;
+    
+    // STEP 4: Setup controls and presets
+    this.setupControls();
+    this.setupPresets();
+}
+```
+
+### Checklist for Every Control
+
+When adding a control, ensure:
+1. ✅ Variable is initialized in constructor with default value
+2. ✅ Control `value` matches the initialized variable value
+3. ✅ `onChange` callback updates the variable
+4. ✅ Variable is actually USED in `onUpdate()` or `onRender()`
+5. ✅ Changing the control produces a visible effect
 
 ---
 
@@ -1756,6 +2204,902 @@ These controls affect behavior in next frame (smooth transition):
 - ✅ Smooth transitions
 - ✅ No visual "pop"
 - ⚠️ Effect not instantly apparent
+
+**Best Practice:**
+Use immediate updates for properties where users expect instant feedback (geometry, materials). Use deferred updates for properties affecting motion or animation flow.
+
+---
+
+# Advanced Audio Reactivity
+
+## Global Audio Controls
+
+For fine-tuned control over how audio affects your visualization, implement global sensitivity and smoothing controls.
+
+### Audio Sensitivity
+
+Global multiplier that scales all audio influence (0-200%):
+
+```javascript
+// In constructor
+this.audioSensitivity = 1.0; // 100% = 1.0, 200% = 2.0
+
+// Add control
+this.addControl('audioSensitivity', {
+    type: 'dial',
+    label: 'Audio Sensitivity',
+    min: 0,
+    max: 200,
+    step: 5,
+    value: 100,
+    onChange: (value) => {
+        this.audioSensitivity = value / 100; // Convert 0-200% to 0-2.0
+    }
+});
+
+// Apply in getAudioData
+getAudioData() {
+    // ... get and smooth raw values
+    
+    return {
+        bass: this.smoothedBass * this.audioSensitivity,
+        mid: this.smoothedMid * this.audioSensitivity,
+        treble: this.smoothedTreble * this.audioSensitivity,
+        energy: this.smoothedEnergy * this.audioSensitivity
+    };
+}
+```
+
+### Audio Smoothing
+
+Control the exponential smoothing factor to prevent jittery movement (0-100%):
+
+```javascript
+// In constructor
+this.audioSmoothing = 0.15; // 15% smoothing
+this.audioSmoothingFactor = this.audioSmoothing;
+
+// Add control
+this.addControl('audioSmoothing', {
+    type: 'dial',
+    label: 'Audio Smoothing',
+    min: 0,
+    max: 100,
+    step: 5,
+    value: 15,
+    onChange: (value) => {
+        this.audioSmoothing = value / 100; // Convert 0-100% to 0-1.0
+        this.audioSmoothingFactor = this.audioSmoothing;
+    }
+});
+
+// Use in smoothing calculation
+this.smoothedBass += (rawBass - this.smoothedBass) * this.audioSmoothingFactor;
+this.smoothedMid += (rawMid - this.smoothedMid) * this.audioSmoothingFactor;
+this.smoothedTreble += (rawTreble - this.smoothedTreble) * this.audioSmoothingFactor;
+```
+
+**Smoothing Guidelines:**
+- **0-10%**: Very smooth, sluggish response (good for slow visualizations)
+- **10-20%**: Balanced, prevents jitter while staying responsive (recommended)
+- **20-40%**: More responsive, slight jitter on sudden changes
+- **40-100%**: Very responsive, may appear jumpy
+
+---
+
+## Per-Feature Intensity Controls
+
+Allow independent control of how strongly each feature reacts to audio:
+
+```javascript
+// In constructor
+this.colorIntensity = 1.0;   // 100%
+this.speedIntensity = 1.0;   // 100%
+this.segmentIntensity = 1.0; // 100%
+
+// Add controls
+this.addControl('colorIntensity', {
+    type: 'dial',
+    label: 'Color Intensity',
+    min: 0,
+    max: 200,
+    step: 5,
+    value: 100,
+    onChange: (value) => {
+        this.colorIntensity = value / 100;
+    }
+});
+
+this.addControl('speedIntensity', {
+    type: 'dial',
+    label: 'Speed Intensity',
+    min: 0,
+    max: 200,
+    step: 5,
+    value: 100,
+    onChange: (value) => {
+        this.speedIntensity = value / 100;
+    }
+});
+
+this.addControl('segmentIntensity', {
+    type: 'dial',
+    label: 'Segment Intensity',
+    min: 0,
+    max: 200,
+    step: 5,
+    value: 100,
+    onChange: (value) => {
+        this.segmentIntensity = value / 100;
+    }
+});
+```
+
+### Applying Per-Feature Intensity
+
+```javascript
+// Color reactivity
+if (this.beatReact && this.audioColor) {
+    const hueShift = audioData.energy * 120 * this.colorIntensity;
+    primaryColor = this.shiftHue(colors.primary, hueShift);
+}
+
+// Speed reactivity
+if (this.beatReact && this.audioSpeed) {
+    const speedMultiplier = 1.0 + (audioData.energy * 0.5 * this.speedIntensity);
+    finalRadius = baseRadius * speedMultiplier;
+}
+
+// Segment reactivity
+if (this.beatReact && this.audioSegments) {
+    const extraSegments = Math.floor(audioData.energy * 24 * this.segmentIntensity);
+    sides = this.segmentCount + extraSegments;
+}
+```
+
+**Use Cases:**
+- User wants color to react strongly but speed to react subtly
+- Fine-tuning the "feel" of audio reactivity per feature
+- Creating dramatic effects by cranking one intensity to 200%
+
+---
+
+## Frequency-Specific Reactivity
+
+Map specific frequency ranges (bass/mid/treble) to specific visual effects:
+
+### Bass → Rotation
+
+```javascript
+// In constructor
+this.bassRotation = false;
+
+// Add toggle
+this.addControl('bassRotation', {
+    type: 'checkbox',
+    label: 'Bass → Rotation',
+    checked: false,
+    className: 'btn-primary-mixer',
+    onChange: (value) => {
+        this.bassRotation = value;
+    }
+});
+
+// Apply in onUpdate
+onUpdate(deltaTime) {
+    const audioData = this.getAudioData();
+    
+    if (this.beatReact && this.bassRotation) {
+        this.rotation += audioData.bass * deltaTime * 5;
+    }
+}
+```
+
+### Bass → Ring Spawn Rate
+
+```javascript
+// In constructor
+this.bassSpawn = false;
+this.baseSpawnInterval = 0.3; // Base interval
+
+// Add toggle
+this.addControl('bassSpawn', {
+    type: 'checkbox',
+    label: 'Bass → Spawn',
+    checked: false,
+    className: 'btn-primary-mixer',
+    onChange: (value) => {
+        this.bassSpawn = value;
+    }
+});
+
+// Apply in onUpdate
+onUpdate(deltaTime) {
+    const audioData = this.getAudioData();
+    
+    // Calculate spawn interval
+    let spawnInterval = this.baseSpawnInterval;
+    if (this.beatReact && this.bassSpawn) {
+        // Higher bass = faster spawning (shorter interval)
+        spawnInterval = this.baseSpawnInterval / (1 + audioData.bass * 2);
+    }
+    
+    this.timeSinceLastRing += deltaTime;
+    if (this.timeSinceLastRing >= spawnInterval) {
+        this.spawnRing();
+        this.timeSinceLastRing = 0;
+    }
+}
+```
+
+### Mid → Glow Intensity
+
+```javascript
+// In constructor
+this.midGlow = false;
+
+// Add toggle
+this.addControl('midGlow', {
+    type: 'checkbox',
+    label: 'Mid → Glow',
+    checked: false,
+    className: 'btn-primary-mixer',
+    onChange: (value) => {
+        this.midGlow = value;
+    }
+});
+
+// Apply in drawSegment
+drawSegment() {
+    const audioData = this.getAudioData();
+    
+    let glowAmount = this.glowIntensity * 20; // Base glow
+    
+    if (this.beatReact && this.midGlow) {
+        glowAmount *= (1 + audioData.mid * 2); // Up to 3x glow on mids
+    }
+    
+    this.ctx.shadowBlur = glowAmount;
+    this.ctx.shadowColor = colors.primary;
+}
+```
+
+### Treble → Line Thickness
+
+```javascript
+// In constructor
+this.trebleThickness = false;
+
+// Add toggle
+this.addControl('trebleThickness', {
+    type: 'checkbox',
+    label: 'Treble → Thickness',
+    checked: false,
+    className: 'btn-primary-mixer',
+    onChange: (value) => {
+        this.trebleThickness = value;
+    }
+});
+
+// Apply in drawSegment
+drawSegment() {
+    const audioData = this.getAudioData();
+    
+    let thickness = this.ringThickness; // Base thickness
+    
+    if (this.beatReact && this.trebleThickness) {
+        thickness *= (1 + audioData.treble * 0.5); // Up to 1.5x on treble
+    }
+    
+    this.ctx.lineWidth = thickness;
+}
+```
+
+**Frequency Mapping Best Practices:**
+- **Bass** → Physical movement (rotation, spawning, pulsing)
+- **Mids** → Visual intensity (glow, brightness, saturation)
+- **Treble** → Fine details (thickness, particle count, shimmer)
+
+---
+
+# Ring Spawning System
+
+For continuous tunnel effects where rings spawn at the center, grow, and disappear at edges.
+
+## Why Use Ring Spawning?
+
+**Advantages:**
+- Smooth, organic tunnel feel
+- Efficient (only active rings are rendered)
+- Easy to control speed and density
+- Natural lifespan management
+
+**Use Cases:**
+- Tunnel visualizations (Tempest-style)
+- Ripple effects expanding from center
+- Particle systems with timed lifecycle
+- Wave/pulse effects
+
+---
+
+## Basic Implementation
+
+### Constructor Setup
+
+```javascript
+constructor(visualizer) {
+    super('myplugin', visualizer, { /* ... */ });
+    
+    // Ring spawning system
+    this.rings = []; // Array of { age: 0-1, rotation: angle }
+    this.ringSpawnInterval = 0.3; // Spawn new ring every 0.3 seconds
+    this.timeSinceLastRing = 0;
+    this.ringLifetime = 3.0; // Each ring lives for 3 seconds
+    
+    this.setupControls();
+    this.setupPresets();
+}
+```
+
+### Update Logic
+
+```javascript
+onUpdate(deltaTime, timestamp, sharedAudioData) {
+    this.time += deltaTime;
+    const audioData = this.getAudioData();
+    
+    // Spawn new rings
+    this.timeSinceLastRing += deltaTime;
+    if (this.timeSinceLastRing >= this.ringSpawnInterval) {
+        this.rings.push({
+            age: 0,
+            rotation: this.rotation // Capture current rotation
+        });
+        this.timeSinceLastRing = 0;
+    }
+    
+    // Age existing rings
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+        this.rings[i].age += deltaTime / this.ringLifetime;
+        
+        // Remove dead rings
+        if (this.rings[i].age >= 1) {
+            this.rings.splice(i, 1);
+        }
+    }
+}
+```
+
+### Render Logic
+
+```javascript
+onRender(deltaTime, timestamp, sharedAudioData) {
+    const audioData = this.getAudioData();
+    const colors = this.getColors();
+    
+    // Clear background
+    this.ctx.fillStyle = '#00003340';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw all active rings from oldest to newest (back to front)
+    for (const ring of this.rings) {
+        this.drawRing(ring.age, ring.rotation, colors, audioData);
+    }
+}
+```
+
+### Drawing Individual Rings
+
+```javascript
+drawRing(age, rotation, colors, audioData) {
+    // age = 0 (just spawned) to 1 (about to die)
+    
+    // Scale from small to large based on age
+    // At age=0: radius = 50 (center)
+    // At age=1: radius = 800 (edge of screen)
+    const minRadius = 50;
+    const maxRadius = 800;
+    const radius = minRadius + (age * (maxRadius - minRadius));
+    
+    // Fade out as ring ages
+    const alpha = Math.max(0, 1 - age);
+    
+    // Audio-reactive size
+    const audioScale = 1 + (audioData.bass * 0.3);
+    const finalRadius = radius * audioScale * this.scale;
+    
+    const sides = this.segmentCount;
+    
+    this.ctx.save();
+    this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.rotate(rotation); // Use ring's captured rotation
+    
+    // Glow
+    if (this.glowIntensity > 0) {
+        this.ctx.shadowBlur = 20 * this.glowIntensity;
+        this.ctx.shadowColor = colors.primary;
+    }
+    
+    // Draw polygon
+    this.ctx.beginPath();
+    this.ctx.lineWidth = this.ringThickness;
+    
+    for (let i = 0; i <= sides; i++) {
+        const angle = (i / sides) * Math.PI * 2;
+        const x = Math.cos(angle) * finalRadius;
+        const y = Math.sin(angle) * finalRadius;
+        
+        if (i === 0) {
+            this.ctx.moveTo(x, y);
+        } else {
+            this.ctx.lineTo(x, y);
+        }
+    }
+    
+    // Color gradient
+    const gradient = this.ctx.createLinearGradient(
+        -finalRadius, -finalRadius, 
+        finalRadius, finalRadius
+    );
+    gradient.addColorStop(0, colors.primary);
+    gradient.addColorStop(0.5, colors.secondary);
+    gradient.addColorStop(1, colors.tertiary);
+    
+    this.ctx.strokeStyle = gradient;
+    this.ctx.globalAlpha = alpha;
+    this.ctx.stroke();
+    
+    this.ctx.restore();
+}
+```
+
+---
+
+## Audio-Reactive Ring Spawning
+
+### Bass-Controlled Spawn Rate
+
+```javascript
+onUpdate(deltaTime) {
+    const audioData = this.getAudioData();
+    
+    // Higher bass = faster spawning
+    let spawnInterval = this.ringSpawnInterval;
+    if (this.beatReact && this.bassSpawn) {
+        spawnInterval = this.ringSpawnInterval / (1 + audioData.bass * 2);
+    }
+    
+    this.timeSinceLastRing += deltaTime;
+    if (this.timeSinceLastRing >= spawnInterval) {
+        this.rings.push({ age: 0, rotation: this.rotation });
+        this.timeSinceLastRing = 0;
+    }
+    
+    // Age rings...
+}
+```
+
+### Beat-Triggered Bursts
+
+```javascript
+onUpdate(deltaTime) {
+    const audioData = this.getAudioData();
+    
+    // Detect beat (bass threshold)
+    const beatThreshold = 0.7;
+    const isBeat = audioData.bass > beatThreshold && !this.lastBeat;
+    this.lastBeat = audioData.bass > beatThreshold;
+    
+    // Spawn burst of rings on beat
+    if (isBeat) {
+        for (let i = 0; i < 5; i++) {
+            this.rings.push({
+                age: i * 0.05, // Slight offset
+                rotation: this.rotation + (i * Math.PI / 10)
+            });
+        }
+    }
+    
+    // Normal spawning...
+    // Age rings...
+}
+```
+
+---
+
+## Performance Optimization
+
+### Ring Limit
+
+Prevent too many rings from accumulating:
+
+```javascript
+onUpdate(deltaTime) {
+    const maxRings = 100;
+    
+    // Spawn new ring
+    if (this.timeSinceLastRing >= this.ringSpawnInterval) {
+        if (this.rings.length < maxRings) {
+            this.rings.push({ age: 0, rotation: this.rotation });
+        }
+        this.timeSinceLastRing = 0;
+    }
+    
+    // Age and remove...
+}
+```
+
+### Culling Off-Screen Rings
+
+```javascript
+drawRing(age, rotation, colors, audioData) {
+    const radius = 50 + (age * 750);
+    
+    // Skip if ring is off-screen
+    const maxViewport = Math.sqrt(
+        this.canvas.width * this.canvas.width + 
+        this.canvas.height * this.canvas.height
+    );
+    
+    if (radius > maxViewport) {
+        return; // Don't draw
+    }
+    
+    // Draw ring...
+}
+```
+
+---
+
+# Post-Processing Effects
+
+Modern retro effects applied after rendering for authentic 80s/90s aesthetics.
+
+## Pixelation Effect
+
+Create low-resolution retro look by downscaling and upscaling with nearest-neighbor filtering.
+
+### Setup
+
+```javascript
+// In constructor
+this.pixelCanvas = null;
+this.pixelCtx = null;
+this.pixelation = 0; // 0 = full res, 100 = maximum pixelation
+
+// Add control
+this.addControl('pixelation', {
+    type: 'dial',
+    label: 'Pixelation',
+    min: 0,
+    max: 100,
+    step: 5,
+    value: 0,
+    onChange: (value) => {
+        this.pixelation = value;
+        
+        // Create/destroy pixel buffer as needed
+        if (value > 0 && !this.pixelCanvas) {
+            this.pixelCanvas = document.createElement('canvas');
+            this.pixelCtx = this.pixelCanvas.getContext('2d', { 
+                willReadFrequently: true 
+            });
+        } else if (value === 0 && this.pixelCanvas) {
+            this.pixelCanvas = null;
+            this.pixelCtx = null;
+        }
+    }
+});
+```
+
+### Implementation
+
+```javascript
+applyPixelation() {
+    if (this.pixelation === 0) return;
+    
+    // Calculate target resolution
+    // At 100%: 160x120 (classic retro)
+    // At 50%: 320x240
+    // At 25%: 640x480
+    const pixelFactor = 1 - (this.pixelation / 100);
+    const minResolution = 160;
+    const targetWidth = Math.max(
+        minResolution, 
+        Math.floor(this.canvas.width * pixelFactor)
+    );
+    const targetHeight = Math.max(
+        Math.floor(minResolution * (this.canvas.height / this.canvas.width)),
+        Math.floor(this.canvas.height * pixelFactor)
+    );
+    
+    // Set pixel buffer size
+    this.pixelCanvas.width = targetWidth;
+    this.pixelCanvas.height = targetHeight;
+    
+    // Downscale to pixel buffer (smoothing OFF for sharp pixels)
+    this.pixelCtx.imageSmoothingEnabled = false;
+    this.pixelCtx.drawImage(this.canvas, 0, 0, targetWidth, targetHeight);
+    
+    // Clear main canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Upscale back to main canvas (nearest-neighbor)
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(
+        this.pixelCanvas, 
+        0, 0, 
+        this.canvas.width, 
+        this.canvas.height
+    );
+    
+    // Re-enable smoothing for future operations
+    this.ctx.imageSmoothingEnabled = true;
+}
+```
+
+### Render Order
+
+```javascript
+onRender() {
+    // 1. Draw all visual elements
+    this.drawTunnel();
+    
+    // 2. Apply other effects (scanlines, static, etc.)
+    this.drawScanlines();
+    this.drawStatic();
+    
+    // 3. Apply pixelation LAST
+    if (this.pixelation > 0) {
+        this.applyPixelation();
+    }
+}
+```
+
+**Important:** Pixelation must be applied LAST, after all other drawing is complete.
+
+---
+
+## Color Banding (Posterization)
+
+Reduce color depth for authentic 8-bit/16-bit retro look.
+
+### Setup
+
+```javascript
+// In constructor
+this.colorBanding = 0; // 0 = full color (24-bit), 100 = extreme banding (1-bit)
+
+// Add control
+this.addControl('colorBanding', {
+    type: 'dial',
+    label: 'Color Banding',
+    min: 0,
+    max: 100,
+    step: 5,
+    value: 0,
+    onChange: (value) => {
+        this.colorBanding = value;
+    }
+});
+```
+
+### Implementation
+
+```javascript
+applyColorBanding() {
+    if (this.colorBanding === 0) return;
+    
+    // Get image data
+    const imageData = this.ctx.getImageData(
+        0, 0, 
+        this.canvas.width, 
+        this.canvas.height
+    );
+    const data = imageData.data;
+    
+    // Calculate color depth based on banding amount
+    // 0%: 256 levels (8-bit per channel, full color)
+    // 25%: 64 levels (6-bit per channel)
+    // 50%: 16 levels (4-bit per channel)
+    // 75%: 4 levels (2-bit per channel)
+    // 100%: 2 levels (1-bit per channel, pure posterization)
+    const bandingFactor = this.colorBanding / 100;
+    const levels = Math.max(2, Math.floor(256 * (1 - bandingFactor * 0.992)));
+    const step = 255 / (levels - 1);
+    
+    // Quantize each pixel
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.round(data[i] / step) * step;         // Red
+        data[i + 1] = Math.round(data[i + 1] / step) * step; // Green
+        data[i + 2] = Math.round(data[i + 2] / step) * step; // Blue
+        // Alpha (i + 3) unchanged
+    }
+    
+    // Put modified data back
+    this.ctx.putImageData(imageData, 0, 0);
+}
+```
+
+### Render Order
+
+```javascript
+onRender() {
+    // 1. Draw all visual elements
+    this.drawTunnel();
+    this.drawScanlines();
+    this.drawStatic();
+    this.drawRGBShift();
+    
+    // 2. Apply color banding BEFORE vignette/curvature
+    //    This prevents posterizing smooth gradients
+    if (this.colorBanding > 0) {
+        this.applyColorBanding();
+    }
+    
+    // 3. Apply vignette/curvature (smooth gradients preserved)
+    this.drawVignette();
+    this.drawScreenCurvature();
+    
+    // 4. Apply pixelation last
+    if (this.pixelation > 0) {
+        this.applyPixelation();
+    }
+}
+```
+
+**Critical:** Apply color banding BEFORE vignette/screen curvature to avoid posterizing those smooth gradients.
+
+---
+
+## Enhanced RGB Shift
+
+Improved chromatic aberration with vertical component and edge fringing.
+
+### Basic RGB Shift (Horizontal Only)
+
+```javascript
+drawRGBShift() {
+    if (this.rgbShift === 0) return;
+    
+    const audioData = this.getAudioData();
+    const shiftAmount = this.rgbShift * 8 * (1 + audioData.treble);
+    
+    this.ctx.globalAlpha = 0.15 * this.rgbShift;
+    this.ctx.globalCompositeOperation = 'screen';
+    
+    // Red shift left
+    this.ctx.fillStyle = '#ff0000';
+    this.ctx.fillRect(-shiftAmount, 0, this.canvas.width, this.canvas.height);
+    
+    // Blue shift right
+    this.ctx.fillStyle = '#0000ff';
+    this.ctx.fillRect(shiftAmount, 0, this.canvas.width, this.canvas.height);
+    
+    this.ctx.globalCompositeOperation = 'source-over';
+    this.ctx.globalAlpha = 1;
+}
+```
+
+### Enhanced RGB Shift (Vertical + Edge Fringing)
+
+```javascript
+drawRGBShift() {
+    if (this.rgbShift === 0) return;
+    
+    const audioData = this.getAudioData();
+    
+    // Enhanced shift amounts
+    const baseShift = this.rgbShift * 8;
+    const audioBoost = 1 + (audioData.treble * 1.5);
+    const shiftH = baseShift * audioBoost; // Horizontal
+    const shiftV = (baseShift * 0.5) * audioBoost; // Vertical (half of horizontal)
+    
+    this.ctx.globalAlpha = 0.15 * this.rgbShift;
+    this.ctx.globalCompositeOperation = 'screen';
+    
+    // Red channel (left and up)
+    this.ctx.fillStyle = '#ff0000';
+    this.ctx.fillRect(-shiftH, -shiftV, this.canvas.width, this.canvas.height);
+    
+    // Blue channel (right and down)
+    this.ctx.fillStyle = '#0000ff';
+    this.ctx.fillRect(shiftH, shiftV, this.canvas.width, this.canvas.height);
+    
+    // Green channel (vertical only, opposite)
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.fillRect(0, shiftV * 0.5, this.canvas.width, this.canvas.height);
+    
+    // Edge fringing (at high intensity + audio)
+    if (this.rgbShift > 0.3 && audioData.treble > 0.5) {
+        this.ctx.globalAlpha = 0.1 * this.rgbShift * audioData.treble;
+        
+        // Magenta fringe (Red + Blue)
+        this.ctx.fillStyle = '#ff00ff';
+        this.ctx.fillRect(shiftH * 0.5, 0, this.canvas.width, this.canvas.height);
+        
+        // Cyan fringe (Green + Blue)
+        this.ctx.fillStyle = '#00ffff';
+        this.ctx.fillRect(-shiftH * 0.5, 0, this.canvas.width, this.canvas.height);
+    }
+    
+    this.ctx.globalCompositeOperation = 'source-over';
+    this.ctx.globalAlpha = 1;
+}
+```
+
+---
+
+## Film Grain Static
+
+Authentic static with clustering and color noise.
+
+### Basic Static (White Noise)
+
+```javascript
+drawStatic() {
+    if (this.staticAmount === 0) return;
+    
+    const intensity = this.staticAmount;
+    const pixelCount = Math.floor(intensity * 500);
+    
+    for (let i = 0; i < pixelCount; i++) {
+        const x = Math.random() * this.canvas.width;
+        const y = Math.random() * this.canvas.height;
+        const brightness = Math.random();
+        
+        this.ctx.fillStyle = `rgba(${brightness * 255}, ${brightness * 255}, ${brightness * 255}, ${intensity})`;
+        this.ctx.fillRect(x, y, 1, 1);
+    }
+}
+```
+
+### Enhanced Static (Clustered + Color Noise)
+
+```javascript
+drawStatic() {
+    if (this.staticAmount === 0) return;
+    
+    const audioData = this.getAudioData();
+    const intensity = this.staticAmount * (0.5 + audioData.treble * 0.5);
+    const pixelCount = Math.floor(intensity * 500);
+    
+    // Cluster seed for film grain effect
+    const clusterSeed = Math.random() * 1000;
+    
+    for (let i = 0; i < pixelCount; i++) {
+        const x = Math.random() * this.canvas.width;
+        const y = Math.random() * this.canvas.height;
+        
+        // Perlin-like clustering
+        const clusterFactor = Math.sin(x * 0.1 + clusterSeed) * 
+                             Math.cos(y * 0.1 + clusterSeed);
+        const shouldDraw = Math.random() < 0.5 + (clusterFactor * 0.3);
+        
+        if (shouldDraw) {
+            const brightness = Math.random();
+            
+            // 70% grayscale, 30% colored (VHS artifact)
+            if (Math.random() < 0.7) {
+                // Grayscale static
+                this.ctx.fillStyle = `rgba(${brightness * 255}, ${brightness * 255}, ${brightness * 255}, ${intensity})`;
+            } else {
+                // Colored noise
+                const r = brightness * 255 * (0.5 + Math.random() * 0.5);
+                const g = brightness * 255 * (0.5 + Math.random() * 0.5);
+                const b = brightness * 255 * (0.5 + Math.random() * 0.5);
+                this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${intensity * 0.7})`;
+            }
+            
+            // Vary pixel size (1-2px)
+            const size = Math.random() < 0.8 ? 1 : 2;
+            this.ctx.fillRect(x, y, size, size);
+        }
+    }
+}
+```
+
+---
 
 **Best Practice:**
 Use immediate updates for properties where users expect instant feedback (geometry, materials). Use deferred updates for properties affecting motion or animation flow.
@@ -1903,6 +3247,164 @@ onCleanup() {
 
 ---
 
+---
+
+# Making Controls Actually Work (v2.5)
+
+A control updating a variable isn't enough - the variable must be USED in your rendering or update logic.
+
+## Example: Laser Frequency Control
+
+**Variable is updated:**
+```javascript
+this.addControl('laserFrequency', {
+    type: 'dial',
+    min: 0,
+    max: 100,
+    value: 30,
+    onChange: (value) => {
+        this.laserFreq = value;  // ✅ Variable updates
+    }
+});
+```
+
+**But it must be USED in game logic:**
+```javascript
+updateLasers(deltaTime) {
+    // ✅ CORRECT - laserFreq controls fire rate
+    const baseFireChance = this.laserFreq / 1000;
+    const audioBoost = 1 + (this.midLevel * 2);
+    
+    if (Math.random() < baseFireChance * audioBoost) {
+        this.fireLaser();
+    }
+}
+```
+
+## Example: Color Reactivity Control
+
+**Variable is updated:**
+```javascript
+this.addControl('colorReact', {
+    type: 'dial',
+    min: 0,
+    max: 50,
+    value: 20,
+    onChange: (value) => {
+        this.colorReactivity = value;  // ✅ Variable updates
+    }
+});
+```
+
+**Must be used when getting colors:**
+```javascript
+getColor(index) {
+    const baseColor = this.colors[index];
+    
+    // ✅ CORRECT - colorReactivity affects brightness
+    const reactAmount = this.colorReactivity / 100;
+    
+    if (reactAmount > 0 && this.trebleLevel > 0) {
+        return this.brightenColor(baseColor, this.trebleLevel * reactAmount);
+    }
+    
+    return baseColor;
+}
+```
+
+## Verification Checklist
+
+For each control you add:
+1. ✅ Variable is initialized in constructor
+2. ✅ Control value matches initial variable value
+3. ✅ onChange updates the variable
+4. ✅ Variable is actually USED in onUpdate() or onRender()
+5. ✅ Effect is visible when control is changed
+
+---
+
+# Audio Reactivity Best Practices (v2.5)
+
+## Making Controls Work at All Audio Levels
+
+### Problem: Controls Only Work With Loud Music
+
+```javascript
+// ❌ WRONG - Only works when treble > 0.3 (loud music required)
+if (this.colorReactivity > 0 && this.trebleLevel > 0.3) {
+    this.applyColorEffect();
+}
+
+// ❌ WRONG - Only fires when beat detected
+if (this.beatDetected && Math.random() < this.laserFreq / 100) {
+    this.fireLaser();
+}
+```
+
+### Solution: Base Value + Audio Multiplier
+
+```javascript
+// ✅ CORRECT - Works at any treble level > 0
+if (this.colorReactivity > 0 && this.trebleLevel > 0) {
+    const amount = this.colorReactivity / 100;
+    this.applyColorEffect(this.trebleLevel * amount);
+}
+
+// ✅ CORRECT - Fires based on control, boosted by audio
+const baseFireChance = this.laserFreq / 1000;  // Control sets base rate
+const audioBoost = 1 + (this.midLevel * 2);     // Audio increases it
+const beatBoost = this.beatDetected ? 3 : 1;   // Beats triple it
+
+if (Math.random() < baseFireChance * audioBoost * beatBoost) {
+    this.fireLaser();
+}
+```
+
+## Pattern: Base Value + Audio Multiplier
+
+```javascript
+// Base behavior controlled by dial
+const baseSpeed = this.speed;
+
+// Audio multiplies the base
+const audioMultiplier = 1 + (this.bassLevel * 2);
+
+// Final value
+const finalSpeed = baseSpeed * audioMultiplier;
+```
+
+**Benefits:**
+- ✅ Control works even with no audio (uses base value)
+- ✅ Audio enhances the effect (multiplies base value)
+- ✅ User always sees immediate feedback from controls
+- ✅ Effect scales naturally with music intensity
+
+## Audio Reactivity Mapping
+
+**Bass → Size/Scale:**
+```javascript
+const scale = 1.0 + (this.bassLevel * this.bassScaling);
+```
+
+**Mid → Movement/Speed:**
+```javascript
+const speed = this.baseSpeed * (1 + this.midLevel * 2);
+```
+
+**Treble → Brightness/Detail:**
+```javascript
+const brightness = 0.5 + (this.trebleLevel * 0.5);
+```
+
+**Beat → Trigger Events:**
+```javascript
+if (this.beatDetected) {
+    this.createExplosion();
+}
+```
+
+---
+
 # Best Practices
 
 ## Do's
@@ -1969,6 +3471,133 @@ See the Chrome Spheres plugin for a complete working implementation of:
 - Performance optimization
 
 Study that plugin as the reference implementation for advanced Three.js techniques in Freque.
+
+---
+
+---
+
+# Common Plugin Development Mistakes (v2.5)
+
+## 1. Forgetting className on Dropdowns
+
+```javascript
+// ❌ WRONG - Dropdown won't display items
+this.addControl('scheme', {
+    type: 'dropdown',
+    options: [{ value: 'red', label: 'Red' }]
+    // Missing className!
+});
+
+// ✅ CORRECT - Displays properly
+this.addControl('scheme', {
+    type: 'dropdown',
+    className: 'dropdown-selector-mixer',
+    options: [{ value: 'red', label: 'Red' }]
+});
+```
+
+## 2. Wrong Dropdown Options Format
+
+```javascript
+// ❌ WRONG - Simple array won't work
+options: ['Red', 'Green', 'Blue']
+
+// ❌ WRONG - Object won't work
+options: { red: 'Red', green: 'Green' }
+
+// ✅ CORRECT - Array of objects
+options: [
+    { value: 'red', label: 'Red' },
+    { value: 'green', label: 'Green' },
+    { value: 'blue', label: 'Blue' }
+]
+```
+
+## 3. Not Initializing Variables
+
+```javascript
+// ❌ WRONG - Variables undefined until user touches controls
+constructor() {
+    this.setupControls();
+}
+
+// ✅ CORRECT - All variables initialized
+constructor() {
+    this.size = 50;
+    this.speed = 1.0;
+    this.colorScheme = 'classic';
+    this.setupControls();
+}
+```
+
+## 4. Controls That Don't Affect Anything
+
+```javascript
+// ❌ WRONG - Variable updates but isn't used
+onChange: (value) => {
+    this.unused = value;  // Never referenced in onUpdate/onRender!
+}
+
+// ✅ CORRECT - Variable is actually used
+onChange: (value) => {
+    this.speed = value;
+}
+// ... then in onUpdate():
+this.position += this.speed * deltaTime;
+```
+
+## 5. Audio Requirements Too Strict
+
+```javascript
+// ❌ WRONG - Only works with loud music
+if (this.trebleLevel > 0.5) {
+    this.applyEffect();
+}
+
+// ✅ CORRECT - Works at any audio level
+if (this.trebleLevel > 0) {
+    const intensity = this.trebleLevel;
+    this.applyEffect(intensity);
+}
+```
+
+## 6. Not Using Base + Multiplier Pattern
+
+```javascript
+// ❌ WRONG - Effect disappears with no audio
+const size = this.bassLevel * 100;  // 0 with no audio!
+
+// ✅ CORRECT - Base value + audio boost
+const size = 50 + (this.bassLevel * 100);  // 50-150
+```
+
+## Summary Checklist
+
+When creating a plugin, verify:
+
+**Audio Integration:**
+- [ ] Use `this.getAudioEnergy()` for overall energy
+- [ ] Use `sharedAudioData.bass/mid/treble/beat` for frequency data
+- [ ] Initialize audio variables in constructor
+
+**Dropdown Controls:**
+- [ ] Use `className: 'dropdown-selector-mixer'`
+- [ ] Format options as `[{ value: 'x', label: 'X' }, ...]`
+- [ ] Initialize dropdown variable in constructor
+- [ ] Use the variable in rendering logic
+
+**All Controls:**
+- [ ] Initialize ALL control variables in constructor
+- [ ] Match control `value` with initialized variable
+- [ ] Verify onChange callback updates the variable
+- [ ] Confirm variable is USED in onUpdate() or onRender()
+- [ ] Test that changing control actually affects visualization
+
+**Audio Reactivity:**
+- [ ] Base behavior works without audio
+- [ ] Audio enhances/multiplies base behavior
+- [ ] Don't require specific audio thresholds to function
+- [ ] Provide immediate feedback when controls change
 
 ---
 

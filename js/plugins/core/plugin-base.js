@@ -39,6 +39,7 @@ class FrequePluginBase {
             version: config.version || '1.0.0',
             author: config.author || 'Unknown',
             description: config.description || 'Freque Plugin',
+            dialFillColor: config.dialFillColor || null, // Optional: CSS variable for dial fill color (e.g., '--accent-color')
             ...config.metadata
         };
         
@@ -59,6 +60,15 @@ class FrequePluginBase {
         
         // Audio data
         this.sharedAudioData = null;
+        
+        // Color morphing properties
+        this.colorMorphing = false;
+        this.colorMorphSpeed = 'medium';
+        this.colorMorphInterval = null;
+        this.colorMorphTimer = 0;
+        this.currentColorIndex = 0;
+        this.targetColorIndex = 0;
+        this.colorMorphProgress = 0;
         
         // Bind methods
         this.update = this.update.bind(this);
@@ -874,6 +884,137 @@ class FrequePluginBase {
         if (this.onError) {
             this.onError(error);
         }
+    }
+    
+    /**
+     * Color Morphing Methods
+     */
+    
+    /**
+     * Toggle color morphing on/off
+     */
+    toggleColorMorphing() {
+        this.colorMorphing = !this.colorMorphing;
+        
+        if (this.colorMorphing) {
+            // Reset morph state
+            this.colorMorphTimer = 0;
+            this.colorMorphProgress = 0;
+            
+            // Select next color index
+            if (this.getColorSchemes && typeof this.getColorSchemes === 'function') {
+                const schemes = this.getColorSchemes();
+                if (schemes && schemes.length > 1) {
+                    this.currentColorIndex = 0;
+                    this.targetColorIndex = 1;
+                }
+            }
+        }
+        
+        return this.colorMorphing;
+    }
+    
+    /**
+     * Set color morphing speed
+     * @param {string} speed - 'slow', 'medium', 'fast', 'ultra', or 'energy'
+     */
+    setColorMorphSpeed(speed) {
+        this.colorMorphSpeed = speed;
+    }
+    
+    /**
+     * Get morph duration in milliseconds based on speed setting
+     */
+    getColorMorphDuration() {
+        const durations = {
+            slow: 10000,    // 10 seconds
+            medium: 5000,   // 5 seconds
+            fast: 2500,     // 2.5 seconds
+            ultra: 1000,    // 1 second
+            energy: 5000    // 5 seconds (will be modulated by audio)
+        };
+        
+        return durations[this.colorMorphSpeed] || durations.medium;
+    }
+    
+    /**
+     * Update color morphing progress
+     * Should be called in plugin's onUpdate method
+     * @param {number} deltaTime - Time since last frame in milliseconds
+     */
+    updateColorMorphing(deltaTime) {
+        if (!this.colorMorphing) return null;
+        
+        // Get color schemes from plugin
+        if (!this.getColorSchemes || typeof this.getColorSchemes !== 'function') {
+            return null;
+        }
+        
+        const schemes = this.getColorSchemes();
+        if (!schemes || schemes.length < 2) {
+            return null;
+        }
+        
+        // Get morph duration
+        let duration = this.getColorMorphDuration();
+        
+        // Modulate duration with energy if in energy mode
+        if (this.colorMorphSpeed === 'energy' && this.sharedAudioData && this.sharedAudioData.energy) {
+            const energy = this.sharedAudioData.energy;
+            // Higher energy = faster morph (shorter duration)
+            // Increased multiplier from 2 to 5 for more dramatic effect
+            duration = duration / (1 + energy * 5);
+            
+            // Update energy bar in mixer UI if it exists
+            this.updateEnergyBarUI(energy);
+        }
+        
+        // Update timer
+        this.colorMorphTimer += deltaTime;
+        this.colorMorphProgress = Math.min(1, this.colorMorphTimer / duration);
+        
+        // Check if morph is complete
+        if (this.colorMorphProgress >= 1) {
+            // Move to next color scheme
+            this.currentColorIndex = this.targetColorIndex;
+            this.targetColorIndex = (this.targetColorIndex + 1) % schemes.length;
+            this.colorMorphTimer = 0;
+            this.colorMorphProgress = 0;
+        }
+        
+        // Return lerp value for plugin to use
+        return {
+            progress: this.colorMorphProgress,
+            currentScheme: schemes[this.currentColorIndex],
+            targetScheme: schemes[this.targetColorIndex]
+        };
+    }
+    
+    /**
+     * Update the energy bar visualization in the mixer UI
+     * @param {number} energy - Current energy level (0-1)
+     */
+    updateEnergyBarUI(energy) {
+        if (!window.pluginMixerIntegration) return;
+        
+        const channelStrip = window.pluginMixerIntegration.channelStrips.get(this.pluginName);
+        if (!channelStrip) return;
+        
+        const energyFill = channelStrip.querySelector('.plugin-color-morph-energy-fill');
+        if (energyFill) {
+            energyFill.style.width = `${energy * 100}%`;
+            const hue = 120 - (energy * 120); // Green to red
+            energyFill.style.background = `hsl(${hue}, 100%, 50%)`;
+        }
+    }
+    
+    /**
+     * Plugins should override this to provide their color schemes
+     * @returns {Array} Array of color scheme names/IDs
+     */
+    getColorSchemes() {
+        // Default implementation - plugins should override
+        return null;
     }
     
     /**
