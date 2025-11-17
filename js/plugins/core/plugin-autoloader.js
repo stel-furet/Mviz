@@ -55,14 +55,31 @@ class PluginAutoLoader {
      */
     async initialPluginScan() {
         try {
+            // Scan default plugins directory
             const discoveredPlugins = await this.scanPluginsDirectory();
             
             for (const pluginFile of discoveredPlugins) {
                 await this.loadDiscoveredPlugin(pluginFile);
                 this.knownPlugins.add(pluginFile);
             }
+            
+            // Scan custom plugin folder if configured
+            await this.scanCustomPluginFolder();
+            
         } catch (error) {
             console.error('Initial plugin scan failed:', error);
+        }
+    }
+    
+    /**
+     * Scan custom plugin folder if one is configured
+     */
+    async scanCustomPluginFolder() {
+        if (!window.pluginFolderManager) return;
+        
+        if (window.pluginFolderManager.hasCustomFolder()) {
+            console.log('🔌 Scanning custom plugin folder...');
+            await window.pluginFolderManager.scanAndLoadCustomPlugins();
         }
     }
     
@@ -301,7 +318,7 @@ class PluginAutoLoader {
             // First, cleanup missing plugins
             await this.cleanupMissingPlugins();
             
-            // Then perform fresh scan
+            // Then perform fresh scan of default directory
             const currentPlugins = await this.scanPluginsDirectory();
             const currentPluginSet = new Set(currentPlugins);
             
@@ -312,7 +329,7 @@ class PluginAutoLoader {
             // Clear missing plugins list
             this.missingPlugins.clear();
             
-            // Load any new plugins
+            // Load any new plugins from default directory
             for (const pluginFile of currentPlugins) {
                 if (!this.loadedPlugins.has(pluginFile)) {
                     await this.loadDiscoveredPlugin(pluginFile);
@@ -325,6 +342,9 @@ class PluginAutoLoader {
                     await this.unloadPlugin(pluginFile);
                 }
             }
+            
+            // Scan custom plugin folder if configured
+            await this.scanCustomPluginFolder();
             
             
         } catch (error) {

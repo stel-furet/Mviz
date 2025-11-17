@@ -755,7 +755,6 @@ class RetroePlugin extends FrequePluginBase {
     }
     
     onInitialize() {
-        console.log('RETROE plugin initialized');
         // Spawn initial ring so something appears immediately
         this.rings.push({
             age: 0,
@@ -1507,7 +1506,7 @@ class RetroePlugin extends FrequePluginBase {
     }
     
     onCleanup() {
-        console.log('RETROE plugin cleaned up');
+        // Cleanup complete
     }
 }
 
@@ -1515,6 +1514,5 @@ class RetroePlugin extends FrequePluginBase {
 setTimeout(() => {
     if (window.visualizer && window.FrequePluginBase) {
         new RetroePlugin(window.visualizer);
-        console.log('🎮 RETROE plugin loaded!');
     }
 }, 500);

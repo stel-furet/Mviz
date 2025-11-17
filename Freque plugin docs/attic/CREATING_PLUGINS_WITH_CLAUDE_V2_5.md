@@ -273,8 +273,6 @@ Dropdowns (CRITICAL - must use correct format):
 
 Toggles (ON/OFF switches - must include className):
 - [Name]: checkbox toggle with btn-primary-mixer class, starts [ON/OFF], [what it toggles on/off]
-- Example: Audio Reactive: checkbox toggle with btn-primary-mixer class, starts ON, enables audio reactivity
-- Example: Color Morph: checkbox toggle with btn-primary-mixer class, starts OFF, smoothly cycles through colors over time
 
 Mode Buttons (switches between modes):
 - [Name]: button toggle, switches between [Mode A / Mode B]
@@ -950,39 +948,6 @@ Audio Reactive:
 - Beat detection → Spawn burst of rings
 
 This creates smooth, organic tunnel effects with proper depth!
-```
-
-### Color Morphing
-
-For smooth, dynamic color transitions:
-
-```
-Claude, add color morphing to cycle through colors smoothly:
-
-Color Morph (checkbox toggle):
-- Toggle to enable/disable color morphing
-- Starts OFF by default
-
-Morph Speed (dial 0-5.0):
-- Controls how fast colors transition
-- 1.0 = normal speed
-- 5.0 = very fast
-
-Implementation:
-- Use HSL color space for smooth hue transitions
-- Increment hue over time: hue += speed * deltaTime * 0.05
-- Wrap hue at 360 degrees
-- Can combine with palette cycling (interpolate between preset colors)
-- Can make audio-reactive (bass affects morph speed)
-
-Example pattern:
-if (this.colorMorph) {
-    this.hue += this.morphSpeed * deltaTime * 0.05;
-    if (this.hue > 360) this.hue -= 360;
-}
-const color = `hsl(${this.hue}, 100%, 50%)`;
-
-This creates flowing, organic color changes that enhance visual appeal!
 ```
 
 ### Enhanced VHS/CRT Effects

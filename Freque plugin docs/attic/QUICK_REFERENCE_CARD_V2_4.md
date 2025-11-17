@@ -1,6 +1,58 @@
-# Freque Plugin Controls - Quick Reference Card
+# Freque Plugin Controls - Quick Reference Card v2.5
 
 **The definitive patterns for all Freque plugin controls**
+
+---
+
+## 🪟 Window Resize Handling
+
+### For Game Plugins / Positioned Elements
+
+```javascript
+onResize(width, height) {
+    // 1. Update positioning
+    this.player.x = width / 2;
+    this.centerX = width / 2;
+    
+    // 2. Recreate elements (preserve state!)
+    this.recreateEnemies();
+    this.recreateObstacles();
+    
+    // 3. Update boundaries
+    this.leftBoundary = 50;
+    this.rightBoundary = width - 50;
+}
+
+// Helper method that preserves game state
+recreateEnemies() {
+    const savedScore = this.score;
+    const savedWave = this.wave;
+    
+    this.createEnemies();
+    
+    this.score = savedScore;
+    this.wave = savedWave;
+}
+```
+
+### ❌ Common Mistakes
+
+```javascript
+// ❌ DON'T: Forget to recreate elements
+onResize(width, height) {
+    // Canvas resizes but elements at old positions!
+}
+
+// ❌ DON'T: Reset game state
+onResize(width, height) {
+    this.createEnemies();  // Resets score/wave!
+}
+
+// ✅ DO: Recreate AND preserve state
+onResize(width, height) {
+    this.recreateEnemies();  // Uses helper method
+}
+```
 
 ---
 
@@ -253,7 +305,10 @@ Before submitting your plugin:
 - [ ] Buttons only for modes/actions
 - [ ] All controls have onChange/onClick
 - [ ] No manual DOM manipulation for toggles
+- [ ] **Window resize handling implemented (if plugin has positioned elements)**
+- [ ] **Game state preserved during resize (score, lives, wave)**
+- [ ] **Elements recreated for new canvas size on resize**
 
 ---
 
-**Quick Reference v2.4 - Use These Patterns! ✅**
+**Quick Reference v2.5 - Use These Patterns! ✅**

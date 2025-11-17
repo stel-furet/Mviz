@@ -439,6 +439,12 @@ class AlienZ extends FrequePluginBase {
         
         // Recreate barriers for new size
         this.createBarriers();
+        
+        // Recreate aliens for new size (preserves score/wave)
+        this.recreateAliens();
+        
+        // Recreate stars for new canvas dimensions
+        this.createStars();
     }
     
     onUpdate(deltaTime, timestamp, sharedAudioData) {

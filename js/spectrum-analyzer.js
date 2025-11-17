@@ -22,9 +22,15 @@ class SpectrumAnalyzer {
             tempo: 120,
             dominantFrequency: 0,
             frequencies: null,  // Add frequencies array for plugins
-            dataArray: null     // Add raw dataArray for plugins
+            dataArray: null,    // Add raw dataArray for plugins
+            // New properties for enhanced audio reactivity (v2.5)
+            energyChange: 0,    // Delta from previous frame (for beat sensitivity)
+            flux: 0,            // Spectral flux (frequency change rate)
+            morphIntensity: 0   // Combined metric for "interestingness" (morphing)
         };
         this.lastBeatTime = 0;
+        this.previousEnergy = 0;  // For energyChange calculation
+        this.previousSpectrum = null;  // For flux calculation
 
         // Initialize all parameters with defaults
         this.resetToDefaults();
@@ -450,29 +456,48 @@ class SpectrumAnalyzer {
             this.cachedAudioFeatures.dominantFrequency = 0;
             this.cachedAudioFeatures.frequencies = null;
             this.cachedAudioFeatures.dataArray = null;
+            this.cachedAudioFeatures.energyChange = 0;
+            this.cachedAudioFeatures.flux = 0;
+            this.cachedAudioFeatures.morphIntensity = 0;
             return this.cachedAudioFeatures;
         }
         
         // Get fresh audio data
         this.analyser.getByteFrequencyData(this.dataArray);
         
-        // Calculate basic energy from frequency data
+        // Calculate basic energy from frequency data (UNCHANGED - used by wait states)
         let sum = 0;
         for (let i = 0; i < this.dataArray.length; i++) {
             sum += this.dataArray[i];
         }
         const energy = sum / (this.dataArray.length * 255);
         
-        // Debug: check if we're getting real audio data (optimized to avoid array spread)
-        let maxDataValue = 0;
-        for (let i = 0; i < this.dataArray.length; i++) {
-            if (this.dataArray[i] > maxDataValue) {
-                maxDataValue = this.dataArray[i];
-            }
-        }
-            // console.log('🔍 Audio data - Energy:', energy.toFixed(3), 'Max value:', maxDataValue, 'DataArray length:', this.dataArray.length);
+        // Calculate energy change (NEW - for beat sensitivity)
+        const energyChange = Math.abs(energy - this.previousEnergy);
+        this.previousEnergy = energy;
         
-        // Simple beat detection based on energy spikes (more sensitive)
+        // Calculate spectral flux (NEW - for frequency change detection)
+        let flux = 0;
+        if (this.previousSpectrum && this.previousSpectrum.length === this.dataArray.length) {
+        for (let i = 0; i < this.dataArray.length; i++) {
+                const diff = this.dataArray[i] - this.previousSpectrum[i];
+                flux += diff > 0 ? diff : 0; // Only positive changes (onset detection)
+            }
+            flux = flux / this.dataArray.length / 255; // Normalize to 0-1
+        }
+        
+        // Store current spectrum for next frame
+        if (!this.previousSpectrum) {
+            this.previousSpectrum = new Uint8Array(this.dataArray.length);
+        }
+        this.previousSpectrum.set(this.dataArray);
+        
+        // Calculate morphIntensity (NEW - combined "interestingness" metric)
+        // Combines energy change, spectral flux, and silence boost
+        const silenceBoost = (1 - energy) * 0.7; // Strong boost during quiet sections
+        const morphIntensity = Math.min(1, (energyChange * 20) + (flux * 10) + silenceBoost);
+        
+        // Simple beat detection based on energy spikes (UNCHANGED)
         const now = Date.now();
         const timeSinceLastBeat = now - (this.lastBeatTime || 0);
         const beatThreshold = 0.1; // Lowered from 0.3 to 0.1 for more sensitivity
@@ -484,7 +509,7 @@ class SpectrumAnalyzer {
             this.lastBeatTime = now;
         }
         
-        // Calculate dominant frequency
+        // Calculate dominant frequency (UNCHANGED)
         let maxValue = 0;
         let dominantBin = 0;
         for (let i = 0; i < this.dataArray.length; i++) {
@@ -502,8 +527,10 @@ class SpectrumAnalyzer {
         this.cachedAudioFeatures.dominantFrequency = dominantFrequency;
         this.cachedAudioFeatures.frequencies = this.dataArray;  // Pass frequency data for plugins
         this.cachedAudioFeatures.dataArray = this.dataArray;    // Pass raw dataArray for plugins
-        
-        // console.log('🔍 Generated audio features - Energy:', energy.toFixed(3), 'Beat:', beat, 'DataArray length:', this.dataArray.length);
+        // New properties (v2.5)
+        this.cachedAudioFeatures.energyChange = energyChange;
+        this.cachedAudioFeatures.flux = flux;
+        this.cachedAudioFeatures.morphIntensity = morphIntensity;
         
         return this.cachedAudioFeatures;
     }

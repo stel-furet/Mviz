@@ -148,6 +148,8 @@ class FrequePluginBase {
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
+        this.canvas.style.width = '100%';  // Auto-scale to container
+        this.canvas.style.height = '100%'; // Auto-scale to container
         this.canvas.style.pointerEvents = 'none';
         this.canvas.style.zIndex = this.zIndex.toString();
         this.canvas.style.display = 'none';
@@ -959,14 +961,19 @@ class FrequePluginBase {
         let duration = this.getColorMorphDuration();
         
         // Modulate duration with energy if in energy mode
-        if (this.colorMorphSpeed === 'energy' && this.sharedAudioData && this.sharedAudioData.energy) {
-            const energy = this.sharedAudioData.energy;
-            // Higher energy = faster morph (shorter duration)
-            // Increased multiplier from 2 to 5 for more dramatic effect
-            duration = duration / (1 + energy * 5);
+        if (this.colorMorphSpeed === 'energy' && this.sharedAudioData) {
+            // Use morphIntensity if available (v2.5+), fallback to energy for backward compatibility
+            // morphIntensity combines energy change, spectral flux, and silence boost for better reactivity
+            const intensity = this.sharedAudioData.morphIntensity !== undefined 
+                ? this.sharedAudioData.morphIntensity 
+                : (this.sharedAudioData.energy || 0);
+            
+            // Higher intensity = faster morph (shorter duration)
+            // High multiplier for dramatic effect
+            duration = duration / (1 + intensity * 12);
             
             // Update energy bar in mixer UI if it exists
-            this.updateEnergyBarUI(energy);
+            this.updateEnergyBarUI(intensity);
         }
         
         // Update timer

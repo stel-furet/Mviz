@@ -29283,7 +29283,9 @@ if (window.visualizer && window.visualizer.loadVideoSource) {
 }
 
 // Add resize listener for Infinite Zoom, Blobs, Kaleidoscope, WebGL, and Nebula
+let pluginResizeTimeout;
 window.addEventListener('resize', () => {
+    // Resize native visualizations immediately (they handle it smoothly)
     if (window.visualizer && window.visualizer.infiniteZoom) {
         window.visualizer.infiniteZoom.resize();
     }
@@ -29296,7 +29298,18 @@ window.addEventListener('resize', () => {
     if (window.visualizer && window.visualizer.webglVisualization) {
         window.visualizer.webglVisualization.resize();
     }
-    // Native Nebula removed - Nebula plugin handled via plugin system
+    
+    // Throttle plugin resizes to prevent flickering during drag-resize
+    clearTimeout(pluginResizeTimeout);
+    pluginResizeTimeout = setTimeout(() => {
+        if (window.pluginManager && window.pluginManager.plugins) {
+            window.pluginManager.plugins.forEach(plugin => {
+                if (plugin && plugin.resize) {
+                    plugin.resize();
+                }
+            });
+        }
+    }, 150); // Wait 150ms after resize stops
 });
 
 // Global debug function for background image
