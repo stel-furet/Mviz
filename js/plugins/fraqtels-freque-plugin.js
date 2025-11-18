@@ -33,7 +33,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.trebleRotationSensitivity = 0.8;
         this.trebleDetailSensitivity = 0.5;
         
-        // Audio smoothing
+        // Audio smoothing - MUST initialize to 0
         this.bassLevel = 0;
         this.midLevel = 0;
         this.trebleLevel = 0;
@@ -236,11 +236,22 @@ class FraqtelsPlugin extends FrequePluginBase {
             return;
         }
         
+        console.log('Fraqtels: WebGL context created');
+        
         // Create shader programs
         this.createShaderPrograms();
         
+        if (!this.bufferAProgram || !this.imageProgram) {
+            console.error('Fraqtels: Failed to create shader programs');
+            return;
+        }
+        
+        console.log('Fraqtels: Shader programs created');
+        
         // Create framebuffers
         this.createFramebuffers();
+        
+        console.log('Fraqtels: Framebuffers created');
         
         // Setup geometry
         const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
@@ -248,7 +259,9 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
         
-        // Clear initial frames
+        console.log('Fraqtels: Geometry setup complete');
+        
+        // Clear initial frames (match working HTML exactly)
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.bufferA_fbo1);
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
@@ -319,7 +332,7 @@ class FraqtelsPlugin extends FrequePluginBase {
                 p *= zoom;
                 p /= dot(p, p); 
                 float d = length(p) * 0.005 * k * flashInt;
-                p *= rot(sin(t) * 45.0 * rotationSpeed);
+                p *= rot(sin(t) * 45. * rotationSpeed);
                 p *= sin(t * 0.2);
                 p += t * 0.5;
                 float ml = 100.0, m = 100.0;
@@ -399,13 +412,27 @@ class FraqtelsPlugin extends FrequePluginBase {
         
         gl.shaderSource(vs, vertSrc);
         gl.compileShader(vs);
+        if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+            console.error('Vertex shader error:', gl.getShaderInfoLog(vs));
+            return null;
+        }
+        
         gl.shaderSource(fs, fragSrc);
         gl.compileShader(fs);
+        if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+            console.error('Fragment shader error:', gl.getShaderInfoLog(fs));
+            return null;
+        }
         
         const prog = gl.createProgram();
         gl.attachShader(prog, vs);
         gl.attachShader(prog, fs);
         gl.linkProgram(prog);
+        
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+            console.error('Program link error:', gl.getProgramInfoLog(prog));
+            return null;
+        }
         
         return prog;
     }
@@ -414,6 +441,8 @@ class FraqtelsPlugin extends FrequePluginBase {
         const gl = this.gl;
         const w = this.canvas.width;
         const h = this.canvas.height;
+        
+        console.log(`Fraqtels: Creating framebuffers at ${w}x${h}`);
         
         this.bufferA_fbo1 = gl.createFramebuffer();
         this.bufferA_texture1 = gl.createTexture();
@@ -426,6 +455,11 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.bufferA_fbo1);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.bufferA_texture1, 0);
         
+        const status1 = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        if (status1 !== gl.FRAMEBUFFER_COMPLETE) {
+            console.error('Fraqtels: FBO1 incomplete:', status1);
+        }
+        
         this.bufferA_fbo2 = gl.createFramebuffer();
         this.bufferA_texture2 = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.bufferA_texture2);
@@ -436,6 +470,11 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.bufferA_fbo2);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.bufferA_texture2, 0);
+        
+        const status2 = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        if (status2 !== gl.FRAMEBUFFER_COMPLETE) {
+            console.error('Fraqtels: FBO2 incomplete:', status2);
+        }
         
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -448,22 +487,55 @@ class FraqtelsPlugin extends FrequePluginBase {
     
     onUpdate(deltaTime, timestamp, sharedAudioData) {
         const smoothing = 0.7;
-        this.bassLevel = this.bassLevel * smoothing + sharedAudioData.bass * (1 - smoothing);
-        this.midLevel = this.midLevel * smoothing + sharedAudioData.mid * (1 - smoothing);
-        this.trebleLevel = this.trebleLevel * smoothing + sharedAudioData.treble * (1 - smoothing);
+        this.bassLevel = this.bassLevel * smoothing + (sharedAudioData.bass || 0) * (1 - smoothing);
+        this.midLevel = this.midLevel * smoothing + (sharedAudioData.mid || 0) * (1 - smoothing);
+        this.trebleLevel = this.trebleLevel * smoothing + (sharedAudioData.treble || 0) * (1 - smoothing);
     }
     
     onRender(deltaTime, timestamp, sharedAudioData) {
-        if (!this.gl) return;
+        if (!this.gl) {
+            console.warn('Fraqtels: Render called but gl context is null');
+            return;
+        }
+        
+        if (!this.bufferAProgram || !this.imageProgram) {
+            console.warn('Fraqtels: Render called but shader programs are null');
+            return;
+        }
         
         const gl = this.gl;
         const time = (Date.now() - this.startTime) / 1000;
+        
+        // Debug: Log first render
+        if (this.frameCount === 0) {
+            console.log('Fraqtels: First render call', {
+                canvasSize: { w: this.canvas.width, h: this.canvas.height },
+                time,
+                gl: !!gl,
+                programs: { bufferA: !!this.bufferAProgram, image: !!this.imageProgram }
+            });
+        }
         
         // Audio-reactive parameters
         const audioFlash = this.flashIntensity * (1 + this.bassLevel * this.bassFlashSensitivity);
         const audioTimeScale = this.timeScale * (1 + this.midLevel * this.midSpeedSensitivity);
         const audioRotSpeed = this.rotationSpeed * (1 + this.trebleLevel * this.trebleRotationSensitivity);
         const audioIter = Math.min(12, Math.floor(this.fractalIterations + this.trebleLevel * this.trebleDetailSensitivity * 3));
+        
+        // DEBUG: Log uniforms on first frame
+        if (this.frameCount === 0) {
+            console.log('Fraqtels uniforms:', {
+                flashIntensity: this.flashIntensity,
+                audioFlash,
+                timeScale: this.timeScale,
+                audioTimeScale,
+                zoom: this.zoom,
+                rotationSpeed: this.rotationSpeed,
+                audioRotSpeed,
+                fractalIterations: this.fractalIterations,
+                audioIter
+            });
+        }
         
         // Ping-pong
         const isEven = this.frameCount % 2 === 0;
@@ -517,6 +589,14 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.uniform1i(gl.getUniformLocation(this.imageProgram, 'iChannel0'), 0);
         
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        
+        // Check for GL errors on first few frames
+        if (this.frameCount < 3) {
+            const error = gl.getError();
+            if (error !== gl.NO_ERROR) {
+                console.error('Fraqtels: WebGL error during render:', error);
+            }
+        }
         
         this.frameCount++;
     }

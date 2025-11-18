@@ -1,12 +1,17 @@
-# Creating Freque Plugins with Claude v2.5
+# Creating Freque Plugins with Claude v2.6
 
 **Complete guide for using Claude to create audio-reactive visualizations**
 
 ---
 
+## What's New in v2.6
+
+- **Critical NaN Prevention Pattern** - Mandatory `|| 0` fallback for all sharedAudioData ⭐ NEW
+- **WebGL Shader Troubleshooting** - Guide for debugging black screen issues ⭐ NEW
+
 ## What's New in v2.5
 
-- **Window Resize Requirements** - How to request proper resize handling for plugins ⭐ NEW
+- **Window Resize Requirements** - How to request proper resize handling for plugins
 - **Correct Dropdown Format** - Proper syntax with value/label objects ⭐ NEW
 - **Audio Integration Clarity** - How to properly access bass/mid/treble/beat ⭐ NEW  
 - **Variable Initialization Pattern** - Critical constructor setup ⭐ NEW

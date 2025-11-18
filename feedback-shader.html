@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Feedback Shader Viewer</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+            background: #000;
+        }
+        canvas { 
+            display: block; 
+            width: 100vw; 
+            height: 100vh; 
+        }
+        .info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="info">
+        <strong>Feedback Shader Controls</strong><br>
+        <button id="resetBtn" style="width: 100%; margin: 10px 0; padding: 5px; cursor: pointer;">Reset to Defaults</button>
+        
+        <div style="margin-top: 10px;">
+            <label>Flash Intensity: <span id="flashValue">0.40</span></label><br>
+            <input type="range" id="flashSlider" min="0" max="100" value="40" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Feedback Amount: <span id="feedbackValue">0.30</span></label><br>
+            <input type="range" id="feedbackSlider" min="0" max="100" value="30" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Blur Intensity: <span id="blurValue">0.01</span></label><br>
+            <input type="range" id="blurSlider" min="0" max="50" value="10" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Blur Falloff: <span id="falloffValue">1.30</span></label><br>
+            <input type="range" id="falloffSlider" min="0" max="300" value="130" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Rotation Speed: <span id="rotSpeedValue">1.00</span></label><br>
+            <input type="range" id="rotSpeedSlider" min="0" max="300" value="100" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Animation Speed: <span id="timeScaleValue">1.00</span></label><br>
+            <input type="range" id="timeScaleSlider" min="0" max="300" value="100" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Zoom: <span id="zoomValue">1.00</span></label><br>
+            <input type="range" id="zoomSlider" min="10" max="300" value="100" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Movement Range: <span id="movementValue">0.15</span></label><br>
+            <input type="range" id="movementSlider" min="0" max="100" value="15" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Fractal Detail: <span id="iterValue">7</span></label><br>
+            <input type="range" id="iterSlider" min="3" max="12" value="7" style="width: 100%;">
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Color Scheme</label><br>
+            <select id="colorScheme" style="width: 100%;">
+                <option value="0">Original</option>
+                <option value="1">Warm Glow</option>
+                <option value="2">Cool Blue</option>
+                <option value="3">Purple Haze</option>
+                <option value="4">Fire</option>
+                <option value="5">Ice</option>
+                <option value="6">Rainbow</option>
+            </select>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl', { 
+            alpha: false, 
+            premultipliedAlpha: false,
+            antialias: false
+        });
+        
+        if (!gl) {
+            alert('WebGL not supported');
+        }
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            // Resize framebuffers
+            resizeFramebuffer(bufferA_fbo1, bufferA_texture1);
+            resizeFramebuffer(bufferA_fbo2, bufferA_texture2);
+        }
+        
+        function resizeFramebuffer(fbo, texture) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
+        
+        // Vertex shader
+        const vertexShaderSource = `
+            attribute vec2 position;
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+        
+        // Buffer A shader - generates fractal content with feedback
+        const bufferAShaderSource = `
+            precision highp float;
+            uniform float iTime;
+            uniform vec2 iResolution;
+            uniform sampler2D iChannel0;
+            uniform float flashIntensity;
+            uniform float feedbackAmount;
+            uniform float rotationSpeed;
+            uniform float timeScale;
+            uniform float zoom;
+            uniform float movementRange;
+            uniform int fractalIterations;
+            uniform int colorScheme;
+            
+            mat2 rot(float a) {
+                a = radians(a);
+                float s = sin(a), c = cos(a);
+                return mat2(c, s, -s, c);
+            }
+            
+            vec3 applyColorScheme(vec3 baseColor, int scheme) {
+                if (scheme == 1) {
+                    // Warm Glow
+                    return baseColor * vec3(1.5, 1.0, 0.6);
+                } else if (scheme == 2) {
+                    // Cool Blue
+                    return baseColor * vec3(0.6, 0.8, 1.5);
+                } else if (scheme == 3) {
+                    // Purple Haze
+                    return baseColor * vec3(1.2, 0.6, 1.5);
+                } else if (scheme == 4) {
+                    // Fire
+                    return vec3(baseColor.r * 1.5, baseColor.g * 0.8, baseColor.b * 0.3);
+                } else if (scheme == 5) {
+                    // Ice
+                    return vec3(baseColor.r * 0.5, baseColor.g * 1.2, baseColor.b * 1.8);
+                } else if (scheme == 6) {
+                    // Rainbow
+                    float hue = length(baseColor) * 3.0 + iTime * timeScale * 0.5;
+                    return vec3(
+                        sin(hue) * 0.5 + 0.5,
+                        sin(hue + 2.094) * 0.5 + 0.5,
+                        sin(hue + 4.189) * 0.5 + 0.5
+                    ) * length(baseColor);
+                }
+                return baseColor; // Original
+            }
+            
+            vec3 fractal(vec2 p, float k, float flashInt) {
+                float t = iTime * timeScale;
+                p += vec2(sin(t), cos(t)) * movementRange;
+                p *= zoom;
+                p /= dot(p, p); 
+                float d = length(p) * 0.005 * k * flashInt;
+                p *= rot(sin(t) * 45. * rotationSpeed);
+                p *= sin(t * 0.2);
+                p += t * 0.5;
+                float ml = 100.0, m = 100.0;
+                vec2 mc = vec2(100.0);
+                
+                for (int i = 0; i < 12; i++) {
+                    if (i >= fractalIterations) break;
+                    p = abs(5.0 - mod(p * 2.0, 10.0)) - 1.0;
+                    p *= rot(t * 2.0 * rotationSpeed);
+                    ml = min(ml, min(abs(p.x), abs(p.y)));
+                    mc = min(mc, abs(p));
+                    m = min(m, abs(p.x - 1.0));
+                }
+                
+                float l = smoothstep(0.0, 0.5, abs(0.5 - fract(m * 2.0 + t)));
+                ml = exp(-10.0 * ml);
+                m = exp(-20.0 * m);
+                mc = exp(-10.0 * mc);
+                vec3 col = vec3(mc.x, ml * 0.6, mc.y * 1.5) * ml * l * l + m + d * (1.0 + k) * flashInt;
+                
+                return applyColorScheme(col, colorScheme);
+            }
+            
+            void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+                float k = 0.5 + 0.3 * sin(iTime * timeScale * 2.0);
+                k = smoothstep(0.3, 0.7, k) * 4.0;
+                
+                vec2 uv = (fragCoord.xy - iResolution.xy * 0.5) / iResolution.y;
+                vec2 pix = 1.0 / iResolution.xy / float(3 * 2);
+                vec3 col = vec3(0.0);
+                
+                const int aa = 3;
+                for(int i = -aa; i <= aa; i++) {
+                    for(int j = -aa; j <= aa; j++) {
+                        vec2 d = vec2(float(i), float(j)) * pix;
+                        col += fractal(uv + d, k, flashIntensity);
+                    }
+                }
+                col /= float(aa * aa * 4);
+                col = mix(vec3(length(col)), col, 0.7);
+                
+                col = mix(texture2D(iChannel0, fragCoord.xy / iResolution.xy).rgb, col, feedbackAmount);
+                
+                fragColor = vec4(col, k);
+            }
+            
+            void main() {
+                mainImage(gl_FragColor, gl_FragCoord.xy);
+            }
+        `;
+        
+        // Image shader - displays Buffer A with blur feedback effect
+        const imageShaderSource = `
+            precision highp float;
+            uniform float iTime;
+            uniform vec2 iResolution;
+            uniform sampler2D iChannel0;
+            uniform float blurIntensity;
+            uniform float blurFalloff;
+            
+            void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+                vec2 uv = fragCoord.xy / iResolution.xy;
+                vec4 col = texture2D(iChannel0, uv);
+                vec2 pix = vec2(0.0, 1.0) * smoothstep(0.0, blurFalloff, length((uv - 0.5))) * col.a * blurIntensity;
+                col += texture2D(iChannel0, uv + pix.xy);
+                col += texture2D(iChannel0, uv - pix.xy);
+                col += texture2D(iChannel0, uv + pix.yx);
+                col += texture2D(iChannel0, uv - pix.yx);
+                col *= vec4(1.2, 1.0, 0.8, 1.0) * 0.17;
+                fragColor = vec4(col);
+            }
+            
+            void main() {
+                mainImage(gl_FragColor, gl_FragCoord.xy);
+            }
+        `;
+        
+        // Compile shader
+        function compileShader(source, type) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            
+            return shader;
+        }
+        
+        // Create program
+        function createProgram(vertSource, fragSource) {
+            const vertexShader = compileShader(vertSource, gl.VERTEX_SHADER);
+            const fragmentShader = compileShader(fragSource, gl.FRAGMENT_SHADER);
+            
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program link error:', gl.getProgramInfoLog(program));
+                return null;
+            }
+            
+            return program;
+        }
+        
+        // Create framebuffer with texture
+        function createFramebuffer() {
+            const fbo = gl.createFramebuffer();
+            const texture = gl.createTexture();
+            
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            
+            if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+                console.error('Framebuffer not complete');
+            }
+            
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            
+            return { fbo, texture };
+        }
+        
+        // Initialize programs
+        const bufferAProgram = createProgram(vertexShaderSource, bufferAShaderSource);
+        const imageProgram = createProgram(vertexShaderSource, imageShaderSource);
+        
+        // Create ping-pong framebuffers for Buffer A
+        const fb1 = createFramebuffer();
+        const fb2 = createFramebuffer();
+        let bufferA_fbo1 = fb1.fbo;
+        let bufferA_texture1 = fb1.texture;
+        let bufferA_fbo2 = fb2.fbo;
+        let bufferA_texture2 = fb2.texture;
+        
+        // Setup geometry
+        const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        
+        // Initialize first frame with black
+        gl.bindFramebuffer(gl.FRAMEBUFFER, bufferA_fbo1);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        
+        // Default parameter values
+        const defaults = {
+            flashIntensity: 0.4,
+            feedbackAmount: 0.3,
+            blurIntensity: 0.01,
+            blurFalloff: 1.3,
+            rotationSpeed: 1.0,
+            timeScale: 1.0,
+            zoom: 1.0,
+            movementRange: 0.15,
+            fractalIterations: 7,
+            colorScheme: 0
+        };
+        
+        // Current parameter values
+        let params = { ...defaults };
+        
+        // Helper to update display value
+        function updateValue(id, value, decimals = 2) {
+            document.getElementById(id).textContent = value.toFixed(decimals);
+        }
+        
+        // Flash intensity slider
+        document.getElementById('flashSlider').addEventListener('input', (e) => {
+            params.flashIntensity = parseFloat(e.target.value) / 100;
+            updateValue('flashValue', params.flashIntensity);
+        });
+        
+        // Feedback amount slider
+        document.getElementById('feedbackSlider').addEventListener('input', (e) => {
+            params.feedbackAmount = parseFloat(e.target.value) / 100;
+            updateValue('feedbackValue', params.feedbackAmount);
+        });
+        
+        // Blur intensity slider
+        document.getElementById('blurSlider').addEventListener('input', (e) => {
+            params.blurIntensity = parseFloat(e.target.value) / 1000; // 0-0.05 range
+            updateValue('blurValue', params.blurIntensity);
+        });
+        
+        // Blur falloff slider
+        document.getElementById('falloffSlider').addEventListener('input', (e) => {
+            params.blurFalloff = parseFloat(e.target.value) / 100;
+            updateValue('falloffValue', params.blurFalloff);
+        });
+        
+        // Rotation speed slider
+        document.getElementById('rotSpeedSlider').addEventListener('input', (e) => {
+            params.rotationSpeed = parseFloat(e.target.value) / 100;
+            updateValue('rotSpeedValue', params.rotationSpeed);
+        });
+        
+        // Time scale slider
+        document.getElementById('timeScaleSlider').addEventListener('input', (e) => {
+            params.timeScale = parseFloat(e.target.value) / 100;
+            updateValue('timeScaleValue', params.timeScale);
+        });
+        
+        // Zoom slider
+        document.getElementById('zoomSlider').addEventListener('input', (e) => {
+            params.zoom = parseFloat(e.target.value) / 100;
+            updateValue('zoomValue', params.zoom);
+        });
+        
+        // Movement range slider
+        document.getElementById('movementSlider').addEventListener('input', (e) => {
+            params.movementRange = parseFloat(e.target.value) / 100;
+            updateValue('movementValue', params.movementRange);
+        });
+        
+        // Fractal iterations slider
+        document.getElementById('iterSlider').addEventListener('input', (e) => {
+            params.fractalIterations = parseInt(e.target.value);
+            updateValue('iterValue', params.fractalIterations, 0);
+        });
+        
+        // Color scheme selector
+        document.getElementById('colorScheme').addEventListener('change', (e) => {
+            params.colorScheme = parseInt(e.target.value);
+        });
+        
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            params = { ...defaults };
+            
+            // Update all sliders and displays
+            document.getElementById('flashSlider').value = defaults.flashIntensity * 100;
+            updateValue('flashValue', defaults.flashIntensity);
+            
+            document.getElementById('feedbackSlider').value = defaults.feedbackAmount * 100;
+            updateValue('feedbackValue', defaults.feedbackAmount);
+            
+            document.getElementById('blurSlider').value = defaults.blurIntensity * 1000;
+            updateValue('blurValue', defaults.blurIntensity);
+            
+            document.getElementById('falloffSlider').value = defaults.blurFalloff * 100;
+            updateValue('falloffValue', defaults.blurFalloff);
+            
+            document.getElementById('rotSpeedSlider').value = defaults.rotationSpeed * 100;
+            updateValue('rotSpeedValue', defaults.rotationSpeed);
+            
+            document.getElementById('timeScaleSlider').value = defaults.timeScale * 100;
+            updateValue('timeScaleValue', defaults.timeScale);
+            
+            document.getElementById('zoomSlider').value = defaults.zoom * 100;
+            updateValue('zoomValue', defaults.zoom);
+            
+            document.getElementById('movementSlider').value = defaults.movementRange * 100;
+            updateValue('movementValue', defaults.movementRange);
+            
+            document.getElementById('iterSlider').value = defaults.fractalIterations;
+            updateValue('iterValue', defaults.fractalIterations, 0);
+            
+            document.getElementById('colorScheme').value = defaults.colorScheme;
+        });
+        
+        let frameCount = 0;
+        
+        function render(time) {
+            time *= 0.001; // Convert to seconds
+            
+            // Ping-pong for Buffer A
+            const isEven = frameCount % 2 === 0;
+            const readTexture = isEven ? bufferA_texture1 : bufferA_texture2;
+            const writeFbo = isEven ? bufferA_fbo2 : bufferA_fbo1;
+            const writeTexture = isEven ? bufferA_texture2 : bufferA_texture1;
+            
+            // ===== PASS 1: Render Buffer A (fractal with feedback) =====
+            gl.useProgram(bufferAProgram);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, writeFbo);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            const bufferA_position = gl.getAttribLocation(bufferAProgram, 'position');
+            gl.enableVertexAttribArray(bufferA_position);
+            gl.vertexAttribPointer(bufferA_position, 2, gl.FLOAT, false, 0, 0);
+            
+            // Set all Buffer A uniforms
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'iTime'), time);
+            gl.uniform2f(gl.getUniformLocation(bufferAProgram, 'iResolution'), canvas.width, canvas.height);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'flashIntensity'), params.flashIntensity);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'feedbackAmount'), params.feedbackAmount);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'rotationSpeed'), params.rotationSpeed);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'timeScale'), params.timeScale);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'zoom'), params.zoom);
+            gl.uniform1f(gl.getUniformLocation(bufferAProgram, 'movementRange'), params.movementRange);
+            gl.uniform1i(gl.getUniformLocation(bufferAProgram, 'fractalIterations'), params.fractalIterations);
+            gl.uniform1i(gl.getUniformLocation(bufferAProgram, 'colorScheme'), params.colorScheme);
+            
+            // Bind previous frame of Buffer A to iChannel0
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, readTexture);
+            gl.uniform1i(gl.getUniformLocation(bufferAProgram, 'iChannel0'), 0);
+            
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            
+            // ===== PASS 2: Render Image (display with blur) =====
+            gl.useProgram(imageProgram);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            const image_position = gl.getAttribLocation(imageProgram, 'position');
+            gl.enableVertexAttribArray(image_position);
+            gl.vertexAttribPointer(image_position, 2, gl.FLOAT, false, 0, 0);
+            
+            // Set all Image shader uniforms
+            gl.uniform1f(gl.getUniformLocation(imageProgram, 'iTime'), time);
+            gl.uniform2f(gl.getUniformLocation(imageProgram, 'iResolution'), canvas.width, canvas.height);
+            gl.uniform1f(gl.getUniformLocation(imageProgram, 'blurIntensity'), params.blurIntensity);
+            gl.uniform1f(gl.getUniformLocation(imageProgram, 'blurFalloff'), params.blurFalloff);
+            
+            // Bind Buffer A output to iChannel0 for display
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, writeTexture);
+            gl.uniform1i(gl.getUniformLocation(imageProgram, 'iChannel0'), 0);
+            
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            
+            frameCount++;
+            requestAnimationFrame(render);
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+        render(0);
+    </script>
+</body>
+</html>
