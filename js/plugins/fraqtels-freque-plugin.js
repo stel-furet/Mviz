@@ -28,15 +28,20 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.colorScheme = 0;
         
         // Audio reactivity sensitivity
-        this.bassFlashSensitivity = 0.8;
-        this.midSpeedSensitivity = 0.8;
-        this.trebleRotationSensitivity = 0.8;
-        this.trebleDetailSensitivity = 0.5;
+        this.energySpeedSensitivity = 1.0;  // Energy controls animation speed
+        this.beatFlashEnabled = true;       // Beat syncs to flash
+        this.colorMorphEnabled = false;     // Energy-based color morphing
+        this.colorMorphSpeed = 0.5;         // Color morph speed when enabled
         
         // Audio smoothing - MUST initialize to 0
         this.bassLevel = 0;
         this.midLevel = 0;
         this.trebleLevel = 0;
+        this.energyLevel = 0;
+        this.beatDetected = false;
+        
+        // Color morphing state
+        this.currentHue = 0;
         
         // WebGL state
         this.gl = null;
@@ -60,14 +65,12 @@ class FraqtelsPlugin extends FrequePluginBase {
             onChange: (value) => { this.flashIntensity = value / 100; }
         });
         
-        this.addControl('bassFlashSensitivity', {
-            type: 'dial',
-            label: 'Bass Flash Sens',
-            min: 0,
-            max: 200,
-            step: 1,
-            value: 80,
-            onChange: (value) => { this.bassFlashSensitivity = value / 100; }
+        this.addControl('beatFlashEnabled', {
+            type: 'checkbox',
+            label: 'Beat Flash Sync',
+            className: 'btn-primary-mixer',
+            value: true,
+            onChange: (value) => { this.beatFlashEnabled = value; }
         });
         
         this.addControl('feedbackAmount', {
@@ -110,16 +113,6 @@ class FraqtelsPlugin extends FrequePluginBase {
             onChange: (value) => { this.rotationSpeed = value / 100; }
         });
         
-        this.addControl('trebleRotationSensitivity', {
-            type: 'dial',
-            label: 'Treble Rot Sens',
-            min: 0,
-            max: 200,
-            step: 1,
-            value: 80,
-            onChange: (value) => { this.trebleRotationSensitivity = value / 100; }
-        });
-        
         this.addControl('timeScale', {
             type: 'dial',
             label: 'Animation Speed',
@@ -130,14 +123,14 @@ class FraqtelsPlugin extends FrequePluginBase {
             onChange: (value) => { this.timeScale = value / 100; }
         });
         
-        this.addControl('midSpeedSensitivity', {
+        this.addControl('energySpeedSensitivity', {
             type: 'dial',
-            label: 'Mid Speed Sens',
+            label: 'Energy Speed Sens',
             min: 0,
             max: 200,
             step: 1,
-            value: 80,
-            onChange: (value) => { this.midSpeedSensitivity = value / 100; }
+            value: 100,
+            onChange: (value) => { this.energySpeedSensitivity = value / 100; }
         });
         
         this.addControl('zoom', {
@@ -170,16 +163,6 @@ class FraqtelsPlugin extends FrequePluginBase {
             onChange: (value) => { this.fractalIterations = value; }
         });
         
-        this.addControl('trebleDetailSensitivity', {
-            type: 'dial',
-            label: 'Treble Detail Sens',
-            min: 0,
-            max: 200,
-            step: 1,
-            value: 50,
-            onChange: (value) => { this.trebleDetailSensitivity = value / 100; }
-        });
-        
         this.addControl('colorScheme', {
             type: 'dropdown',
             label: 'Color Scheme',
@@ -191,10 +174,24 @@ class FraqtelsPlugin extends FrequePluginBase {
                 { value: '3', label: 'Purple Haze' },
                 { value: '4', label: 'Fire' },
                 { value: '5', label: 'Ice' },
-                { value: '6', label: 'Rainbow' }
+                { value: '6', label: 'Rainbow' },
+                { value: '7', label: 'Energy Morph' }
             ],
             value: '0',
-            onChange: (value) => { this.colorScheme = parseInt(value); }
+            onChange: (value) => { 
+                this.colorScheme = parseInt(value);
+                this.colorMorphEnabled = (value === '7');
+            }
+        });
+        
+        this.addControl('colorMorphSpeed', {
+            type: 'dial',
+            label: 'Morph Speed',
+            min: 0,
+            max: 200,
+            step: 1,
+            value: 50,
+            onChange: (value) => { this.colorMorphSpeed = value / 100; }
         });
     }
     
@@ -222,8 +219,6 @@ class FraqtelsPlugin extends FrequePluginBase {
     }
     
     onInitialize() {
-        console.log('Fraqtels v2: Initializing...');
-        
         // Get WebGL context
         this.gl = this.canvas.getContext('webgl', {
             alpha: false,
@@ -236,8 +231,6 @@ class FraqtelsPlugin extends FrequePluginBase {
             return;
         }
         
-        console.log('Fraqtels: WebGL context created');
-        
         // Create shader programs
         this.createShaderPrograms();
         
@@ -246,20 +239,14 @@ class FraqtelsPlugin extends FrequePluginBase {
             return;
         }
         
-        console.log('Fraqtels: Shader programs created');
-        
         // Create framebuffers
         this.createFramebuffers();
-        
-        console.log('Fraqtels: Framebuffers created');
         
         // Setup geometry
         const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
         this.vertexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
-        
-        console.log('Fraqtels: Geometry setup complete');
         
         // Clear initial frames (match working HTML exactly)
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.bufferA_fbo1);
@@ -269,8 +256,6 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-        
-        console.log('Fraqtels v2: Initialized successfully');
     }
     
     createShaderPrograms() {
@@ -297,11 +282,24 @@ class FraqtelsPlugin extends FrequePluginBase {
             uniform float movementRange;
             uniform int fractalIterations;
             uniform int colorScheme;
+            uniform float morphHue;
             
             mat2 rot(float a) {
                 a = radians(a);
                 float s = sin(a), c = cos(a);
                 return mat2(c, s, -s, c);
+            }
+            
+            vec3 hueToRgb(float hue) {
+                float h = hue / 60.0;
+                float x = 1.0 - abs(mod(h, 2.0) - 1.0);
+                
+                if (h < 1.0) return vec3(1.0, x, 0.0);
+                else if (h < 2.0) return vec3(x, 1.0, 0.0);
+                else if (h < 3.0) return vec3(0.0, 1.0, x);
+                else if (h < 4.0) return vec3(0.0, x, 1.0);
+                else if (h < 5.0) return vec3(x, 0.0, 1.0);
+                else return vec3(1.0, 0.0, x);
             }
             
             vec3 applyColorScheme(vec3 baseColor, int scheme) {
@@ -322,6 +320,11 @@ class FraqtelsPlugin extends FrequePluginBase {
                         sin(hue + 2.094) * 0.5 + 0.5,
                         sin(hue + 4.189) * 0.5 + 0.5
                     ) * length(baseColor);
+                } else if (scheme == 7) {
+                    // Energy Morph - hue shifts based on energy
+                    vec3 hueColor = hueToRgb(morphHue);
+                    float brightness = length(baseColor);
+                    return hueColor * brightness;
                 }
                 return baseColor;
             }
@@ -442,8 +445,6 @@ class FraqtelsPlugin extends FrequePluginBase {
         const w = this.canvas.width;
         const h = this.canvas.height;
         
-        console.log(`Fraqtels: Creating framebuffers at ${w}x${h}`);
-        
         this.bufferA_fbo1 = gl.createFramebuffer();
         this.bufferA_texture1 = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.bufferA_texture1);
@@ -490,6 +491,14 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.bassLevel = this.bassLevel * smoothing + (sharedAudioData.bass || 0) * (1 - smoothing);
         this.midLevel = this.midLevel * smoothing + (sharedAudioData.mid || 0) * (1 - smoothing);
         this.trebleLevel = this.trebleLevel * smoothing + (sharedAudioData.treble || 0) * (1 - smoothing);
+        this.energyLevel = this.energyLevel * smoothing + (sharedAudioData.energy || 0) * (1 - smoothing);
+        this.beatDetected = sharedAudioData.beat || false;
+        
+        // Update color morph hue based on energy
+        if (this.colorMorphEnabled) {
+            this.currentHue += (this.colorMorphSpeed * deltaTime * 0.1) * (1 + this.energyLevel * 2);
+            this.currentHue = this.currentHue % 360;
+        }
     }
     
     onRender(deltaTime, timestamp, sharedAudioData) {
@@ -506,36 +515,13 @@ class FraqtelsPlugin extends FrequePluginBase {
         const gl = this.gl;
         const time = (Date.now() - this.startTime) / 1000;
         
-        // Debug: Log first render
-        if (this.frameCount === 0) {
-            console.log('Fraqtels: First render call', {
-                canvasSize: { w: this.canvas.width, h: this.canvas.height },
-                time,
-                gl: !!gl,
-                programs: { bufferA: !!this.bufferAProgram, image: !!this.imageProgram }
-            });
-        }
-        
         // Audio-reactive parameters
-        const audioFlash = this.flashIntensity * (1 + this.bassLevel * this.bassFlashSensitivity);
-        const audioTimeScale = this.timeScale * (1 + this.midLevel * this.midSpeedSensitivity);
-        const audioRotSpeed = this.rotationSpeed * (1 + this.trebleLevel * this.trebleRotationSensitivity);
-        const audioIter = Math.min(12, Math.floor(this.fractalIterations + this.trebleLevel * this.trebleDetailSensitivity * 3));
+        // Energy controls animation speed
+        const audioTimeScale = this.timeScale * (1 + this.energyLevel * this.energySpeedSensitivity);
         
-        // DEBUG: Log uniforms on first frame
-        if (this.frameCount === 0) {
-            console.log('Fraqtels uniforms:', {
-                flashIntensity: this.flashIntensity,
-                audioFlash,
-                timeScale: this.timeScale,
-                audioTimeScale,
-                zoom: this.zoom,
-                rotationSpeed: this.rotationSpeed,
-                audioRotSpeed,
-                fractalIterations: this.fractalIterations,
-                audioIter
-            });
-        }
+        // Beat syncs to flash (sharp pulse on beat)
+        const beatBoost = (this.beatFlashEnabled && this.beatDetected) ? 2.0 : 1.0;
+        const audioFlash = this.flashIntensity * beatBoost;
         
         // Ping-pong
         const isEven = this.frameCount % 2 === 0;
@@ -557,12 +543,13 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.uniform2f(gl.getUniformLocation(this.bufferAProgram, 'iResolution'), this.canvas.width, this.canvas.height);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'flashIntensity'), audioFlash);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'feedbackAmount'), this.feedbackAmount);
-        gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'rotationSpeed'), audioRotSpeed);
+        gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'rotationSpeed'), this.rotationSpeed);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'timeScale'), audioTimeScale);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'zoom'), this.zoom);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'movementRange'), this.movementRange);
-        gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'fractalIterations'), audioIter);
+        gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'fractalIterations'), this.fractalIterations);
         gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'colorScheme'), this.colorScheme);
+        gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'morphHue'), this.currentHue);
         
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, readTex);
@@ -590,14 +577,6 @@ class FraqtelsPlugin extends FrequePluginBase {
         
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         
-        // Check for GL errors on first few frames
-        if (this.frameCount < 3) {
-            const error = gl.getError();
-            if (error !== gl.NO_ERROR) {
-                console.error('Fraqtels: WebGL error during render:', error);
-            }
-        }
-        
         this.frameCount++;
     }
     
@@ -617,6 +596,5 @@ class FraqtelsPlugin extends FrequePluginBase {
 setTimeout(() => {
     if (window.visualizer && window.FrequePluginBase) {
         new FraqtelsPlugin(window.visualizer);
-        console.log('Fraqtels v2 plugin loaded');
     }
 }, 500);
