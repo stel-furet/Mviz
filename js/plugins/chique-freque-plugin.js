@@ -37,7 +37,7 @@ class ChiquePlugin extends FrequePluginBase {
         // Character management
         this.availableCharacters = ['spacewoman']; // Hardcoded for now
         this.currentCharacter = 'spacewoman';
-        this.characterPath = '/js/plugins/chique_characters/';
+        this.characterPath = 'chique_characters/';
         
         // Camera settings
         this.cameraDistance = 0;
@@ -359,9 +359,9 @@ class ChiquePlugin extends FrequePluginBase {
             this.bones = {};
         }
         
-        // Load GLB with correct path
+        // Load GLB with correct path (relative to plugin location)
         const loader = new THREE.GLTFLoader();
-        const modelPath = `/js/plugins/chique_characters/${this.currentCharacter}.glb`;
+        const modelPath = `${this.characterPath}${this.currentCharacter}.glb`;
         
         console.log('🎨 Chique: Loading character...');
         
