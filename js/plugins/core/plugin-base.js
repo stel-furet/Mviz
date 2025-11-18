@@ -551,18 +551,24 @@ class FrequePluginBase {
         // Apply preset values to controls
         if (preset.values) {
             Object.entries(preset.values).forEach(([controlId, value]) => {
-                // First update plugin property (for internal state)
-                if (this[controlId] !== undefined) {
-                    this[controlId] = value;
-                }
-                
-                // Then update UI control
                 const control = this.controls.get(controlId);
+                
+                // Update UI control first
                 if (control && control.setValue) {
                     control.setValue(value);
+                    // For dials, setValue doesn't call onChange, so we need to call it manually
+                    // to update the plugin property with the transformed value
+                    if (control.type === 'dial' && control.onChange) {
+                        control.onChange(value);
+                    }
                 } else if (control && control.onChange) {
-                    // Fallback: call onChange directly if setValue doesn't exist
+                    // For controls without setValue, call onChange directly
                     control.onChange(value);
+                } else {
+                    // Fallback: update plugin property directly if no control methods exist
+                    if (this[controlId] !== undefined) {
+                        this[controlId] = value;
+                    }
                 }
             });
         }

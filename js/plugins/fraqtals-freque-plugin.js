@@ -1,13 +1,13 @@
 /**
- * Fraqtels - Audio-reactive fractal visualization with feedback effects
+ * Fraqtals - Audio-reactive fractal visualization with feedback effects
  * 
  * @version 1.0.1
  * @author Steve (CrashMonkeys)
  */
 
-class FraqtelsPlugin extends FrequePluginBase {
+class FraqtalsPlugin extends FrequePluginBase {
     constructor(visualizer) {
-        super('fraqtels', visualizer, {
+        super('fraqtals', visualizer, {
             version: '1.0.1',
             author: 'Steve (CrashMonkeys)',
             description: 'Audio-reactive fractal visualization with feedback effects',
@@ -16,21 +16,22 @@ class FraqtelsPlugin extends FrequePluginBase {
         });
         
         // Initialize all control variables
-        this.flashIntensity = 0.4;
+        this.flashIntensity = 0.22;
         this.feedbackAmount = 0.3;
-        this.blurIntensity = 0.01;
+        this.blurIntensity = 0.0;
         this.blurFalloff = 1.3;
         this.rotationSpeed = 1.0;
         this.timeScale = 1.0;
         this.zoom = 1.0;
         this.movementRange = 0.15;
-        this.fractalIterations = 7;
+        this.fractalIterations = 10;
         this.colorScheme = 0;
         
         // Audio reactivity sensitivity
-        this.energySpeedSensitivity = 1.0;  // Energy controls animation speed
+        this.energySpeedSensitivity = 0.1;  // Energy controls animation speed
         this.beatFlashEnabled = true;       // Beat syncs to flash
-        this.colorMorphEnabled = false;     // Energy-based color morphing
+        this.energyMorphEnabled = false;    // Single-color energy morphing
+        this.morphThemeEnabled = false;     // Multi-color theme morphing
         this.colorMorphSpeed = 0.5;         // Color morph speed when enabled
         
         // Audio smoothing - MUST initialize to 0
@@ -42,6 +43,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         
         // Color morphing state
         this.currentHue = 0;
+        this.themeMorphOffset = 0;  // Offset for theme color morphing
         
         // WebGL state
         this.gl = null;
@@ -61,7 +63,7 @@ class FraqtelsPlugin extends FrequePluginBase {
             min: 0,
             max: 100,
             step: 1,
-            value: 40,
+            value: 22,
             onChange: (value) => { this.flashIntensity = value / 100; }
         });
         
@@ -89,7 +91,7 @@ class FraqtelsPlugin extends FrequePluginBase {
             min: 0,
             max: 50,
             step: 1,
-            value: 10,
+            value: 0,
             onChange: (value) => { this.blurIntensity = value / 1000; }
         });
         
@@ -129,7 +131,7 @@ class FraqtelsPlugin extends FrequePluginBase {
             min: 0,
             max: 200,
             step: 1,
-            value: 100,
+            value: 10,
             onChange: (value) => { this.energySpeedSensitivity = value / 100; }
         });
         
@@ -159,7 +161,7 @@ class FraqtelsPlugin extends FrequePluginBase {
             min: 3,
             max: 12,
             step: 1,
-            value: 7,
+            value: 10,
             onChange: (value) => { this.fractalIterations = value; }
         });
         
@@ -174,13 +176,51 @@ class FraqtelsPlugin extends FrequePluginBase {
                 { value: '3', label: 'Purple Haze' },
                 { value: '4', label: 'Fire' },
                 { value: '5', label: 'Ice' },
-                { value: '6', label: 'Rainbow' },
-                { value: '7', label: 'Energy Morph' }
+                { value: '6', label: 'Rainbow' }
             ],
             value: '0',
             onChange: (value) => { 
                 this.colorScheme = parseInt(value);
-                this.colorMorphEnabled = (value === '7');
+            }
+        });
+        
+        this.addControl('energyMorphEnabled', {
+            type: 'checkbox',
+            label: 'Energy Morph',
+            className: 'btn-primary-mixer',
+            value: false,
+            onChange: (value) => { 
+                this.energyMorphEnabled = value;
+                if (value && this.morphThemeEnabled) {
+                    // Mutually exclusive: turn off Morph Theme
+                    this.morphThemeEnabled = false;
+                    // Trigger UI update by finding and updating the control
+                    setTimeout(() => {
+                        if (window.pluginManager) {
+                            window.pluginManager.updatePluginControls(this.pluginName);
+                        }
+                    }, 0);
+                }
+            }
+        });
+        
+        this.addControl('morphThemeEnabled', {
+            type: 'checkbox',
+            label: 'Prism',
+            className: 'btn-primary-mixer',
+            value: false,
+            onChange: (value) => { 
+                this.morphThemeEnabled = value;
+                if (value && this.energyMorphEnabled) {
+                    // Mutually exclusive: turn off Energy Morph
+                    this.energyMorphEnabled = false;
+                    // Trigger UI update by finding and updating the control
+                    setTimeout(() => {
+                        if (window.pluginManager) {
+                            window.pluginManager.updatePluginControls(this.pluginName);
+                        }
+                    }, 0);
+                }
             }
         });
         
@@ -199,16 +239,21 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.addPreset('default', {
             name: 'Default',
             values: {
-                flashIntensity: 40,
+                flashIntensity: 22,
                 feedbackAmount: 30,
-                blurIntensity: 10,
+                blurIntensity: 0,
                 blurFalloff: 130,
                 rotationSpeed: 100,
                 timeScale: 100,
+                energySpeedSensitivity: 10,
                 zoom: 100,
                 movementRange: 15,
-                fractalIterations: 7,
-                colorScheme: '0'
+                fractalIterations: 10,
+                beatFlashEnabled: true,
+                colorScheme: '0',
+                energyMorphEnabled: false,
+                morphThemeEnabled: false,
+                colorMorphSpeed: 50
             }
         });
     }
@@ -277,7 +322,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         });
         
         if (!this.gl) {
-            console.error('Fraqtels: WebGL not supported');
+            console.error('Fraqtals: WebGL not supported');
             return;
         }
         
@@ -285,7 +330,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.createShaderPrograms();
         
         if (!this.bufferAProgram || !this.imageProgram) {
-            console.error('Fraqtels: Failed to create shader programs');
+            console.error('Fraqtals: Failed to create shader programs');
             return;
         }
         
@@ -333,6 +378,9 @@ class FraqtelsPlugin extends FrequePluginBase {
             uniform int fractalIterations;
             uniform int colorScheme;
             uniform float morphHue;
+            uniform int energyMorphEnabled;
+            uniform int morphThemeEnabled;
+            uniform float themeMorphOffset;
             
             mat2 rot(float a) {
                 a = radians(a);
@@ -352,31 +400,119 @@ class FraqtelsPlugin extends FrequePluginBase {
                 else return vec3(1.0, 0.0, x);
             }
             
+            // RGB to HSV conversion (hue in 0-360, sat/value in 0-1)
+            // Handles RGB values > 1.0 from color scheme multipliers
+            vec3 rgbToHsv(vec3 rgb) {
+                float maxVal = max(max(rgb.r, rgb.g), rgb.b);
+                float minVal = min(min(rgb.r, rgb.g), rgb.b);
+                float delta = maxVal - minVal;
+                
+                float h = 0.0;
+                if (delta > 0.0001) {
+                    // Normalize for hue calculation (deltaNorm = delta/maxVal)
+                    float deltaNorm = delta / max(maxVal, 0.0001);
+                    
+                    if (maxVal == rgb.r) {
+                        h = mod((rgb.g - rgb.b) / delta, 6.0);
+                    } else if (maxVal == rgb.g) {
+                        h = (rgb.b - rgb.r) / delta + 2.0;
+                    } else {
+                        h = (rgb.r - rgb.g) / delta + 4.0;
+                    }
+                    h = h * 60.0;
+                    if (h < 0.0) h += 360.0;
+                }
+                
+                // Saturation: delta relative to max value
+                float s = maxVal > 0.0001 ? delta / maxVal : 0.0;
+                // Value: use actual max (preserve brightness > 1.0)
+                float v = maxVal;
+                
+                return vec3(h, s, v);
+            }
+            
+            // HSV to RGB conversion (hue in 0-360, sat/value in 0-1)
+            vec3 hsvToRgb(vec3 hsv) {
+                float h = mod(hsv.x, 360.0) / 60.0;
+                float s = clamp(hsv.y, 0.0, 1.0);
+                float v = clamp(hsv.z, 0.0, 1.0);
+                
+                float c = v * s;
+                float x = c * (1.0 - abs(mod(h, 2.0) - 1.0));
+                float m = v - c;
+                
+                vec3 rgb;
+                if (h < 1.0) {
+                    rgb = vec3(c, x, 0.0);
+                } else if (h < 2.0) {
+                    rgb = vec3(x, c, 0.0);
+                } else if (h < 3.0) {
+                    rgb = vec3(0.0, c, x);
+                } else if (h < 4.0) {
+                    rgb = vec3(0.0, x, c);
+                } else if (h < 5.0) {
+                    rgb = vec3(x, 0.0, c);
+                } else {
+                    rgb = vec3(c, 0.0, x);
+                }
+                
+                return rgb + vec3(m);
+            }
+            
             vec3 applyColorScheme(vec3 baseColor, int scheme) {
-                if (scheme == 1) {
-                    return baseColor * vec3(1.5, 1.0, 0.6);
-                } else if (scheme == 2) {
-                    return baseColor * vec3(0.6, 0.8, 1.5);
-                } else if (scheme == 3) {
-                    return baseColor * vec3(1.2, 0.6, 1.5);
-                } else if (scheme == 4) {
-                    return vec3(baseColor.r * 1.5, baseColor.g * 0.8, baseColor.b * 0.3);
-                } else if (scheme == 5) {
-                    return vec3(baseColor.r * 0.5, baseColor.g * 1.2, baseColor.b * 1.8);
-                } else if (scheme == 6) {
-                    float hue = length(baseColor) * 3.0 + iTime * timeScale * 0.5;
-                    return vec3(
-                        sin(hue) * 0.5 + 0.5,
-                        sin(hue + 2.094) * 0.5 + 0.5,
-                        sin(hue + 4.189) * 0.5 + 0.5
-                    ) * length(baseColor);
-                } else if (scheme == 7) {
-                    // Energy Morph - hue shifts based on energy
+                vec3 result;
+                
+                // Energy Morph: Single-color morphing (overrides scheme)
+                if (energyMorphEnabled != 0) {
                     vec3 hueColor = hueToRgb(morphHue);
                     float brightness = length(baseColor);
                     return hueColor * brightness;
                 }
-                return baseColor;
+                
+                // Apply base color scheme
+                if (scheme == 1) {
+                    result = baseColor * vec3(1.5, 1.0, 0.6);
+                } else if (scheme == 2) {
+                    result = baseColor * vec3(0.6, 0.8, 1.5);
+                } else if (scheme == 3) {
+                    result = baseColor * vec3(1.2, 0.6, 1.5);
+                } else if (scheme == 4) {
+                    result = vec3(baseColor.r * 1.5, baseColor.g * 0.8, baseColor.b * 0.3);
+                } else if (scheme == 5) {
+                    result = vec3(baseColor.r * 0.5, baseColor.g * 1.2, baseColor.b * 1.8);
+                } else if (scheme == 6) {
+                    float hue = length(baseColor) * 3.0 + iTime * timeScale * 0.5;
+                    result = vec3(
+                        sin(hue) * 0.5 + 0.5,
+                        sin(hue + 2.094) * 0.5 + 0.5,
+                        sin(hue + 4.189) * 0.5 + 0.5
+                    ) * length(baseColor);
+                } else {
+                    result = baseColor;
+                }
+                
+                // Apply Morph Theme: Rotate hue of entire scheme concurrently
+                // This shifts all colors in the scheme together, maintaining multi-color composition
+                if (morphThemeEnabled != 0) {
+                    // Convert to HSV and rotate hue
+                    vec3 hsv = rgbToHsv(result);
+                    // Convert themeMorphOffset (0-2π) to hue rotation (0-360)
+                    float hueRotation = themeMorphOffset * 180.0 / 3.14159;
+                    hsv.x = mod(hsv.x + hueRotation, 360.0);
+                    // Preserve original value (brightness) which may be > 1.0
+                    float originalV = hsv.z;
+                    
+                    // Convert back to RGB (clamps v to 0-1, so we need to restore scale)
+                    hsv.z = clamp(hsv.z, 0.0, 1.0);
+                    result = hsvToRgb(hsv);
+                    
+                    // Restore original brightness scale if it was > 1.0
+                    if (originalV > 1.0) {
+                        result = result * originalV;
+                    }
+                }
+                
+                return result;
             }
             
             vec3 fractal(vec2 p, float k, float flashInt) {
@@ -508,7 +644,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         
         const status1 = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
         if (status1 !== gl.FRAMEBUFFER_COMPLETE) {
-            console.error('Fraqtels: FBO1 incomplete:', status1);
+            console.error('Fraqtals: FBO1 incomplete:', status1);
         }
         
         this.bufferA_fbo2 = gl.createFramebuffer();
@@ -524,7 +660,7 @@ class FraqtelsPlugin extends FrequePluginBase {
         
         const status2 = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
         if (status2 !== gl.FRAMEBUFFER_COMPLETE) {
-            console.error('Fraqtels: FBO2 incomplete:', status2);
+            console.error('Fraqtals: FBO2 incomplete:', status2);
         }
         
         gl.bindTexture(gl.TEXTURE_2D, null);
@@ -544,21 +680,27 @@ class FraqtelsPlugin extends FrequePluginBase {
         this.energyLevel = this.energyLevel * smoothing + (sharedAudioData.energy || 0) * (1 - smoothing);
         this.beatDetected = sharedAudioData.beat || false;
         
-        // Update color morph hue based on energy
-        if (this.colorMorphEnabled) {
+        // Update color morph hue based on energy (single color morph)
+        if (this.energyMorphEnabled) {
             this.currentHue += (this.colorMorphSpeed * deltaTime * 0.1) * (1 + this.energyLevel * 2);
             this.currentHue = this.currentHue % 360;
+        }
+        
+        // Update theme morph offset (multi-color scheme morph)
+        if (this.morphThemeEnabled) {
+            this.themeMorphOffset += (this.colorMorphSpeed * deltaTime * 0.1) * (1 + this.energyLevel * 2);
+            this.themeMorphOffset = this.themeMorphOffset % (Math.PI * 2); // Cycle through 0-2π
         }
     }
     
     onRender(deltaTime, timestamp, sharedAudioData) {
         if (!this.gl) {
-            console.warn('Fraqtels: Render called but gl context is null');
+            console.warn('Fraqtals: Render called but gl context is null');
             return;
         }
         
         if (!this.bufferAProgram || !this.imageProgram) {
-            console.warn('Fraqtels: Render called but shader programs are null');
+            console.warn('Fraqtals: Render called but shader programs are null');
             return;
         }
         
@@ -600,6 +742,9 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'fractalIterations'), this.fractalIterations);
         gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'colorScheme'), this.colorScheme);
         gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'morphHue'), this.currentHue);
+        gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'energyMorphEnabled'), this.energyMorphEnabled ? 1 : 0);
+        gl.uniform1i(gl.getUniformLocation(this.bufferAProgram, 'morphThemeEnabled'), this.morphThemeEnabled ? 1 : 0);
+        gl.uniform1f(gl.getUniformLocation(this.bufferAProgram, 'themeMorphOffset'), this.themeMorphOffset);
         
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, readTex);
@@ -649,6 +794,6 @@ class FraqtelsPlugin extends FrequePluginBase {
 
 setTimeout(() => {
     if (window.visualizer && window.FrequePluginBase) {
-        new FraqtelsPlugin(window.visualizer);
+        new FraqtalsPlugin(window.visualizer);
     }
 }, 500);

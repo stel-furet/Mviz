@@ -490,6 +490,9 @@ class PluginMixerIntegration {
             return;
         }
         
+        // Get presets container for colorScheme control
+        const presetsContainer = channelStrip.querySelector('.plugin-presets-container');
+        
         // Get plugin reference for dial color customization
         const plugin = window.pluginManager?.getPlugin(pluginName);
         
@@ -505,7 +508,26 @@ class PluginMixerIntegration {
             const result = this.createControlElement(controlId, controlConfig);
             if (result) {
                 const controlElement = result.element || result;
-                controlsContainer.appendChild(controlElement);
+                
+                // Special case: colorScheme dropdown goes in presets container, right after Reset button
+                if (controlId === 'colorScheme' && presetsContainer) {
+                    // Check if colorScheme already exists in presets container
+                    const existing = presetsContainer.querySelector(`[data-control="colorScheme"]`);
+                    if (!existing) {
+                        // Find Reset button and insert after it, or at beginning if no reset button
+                        const resetBtn = presetsContainer.querySelector(`#${pluginName}ResetAllBtn`);
+                        if (resetBtn && resetBtn.nextSibling) {
+                            presetsContainer.insertBefore(controlElement, resetBtn.nextSibling);
+                        } else if (resetBtn) {
+                            presetsContainer.appendChild(controlElement);
+                        } else {
+                            presetsContainer.insertBefore(controlElement, presetsContainer.firstChild);
+                        }
+                    }
+                    // Still store setValue/getValue methods even if element already exists
+                } else {
+                    controlsContainer.appendChild(controlElement);
+                }
                 
                 // Store setValue/getValue methods in control config if they exist
                 if (result.setValue) {
@@ -526,6 +548,9 @@ class PluginMixerIntegration {
         // Controls finished debug disabled
         
         // DOM debug disabled
+        
+        // Setup collapsible functionality for controls section
+        this.setupCollapsibleSection(channelStrip, '.plugin-controls-header', '.plugin-controls-container');
         
         // Check if controls section is collapsed and auto-expand it
         const controlsSection = channelStrip.querySelector('.channel-controls-section');
@@ -607,11 +632,95 @@ class PluginMixerIntegration {
         const presetsContainer = channelStrip.querySelector('.plugin-presets-container');
         if (!presetsContainer) return;
         
+        // Preserve Reset button if it exists
+        const resetButton = presetsContainer.querySelector(`#${pluginName}ResetAllBtn`);
+        
         // Clear existing presets
         presetsContainer.innerHTML = '';
         
-        // Add each preset
+        // Add Reset ALL button at the very beginning (create if it doesn't exist)
+        const plugin = window.pluginManager?.getPlugin(pluginName);
+        if (plugin) {
+            let resetBtn = resetButton;
+            if (!resetBtn) {
+                resetBtn = document.createElement('button');
+                resetBtn.className = 'control-btn clear-btn';
+                resetBtn.id = `${pluginName}ResetAllBtn`;
+                resetBtn.textContent = 'Reset ALL';
+                resetBtn.title = 'Reset All Settings to Default';
+                resetBtn.addEventListener('click', () => {
+                    // Reset all controls to their default values
+                    if (plugin.presets && plugin.presets.has('default')) {
+                        plugin.applyPreset('default');
+                    } else {
+                        // Fallback: reset each control to its initial value from control config
+                        plugin.controls.forEach((controlConfig, controlId) => {
+                            // Get the default value from control config
+                            const defaultValue = controlConfig.value;
+                            
+                            // Only reset if we have a default value
+                            if (defaultValue !== undefined) {
+                                // Update plugin property first
+                                if (plugin[controlId] !== undefined) {
+                                    // Handle value transformation if needed (e.g., dials that divide by 100)
+                                    if (controlConfig.type === 'dial' && controlConfig.onChange) {
+                                        // For dials, we need to set the raw value, not the transformed one
+                                        plugin[controlId] = defaultValue;
+                                    } else {
+                                        plugin[controlId] = defaultValue;
+                                    }
+                                }
+                                
+                                // Update UI control
+                                if (controlConfig.setValue) {
+                                    controlConfig.setValue(defaultValue);
+                                } else if (controlConfig.onChange) {
+                                    // For dials, onChange expects the transformed value
+                                    if (controlConfig.type === 'dial') {
+                                        // Apply the same transformation as in onChange
+                                        const transformedValue = typeof defaultValue === 'number' ? defaultValue : parseFloat(defaultValue);
+                                        controlConfig.onChange(transformedValue);
+                                    } else {
+                                        controlConfig.onChange(defaultValue);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            presetsContainer.appendChild(resetBtn);
+            
+            // Add colorScheme control right after Reset button if it exists in plugin controls
+            // Check if it already exists to avoid duplicates
+            const existingColorScheme = presetsContainer.querySelector(`[data-control="colorScheme"]`);
+            if (!existingColorScheme) {
+                const colorSchemeConfig = plugin.controls.get('colorScheme');
+                if (colorSchemeConfig) {
+                    const colorSchemeResult = this.createControlElement('colorScheme', colorSchemeConfig);
+                    if (colorSchemeResult) {
+                        const colorSchemeElement = colorSchemeResult.element || colorSchemeResult;
+                        presetsContainer.appendChild(colorSchemeElement);
+                        
+                        // Store setValue/getValue methods
+                        if (colorSchemeResult.setValue) {
+                            colorSchemeConfig.setValue = colorSchemeResult.setValue;
+                        }
+                        if (colorSchemeResult.getValue) {
+                            colorSchemeConfig.getValue = colorSchemeResult.getValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add each preset (skip 'default' since Reset ALL does the same thing)
         presets.forEach((presetConfig, presetId) => {
+            // Skip default preset - Reset ALL button handles this
+            if (presetId === 'default') {
+                return;
+            }
+            
             // Handle dropdown presets (like preset selector)
             if (presetConfig.type === 'dropdown') {
                 const controlGroup = document.createElement('div');
@@ -675,6 +784,66 @@ class PluginMixerIntegration {
         
         // Add User Presets dropdown and action buttons after hardcoded presets
         this.addUserPresetsUI(pluginName, presetsContainer);
+        
+        // Setup collapsible functionality for presets section
+        this.setupCollapsibleSection(channelStrip, '.plugin-presets-header', '.plugin-presets-container');
+        
+        // Auto-expand the presets section to show the presets
+        const presetsSection = channelStrip.querySelector('.channel-presets-section');
+        if (presetsSection) {
+            const header = presetsSection.querySelector('.plugin-presets-header');
+            
+            // Auto-expand the presets section
+            if (!presetsContainer.classList.contains('expanded')) {
+                presetsContainer.classList.add('expanded');
+                
+                // Also update the header indicator if it exists
+                if (header) {
+                    const indicator = header.querySelector('.collapse-indicator');
+                    if (indicator) {
+                        indicator.style.transform = 'rotate(90deg)';
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Setup collapsible section functionality
+     */
+    setupCollapsibleSection(channelStrip, headerSelector, contentSelector) {
+        const header = channelStrip.querySelector(headerSelector);
+        const content = channelStrip.querySelector(contentSelector);
+        
+        if (!header || !content) return;
+        
+        // Remove any existing click listeners to prevent duplicates
+        const existingHandler = header._collapsibleHandler;
+        if (existingHandler) {
+            header.removeEventListener('click', existingHandler);
+        }
+        
+        // Create new handler
+        const handler = () => {
+            const isExpanded = content.classList.contains('expanded');
+            const indicator = header.querySelector('.collapse-indicator');
+            
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                if (indicator) {
+                    indicator.style.transform = 'rotate(0deg)';
+                }
+            } else {
+                content.classList.add('expanded');
+                if (indicator) {
+                    indicator.style.transform = 'rotate(90deg)';
+                }
+            }
+        };
+        
+        // Store handler reference and add listener
+        header._collapsibleHandler = handler;
+        header.addEventListener('click', handler);
     }
     
     /**
