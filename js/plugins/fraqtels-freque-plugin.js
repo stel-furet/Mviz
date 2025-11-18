@@ -218,6 +218,56 @@ class FraqtelsPlugin extends FrequePluginBase {
         return false;
     }
     
+    /**
+     * Custom composite: Handle WebGL canvas capture ourselves to ensure it's ready
+     * This prevents flickering when recording or streaming to displays
+     */
+    customComposite(ctx, width, height) {
+        if (!this.gl || !this.canvas) return false;
+        
+        // CRITICAL: Force a render pass to ensure canvas is up-to-date
+        // This ensures the canvas has the latest frame before capture
+        if (this.bufferAProgram && this.imageProgram && this.vertexBuffer) {
+            const gl = this.gl;
+            const time = (Date.now() - this.startTime) / 1000;
+            
+            // Ensure we're rendering to the default framebuffer (canvas)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Re-render the final pass to ensure canvas is current
+            // Use the current writeTex from the last render
+            const isEven = this.frameCount % 2 === 0;
+            const writeTex = isEven ? this.bufferA_texture2 : this.bufferA_texture1;
+            
+            gl.useProgram(this.imageProgram);
+            
+            const pos = gl.getAttribLocation(this.imageProgram, 'position');
+            gl.enableVertexAttribArray(pos);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+            gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+            
+            gl.uniform2f(gl.getUniformLocation(this.imageProgram, 'iResolution'), this.canvas.width, this.canvas.height);
+            gl.uniform1f(gl.getUniformLocation(this.imageProgram, 'blurIntensity'), this.blurIntensity);
+            gl.uniform1f(gl.getUniformLocation(this.imageProgram, 'blurFalloff'), this.blurFalloff);
+            
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, writeTex);
+            gl.uniform1i(gl.getUniformLocation(this.imageProgram, 'iChannel0'), 0);
+            
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+        
+        // Ensure framebuffer is unbound and commands complete
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        this.gl.finish();
+        
+        // Now safe to capture the canvas
+        ctx.drawImage(this.canvas, 0, 0, width, height);
+        
+        return true; // We handled the drawing
+    }
+    
     onInitialize() {
         // Get WebGL context
         this.gl = this.canvas.getContext('webgl', {
@@ -576,6 +626,10 @@ class FraqtelsPlugin extends FrequePluginBase {
         gl.uniform1i(gl.getUniformLocation(this.imageProgram, 'iChannel0'), 0);
         
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        
+        // CRITICAL: Ensure framebuffer is unbound and canvas is ready for capture
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.flush(); // Non-blocking flush to ensure commands are submitted
         
         this.frameCount++;
     }
