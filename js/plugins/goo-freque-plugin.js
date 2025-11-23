@@ -1,21 +1,24 @@
 /**
  * Goo - Mandelbulb raymarching with refraction and reflection
  * 
- * Based on "Inside the mandelbulb" shader
+ * Specifc Shader Code only: 
+ * License: WTFPL, author: sam hocevar, found: https://stackoverflow.com/a/17897228/418488
+ * License: MIT, author: Inigo Quilez, found: https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
+ * All other code is original and sole property of Rapid PM. No license for use outside of the Frequezoid Application is agranted. 
  * 
  * @version 1.0.0
- * @author Converted from Shadertoy
+ * @author Frequezoid Team Some shader specific code MIT, WTFPL licence
  */
 
 class GooPlugin extends FrequePluginBase {
     constructor(visualizer) {
         super('goo', visualizer, {
-            version: '1.0.0',
-            author: 'Converted from Shadertoy',
+            version: '1.0.2',
+            author: 'Frequezoid Team',
             description: 'Mandelbulb raymarching with refraction and reflection effects',
             targetFPS: 60,
             dialFillColor: '--accent-color',
-            credits: 'Mandelbulb raymarching shader with refraction/reflection. CC0 license.'
+            credits: 'Frequezoid Team - Some shader specific code MIT, WTFPL licences. All other code copyright Frequezoid'
         });
         
         // Shader parameters
@@ -134,10 +137,10 @@ class GooPlugin extends FrequePluginBase {
             uniform vec2 resolution;
             uniform float time;
             
-            #define TOLERANCE       0.0001
+            #define TOLERANCE       0.00008  // Slightly tighter tolerance for better edge definition
             #define MAX_RAY_LENGTH  20.0
             #define MAX_RAY_MARCHES 60
-            #define NORM_OFF        0.001
+            #define NORM_OFF        0.0008   // Smaller epsilon for more accurate normals
             #define MAX_BOUNCES     5
             
             uniform int LOOPS;
@@ -300,11 +303,14 @@ class GooPlugin extends FrequePluginBase {
             }
             
             vec3 normal(vec3 pos) {
-              vec2  eps = vec2(NORM_OFF,0.0);
+              // Improved normal calculation with adaptive epsilon for better edge quality
+              float dist = df(pos);
+              float eps = max(NORM_OFF, abs(dist) * 0.001); // Adaptive epsilon based on distance
+              
               vec3 nor;
-              nor.x = df(pos+eps.xyy) - df(pos-eps.xyy);
-              nor.y = df(pos+eps.yxy) - df(pos-eps.yxy);
-              nor.z = df(pos+eps.yyx) - df(pos-eps.yyx);
+              nor.x = df(pos+vec3(eps,0.0,0.0)) - df(pos-vec3(eps,0.0,0.0));
+              nor.y = df(pos+vec3(0.0,eps,0.0)) - df(pos-vec3(0.0,eps,0.0));
+              nor.z = df(pos+vec3(0.0,0.0,eps)) - df(pos-vec3(0.0,0.0,eps));
               return normalize(nor);
             }
             
@@ -358,6 +364,12 @@ class GooPlugin extends FrequePluginBase {
                 float fre = 1.0+dot(rd, sn);
                 fre *= fre;
                 fre = mix(0.1, 1.0, fre);
+                
+                // Edge smoothing: improve edge quality by smoothing based on distance field
+                // This helps compensate for lack of DPR scaling
+                float distAtSurface = abs(df(sp));
+                float edgeSmoothFactor = smoothstep(TOLERANCE * 3.0, TOLERANCE, distAtSurface);
+                fre = mix(fre, 1.0, edgeSmoothFactor * 0.2); // Subtle edge smoothing
             
                 vec3 ld     = normalize(lightPos - sp);
             
@@ -699,7 +711,7 @@ class GooPlugin extends FrequePluginBase {
                 rotationSpeedX: 25,
                 rotationSpeedY: 35,
                 animationSpeed: 25,
-                cameraDistance: 60,
+                cameraDistance: 0,
                 cameraHeight: 324,
                 cameraDepth: 465,
                 audioRotationSens: 30,
@@ -743,7 +755,7 @@ class GooPlugin extends FrequePluginBase {
                 rotationSpeedX: 30,
                 rotationSpeedY: 40,
                 animationSpeed: 30,
-                cameraDistance: 60,
+                cameraDistance: 0,
                 cameraHeight: 324,
                 cameraDepth: 465,
                 audioRotationSens: 40,
@@ -765,7 +777,7 @@ class GooPlugin extends FrequePluginBase {
                 rotationSpeedX: 20,
                 rotationSpeedY: 30,
                 animationSpeed: 20,
-                cameraDistance: 60,
+                cameraDistance: 0,
                 cameraHeight: 324,
                 cameraDepth: 465,
                 audioRotationSens: 0,
