@@ -35,6 +35,28 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* Plugin credits section */
+.channel-credits-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #333;
+}
+
+.plugin-credits-text {
+    font-size: 10px;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+    margin: 4px 0 0 0;
+    padding: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    text-align: left;
+}
+
 /* ========================================
    BUTTONS
    ======================================== */
@@ -181,11 +203,11 @@ body {
 .btn-toggle {
     background: var(--accent-color, #2a2a2a);
     border: 1px solid var(--border-color, #898989);
-    color: var(--primary-bg);
+    color: var(--text-primary);
     padding: 8px 12px !important;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 12px !important;
+    font-size: 14px !important;
     transition: all 0.2s ease;
     width: 100%;
     white-space: nowrap;
@@ -1531,11 +1553,11 @@ html body .slider-2-wrapper .slider-2-value {
 }
 
 .drag-placeholder {
-    width: 12px;
-    height: 2px;
-    background: var(--text-secondary);
+    width: 42px;
+    height: 8px;
+    background: var(--hover-color);
     border-radius: 1px;
-    opacity: 0.5;
+    
 }
 
 /* Drop Zone Indicator */
@@ -1622,38 +1644,46 @@ html body .slider-2-wrapper .slider-2-value {
     color: var(--primary-bg);
 }
 
-/* Mixer Minimized State */
+/* Mixer Minimized State - Hide entire panel when minimized (content moved to footer) */
 .mixer-panel-floating.mixer-minimized {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    height: auto !important;
-    max-height: 148px !important;
-    overflow: visible !important; /* CRITICAL: Allow expanded strips to show */
-    transition: all 0.3s ease;
-    /* NO position: relative - must stay fixed for JS positioning */
+    display: none !important;
 }
 
 .mixer-panel-floating.mixer-minimized .panel-header {
     display: none !important;
 }
 
-/* Frame styling applied directly to panel-content */
+/* Hide panel-content when minimized (mixer-channels is moved to footer) */
 .mixer-panel-floating.mixer-minimized .panel-content {
-    background: var(--secondary-bg) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    padding: 12px 8px 4px 4px !important; /* Frame padding: 12px top, 8px right, 4px bottom, 4px left */
+    display: none !important;
+}
+
+/* Frame styling applied to mixer-channels when in footer */
+footer .mixer-channels.mixer-minimized {
+    /*background: var(--secondary-bg) !important;
+    border: 0px solid var(--border-color) !important;
+    border-radius: 0px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important; */
+    padding: 0px 8px 4px 4px !important; /* Frame padding: 12px top, 8px right, 4px bottom, 4px left */
+    margin-bottom: 2px !important; /* Space above controls */
     height: auto !important;
-    max-height: 122px !important;
-    overflow: visible !important; /* CRITICAL: Allow expanded strips to show */
+    max-height: 88px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important; /* CRITICAL: Allow strips to expand upward */
     transition: all 0.3s ease;
+    /* Hide scrollbar but keep scrolling functionality */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+footer .mixer-channels.mixer-minimized::-webkit-scrollbar {
+    display: none !important;
 }
 
 .mixer-channels.mixer-minimized {
     height: auto !important;
-    max-height: 148px !important;
+    max-height: 88px !important;
     overflow-x: auto !important;
     overflow-y: visible !important; /* CRITICAL: Allow strips to expand upward */
     /* NO position: relative - strips will be positioned at body level when expanded */
@@ -1666,7 +1696,15 @@ html body .slider-2-wrapper .slider-2-value {
     background: var(--secondary-bg) !important;
     transition: all 0.3s ease;
     overflow-y: auto !important; /* Allow scrolling within strip */
-    max-height: 148px !important; /* Match container height */
+    max-height: 68px !important; /* Match container height */
+    /* Hide scrollbar but keep scrolling functionality */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.mixer-channels.mixer-minimized .channel-strip::-webkit-scrollbar {
+    display: none !important;
 }
 
 /* Exception: Expanded strips override minimized height constraints */
@@ -1674,6 +1712,14 @@ html body .slider-2-wrapper .slider-2-value {
     height: 85vh !important;
     padding: 16px !important;
     max-height: 85vh !important;
+    /* Hide scrollbar but keep scrolling functionality */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbar for expanded strips from minimized mixer (WebKit) */
+.mixer-channels.mixer-minimized .channel-strip.expanded::-webkit-scrollbar {
+    display: none !important;
 }
 
 /* Hide mixer info panel when minimized */
@@ -1740,6 +1786,18 @@ html body .slider-2-wrapper .slider-2-value {
     z-index: 10002 !important; /* Above everything */
     padding: 12px 8px !important; /* Restore normal padding */
     box-sizing: border-box !important;
+}
+
+/* Hide scrollbar on expanded strips from minimized mixer */
+.channel-strip.expanded.from-minimized {
+    /* Hide scrollbar but keep scrolling functionality */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbar for expanded strips from minimized mixer (WebKit) */
+.channel-strip.expanded.from-minimized::-webkit-scrollbar {
+    display: none !important;
 }
 
 /* Fix vertical slider centering in expanded strips */

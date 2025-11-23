@@ -12,7 +12,8 @@ class FraqtalsPlugin extends FrequePluginBase {
             author: 'Steve (CrashMonkeys)',
             description: 'Audio-reactive fractal visualization with feedback effects',
             targetFPS: 60,
-            dialFillColor: '--accent-color'
+            dialFillColor: '--accent-color',
+            credits: 'Audio-reactive fractal visualization by Steve (CrashMonkeys). Based on feedback-shader.html.'
         });
         
         // Initialize all control variables

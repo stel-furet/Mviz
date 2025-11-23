@@ -9,9 +9,10 @@ class NebulaPlugin extends FrequePluginBase {
         // Initialize base plugin with metadata
         super('nebula', visualizer, {
             displayName: 'Nebula',
-            author: 'Freque Team',
+            author: 'Crash Monkey',
             description: 'Supernova Remnant Visualization with Three.js',
-            targetFPS: 60
+            targetFPS: 60,
+            credits: 'Supernova remnant visualization by Crash Monkey. Photorealistic cosmic nebula with Three.js.'
         });
         
         // Initialize nebula visualization properties (don't create NebulaVisualization yet)

@@ -80,7 +80,6 @@ class PluginFolderManager {
             };
             
             await store.put(folderData);
-            console.log('✅ Plugin folder handle stored in IndexedDB');
             
             // Also store path in localStorage for quick display
             localStorage.setItem('customPluginFolderPath', folderPath);
@@ -107,7 +106,6 @@ class PluginFolderManager {
                     if (request.result && request.result.handle) {
                         this.customFolderHandle = request.result.handle;
                         this.customFolderPath = request.result.path;
-                        console.log('✅ Loaded custom plugin folder:', this.customFolderPath);
                         
                         // Update UI
                         this.updatePathDisplay();
@@ -224,7 +222,6 @@ class PluginFolderManager {
             
             // Show directory picker
             const directoryHandle = await window.showDirectoryPicker();
-            console.log('📁 Plugin folder selected:', directoryHandle.name);
             
             // Store folder handle for future use
             this.customFolderHandle = directoryHandle;
@@ -239,7 +236,7 @@ class PluginFolderManager {
             
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Folder selection cancelled by user');
+                // Folder selection cancelled by user - silent
             } else {
                 console.error('Error selecting plugin folder:', error);
                 alert('Error selecting folder: ' + error.message);
@@ -272,8 +269,6 @@ class PluginFolderManager {
             // Update UI
             this.updatePathDisplay();
             
-            console.log('✅ Custom plugin folder cleared');
-            
             // Optionally refresh plugins
             if (window.pluginAutoLoader) {
                 await window.pluginAutoLoader.manualRefresh();
@@ -289,7 +284,6 @@ class PluginFolderManager {
      */
     async scanAndLoadCustomPlugins() {
         if (!this.customFolderHandle) {
-            console.warn('No custom folder selected');
             return [];
         }
         
@@ -307,8 +301,6 @@ class PluginFolderManager {
                     }
                 }
             }
-            
-            console.log(`📁 Found ${pluginFiles.length} plugin(s) in custom folder`);
             
             // Load each plugin
             for (const file of pluginFiles) {
@@ -329,8 +321,6 @@ class PluginFolderManager {
      */
     async loadPluginFromFile(file) {
         try {
-            console.log(`🔌 Loading plugin from file: ${file.name}`);
-            
             // Read file contents
             const code = await file.text();
             
@@ -339,8 +329,6 @@ class PluginFolderManager {
             script.textContent = code;
             script.setAttribute('data-custom-plugin', file.name);
             document.head.appendChild(script);
-            
-            console.log(`✅ Plugin loaded: ${file.name}`);
             
         } catch (error) {
             console.error(`❌ Failed to load plugin ${file.name}:`, error);

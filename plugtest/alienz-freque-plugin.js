@@ -5,17 +5,18 @@
  * two-state animation, and classic arcade gameplay mechanics.
  * 
  * @version 1.0.0
- * @author Freque Plugin (converted from Space Invaders Remix v1.5)
+ * @author Crash Monkey
  */
 
 class AlienZ extends FrequePluginBase {
     constructor(visualizer) {
         super('alienz', visualizer, {
             version: '1.0.0',
-            author: 'Freque Plugin',
+            author: 'Crash Monkey',
             description: 'Classic arcade alien invasion with audio-reactive movement and combat',
             targetFPS: 60,
-            dialFillColor: '--accent-secondary'
+            dialFillColor: '--accent-secondary',
+            credits: 'Audio-reactive arcade invasion by Crash Monkey. Space Invaders style retro mayhem.'
         });
         
         // Game state arrays
@@ -148,7 +149,6 @@ class AlienZ extends FrequePluginBase {
             step: 5,
             value: 30,
             onChange: (value) => {
-                console.log('Laser Frequency changed to:', value);
                 this.laserFreq = value;
             }
         });
@@ -200,7 +200,6 @@ class AlienZ extends FrequePluginBase {
             step: 5,
             value: 20,
             onChange: (value) => {
-                console.log('Color React changed to:', value);
                 this.colorReactivity = value;
             }
         });
@@ -220,7 +219,6 @@ class AlienZ extends FrequePluginBase {
             ],
             value: 'classic',
             onChange: (value) => {
-                console.log('Color scheme changed to:', value);
                 this.colorScheme = value;
             }
         });

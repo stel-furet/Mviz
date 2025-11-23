@@ -11446,17 +11446,8 @@ class FrequeVisualizer {
             this.aiAutopilot = new AIAutopilot(this);
             this.infiniteZoom = new InfiniteZoomVisualization(this);
             this.fluidDynamics = new FluidDynamicsVisualization(this);
-            // Initialize Blobs visualization (delayed for mixer integration)
-            setTimeout(() => {
-                if (window.pluginMixerIntegration) {
-                    this.blobsVisualization = new BlobsPlugin(this);
-                } else {
-                    // Retry if mixer integration not ready
-                    setTimeout(() => {
-                        this.blobsVisualization = new BlobsPlugin(this);
-                    }, 100);
-                }
-            }, 50);
+            // Blobs is now a plugin and auto-instantiates itself
+            this.blobsVisualization = null; // Will be set by plugin when it loads
             this.webglVisualization = new WebGLVisualizationManager(this);
             
             // Initialize Fluid Dynamics Presets
@@ -21169,36 +21160,53 @@ https://rogueamoeba.com/loopback/
     toggleMixer() {
         const panel = document.getElementById('mixerPanel');
         const btn = document.getElementById('mixerBtn');
+        const mixerChannels = document.querySelector('.mixer-channels');
+        const footer = document.querySelector('footer.footer');
+        const isMinimized = panel && panel.classList.contains('mixer-minimized');
         
         // Toggle panel visibility using same positioning as Record panel
         if (panel) {
-            const isVisible = panel.style.display !== 'none';
-            if (isVisible) {
-                panel.style.display = 'none';
-                btn.classList.remove('active');
-                
-                // Clean up peek button event listeners when mixer closes
-                this.cleanupPeekButton();
+            // Check if mixer is minimized (channels in footer)
+            if (isMinimized && footer && mixerChannels && footer.contains(mixerChannels)) {
+                // Toggle visibility of footer mixer-channels
+                const isVisible = mixerChannels.style.display !== 'none';
+                if (isVisible) {
+                    mixerChannels.style.display = 'none';
+                    btn.classList.remove('active');
+                } else {
+                    mixerChannels.style.display = '';
+                    btn.classList.add('active');
+                }
             } else {
-                this.closeAllPanels(); // CLOSE ALL PANELS FIRST
-                // Position panel using same system as Record panel
-                this.positionFloatingPanel(panel, btn);
-                panel.style.display = 'block';
-                btn.classList.add('active');
-                
-                // Setup peek button functionality when mixer opens
-                this.setupPeekButton();
-                
-                // Setup minimize functionality when mixer opens
-                this.setupMixerMinimize();
-                
-                // Setup keyboard shortcut (only once)
-                this.setupMixerKeyboardShortcut();
-                
-                // Setup collapsible preset sections with small delay to ensure DOM is ready
-                setTimeout(() => {
-                this.setupCollapsiblePresets();
-                }, 50);
+                // Normal panel toggle
+                const isVisible = panel.style.display !== 'none';
+                if (isVisible) {
+                    panel.style.display = 'none';
+                    btn.classList.remove('active');
+                    
+                    // Clean up peek button event listeners when mixer closes
+                    this.cleanupPeekButton();
+                } else {
+                    this.closeAllPanels(); // CLOSE ALL PANELS FIRST
+                    // Position panel using same system as Record panel
+                    this.positionFloatingPanel(panel, btn);
+                    panel.style.display = 'block';
+                    btn.classList.add('active');
+                    
+                    // Setup peek button functionality when mixer opens
+                    this.setupPeekButton();
+                    
+                    // Setup minimize functionality when mixer opens
+                    this.setupMixerMinimize();
+                    
+                    // Setup keyboard shortcut (only once)
+                    this.setupMixerKeyboardShortcut();
+                    
+                    // Setup collapsible preset sections with small delay to ensure DOM is ready
+                    setTimeout(() => {
+                    this.setupCollapsiblePresets();
+                    }, 50);
+                }
             }
         }
     }
@@ -21273,8 +21281,14 @@ https://rogueamoeba.com/loopback/
         const mixerPanel = document.getElementById('mixerPanel');
         const mixerChannels = document.querySelector('.mixer-channels');
         const panelHeader = mixerPanel ? mixerPanel.querySelector('.panel-header') : null;
+        const panelContent = mixerPanel ? mixerPanel.querySelector('.panel-content') : null;
+        const footer = document.querySelector('footer.footer');
+        const footerControls = footer ? footer.querySelector('.controls') : null;
         
-        if (!mixerPanel || !mixerChannels || !panelHeader) return;
+        if (!mixerPanel || !mixerChannels || !panelHeader || !panelContent || !footer || !footerControls) return;
+        
+        // Store original parent for restoration
+        const originalParent = mixerChannels.parentElement;
         
         // Load saved minimized state from localStorage
         const savedState = localStorage.getItem('freque_mixer_minimized');
@@ -21283,6 +21297,14 @@ https://rogueamoeba.com/loopback/
         if (isMinimized) {
             mixerPanel.classList.add('mixer-minimized');
             mixerChannels.classList.add('mixer-minimized');
+            // Move to footer and hide panel-content
+            footer.insertBefore(mixerChannels, footerControls);
+            panelContent.style.display = 'none';
+            
+            // Sync footer mixer-channels visibility with button state
+            const mixerBtn = document.getElementById('mixerBtn');
+            const isButtonActive = mixerBtn && mixerBtn.classList.contains('active');
+            mixerChannels.style.display = isButtonActive ? '' : 'none';
         }
         
         // Function to toggle minimize/maximize
@@ -21295,9 +21317,22 @@ https://rogueamoeba.com/loopback/
                 mixerChannels.classList.remove('mixer-minimized');
                 localStorage.setItem('freque_mixer_minimized', 'false');
                 
+                // Move mixer-channels back to panel-content
+                panelContent.appendChild(mixerChannels);
+                panelContent.style.display = '';
+                
+                // Show and position the mixer panel
+                const mixerBtn = document.getElementById('mixerBtn');
+                if (mixerBtn) {
+                    this.positionFloatingPanel(mixerPanel, mixerBtn);
+                    mixerPanel.style.display = 'block';
+                    mixerBtn.classList.add('active');
+                }
+                
                 // Collapse any expanded individual strips
                 document.querySelectorAll('.channel-strip.expanded').forEach(strip => {
                     strip.classList.remove('expanded');
+                    strip.classList.remove('from-minimized');
                     strip.style.removeProperty('--expanded-left');
                     strip.style.removeProperty('--expanded-width');
                     
@@ -21312,6 +21347,10 @@ https://rogueamoeba.com/loopback/
                 mixerPanel.classList.add('mixer-minimized');
                 mixerChannels.classList.add('mixer-minimized');
                 localStorage.setItem('freque_mixer_minimized', 'true');
+                
+                // Move mixer-channels to footer (before controls) and hide panel-content
+                footer.insertBefore(mixerChannels, footerControls);
+                panelContent.style.display = 'none';
             }
         };
         
@@ -21339,11 +21378,17 @@ https://rogueamoeba.com/loopback/
             const mixerPanel = document.getElementById('mixerPanel');
             if (!mixerPanel) return;
             
-            // Only if mixer panel is visible and no input elements are focused
+            // Check if mixer is minimized (channels in footer) or panel is visible
+            const mixerChannels = document.querySelector('.mixer-channels');
+            const footer = document.querySelector('footer.footer');
+            const isMinimized = mixerPanel.classList.contains('mixer-minimized') && 
+                               footer && mixerChannels && footer.contains(mixerChannels);
+            
             const computedStyle = window.getComputedStyle(mixerPanel);
             const isVisible = computedStyle.display !== 'none';
             
-            if (isVisible && 
+            // Allow V key if mixer is visible OR if mixer is minimized (in footer)
+            if ((isVisible || isMinimized) && 
                 !['INPUT', 'TEXTAREA'].includes(e.target.tagName) &&
                 e.key.toLowerCase() === 'v') {
                 e.preventDefault();
@@ -21381,6 +21426,7 @@ https://rogueamoeba.com/loopback/
             if (isExpanded) {
                 // Collapse this strip - return to container
                 channelStrip.classList.remove('expanded');
+                channelStrip.classList.remove('from-minimized');
                 channelStrip.style.removeProperty('--expanded-width');
                 
                 // Return strip to original position in container
@@ -21408,6 +21454,7 @@ https://rogueamoeba.com/loopback/
                 // Collapse all other expanded strips first
                 document.querySelectorAll('.channel-strip.expanded').forEach(strip => {
                     strip.classList.remove('expanded');
+                    strip.classList.remove('from-minimized');
                     strip.style.removeProperty('--expanded-width');
                     
                     // Return to original parent
@@ -21474,8 +21521,9 @@ https://rogueamoeba.com/loopback/
                 channelStrip.style.left = `${viewportLeft}px`;
                 channelStrip.style.bottom = `${viewportBottom}px`;
                 
-                // Add expanded class
+                // Add expanded class and mark as from minimized mixer
                 channelStrip.classList.add('expanded');
+                channelStrip.classList.add('from-minimized');
                 
                 // Add scroll listener to update position when container scrolls
                 const scrollHandler = () => {
@@ -21525,6 +21573,7 @@ https://rogueamoeba.com/loopback/
                     
                     // Collapse this strip
                     channelStrip.classList.remove('expanded');
+                    channelStrip.classList.remove('from-minimized');
                     channelStrip.style.removeProperty('--expanded-width');
                     
                     // Remove scroll and resize listeners

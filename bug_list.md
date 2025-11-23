@@ -14,6 +14,7 @@
 - **Kaleidoscope Toggle Affects Plugins**: In the Kaleidoscope header section, turning off AM viz also incorrectly toggles off plugins. The AM viz toggle should only affect AudioMotion visualizations, not plugin visualizations.
 - **AM Preset Export Causes App Relaunch**: When exporting the AM visualizations user-generated presets list, an "export successful" toaster message appears, then the app immediately relaunches/reloads. This should not happen - export should complete without reload.
 - **Smooth Color Morphing When Morph ON**: AM visualization morph transitions are abrupt - need smooth color interpolation between presets. Requires changes to core AM library.
+- **Extend Morph Functionality to Advanced AM Visualizations**: Add color morphing capabilities to Advanced AM visualizations (Pro presets 7-10), similar to the morph functionality available in regular AM visualizations.
 - **Background Opacity Slider for All AM Viz**: Add universal background opacity slider that covers all AudioMotion visualizations (regular and advanced)
 - **Fix Background Slider in Fluidity and IZ**: Background opacity sliders not working correctly in Fluidity and Infinite Zoom visualizations
 - **Ensure All Viz Have Background Opacity**: Verify and implement background opacity option for all visualizations (AM, IZ, Fluidity, WebGL, all plugins)
@@ -49,6 +50,7 @@
 - ✅ **Last Used Visualization Persistence**: COMPLETE - Last used visualization mode (0-10) now persists across sessions via localStorage. Implemented as part of AM Visualization Mode Persistence fix.
 - **Storm Plugin Performance**: Storm plugin is too CPU intensive and runs too slow - needs optimization
 - **Nebula Morphing Toggle Broken**: Morphing toggle updates settings correctly but does not actually affect the visualization - morphing effect not working despite console messages showing successful updates
+- **Three.js ES Module Migration**: Migrate from global THREE (three.min.js) to ES modules before Three.js r160 release. See [three_refactor.md](three_refactor.md) for detailed migration plan and analysis.
 
 ### Low Priority
 - **ADD Global settings
@@ -65,9 +67,13 @@
 - **Shared Canvas Architecture**: Both custom and official AudioMotion analyzers share the same canvas for seamless switching.
 
 ### FEATURE ENHANCEMENTS
+- **Improve Mixer by Embedding Minimized Mixer in Footer**: Add a minimized/compact version of the mixer panel in the footer for quick access to essential controls without taking up main interface space
+- **Create Content**: Develop content creation features and tools
+- **Electron App**: Package the application as a standalone Electron desktop application
 - **MAO VIDEO onto sphere, cube, otehr obljects that spin, rotate to audio
 - **MAP VIDEO onto fluidity shader
 - **HChange Window size sent to OBS to 9:16 with safe zone overlay
 
-###*DOCUMENTATION
--How to use in livestreams - enhance, OBS, TIK etc
+### DOCUMENTATION
+- **Review Dev Documentation**: Review and update all developer documentation for accuracy, completeness, and clarity
+- How to use in livestreams - enhance, OBS, TIK etc

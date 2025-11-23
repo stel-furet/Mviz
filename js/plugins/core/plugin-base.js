@@ -23,7 +23,6 @@ class FrequePluginBase {
         Object.defineProperty(this, 'ctx', {
             get: function() {
                 if (!this._ctx && this.canvas) {
-                    console.log(`🎨 Plugin ${this.pluginName}: Creating 2D context on first access`);
                     this._ctx = this.canvas.getContext('2d', { willReadFrequently: true });
                 }
                 return this._ctx;
@@ -40,6 +39,7 @@ class FrequePluginBase {
             author: config.author || 'Unknown',
             description: config.description || 'Freque Plugin',
             dialFillColor: config.dialFillColor || null, // Optional: CSS variable for dial fill color (e.g., '--accent-color')
+            credits: config.credits || null, // Optional: Credits text (max 140 chars recommended, will be truncated if longer)
             ...config.metadata
         };
         

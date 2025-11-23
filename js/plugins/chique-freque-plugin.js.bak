@@ -33,7 +33,7 @@ class ChiquePlugin extends FrequePluginBase {
         // Character management
         this.availableCharacters = ['spacewoman']; // Hardcoded for now
         this.currentCharacter = 'spacewoman';
-        this.characterPath = 'js/plugins/chique_characters/';
+        this.characterPath = 'chique_characters/';
         
         // Camera settings
         this.cameraDistance = 0;
@@ -66,6 +66,7 @@ class ChiquePlugin extends FrequePluginBase {
         this.skeleton = null; // Store skeleton reference
         this.danceBones = {}; // Store bone references for dancing
         
+        // Debug
         this.renderFrameCount = 0;
         
         // Initialize
@@ -146,7 +147,7 @@ class ChiquePlugin extends FrequePluginBase {
                 // Don't update camera - let character move independently
             }
         });
-
+        
         // Dance Mode toggle
         this.addControl('danceMode', {
             type: 'dropdown',
@@ -161,9 +162,10 @@ class ChiquePlugin extends FrequePluginBase {
                 this.danceMode = (value === 'on');
                 // Clear base rotations when mode changes so they can be recaptured
                 this.baseRotations = null;
+                console.log('💃 Dance mode:', this.danceMode ? 'ON' : 'OFF');
             }
         });
-
+        
         // Auto-rotate toggle
         this.addControl('autoRotate', {
             type: 'dropdown',
@@ -192,7 +194,7 @@ class ChiquePlugin extends FrequePluginBase {
                 danceThreshold: 0.7
             }
         });
-
+        
         this.addPreset('partyMode', {
             name: 'Party Mode',
             values: {
@@ -204,7 +206,7 @@ class ChiquePlugin extends FrequePluginBase {
                 danceThreshold: 0.6
             }
         });
-
+        
         this.addPreset('metalMadness', {
             name: 'Metal Madness',
             values: {
@@ -217,7 +219,7 @@ class ChiquePlugin extends FrequePluginBase {
                 headbangIntensity: 1.5
             }
         });
-
+        
         this.addPreset('beatSync', {
             name: 'Beat Sync',
             values: {
@@ -234,10 +236,11 @@ class ChiquePlugin extends FrequePluginBase {
      * Override applyPreset to track active preset and update UI
      */
     applyPreset(presetId) {
+        // console.log('Chique: applyPreset called with:', presetId);
         
         // Call parent implementation
         super.applyPreset(presetId);
-
+        
         // Update active preset tracking
         this.currentPreset = presetId;
         
@@ -250,6 +253,8 @@ class ChiquePlugin extends FrequePluginBase {
             Object.assign(this, preset.customData);
         }
         
+        // console.log('Chique: Applied preset:', presetId, 'customData:', preset?.customData);
+        // console.log('Chique: Current state - autoRotate:', this.autoRotate, 'headbangIntensity:', this.headbangIntensity);
     }
     
     /**
@@ -259,11 +264,13 @@ class ChiquePlugin extends FrequePluginBase {
         // Find all preset buttons for this plugin
         const presetButtons = document.querySelectorAll(`[data-plugin="${this.pluginName}"] .btn-preset`);
         
+        // console.log('Chique: Updating button states, found', presetButtons.length, 'buttons, active preset:', this.currentPreset);
         
         presetButtons.forEach(button => {
             const buttonPresetId = button.getAttribute('data-control');
             if (buttonPresetId === this.currentPreset) {
                 button.classList.add('active');
+                // console.log('Chique: Set active:', buttonPresetId);
             } else {
                 button.classList.remove('active');
             }
@@ -271,9 +278,21 @@ class ChiquePlugin extends FrequePluginBase {
     }
     
     onInitialize() {
+        console.log('🎵 Chique Plugin Initialized');
+        // console.log('Chique: Plugin name:', this.pluginName);
+        // console.log('Chique: Presets:', Array.from(this.presets.keys()));
         
         this.setupThreeJS();
         this.loadCharacter();
+        
+        // Debug: Check if preset buttons exist after a short delay
+        setTimeout(() => {
+            const buttons = document.querySelectorAll(`[data-plugin="${this.pluginName}"] .btn-preset`);
+            // console.log('Chique: Found preset buttons:', buttons.length);
+            // buttons.forEach(btn => {
+            //     console.log('  - Button:', btn.textContent, 'data-control:', btn.getAttribute('data-control'));
+            // });
+        }, 1000);
     }
     
     setupThreeJS() {
@@ -316,15 +335,16 @@ class ChiquePlugin extends FrequePluginBase {
         // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(ambientLight);
-
+        
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(5, 10, 5);
         this.scene.add(directionalLight);
-
+        
         const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
         fillLight.position.set(-5, 0, -5);
         this.scene.add(fillLight);
         
+        // console.log('Chique: Three.js setup complete');
     }
     
     loadCharacter() {
@@ -336,18 +356,23 @@ class ChiquePlugin extends FrequePluginBase {
         }
         
         // Load GLB with correct path (relative to plugin location)
-            const loader = new THREE.GLTFLoader();
+        const loader = new THREE.GLTFLoader();
         const modelPath = `${this.characterPath}${this.currentCharacter}.glb`;
         
+        console.log('🎨 Chique: Loading character...');
         
         loader.load(
             modelPath,
             (gltf) => {
                 this.character = gltf.scene;
                 
+                // console.log('Chique: GLTF loaded, inspecting contents...');
+                // console.log('Chique: Scene:', gltf.scene);
+                // console.log('Chique: Animations:', gltf.animations.length);
                 
                 // Log animation names
                 if (gltf.animations && gltf.animations.length > 0) {
+                    // console.log('Chique: Available animations:', gltf.animations.map(a => a.name));
                     // Store animations for later use
                     this.availableAnimations = gltf.animations;
                     
@@ -359,6 +384,7 @@ class ChiquePlugin extends FrequePluginBase {
                                 t.name.includes('Scene.position')
                             );
                             if (rootTracks.length > 0) {
+                                console.warn(`⚠️ ${anim.name} animation moves character root! Removing position tracks.`);
                                 // Remove root position tracks to make character walk in place
                                 anim.tracks = anim.tracks.filter(t => 
                                     !t.name.includes('Spacewoman__0001.position') && 
@@ -379,8 +405,10 @@ class ChiquePlugin extends FrequePluginBase {
                 //     }
                 // });
                 
+                // console.log(`Chique: Found ${meshCount} meshes, ${materialCount} materials`);
                 
                 // DON'T center/reposition - just add to scene as-is
+                // console.log('Chique: Character root transform:', {
                 //     position: this.character.position.toArray(),
                 //     rotation: this.character.rotation.toArray(),
                 //     quaternion: this.character.quaternion.toArray(),
@@ -388,14 +416,17 @@ class ChiquePlugin extends FrequePluginBase {
                 //     matrixAutoUpdate: this.character.matrixAutoUpdate
                 // });
                 
+                // console.log('Chique: Skipping centerCharacter() - using original position');
                 
                 // Store approximate character height for camera (assume standard humanoid ~1.7 units)
                 this.characterHeight = 0.8; // Approximate from previous logs
                 
                 // DON'T remove IK targets - they're part of the animation system
+                // console.log('Chique: Leaving IK targets in place - they are animated by the GLB');
                 
                 // Setup animation mixer
                 if (this.mixer) {
+                    console.warn('⚠️ Chique: Mixer already exists! Disposing old one.');
                     this.mixer.stopAllAction();
                 }
                 this.mixer = new THREE.AnimationMixer(this.character);
@@ -419,10 +450,13 @@ class ChiquePlugin extends FrequePluginBase {
                             .setEffectiveTimeScale(1.0)
                             .setEffectiveWeight(1.0)
                             .play();
+                        console.log('✨ Chique: Character loaded and Idle animation started');
                     } else {
+                        console.warn('Chique: No Idle animation found!');
                     }
                 }
                 
+                // console.log('Chique: Character ready - will use audio-reactive animation');
                 
                 // Find and store bone references for audio-reactive animation
                 this.extractBones();
@@ -430,11 +464,15 @@ class ChiquePlugin extends FrequePluginBase {
                 // NOW position camera with correct character height
                 this.updateCameraPosition();
                 
+                // console.log('Chique: Loaded character', this.currentCharacter);
+                // console.log('Chique: Character in scene, children:', this.scene.children.length);
+                // console.log('Chique: Scene children:', this.scene.children.map(c => c.type));
                 },
                 (progress) => {
                 // Loading progress
                 },
                 (error) => {
+                console.error('Chique: Error loading character', error);
             }
         );
     }
@@ -447,6 +485,13 @@ class ChiquePlugin extends FrequePluginBase {
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         
+        console.log('Chique: Character bounds (original):', {
+            center: center,
+            size: size,
+            min: box.min,
+            max: box.max
+        });
+        
         // Don't scale the character directly - this can break skeletons!
         // Instead, just center it and use camera distance to control viewing size
         this.character.position.x = -center.x;
@@ -456,6 +501,9 @@ class ChiquePlugin extends FrequePluginBase {
         // Store the ORIGINAL character height for camera calculations
         this.characterHeight = size.y;
         
+        console.log('Chique: Character positioned at', this.character.position);
+        console.log('Chique: Original character height:', this.characterHeight);
+        console.log('Chique: NO SCALING APPLIED - character at original size');
     }
     
     extractBones() {
@@ -471,18 +519,23 @@ class ChiquePlugin extends FrequePluginBase {
                 skeleton = node.skeleton;
                 allBones = node.skeleton.bones;
                 this.skeleton = skeleton; // Store skeleton reference for updates
+                // console.log('Chique: Found skeleton with', allBones.length, 'bones');
             }
         });
         
         if (!skeleton || allBones.length === 0) {
+            console.warn('Chique: No skeleton found!');
             return;
         }
         
+        // console.log('Chique: All bone names:', allBones.map(b => b.name));
         
         // INSPECT HIERARCHY - log parent-child relationships (DISABLED)
+        // console.log('Chique: Bone hierarchy:');
         // allBones.forEach((bone, index) => {
         //     const parentName = bone.parent ? bone.parent.name : 'ROOT';
         //     const childrenNames = bone.children.map(c => c.name).join(', ');
+        //     console.log(`  [${index}] ${bone.name} -> parent: ${parentName}, children: [${childrenNames}]`);
         // });
         
         // Find root bone (bone with no parent that is also a bone, or first bone in hierarchy)
@@ -491,6 +544,7 @@ class ChiquePlugin extends FrequePluginBase {
             return !parent || !allBones.includes(parent);
         }) || allBones[0];
         
+        // console.log('Chique: Root bone identified:', rootBone.name);
         
         // For this specific GLB structure:
         // B|B1 = Hips/Root
@@ -528,6 +582,7 @@ class ChiquePlugin extends FrequePluginBase {
         this.bones.rightLeg = allBones[10]; // B|B11
         this.bones.leftLeg = allBones[13]; // B|B14
         
+        // console.log('Chique: Mapped bones by hierarchy:', {
         //     hips: this.bones.hips?.name,
         //     spine: this.bones.spine?.map(b => b.name),
         //     neck: this.bones.neck?.name,
@@ -537,6 +592,7 @@ class ChiquePlugin extends FrequePluginBase {
         // });
         
         // DON'T reset bone pose - let it stay in its original bind pose from the GLB!
+        // console.log('Chique: Leaving bones in original bind pose');
     }
     
     updateCameraPosition() {
@@ -569,6 +625,8 @@ class ChiquePlugin extends FrequePluginBase {
         // Look at fixed point in space where character center would be
         this.camera.lookAt(this.characterX, cameraHeight, 0);
         
+        // console.log('Chique: Camera positioned at', this.camera.position);
+        // console.log('Chique: Camera distance from character:', distance, 'units');
     }
     
     onUpdate(deltaTime, timestamp, sharedAudioData) {
@@ -576,10 +634,27 @@ class ChiquePlugin extends FrequePluginBase {
         
         // Prevent double-updates in same frame
         if (this.lastUpdateTimestamp === timestamp) {
+            console.warn('⚠️ Double update detected in same frame!');
             return;
         }
         this.lastUpdateTimestamp = timestamp;
         
+        // Debug animation state every 60 frames (DISABLED - enable for debugging)
+        // if (!this.debugFrameCount) this.debugFrameCount = 0;
+        // this.debugFrameCount++;
+        // if (this.debugFrameCount % 60 === 0 && this.currentAction) {
+        //     console.log('🎭 Animation State:', {
+        //         clip: this.currentAction.getClip().name,
+        //         time: this.currentAction.time.toFixed(3),
+        //         duration: this.currentAction.getClip().duration.toFixed(3),
+        //         timeScale: this.currentAction.getEffectiveTimeScale().toFixed(3),
+        //         weight: this.currentAction.getEffectiveWeight().toFixed(3),
+        //         paused: this.currentAction.paused,
+        //         enabled: this.currentAction.enabled,
+        //         loop: this.currentAction.loop,
+        //         deltaTime: deltaTime.toFixed(4)
+        //     });
+        // }
         
         // CRITICAL FIX: Clamp deltaTime to prevent animation jumps
         // Large deltaTime values (from tab switching, etc.) cause animation to skip frames
@@ -637,6 +712,7 @@ class ChiquePlugin extends FrequePluginBase {
                         idleAction.paused = false;
                         
                         this.currentAction = idleAction;
+                        console.log('💃 Dance mode activated - grooving to the beat!');
                     }
                 }
             } else if (!this.danceMode && totalEnergy > DANCE_MIN_ENERGY) {
@@ -666,6 +742,7 @@ class ChiquePlugin extends FrequePluginBase {
                         idleAction.paused = false;
                         
                         this.currentAction = idleAction;
+                        console.log('🎵 Audio stopped - returning to Idle');
                     }
                 }
             }
@@ -706,7 +783,7 @@ class ChiquePlugin extends FrequePluginBase {
                         targetSpeed = 0.8 + (totalEnergy / WALK_THRESHOLD) * 0.4;
                     } else {
                         targetSpeed = 1.2 + ((totalEnergy - WALK_THRESHOLD) / (RUN_THRESHOLD - WALK_THRESHOLD)) * 0.4;
-                }
+                    }
                 } else if (currentAnimName === 'Run') {
                     targetSpeed = 1.0 + (bass * 0.5);
                 }
@@ -715,7 +792,7 @@ class ChiquePlugin extends FrequePluginBase {
                 const currentSpeed = this.currentAction.getEffectiveTimeScale();
                 const smoothSpeed = currentSpeed + (targetSpeed - currentSpeed) * 0.1;
                 this.currentAction.setEffectiveTimeScale(smoothSpeed);
-    }
+            }
             return; // Skip animation switching
         }
         
@@ -746,6 +823,7 @@ class ChiquePlugin extends FrequePluginBase {
         // Find the animation clip
         const targetAnim = this.availableAnimations.find(a => a.name === targetAnimName);
         if (!targetAnim) {
+            console.warn('Chique: Animation not found:', targetAnimName);
             return;
         }
         
@@ -775,9 +853,11 @@ class ChiquePlugin extends FrequePluginBase {
             this.currentAction = newAction;
             this.lastAnimSwitch = now; // Record switch time
             
+            console.log(`Chique: Switching to ${targetAnimName} at ${targetSpeed.toFixed(2)}x speed (energy: ${totalEnergy.toFixed(3)})`);
         } else if (this.currentAction) {
             // Check if current animation stopped playing (shouldn't happen but let's catch it)
             if (!this.currentAction.isRunning() || this.currentAction.paused) {
+                console.warn('⚠️ Animation stopped unexpectedly! Restarting...');
                 this.currentAction.enabled = true;
                 this.currentAction.paused = false;
                 this.currentAction.play();
@@ -806,7 +886,7 @@ class ChiquePlugin extends FrequePluginBase {
         }
         
         return sum / (endBin - startBin);
-        }
+    }
     
     /**
      * Apply procedural dance animation to character bones
@@ -918,7 +998,7 @@ class ChiquePlugin extends FrequePluginBase {
                 // Upper spine moves even more for visible sway
                 const upperTwist = (spineTwist * 0.9) * (0.7 + variation2 * 0.6); // Increased from 0.7
                 this.bones.spine[1].rotation.y = this.baseRotations.spine[1].y + upperTwist;
-        }
+            }
         }
         
         // === HEAD BOB ===
@@ -935,7 +1015,7 @@ class ChiquePlugin extends FrequePluginBase {
             const headSway = Math.sin(slowPhase + shortCycle * 0.3) * headSwayAmount;
             this.bones.head.rotation.z = this.baseRotations.head.z + headSway;
         }
-
+        
         // === SHOULDERS (alternating) ===
         // Right shoulder with variation - sometimes lifts more, sometimes less
         if (this.bones.rightArm && this.baseRotations.rightArm) {
@@ -943,8 +1023,8 @@ class ChiquePlugin extends FrequePluginBase {
             // Add slower roll on medium cycle
             const rightShoulderRoll = Math.sin(mediumCycle) * 0.05;
             this.bones.rightArm.rotation.z = this.baseRotations.rightArm.z + rightShoulderLift + rightShoulderRoll;
-    }
-
+        }
+        
         // Left shoulder with different variation timing
         if (this.bones.leftArm && this.baseRotations.leftArm) {
             const leftShoulderLift = Math.sin(beatPhase + Math.PI) * (0.15 + beatIntensity * 0.08) * (0.5 + variation3 * 1.0);
@@ -969,11 +1049,11 @@ class ChiquePlugin extends FrequePluginBase {
             const leftArmAccent = Math.sin(shortCycle + Math.PI * 0.7) * 0.08;
             this.bones.leftForearm.rotation.x = this.baseRotations.leftForearm.x + leftArmSwing + leftArmAccent;
         }
-
+        
         // Update skeleton if it exists (needed for skinned mesh updates)
         if (this.skeleton) {
             this.skeleton.update();
-    }
+        }
     }
     
     /**
@@ -981,10 +1061,16 @@ class ChiquePlugin extends FrequePluginBase {
      */
     animateBonesWithAudio(bass, mid, high, deltaTime) {
         if (!this.bones || Object.keys(this.bones).length === 0) {
+            console.warn('Chique: No bones found for animation!');
             return;
         }
 
-        
+        // Debug log once to confirm this is being called
+        if (!this.boneAnimDebugLogged) {
+            console.log('Chique: ✅ Bone animation active! Bones:', Object.keys(this.bones));
+            this.boneAnimDebugLogged = true;
+        }
+
         const intensity = this.headbangIntensity || 1.0;
         const time = this.animTime;
 
@@ -995,6 +1081,12 @@ class ChiquePlugin extends FrequePluginBase {
             const yOffset = Math.sin(time * bobSpeed) * bobAmount;
             const idleBob = Math.sin(time * 2.0) * 0.01;
             this.bones.hips.position.y = yOffset + idleBob;
+            
+            // Debug hip position once per second
+            if (!this.lastHipDebug || Date.now() - this.lastHipDebug > 1000) {
+                console.log('Chique: Hip Y position:', this.bones.hips.position.y.toFixed(4), 'Bass:', bass.toFixed(3));
+                this.lastHipDebug = Date.now();
+            }
         }
 
         // SPINE: Sway side-to-side with mid, lean forward/back with bass
@@ -1087,18 +1179,32 @@ class ChiquePlugin extends FrequePluginBase {
     
     animateGroove(deltaTime, energy) {
         if (!this.bones.spine || !this.bones.hips) {
+            console.warn('Chique: Cannot animate groove - missing bones', {
+                hasSpine: !!this.bones.spine,
+                hasHips: !!this.bones.hips
+            });
             return;
         }
         
         const time = performance.now() * 0.001 * this.grooveSpeed;
         const blend = this.modeBlend;
         
+        // Debug: Log every 120 frames
+        if (Math.floor(time) % 2 === 0 && Math.abs(time - Math.floor(time)) < 0.016) {
+            console.log('Chique: Animating groove', {
+                time,
+                blend,
+                energy,
+                hipRotation: Math.sin(time) * 0.1 * blend * (1 + energy * 0.5)
+            });
+        }
+        
         // Gentle sway
         if (this.bones.hips) {
             this.bones.hips.rotation.z = Math.sin(time) * 0.1 * blend * (1 + energy * 0.5);
             this.bones.hips.rotation.y = Math.sin(time * 0.7) * 0.05 * blend;
         }
-
+        
         // Spine sway
         if (Array.isArray(this.bones.spine)) {
             this.bones.spine.forEach((bone, i) => {
@@ -1144,14 +1250,14 @@ class ChiquePlugin extends FrequePluginBase {
         
         const time = performance.now() * 0.001 * this.moshIntensity;
         const blend = this.modeBlend;
-
+        
         // Aggressive jumping
         if (this.bones.hips) {
             this.bones.hips.position.y = Math.abs(Math.sin(time * 4)) * 0.3 * blend * (1 + energy);
             this.bones.hips.rotation.z = Math.sin(time * 5) * 0.3 * blend;
             this.bones.hips.rotation.x = Math.sin(time * 4.5) * 0.2 * blend;
         }
-
+        
         // Wild spine movement
         if (Array.isArray(this.bones.spine)) {
             this.bones.spine.forEach((bone, i) => {
@@ -1223,6 +1329,18 @@ class ChiquePlugin extends FrequePluginBase {
         // Render scene
         this.renderer.render(this.scene, this.camera);
         
+        // Debug logging disabled
+        // this.renderFrameCount++;
+        // if (this.renderFrameCount % 60 === 0) {
+        //     console.log('Chique: Rendering frame', this.renderFrameCount, {
+        //         characterInScene: !!this.character,
+        //         sceneChildren: this.scene.children.length,
+        //         cameraPosition: this.camera.position,
+        //         characterPosition: this.character.position,
+        //         characterScale: this.character.scale.x,
+        //         canvasDisplay: this.canvas.style.display
+        //     });
+        // }
     }
 
     onResize(width, height) {

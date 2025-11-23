@@ -9,9 +9,10 @@ class BlobsPlugin extends FrequePluginBase {
         // Initialize base plugin
         super('blobs', visualizer, {
             version: '1.0.0',
-            author: 'Freque Team',
+            author: 'Crash Monkey',
             description: 'Cosmic Plasma Ball Effects',
-            targetFPS: 60
+            targetFPS: 60,
+            credits: 'Cosmic plasma ball effects by Crash Monkey. Fiery particle-based plasma blobs.'
         });
         
         // Blobs-specific canvas for trails
@@ -380,7 +381,6 @@ class BlobsPlugin extends FrequePluginBase {
             
         } catch (error) {
             console.error('BlobsPlugin: Render error:', error);
-            this.recoverCanvasContexts();
         }
     }
     
@@ -583,15 +583,6 @@ class BlobsPlugin extends FrequePluginBase {
         // This method is kept for potential future use
     }
     
-    recoverCanvasContexts() {
-        if (this.canvas) {
-            this.ctx = this.canvas.getContext('2d');
-        }
-        if (this.trailCanvas) {
-            this.trailCtx = this.trailCanvas.getContext('2d');
-        }
-    }
-    
     // Blobs-specific API Methods
     
     // Control panel settings
@@ -659,5 +650,9 @@ class BlobsPlugin extends FrequePluginBase {
     }
 }
 
-// Make globally available
-window.BlobsPlugin = BlobsPlugin;
+// Instantiate the plugin when ready
+setTimeout(() => {
+    if (window.visualizer && window.FrequePluginBase) {
+        new BlobsPlugin(window.visualizer);
+    }
+}, 500);

@@ -109,6 +109,9 @@ class PluginMixerIntegration {
         // Make draggable
         this.makeDraggable(channelStrip);
         
+        // Load plugin credits
+        this.loadPluginCredits(plugin.pluginName, plugin.metadata.credits);
+        
         return channelStrip;
     }
     
@@ -137,6 +140,38 @@ class PluginMixerIntegration {
         
         console.log(`🔌 Channel strip removed successfully for: ${pluginName}`);
         return true;
+    }
+    
+    /**
+     * Load and display plugin credits text
+     */
+    loadPluginCredits(pluginName, creditsText) {
+        const channelStrip = this.channelStrips.get(pluginName);
+        if (!channelStrip) {
+            return;
+        }
+        
+        const creditsContainer = channelStrip.querySelector(`.plugin-credits-text[data-plugin="${pluginName}"]`);
+        const creditsSection = channelStrip.querySelector('.channel-credits-section');
+        
+        if (!creditsContainer || !creditsSection) {
+            return;
+        }
+        
+        // If credits text exists and is not null/empty
+        if (creditsText && creditsText.trim() !== '') {
+            // Truncate to 140 characters with ellipsis if longer
+            let displayText = creditsText.trim();
+            if (displayText.length > 140) {
+                displayText = displayText.substring(0, 137) + '...';
+            }
+            
+            creditsContainer.textContent = displayText;
+            creditsSection.style.display = '';
+        } else {
+            // Hide the entire credits section if no credits
+            creditsSection.style.display = 'none';
+        }
     }
     
     /**
@@ -223,6 +258,14 @@ class PluginMixerIntegration {
                 </div>
                 <div class="collapsible-content plugin-controls-container" id="${plugin.pluginName}Controls" data-plugin="${plugin.pluginName}">
                     <!-- Plugin-specific controls will be added here -->
+                </div>
+            </div>
+            
+            <!-- Credits Section -->
+            <div class="channel-credits-section">
+                <div class="control-section-header">Credits</div>
+                <div class="plugin-credits-text" data-plugin="${plugin.pluginName}">
+                    <!-- Credits text will be loaded here -->
                 </div>
             </div>
         `;
@@ -526,7 +569,7 @@ class PluginMixerIntegration {
                     }
                     // Still store setValue/getValue methods even if element already exists
                 } else {
-                    controlsContainer.appendChild(controlElement);
+                controlsContainer.appendChild(controlElement);
                 }
                 
                 // Store setValue/getValue methods in control config if they exist
