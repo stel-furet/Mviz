@@ -266,6 +266,9 @@ class MasterAnimationController {
                 centroid: 0,
                 rolloff: 0,
                 flux: 0,
+                tempo: 120,
+                tempoConfidence: 0,
+                tempoCandidates: [],
                 rawData: null,
                 dataArray: null,
                 analyser: null

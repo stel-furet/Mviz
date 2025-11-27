@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLTF Character Plugin Integration Guide</title>
+    <link rel="stylesheet" href="freque-styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Freque Logo" class="logo">
+        </div>
+        <h1 class="header-subtitle">GLTF Character Plugin Integration Guide</h1>
+    </header>
+    <main>
+<h1 id="glbgltf-character-plugin-integration-guide">GLB/GLTF Character
+Plugin Integration Guide</h1>
+<p><strong>Addendum to Freque Plugin Development Guide v2.3</strong></p>
+<p><strong>Date:</strong> 2025-11-14<br />
+<strong>Topic:</strong> Procedural Skeletal Animation and Character
+Integration</p>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>This document covers the implementation of procedural skeletal
+animation systems for Three.js plugins that use GLB/GLTF character
+models. These patterns enable:</p>
+<ul>
+<li><strong>Skeletal bone manipulation</strong> in Three.js without
+relying solely on pre-baked animations</li>
+<li><strong>Audio-reactive procedural animation</strong> synced to audio
+frequencies</li>
+<li><strong>Multi-cycle rhythm layering</strong> for organic,
+non-repetitive movement</li>
+<li><strong>Relative bone transformations</strong> that preserve base
+animation poses</li>
+<li><strong>Mode-based animation systems</strong> with proper state
+management</li>
+</ul>
+<p>These techniques can be applied to any character animation plugin
+regardless of the specific movement style (dancing, walking, gesturing,
+etc.).</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#core-concepts">Core Concepts</a></li>
+<li><a href="#implementation-architecture">Implementation
+Architecture</a></li>
+<li><a href="#critical-technical-patterns">Critical Technical
+Patterns</a></li>
+<li><a href="#audio-reactivity">Audio Reactivity</a></li>
+<li><a href="#ui-controls">UI Controls</a></li>
+<li><a href="#common-pitfalls--solutions">Common Pitfalls &amp;
+Solutions</a></li>
+<li><a href="#code-examples">Code Examples</a></li>
+</ol>
+<hr />
+<h2 id="core-concepts">Core Concepts</h2>
+<h3 id="procedural-vs-pre-baked-animations">Procedural vs Pre-Baked
+Animations</h3>
+<p><strong>Pre-baked Animations:</strong> - Stored in GLB/GLTF files as
+animation clips - Fixed sequences of bone rotations created in 3D
+software - Examples: Walk, Run, Jump, Idle, custom animations</p>
+<p><strong>Procedural Animations:</strong> - Calculated in real-time by
+code - Bone rotations computed each frame based on parameters - Can be
+audio-reactive and dynamic - Examples: Audio-reactive gestures, custom
+movement modes</p>
+<h3 id="why-use-procedural-animation">Why Use Procedural Animation?</h3>
+<p>✅ <strong>Audio-reactive</strong> - Syncs perfectly to music in
+real-time<br />
+✅ <strong>Dynamic</strong> - Never repeats exactly the same way<br />
+✅ <strong>Customizable</strong> - User controls via UI
+sliders/toggles<br />
+✅ <strong>Performant</strong> - Simple calculations vs. complex
+animation blending<br />
+✅ <strong>Flexible</strong> - Can layer on top of or blend with
+pre-baked animations</p>
+<hr />
+<h2 id="implementation-architecture">Implementation Architecture</h2>
+<h3 id="system-components">System Components</h3>
+<pre><code>Procedural Animation System
+│
+├─ Base Rotation Capture
+│  └─ Stores starting pose from pre-baked animation
+│
+├─ Multi-Cycle Rhythm Generator
+│  ├─ Main beat (configurable BPM)
+│  ├─ Slow phase (half-speed)
+│  ├─ Long cycle (e.g., 30s)
+│  ├─ Medium cycle (e.g., 12s)
+│  └─ Short cycle (e.g., 7s)
+│
+├─ Bone Animation Layers
+│  ├─ Root/Hips (minimal - affects lower body)
+│  ├─ Spine/Torso (major movement source)
+│  ├─ Head (bob, nod, sway)
+│  ├─ Shoulders (lift, roll, shrug)
+│  └─ Arms/Hands (swing, gesture, position)
+│
+└─ Audio Integration
+   ├─ Bass → Beat intensity
+   ├─ Mid → Variation timing
+   └─ Treble → Movement accents</code></pre>
+<h3 id="animation-state-machine">Animation State Machine</h3>
+<pre><code>Audio Energy State Management:
+
+┌─────────────┐
+│  No Audio   │ → Pre-baked Idle Animation
+│ Energy &lt; MIN│
+└─────────────┘
+       ↓
+┌─────────────┐
+│ Custom Mode │ → Procedural Animation
+│ Energy ≥ MIN│   (Mode ON)
+│  &amp; Mode ON  │
+└─────────────┘
+       ↓
+┌─────────────┐
+│ Default Anims│ → Pre-baked Animations
+│ Energy ≥ MIN│   (Mode OFF)
+│  &amp; Mode OFF │
+└─────────────┘</code></pre>
+<hr />
+<h2 id="critical-technical-patterns">Critical Technical Patterns</h2>
+<h3 id="relative-bone-transformations">1. Relative Bone
+Transformations</h3>
+<p><strong>❌ WRONG: Absolute Rotation (Breaks Character
+Pose)</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// This OVERWRITES the base animation pose</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="fl">0.1</span><span class="op">;</span>  <span class="co">// Character appears incorrectly rotated!</span></span></code></pre></div>
+<p><strong>✅ CORRECT: Relative to Base Pose</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Store base rotation from pre-baked animation</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span>) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span> <span class="op">=</span> {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">x</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">y</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span><span class="op">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">z</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Apply procedural movement as OFFSET</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> proceduralMovement <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time) <span class="op">*</span> <span class="fl">0.1</span><span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> proceduralMovement<span class="op">;</span>  <span class="co">// ✅</span></span></code></pre></div>
+<p><strong>Why This Matters:</strong> - Pre-baked animations already
+position bones correctly - Your procedural movement adds to that, not
+replaces it - Character maintains proper orientation and pose -
+Switching between animations doesn’t break pose</p>
+<h3 id="understanding-bone-hierarchy">2. Understanding Bone
+Hierarchy</h3>
+<p><strong>Key Rule:</strong> Root/hip bones affect all child bones
+below them in the hierarchy.</p>
+<pre><code>Typical Character Skeleton Hierarchy:
+
+Root/Hips
+├─ Spine_Lower
+│  └─ Spine_Upper
+│     └─ Neck
+│        └─ Head
+│
+├─ Left_UpperLeg
+│  └─ Left_LowerLeg
+│     └─ Left_Foot
+│
+└─ Right_UpperLeg
+   └─ Right_LowerLeg
+      └─ Right_Foot</code></pre>
+<p><strong>Critical Insight:</strong> Rotating hips affects legs and
+feet. For stationary character movement:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ MINIMAL hip rotation (affects feet via hierarchy)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hipAmount <span class="op">=</span> <span class="fl">0.01</span><span class="op">;</span>  <span class="co">// Very small - keeps feet stable</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ MAJOR spine/torso rotation (creates visible movement WITHOUT moving feet)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> spineAmount <span class="op">=</span> <span class="fl">0.25</span><span class="op">;</span>  <span class="co">// Larger - visible sway without foot movement</span></span></code></pre></div>
+<h3 id="multi-cycle-rhythm-layering">3. Multi-Cycle Rhythm Layering</h3>
+<p><strong>Single sine wave = repetitive, robotic:</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movement <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time)<span class="op">;</span>  <span class="co">// Same pattern repeats every cycle</span></span></code></pre></div>
+<p><strong>Multiple overlapping cycles = organic, alive:</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Multiple rhythm layers with different frequencies</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> longCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>   <span class="co">// 30 second cycle</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mediumCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// 12 second cycle  </span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> shortCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.9</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>  <span class="co">// 7 second cycle</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Combine for variation</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> variation1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>  <span class="co">// 0-1 range</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Apply to movement amounts</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movementAmount <span class="op">=</span> baseAmount <span class="op">*</span> (<span class="fl">0.7</span> <span class="op">+</span> variation1 <span class="op">*</span> <span class="fl">0.6</span>)<span class="op">;</span>  <span class="co">// Varies 0.7x-1.3x</span></span></code></pre></div>
+<p><strong>Why It Works:</strong> - Different cycle lengths create
+complex patterns - Movements never repeat exactly the same way - Feels
+like organic behavior with natural variation - Full pattern repeats
+after very long time (e.g., 90+ seconds)</p>
+<h3 id="compound-movement-layers">4. Compound Movement Layers</h3>
+<p><strong>Simple movement:</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> headBob <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase) <span class="op">*</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> baseRotation <span class="op">+</span> headBob<span class="op">;</span></span></code></pre></div>
+<p><strong>Compound movement (more natural):</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Primary movement on main beat</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> headBob <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase) <span class="op">*</span> <span class="fl">0.08</span> <span class="op">*</span> (<span class="fl">0.5</span> <span class="op">+</span> variation3)<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Secondary movement on long cycle</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> headNod <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle <span class="op">*</span> <span class="fl">0.5</span>) <span class="op">*</span> <span class="fl">0.03</span><span class="op">;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Combine both layers</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> baseRotation <span class="op">+</span> headBob <span class="op">+</span> headNod<span class="op">;</span></span></code></pre></div>
+<p><strong>Result:</strong> Multiple movement frequencies = more
+organic, less mechanical.</p>
+<hr />
+<h2 id="audio-reactivity">Audio Reactivity</h2>
+<h3 id="energy-mapping-strategy">Energy Mapping Strategy</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Extract audio frequency bands</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> bassEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(audioData<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">150</span>)<span class="op">;</span>     <span class="co">// 0-150 Hz</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> midEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(audioData<span class="op">,</span> <span class="dv">150</span><span class="op">,</span> <span class="dv">500</span>)<span class="op">;</span>    <span class="co">// 150-500 Hz</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> highEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(audioData<span class="op">,</span> <span class="dv">500</span><span class="op">,</span> <span class="dv">2000</span>)<span class="op">;</span>  <span class="co">// 500-2000 Hz</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Normalize to 0-1 range</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> bassNorm <span class="op">=</span> bassEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> midNorm <span class="op">=</span> midEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> highNorm <span class="op">=</span> highEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Calculate overall energy with sensitivity multiplier</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> totalEnergy <span class="op">=</span> ((bassNorm <span class="op">+</span> midNorm <span class="op">+</span> highNorm) <span class="op">/</span> <span class="dv">3</span>) <span class="op">*</span> <span class="kw">this</span><span class="op">.</span><span class="at">audioSensitivity</span><span class="op">;</span></span></code></pre></div>
+<h3 id="beat-detection-for-character-animation">Beat Detection for
+Character Animation</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Beat detection - use bass energy for rhythm</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> beatIntensity <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(bassEnergy <span class="op">*</span> <span class="dv">2</span><span class="op">,</span> <span class="fl">1.0</span>)<span class="op">;</span>  <span class="co">// 0-1 range, clamped</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Apply to movement intensity</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movementAmount <span class="op">=</span> baseAmount <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.5</span>)<span class="op">;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movement <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase) <span class="op">*</span> movementAmount<span class="op">;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Stronger beats = more pronounced movement</span></span></code></pre></div>
+<h3 id="audio-driven-state-transitions">Audio-Driven State
+Transitions</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> MIN_ENERGY_THRESHOLD <span class="op">=</span> <span class="fl">0.05</span><span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;=</span> MIN_ENERGY_THRESHOLD) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Custom Mode: ON + audio present → Apply procedural animation</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">applyProceduralAnimation</span>(deltaTime<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;</span> MIN_ENERGY_THRESHOLD) {</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Custom Mode: OFF + audio present → Use pre-baked animations</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">updateAnimationBasedOnEnergy</span>(totalEnergy<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// No audio → Return to idle</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">switchToIdleAnimation</span>()<span class="op">;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="ui-controls">UI Controls</h2>
+<h3 id="mode-toggle-control">Mode Toggle Control</h3>
+<p><strong>Example: Custom Animation Mode Toggle</strong></p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// In constructor:</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">customAnimationMode</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span>  <span class="co">// Default to ON</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span>  <span class="co">// Will be captured on first frame</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">// In setupControls():</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;customAnimationMode&#39;</span><span class="op">,</span> {</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;dropdown&#39;</span><span class="op">,</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Custom Animation&#39;</span><span class="op">,</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">options</span><span class="op">:</span> [</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        { <span class="dt">value</span><span class="op">:</span> <span class="st">&#39;off&#39;</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Off&#39;</span> }<span class="op">,</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        { <span class="dt">value</span><span class="op">:</span> <span class="st">&#39;on&#39;</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;On&#39;</span> }</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> <span class="st">&#39;on&#39;</span><span class="op">,</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">className</span><span class="op">:</span> <span class="st">&#39;dropdown-selector-mixer&#39;</span><span class="op">,</span>  <span class="co">// REQUIRED for styling</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> {</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">customAnimationMode</span> <span class="op">=</span> (value <span class="op">===</span> <span class="st">&#39;on&#39;</span>)<span class="op">;</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Clear base rotations so they&#39;re recaptured when mode changes</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;Custom animation mode:&#39;</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">customAnimationMode</span> <span class="op">?</span> <span class="st">&#39;ON&#39;</span> <span class="op">:</span> <span class="st">&#39;OFF&#39;</span>)<span class="op">;</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p><strong>Why Reset baseRotations?</strong> - Different animations have
+different base poses - Walking pose ≠ Idle pose ≠ Running pose - Must
+recapture bones from current animation when switching modes</p>
+<h3 id="audio-sensitivity-control">Audio Sensitivity Control</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;audioSensitivity&#39;</span><span class="op">,</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;slider&#39;</span><span class="op">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Audio Sensitivity&#39;</span><span class="op">,</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">min</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">max</span><span class="op">:</span> <span class="fl">3.0</span><span class="op">,</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> <span class="fl">1.0</span><span class="op">,</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> {</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">audioSensitivity</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p><strong>Effect:</strong> - <strong>0.1</strong>: Minimal audio
+response (subtle movement) - <strong>1.0</strong>: Normal audio response
+(default) - <strong>3.0</strong>: Exaggerated audio response (intense
+movement)</p>
+<h3 id="character-position-controls">Character Position Controls</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// X position (horizontal)</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;characterX&#39;</span><span class="op">,</span> {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;slider&#39;</span><span class="op">,</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;X Position&#39;</span><span class="op">,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">min</span><span class="op">:</span> <span class="op">-</span><span class="dv">2</span><span class="op">,</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">max</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> {</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">characterX</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">character</span>) {</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">character</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">// Y position (vertical)</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;characterY&#39;</span><span class="op">,</span> {</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;slider&#39;</span><span class="op">,</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Y Position&#39;</span><span class="op">,</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    <span class="dt">min</span><span class="op">:</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">max</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> <span class="fl">0.4</span><span class="op">,</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> {</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">characterY</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">character</span>) {</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">character</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Note: Don&#39;t call updateCameraPosition() here if you want</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">// character to move independently of camera</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="common-pitfalls-solutions">Common Pitfalls &amp; Solutions</h2>
+<h3 id="problem-1-character-rotates-incorrectly-in-custom-mode">Problem
+1: Character Rotates Incorrectly in Custom Mode</h3>
+<p><strong>Symptom:</strong> Character orientation changes when custom
+animation mode activates</p>
+<p><strong>❌ WRONG Approach:</strong></p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Rotating the entire character to &quot;fix&quot; orientation</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">character</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> <span class="op">-</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span>  <span class="co">// DON&#39;T DO THIS</span></span></code></pre></div>
+<p><strong>✅ CORRECT Approach:</strong> The issue is <strong>absolute
+bone rotations overwriting base pose</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Store base rotation FIRST (from current pre-baked animation)</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span>) {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> { </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">hips</span><span class="op">:</span> {</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">x</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span><span class="op">,</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>            <span class="dt">y</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span><span class="op">,</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>            <span class="dt">z</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ... other bones</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co">// Apply procedural animation as OFFSET to base</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> proceduralOffset<span class="op">;</span></span></code></pre></div>
+<h3 id="problem-2-characters-feet-movefloatslide">Problem 2: Character’s
+Feet Move/Float/Slide</h3>
+<p><strong>Symptom:</strong> Character’s feet leave the ground or slide
+during procedural animation</p>
+<p><strong>Cause:</strong> Too much root/hip rotation affects legs via
+bone hierarchy</p>
+<p><strong>✅ Solution:</strong></p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Reduce hip movement drastically (root of leg hierarchy)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hipAmount <span class="op">=</span> <span class="fl">0.01</span> <span class="op">+</span> (beatIntensity <span class="op">*</span> <span class="fl">0.005</span>)<span class="op">;</span>  <span class="co">// 0.01-0.015 radians MAX</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Increase spine/torso movement instead (above legs in hierarchy)</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> spineAmount <span class="op">=</span> <span class="fl">0.25</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.5</span>)<span class="op">;</span>  <span class="co">// Up to ~0.38 radians</span></span></code></pre></div>
+<p><strong>Rule of Thumb:</strong> Hip rotation &lt; 0.02 radians keeps
+feet stable for stationary characters.</p>
+<h3 id="problem-3-animation-feels-repetitiverobotic">Problem 3:
+Animation Feels Repetitive/Robotic</h3>
+<p><strong>Symptom:</strong> Same movements repeat obviously, feels
+mechanical</p>
+<p><strong>❌ WRONG Approach:</strong></p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Single sine wave - repeats every cycle</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movement <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time <span class="op">*</span> speed)<span class="op">;</span></span></code></pre></div>
+<p><strong>✅ CORRECT Approach:</strong></p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Multiple overlapping cycles</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> longCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>   <span class="co">// 30s cycle</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mediumCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// 12s cycle</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> shortCycle <span class="op">=</span> time <span class="op">*</span> <span class="fl">0.9</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>  <span class="co">// 7s cycle</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> variation <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>  <span class="co">// 0-1 modulator</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movement <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time <span class="op">*</span> speed) <span class="op">*</span> baseAmount <span class="op">*</span> (<span class="fl">0.7</span> <span class="op">+</span> variation <span class="op">*</span> <span class="fl">0.6</span>)<span class="op">;</span></span></code></pre></div>
+<h3 id="problem-4-animation-too-fastslow-for-music">Problem 4: Animation
+Too Fast/Slow for Music</h3>
+<p><strong>Symptom:</strong> Movement tempo doesn’t match music feel</p>
+<p><strong>✅ Solution - Adjust Main Rhythm Speed:</strong></p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Slower rhythm (36 BPM)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mainSpeed <span class="op">=</span> <span class="fl">0.6</span><span class="op">;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Normal rhythm (60 BPM)  </span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mainSpeed <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Faster rhythm (90 BPM)</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mainSpeed <span class="op">=</span> <span class="fl">1.5</span><span class="op">;</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> beatPhase <span class="op">=</span> time <span class="op">*</span> mainSpeed <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span></code></pre></div>
+<h3 id="problem-5-animation-continues-when-mode-turned-off">Problem 5:
+Animation Continues When Mode Turned Off</h3>
+<p><strong>Symptom:</strong> Procedural movements persist after toggling
+mode off</p>
+<p><strong>✅ Solution - Proper State Management:</strong></p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Only apply procedural animation when mode is enabled AND audio is present</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> MIN_ENERGY <span class="op">=</span> <span class="fl">0.05</span><span class="op">;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;=</span> MIN_ENERGY) {</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">applyProceduralAnimation</span>(deltaTime<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;</span> MIN_ENERGY) {</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Use pre-baked animations instead</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">updatePrebakedAnimations</span>(totalEnergy<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Return to idle</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">switchToIdleAnimation</span>()<span class="op">;</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="code-examples">Code Examples</h2>
+<h3 id="complete-procedural-animation-method-structure">Complete
+Procedural Animation Method Structure</h3>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * Apply procedural animation to character bones</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{number}</span><span class="co"> deltaTime - Time since last frame</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{number}</span><span class="co"> bassEnergy - Normalized bass energy (0-1)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{number}</span><span class="co"> midEnergy - Normalized mid energy (0-1)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{number}</span><span class="co"> highEnergy - Normalized high energy (0-1)</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="fu">applyProceduralAnimation</span>(deltaTime<span class="op">,</span> bassEnergy<span class="op">,</span> midEnergy<span class="op">,</span> highEnergy) {</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span> <span class="op">||</span> <span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span> <span class="op">||</span> <span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">customMode</span>) <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 1: Store base rotations on first frame</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span>) {</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Store hips</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span>) {</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span> <span class="op">=</span> {</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>                <span class="dt">x</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span><span class="op">,</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>                <span class="dt">y</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span><span class="op">,</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>                <span class="dt">z</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>            }<span class="op">;</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Store spine bones (array)</span></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span><span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">spine</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span><span class="op">.</span><span class="fu">map</span>(bone <span class="kw">=&gt;</span> ({</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>                <span class="dt">x</span><span class="op">:</span> bone<span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span><span class="op">,</span></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>                <span class="dt">y</span><span class="op">:</span> bone<span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span><span class="op">,</span></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>                <span class="dt">z</span><span class="op">:</span> bone<span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>            }))<span class="op">;</span></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Store other bones as needed (head, shoulders, arms, etc.)</span></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ... similar pattern for each bone</span></span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 2: Update animation time</span></span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">animationTime</span> <span class="op">+=</span> deltaTime<span class="op">;</span></span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 3: Calculate beat intensity from audio</span></span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> beatIntensity <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(bassEnergy <span class="op">*</span> <span class="dv">2</span><span class="op">,</span> <span class="fl">1.0</span>)<span class="op">;</span> <span class="co">// 0-1 range</span></span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 4: Setup rhythm cycles</span></span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> mainSpeed <span class="op">=</span> <span class="fl">0.6</span><span class="op">;</span> <span class="co">// Adjust for desired BPM</span></span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> beatPhase <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">animationTime</span> <span class="op">*</span> mainSpeed <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> slowPhase <span class="op">=</span> beatPhase <span class="op">*</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Additional longer cycles for variation</span></span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> longCycle <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">animationTime</span> <span class="op">*</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>   <span class="co">// 30s</span></span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> mediumCycle <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">animationTime</span> <span class="op">*</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// 12s</span></span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> shortCycle <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">animationTime</span> <span class="op">*</span> <span class="fl">0.9</span> <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span>  <span class="co">// 7s</span></span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 5: Create variation multipliers (0-1 range)</span></span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> variation1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> variation2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(mediumCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> variation3 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(shortCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-69"><a href="#cb24-69" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 6: Apply to HIPS (minimal - affects lower body)</span></span>
+<span id="cb24-70"><a href="#cb24-70" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span>) {</span>
+<span id="cb24-72"><a href="#cb24-72" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Z-axis (side-to-side sway)</span></span>
+<span id="cb24-73"><a href="#cb24-73" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> hipSwayAmount <span class="op">=</span> (<span class="fl">0.01</span> <span class="op">+</span> (beatIntensity <span class="op">*</span> <span class="fl">0.005</span>)) <span class="op">*</span> (<span class="fl">0.7</span> <span class="op">+</span> variation1 <span class="op">*</span> <span class="fl">0.6</span>)<span class="op">;</span></span>
+<span id="cb24-74"><a href="#cb24-74" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> hipSway <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase <span class="op">+</span> longCycle <span class="op">*</span> <span class="fl">0.3</span>) <span class="op">*</span> hipSwayAmount<span class="op">;</span></span>
+<span id="cb24-75"><a href="#cb24-75" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> hipSway<span class="op">;</span></span>
+<span id="cb24-76"><a href="#cb24-76" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-77"><a href="#cb24-77" aria-hidden="true" tabindex="-1"></a>        <span class="co">// X-axis (forward/back rock)</span></span>
+<span id="cb24-78"><a href="#cb24-78" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> hipRockAmount <span class="op">=</span> (<span class="fl">0.005</span> <span class="op">+</span> (beatIntensity <span class="op">*</span> <span class="fl">0.003</span>)) <span class="op">*</span> (<span class="fl">0.8</span> <span class="op">+</span> variation2 <span class="op">*</span> <span class="fl">0.4</span>)<span class="op">;</span></span>
+<span id="cb24-79"><a href="#cb24-79" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> hipRock <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase <span class="op">+</span> mediumCycle <span class="op">*</span> <span class="fl">0.2</span>) <span class="op">*</span> hipRockAmount<span class="op">;</span></span>
+<span id="cb24-80"><a href="#cb24-80" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">x</span> <span class="op">+</span> hipRock<span class="op">;</span></span>
+<span id="cb24-81"><a href="#cb24-81" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-82"><a href="#cb24-82" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-83"><a href="#cb24-83" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-84"><a href="#cb24-84" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 7: Apply to SPINE/TORSO (major movement source)</span></span>
+<span id="cb24-85"><a href="#cb24-85" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-86"><a href="#cb24-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span><span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">spine</span>) {</span>
+<span id="cb24-87"><a href="#cb24-87" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Primary twist with audio reactivity</span></span>
+<span id="cb24-88"><a href="#cb24-88" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> spineTwist <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>) <span class="op">*</span> <span class="fl">0.25</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.5</span>) <span class="op">*</span> (<span class="fl">0.6</span> <span class="op">+</span> variation1 <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span></span>
+<span id="cb24-89"><a href="#cb24-89" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Secondary motion layer</span></span>
+<span id="cb24-90"><a href="#cb24-90" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> spineSecondary <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(mediumCycle) <span class="op">*</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb24-91"><a href="#cb24-91" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">spine</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">y</span> <span class="op">+</span> spineTwist <span class="op">+</span> spineSecondary<span class="op">;</span></span>
+<span id="cb24-92"><a href="#cb24-92" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-93"><a href="#cb24-93" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Upper spine (if exists) - amplified movement</span></span>
+<span id="cb24-94"><a href="#cb24-94" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span>[<span class="dv">1</span>]) {</span>
+<span id="cb24-95"><a href="#cb24-95" aria-hidden="true" tabindex="-1"></a>            <span class="kw">const</span> upperTwist <span class="op">=</span> (spineTwist <span class="op">*</span> <span class="fl">0.9</span>) <span class="op">*</span> (<span class="fl">0.7</span> <span class="op">+</span> variation2 <span class="op">*</span> <span class="fl">0.6</span>)<span class="op">;</span></span>
+<span id="cb24-96"><a href="#cb24-96" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span>[<span class="dv">1</span>]<span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">spine</span>[<span class="dv">1</span>]<span class="op">.</span><span class="at">y</span> <span class="op">+</span> upperTwist<span class="op">;</span></span>
+<span id="cb24-97"><a href="#cb24-97" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb24-98"><a href="#cb24-98" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-99"><a href="#cb24-99" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-100"><a href="#cb24-100" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-101"><a href="#cb24-101" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 8: Apply to HEAD</span></span>
+<span id="cb24-102"><a href="#cb24-102" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-103"><a href="#cb24-103" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">head</span>) {</span>
+<span id="cb24-104"><a href="#cb24-104" aria-hidden="true" tabindex="-1"></a>        <span class="co">// X-axis (bob/nod)</span></span>
+<span id="cb24-105"><a href="#cb24-105" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> headBobAmount <span class="op">=</span> (<span class="fl">0.08</span> <span class="op">+</span> (beatIntensity <span class="op">*</span> <span class="fl">0.05</span>)) <span class="op">*</span> (<span class="fl">0.5</span> <span class="op">+</span> variation3 <span class="op">*</span> <span class="fl">1.0</span>)<span class="op">;</span></span>
+<span id="cb24-106"><a href="#cb24-106" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> headBob <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase) <span class="op">*</span> headBobAmount<span class="op">;</span></span>
+<span id="cb24-107"><a href="#cb24-107" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> headNod <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle <span class="op">*</span> <span class="fl">0.5</span>) <span class="op">*</span> <span class="fl">0.03</span><span class="op">;</span></span>
+<span id="cb24-108"><a href="#cb24-108" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">x</span> <span class="op">+</span> headBob <span class="op">+</span> headNod<span class="op">;</span></span>
+<span id="cb24-109"><a href="#cb24-109" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-110"><a href="#cb24-110" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Z-axis (side-to-side sway)</span></span>
+<span id="cb24-111"><a href="#cb24-111" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> headSwayAmount <span class="op">=</span> (<span class="fl">0.06</span> <span class="op">+</span> (beatIntensity <span class="op">*</span> <span class="fl">0.03</span>)) <span class="op">*</span> (<span class="fl">0.6</span> <span class="op">+</span> variation1 <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span></span>
+<span id="cb24-112"><a href="#cb24-112" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> headSway <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase <span class="op">+</span> shortCycle <span class="op">*</span> <span class="fl">0.3</span>) <span class="op">*</span> headSwayAmount<span class="op">;</span></span>
+<span id="cb24-113"><a href="#cb24-113" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">head</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> headSway<span class="op">;</span></span>
+<span id="cb24-114"><a href="#cb24-114" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-115"><a href="#cb24-115" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-116"><a href="#cb24-116" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-117"><a href="#cb24-117" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 9: Apply to SHOULDERS (alternating)</span></span>
+<span id="cb24-118"><a href="#cb24-118" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-119"><a href="#cb24-119" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightArm</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">rightArm</span>) {</span>
+<span id="cb24-120"><a href="#cb24-120" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rightLift <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase) <span class="op">*</span> (<span class="fl">0.15</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.08</span>) <span class="op">*</span> (<span class="fl">0.5</span> <span class="op">+</span> variation2 <span class="op">*</span> <span class="fl">1.0</span>)<span class="op">;</span></span>
+<span id="cb24-121"><a href="#cb24-121" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rightRoll <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(mediumCycle) <span class="op">*</span> <span class="fl">0.05</span><span class="op">;</span></span>
+<span id="cb24-122"><a href="#cb24-122" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightArm</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">rightArm</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> rightLift <span class="op">+</span> rightRoll<span class="op">;</span></span>
+<span id="cb24-123"><a href="#cb24-123" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-124"><a href="#cb24-124" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-125"><a href="#cb24-125" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftArm</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">leftArm</span>) {</span>
+<span id="cb24-126"><a href="#cb24-126" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Opposite phase for alternating movement</span></span>
+<span id="cb24-127"><a href="#cb24-127" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> leftLift <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(beatPhase <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>) <span class="op">*</span> (<span class="fl">0.15</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.08</span>) <span class="op">*</span> (<span class="fl">0.5</span> <span class="op">+</span> variation3 <span class="op">*</span> <span class="fl">1.0</span>)<span class="op">;</span></span>
+<span id="cb24-128"><a href="#cb24-128" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> leftRoll <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(mediumCycle <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>) <span class="op">*</span> <span class="fl">0.05</span><span class="op">;</span></span>
+<span id="cb24-129"><a href="#cb24-129" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftArm</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">leftArm</span><span class="op">.</span><span class="at">z</span> <span class="op">+</span> leftLift <span class="op">+</span> leftRoll<span class="op">;</span></span>
+<span id="cb24-130"><a href="#cb24-130" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-131"><a href="#cb24-131" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-132"><a href="#cb24-132" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-133"><a href="#cb24-133" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 10: Apply to ARMS/FOREARMS (compound swing)</span></span>
+<span id="cb24-134"><a href="#cb24-134" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-135"><a href="#cb24-135" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightForearm</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">rightForearm</span>) {</span>
+<span id="cb24-136"><a href="#cb24-136" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rightSwing <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase) <span class="op">*</span> (<span class="fl">0.2</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.15</span>) <span class="op">*</span> (<span class="fl">0.6</span> <span class="op">+</span> variation1 <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span></span>
+<span id="cb24-137"><a href="#cb24-137" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> rightAccent <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(shortCycle) <span class="op">*</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb24-138"><a href="#cb24-138" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightForearm</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">rightForearm</span><span class="op">.</span><span class="at">x</span> <span class="op">+</span> rightSwing <span class="op">+</span> rightAccent<span class="op">;</span></span>
+<span id="cb24-139"><a href="#cb24-139" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-140"><a href="#cb24-140" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-141"><a href="#cb24-141" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftForearm</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">leftForearm</span>) {</span>
+<span id="cb24-142"><a href="#cb24-142" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> leftSwing <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span>) <span class="op">*</span> (<span class="fl">0.2</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.15</span>) <span class="op">*</span> (<span class="fl">0.6</span> <span class="op">+</span> variation2 <span class="op">*</span> <span class="fl">0.8</span>)<span class="op">;</span></span>
+<span id="cb24-143"><a href="#cb24-143" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> leftAccent <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(shortCycle <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="fl">0.7</span>) <span class="op">*</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb24-144"><a href="#cb24-144" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftForearm</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span><span class="op">.</span><span class="at">leftForearm</span><span class="op">.</span><span class="at">x</span> <span class="op">+</span> leftSwing <span class="op">+</span> leftAccent<span class="op">;</span></span>
+<span id="cb24-145"><a href="#cb24-145" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-146"><a href="#cb24-146" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-147"><a href="#cb24-147" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-148"><a href="#cb24-148" aria-hidden="true" tabindex="-1"></a>    <span class="co">// STEP 11: Update skeleton (required for skinned meshes)</span></span>
+<span id="cb24-149"><a href="#cb24-149" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb24-150"><a href="#cb24-150" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">skeleton</span>) {</span>
+<span id="cb24-151"><a href="#cb24-151" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">skeleton</span><span class="op">.</span><span class="fu">update</span>()<span class="op">;</span></span>
+<span id="cb24-152"><a href="#cb24-152" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-153"><a href="#cb24-153" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="integration-in-onupdate-method">Integration in onUpdate
+Method</h3>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">onUpdate</span>(deltaTime<span class="op">,</span> timestamp<span class="op">,</span> sharedAudioData) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">character</span> <span class="op">||</span> <span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">mixer</span>) <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Clamp deltaTime to prevent animation jumps</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> clampedDelta <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(<span class="fl">0.001</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(deltaTime<span class="op">,</span> <span class="fl">0.05</span>))<span class="op">;</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update animation mixer (for pre-baked animations)</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">mixer</span><span class="op">.</span><span class="fu">update</span>(clampedDelta)<span class="op">;</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Audio-reactive logic</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (sharedAudioData <span class="op">&amp;&amp;</span> sharedAudioData<span class="op">.</span><span class="at">dataArray</span>) {</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Extract frequency bands</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> bassEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(sharedAudioData<span class="op">.</span><span class="at">dataArray</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">150</span>)<span class="op">;</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> midEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(sharedAudioData<span class="op">.</span><span class="at">dataArray</span><span class="op">,</span> <span class="dv">150</span><span class="op">,</span> <span class="dv">500</span>)<span class="op">;</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> highEnergy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getEnergyInRange</span>(sharedAudioData<span class="op">.</span><span class="at">dataArray</span><span class="op">,</span> <span class="dv">500</span><span class="op">,</span> <span class="dv">2000</span>)<span class="op">;</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Normalize to 0-1</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> bassNorm <span class="op">=</span> bassEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> midNorm <span class="op">=</span> midEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> highNorm <span class="op">=</span> highEnergy <span class="op">/</span> <span class="dv">255</span><span class="op">;</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate total energy with sensitivity</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> totalEnergy <span class="op">=</span> ((bassNorm <span class="op">+</span> midNorm <span class="op">+</span> highNorm) <span class="op">/</span> <span class="dv">3</span>) <span class="op">*</span> <span class="kw">this</span><span class="op">.</span><span class="at">audioSensitivity</span><span class="op">;</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> MIN_ENERGY <span class="op">=</span> <span class="fl">0.05</span><span class="op">;</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// State management: Custom mode vs Pre-baked animations</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ═══════════════════════════════════════════════════════════</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;=</span> MIN_ENERGY) {</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>            <span class="co">// CUSTOM MODE ON: Apply procedural animation</span></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="fu">applyProceduralAnimation</span>(clampedDelta<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Ensure Idle animation is playing as base pose</span></span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>            <span class="kw">const</span> currentAnimName <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">currentAction</span><span class="op">?.</span><span class="fu">getClip</span>()<span class="op">.</span><span class="at">name</span><span class="op">;</span></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (currentAnimName <span class="op">!==</span> <span class="st">&#39;Idle&#39;</span>) {</span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="fu">switchToAnimation</span>(<span class="st">&#39;Idle&#39;</span>)<span class="op">;</span></span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a>        } <span class="cf">else</span> <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;</span> MIN_ENERGY) {</span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a>            <span class="co">// CUSTOM MODE OFF: Use pre-baked animations based on energy</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="fu">updatePrebakedAnimations</span>(totalEnergy<span class="op">,</span> bassNorm<span class="op">,</span> midNorm<span class="op">,</span> highNorm)<span class="op">;</span></span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a>        } <span class="cf">else</span> {</span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a>            <span class="co">// NO AUDIO: Return to Idle</span></span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">currentAction</span><span class="op">?.</span><span class="fu">getClip</span>()<span class="op">.</span><span class="at">name</span> <span class="op">!==</span> <span class="st">&#39;Idle&#39;</span>) {</span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="fu">switchToAnimation</span>(<span class="st">&#39;Idle&#39;</span>)<span class="op">;</span></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="extracting-bones-from-glbgltf">Extracting Bones from
+GLB/GLTF</h3>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * Extract skeleton and specific bones for procedural animation</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">extractBones</span>() {</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">character</span>) <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Find SkinnedMesh</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> skinnedMesh <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">character</span><span class="op">.</span><span class="fu">traverse</span>((child) <span class="kw">=&gt;</span> {</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (child<span class="op">.</span><span class="at">isSkinnedMesh</span> <span class="op">&amp;&amp;</span> child<span class="op">.</span><span class="at">skeleton</span>) {</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>            skinnedMesh <span class="op">=</span> child<span class="op">;</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>skinnedMesh <span class="op">||</span> <span class="op">!</span>skinnedMesh<span class="op">.</span><span class="at">skeleton</span>) {</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">console</span><span class="op">.</span><span class="fu">warn</span>(<span class="st">&#39;No skeleton found in character model&#39;</span>)<span class="op">;</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">skeleton</span> <span class="op">=</span> skinnedMesh<span class="op">.</span><span class="at">skeleton</span><span class="op">;</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`Found skeleton with </span><span class="sc">${</span><span class="kw">this</span><span class="op">.</span><span class="at">skeleton</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">length</span><span class="sc">}</span><span class="vs"> bones`</span>)<span class="op">;</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create bone map for easy access</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">bones</span> <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Find specific bones by name (adjust names to match your model)</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">skeleton</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="fu">forEach</span>(bone <span class="kw">=&gt;</span> {</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> name <span class="op">=</span> bone<span class="op">.</span><span class="at">name</span><span class="op">.</span><span class="fu">toLowerCase</span>()<span class="op">;</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Hips/Root</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;hips&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;pelvis&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;root&#39;</span>)) {</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Spine (may have multiple segments)</span></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;spine&#39;</span>)) {</span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span>) <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span> <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span><span class="op">.</span><span class="fu">push</span>(bone)<span class="op">;</span></span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Head</span></span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;head&#39;</span>)) {</span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Right arm/shoulder</span></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;right&#39;</span>) <span class="op">&amp;&amp;</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;arm&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;shoulder&#39;</span>))) {</span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;upper&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;shoulder&#39;</span>)) {</span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightArm</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>            } <span class="cf">else</span> <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;lower&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;forearm&#39;</span>)) {</span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightForearm</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Left arm/shoulder</span></span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;left&#39;</span>) <span class="op">&amp;&amp;</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;arm&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;shoulder&#39;</span>))) {</span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;upper&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;shoulder&#39;</span>)) {</span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftArm</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>            } <span class="cf">else</span> <span class="cf">if</span> (name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;lower&#39;</span>) <span class="op">||</span> name<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;forearm&#39;</span>)) {</span>
+<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>                <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftForearm</span> <span class="op">=</span> bone<span class="op">;</span></span>
+<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Log found bones for debugging</span></span>
+<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;Extracted bones:&#39;</span><span class="op">,</span> {</span>
+<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a>        <span class="dt">hips</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">,</span></span>
+<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a>        <span class="dt">spine</span><span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">spine</span><span class="op">?.</span><span class="at">length</span> <span class="op">||</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a>        <span class="dt">head</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">head</span><span class="op">,</span></span>
+<span id="cb26-70"><a href="#cb26-70" aria-hidden="true" tabindex="-1"></a>        <span class="dt">rightArm</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightArm</span><span class="op">,</span></span>
+<span id="cb26-71"><a href="#cb26-71" aria-hidden="true" tabindex="-1"></a>        <span class="dt">rightForearm</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">rightForearm</span><span class="op">,</span></span>
+<span id="cb26-72"><a href="#cb26-72" aria-hidden="true" tabindex="-1"></a>        <span class="dt">leftArm</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftArm</span><span class="op">,</span></span>
+<span id="cb26-73"><a href="#cb26-73" aria-hidden="true" tabindex="-1"></a>        <span class="dt">leftForearm</span><span class="op">:</span> <span class="op">!!</span><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">leftForearm</span></span>
+<span id="cb26-74"><a href="#cb26-74" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb26-75"><a href="#cb26-75" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="best-practices-for-procedural-skeletal-animation">Best Practices
+for Procedural Skeletal Animation</h2>
+<h3 id="always-use-relative-transformations">1. Always Use Relative
+Transformations</h3>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Store base, apply offsets</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> baseRot <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span><span class="op">;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> offset <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time) <span class="op">*</span> <span class="fl">0.1</span><span class="op">;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">bones</span><span class="op">.</span><span class="at">hips</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> baseRot <span class="op">+</span> offset<span class="op">;</span></span></code></pre></div>
+<h3 id="minimize-root-bone-movement">2. Minimize Root Bone Movement</h3>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Small hip rotation (keeps feet planted for stationary characters)</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hipAmount <span class="op">=</span> <span class="fl">0.01</span><span class="op">;</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Large torso rotation (creates visible movement)</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> spineAmount <span class="op">=</span> <span class="fl">0.25</span><span class="op">;</span></span></code></pre></div>
+<h3 id="layer-multiple-frequencies">3. Layer Multiple Frequencies</h3>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Combine fast + slow rhythms</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> primary <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time <span class="op">*</span> <span class="dv">2</span>)<span class="op">;</span>      <span class="co">// Fast</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> secondary <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(time <span class="op">*</span> <span class="fl">0.3</span>)<span class="op">;</span>  <span class="co">// Slow</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> combined <span class="op">=</span> primary <span class="op">+</span> secondary <span class="op">*</span> <span class="fl">0.5</span><span class="op">;</span></span></code></pre></div>
+<h3 id="add-variation-to-avoid-repetition">4. Add Variation to Avoid
+Repetition</h3>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Modulate movement amounts over time</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> variation <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(longCycle) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> amount <span class="op">=</span> baseAmount <span class="op">*</span> (<span class="fl">0.7</span> <span class="op">+</span> variation <span class="op">*</span> <span class="fl">0.6</span>)<span class="op">;</span></span></code></pre></div>
+<h3 id="sync-to-audio-meaningfully">5. Sync to Audio Meaningfully</h3>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Bass → rhythm timing</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> beatPhase <span class="op">=</span> time <span class="op">*</span> (bassEnergy <span class="op">+</span> <span class="fl">0.5</span>)<span class="op">;</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Beat intensity → movement strength</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> movementScale <span class="op">=</span> <span class="fl">1.0</span> <span class="op">+</span> beatIntensity <span class="op">*</span> <span class="fl">0.3</span><span class="op">;</span></span></code></pre></div>
+<h3 id="clear-state-on-mode-changes">6. Clear State on Mode Changes</h3>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ Reset base rotations when switching modes</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>onChange<span class="op">:</span> (value) <span class="kw">=&gt;</span> {</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">=</span> (value <span class="op">===</span> <span class="st">&#39;on&#39;</span>)<span class="op">;</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">baseRotations</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span>  <span class="co">// Recapture from new animation</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="computational-cost">Computational Cost</h3>
+<p><strong>Per Frame:</strong> - 6-8 bone rotations (hips, spine × 2,
+head, shoulders × 2, arms × 2) - ~20 sine/cosine calculations - 3
+variation calculations - <strong>Total:</strong> ~50-60 simple math
+operations</p>
+<p><strong>Impact:</strong> Negligible (&lt;0.1ms per frame on modern
+hardware)</p>
+<h3 id="memory-usage">Memory Usage</h3>
+<ul>
+<li><code>baseRotations</code> object: ~200-500 bytes (depending on bone
+count)</li>
+<li><code>animationTime</code> scalar: 8 bytes</li>
+<li>Temporary calculation variables: ~100 bytes</li>
+</ul>
+<p><strong>Total:</strong> &lt;1KB additional memory</p>
+<h3 id="optimization-tips">Optimization Tips</h3>
+<p>✅ <strong>Pre-calculate constants:</strong></p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">// In constructor or once per session</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">PI_OVER_2</span> <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">TWO_PI</span> <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span></code></pre></div>
+<p>✅ <strong>Reuse calculation results:</strong></p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> sinSlowPhase <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(slowPhase)<span class="op">;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hipSway <span class="op">=</span> sinSlowPhase <span class="op">*</span> hipAmount<span class="op">;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> headSway <span class="op">=</span> sinSlowPhase <span class="op">*</span> headAmount<span class="op">;</span>  <span class="co">// Reuse sine</span></span></code></pre></div>
+<p>✅ <strong>Conditional updates:</strong></p>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Only update when custom mode is active</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">customMode</span> <span class="op">&amp;&amp;</span> totalEnergy <span class="op">&gt;=</span> MIN_ENERGY) {</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">applyProceduralAnimation</span>(<span class="op">...</span>)<span class="op">;</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="testing-checklist">Testing Checklist</h2>
+<p>When implementing procedural skeletal animation:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Orientation</strong>:
+Character faces correct direction in all modes</label></li>
+<li><label><input type="checkbox" /><strong>Feet/Stability</strong>:
+Character’s feet stay planted (if intended)</label></li>
+<li><label><input type="checkbox" /><strong>Smoothness</strong>: No
+jerky movements or discontinuities</label></li>
+<li><label><input type="checkbox" /><strong>Audio Sync</strong>:
+Movement timing matches music beat</label></li>
+<li><label><input type="checkbox" /><strong>Variation</strong>: Movement
+doesn’t repeat obviously</label></li>
+<li><label><input type="checkbox" /><strong>Toggle</strong>: Custom mode
+can be turned on/off cleanly</label></li>
+<li><label><input type="checkbox" /><strong>Base Pose</strong>:
+Switching animations doesn’t break character pose</label></li>
+<li><label><input type="checkbox" /><strong>Performance</strong>:
+Maintains 60fps on target hardware</label></li>
+<li><label><input type="checkbox" /><strong>Bone Names</strong>: Code
+correctly identifies bones from your specific model</label></li>
+<li><label><input type="checkbox" /><strong>Fallbacks</strong>: System
+handles missing bones gracefully</label></li>
+</ul>
+<hr />
+<h2 id="prompting-claude-for-glbgltf-character-plugins">Prompting Claude
+for GLB/GLTF Character Plugins</h2>
+<h3 id="example-prompt-for-character-plugin">Example Prompt for
+Character Plugin</h3>
+<pre><code>Claude, I need to create a Freque plugin that loads and animates a GLB/GLTF character:
+
+REQUIREMENTS:
+1. Load GLB/GLTF model from specified path
+2. Setup Three.js scene with proper lighting
+3. Support pre-baked animations from the GLB file (Idle, Walk, Run, etc.)
+4. Add procedural skeletal animation mode with audio reactivity
+5. Apply bone rotations RELATIVE to base animation pose (not absolute)
+6. Layer multiple rhythm cycles to avoid repetition
+7. Sync to bass frequency for beat detection
+8. Toggle-able mode with proper state management
+
+CONTROLS:
+- Character Selector: dropdown to choose different GLB files
+- Animation Mode: dropdown (Pre-baked / Procedural / Mixed)
+- Audio Sensitivity: slider (0.1-3.0)
+- Character Position: X and Y sliders
+- Camera Distance: slider
+
+AUDIO MAPPING:
+- Bass → beat intensity (0-1) for procedural animation
+- Overall energy → animation speed for pre-baked animations
+- Procedural animation uses multi-cycle rhythm layers
+
+MOVEMENT STYLE:
+[Describe the type of movement: dancing, gesturing, idle motion, etc.]
+[Specify: upper body focused, full body, minimal lower body, etc.]
+
+Please implement following GLB/GLTF character integration patterns with proper 
+base rotation capture and multi-cycle layering.</code></pre>
+<h3 id="example-prompt-for-mode-specific-animation">Example Prompt for
+Mode-Specific Animation</h3>
+<pre><code>Claude, add a custom procedural animation mode to an existing character plugin:
+
+CONTEXT:
+- Plugin already loads GLB/GLTF and plays pre-baked animations
+- Need to add audio-reactive procedural bone manipulation
+- Should work as a toggle (on/off) without breaking existing functionality
+
+MOVEMENT TYPE:
+[Describe: e.g., &quot;slow swaying motion&quot;, &quot;head bobbing and shoulder movement&quot;, 
+&quot;gestural hand movements&quot;, etc.]
+
+TECHNICAL REQUIREMENTS:
+1. Store base bone rotations from current animation
+2. Apply procedural movements as OFFSETS (not absolute values)
+3. Minimal hip movement if character should stay stationary
+4. Major torso/spine movement for visible effect
+5. Multi-cycle rhythm (30s, 12s, 7s cycles) for variation
+6. Beat detection from bass frequencies
+7. Clear base rotations when toggling mode on/off
+
+CONTROLS:
+- [Mode Name] Mode: dropdown toggle (on/off)
+- Audio Sensitivity: slider to control intensity
+
+Please implement with proper relative transformations and state management.</code></pre>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Procedural skeletal animation in GLB/GLTF character plugins:</p>
+<p>✅ <strong>Use relative transformations</strong> - Store base pose
+from pre-baked animations, apply procedural offsets<br />
+✅ <strong>Understand bone hierarchy</strong> - Root bones affect all
+children (hips → legs → feet)<br />
+✅ <strong>Layer multiple frequencies</strong> - Combine multiple cycles
+for organic variation<br />
+✅ <strong>Sync to audio meaningfully</strong> - Bass for beat
+detection, energy for intensity<br />
+✅ <strong>Manage state properly</strong> - Clear base rotations on
+mode/animation changes<br />
+✅ <strong>Test thoroughly</strong> - Orientation, smoothness, audio
+sync, performance<br />
+✅ <strong>Handle bone names</strong> - Different models use different
+naming conventions</p>
+<p>These patterns can be applied to any GLB/GLTF character animation
+system for audio-reactive procedural movement in Freque plugins.</p>
+<hr />
+<p><strong>End of Document</strong></p>
+    </main>
+    <footer>
+        <p>Freque Plugin Development Documentation</p>
+        <p>© 2025 Freque - Professional Audio Visualization Platform</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freque Audio Detection & Analysis Guide</title>
+    <link rel="stylesheet" href="freque-styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Freque Logo" class="logo">
+        </div>
+        <h1 class="header-subtitle">Freque Audio Detection & Analysis Guide</h1>
+    </header>
+    <main>
+<h1 id="freque-audio-detection-analysis-guide">Freque Audio Detection & Analysis Guide</h1>
+<p><strong>Complete guide to understanding how Freque detects and analyzes audio, and what data is available for creating audio-reactive visualizations</strong></p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#how-audio-is-detected">How Audio is Detected</a></li>
+<li><a href="#frequency-data">Frequency Data</a></li>
+<li><a href="#musical-notes-detection">Musical Notes Detection</a></li>
+<li><a href="#beat-detection">Beat Detection</a></li>
+<li><a href="#energy-calculation">Energy Calculation</a></li>
+<li><a href="#additional-audio-features">Additional Audio Features</a></li>
+<li><a href="#complete-audio-features-reference">Complete Audio Features Reference</a></li>
+</ol>
+<hr />
+<h1 id="introduction">Introduction</h1>
+<p>Freque uses advanced audio analysis to create reactive visualizations that respond to music in real-time. This guide explains how the system detects and analyzes audio, and what information is available to your visualizations.</p>
+<p>Think of Freque's audio system like a sophisticated music analyzer that listens to your audio and breaks it down into understandable pieces:</p>
+<ul>
+<li><strong>Frequencies</strong> - The different pitches and tones in the music</li>
+<li><strong>Energy</strong> - How loud or intense the music is</li>
+<li><strong>Beats</strong> - The rhythmic pulse of the music</li>
+<li><strong>Musical Notes</strong> - The specific notes and chords being played</li>
+<li><strong>Frequency Bands</strong> - Bass, mid-range, and treble frequencies</li>
+</ul>
+<p>All of this information is calculated once per frame and shared with all visualizations for optimal performance.</p>
+<hr />
+<h1 id="how-audio-is-detected">How Audio is Detected</h1>
+<h2 id="audio-input-setup">Audio Input Setup</h2>
+<p>Freque uses the Web Audio API, which is built into modern web browsers, to capture and analyze audio. Here's how it works:</p>
+<h3 id="the-audio-context">The Audio Context</h3>
+<p>When Freque starts, it creates an <strong>Audio Context</strong> - think of this as the "listening device" that connects to your audio source (whether it's a music file, microphone, or streaming audio).</p>
+<p><strong>Key Settings:</strong></p>
+<ul>
+<li><strong>FFT Size: 8192</strong> - This determines how detailed the frequency analysis is. Higher numbers = more detail but more processing power needed. 8192 gives us 4096 individual frequency "bins" to analyze.</li>
+<li><strong>Sample Rate: 44.1 kHz</strong> - This is the standard CD quality sample rate. It means the system analyzes 44,100 audio samples per second.</li>
+<li><strong>Frequency Range: 20 Hz to 22,050 Hz</strong> - This covers the full range of human hearing (from deep bass to high treble).</li>
+</ul>
+<h3 id="stereo-support">Stereo Support</h3>
+<p>Freque can analyze audio in two ways:</p>
+<ul>
+<li><strong>Mono Mode</strong> - Combines left and right channels into a single analysis</li>
+<li><strong>Stereo Mode</strong> - Analyzes left and right channels separately, allowing for visualizations that respond differently to each side</li>
+</ul>
+<h3 id="how-audio-connects">How Audio Connects</h3>
+<p>When you play music in Freque, the audio flows through this path:</p>
+<ol type="1">
+<li><strong>Audio Source</strong> (your music file, microphone, or other input device)</li>
+<li><strong>Audio Context</strong> (the listening device)</li>
+<li><strong>Channel Splitter</strong> (if stereo - separates left and right)</li>
+<li><strong>Analyzers</strong> (the analysis engines that break down the audio)</li>
+<li><strong>Frequency Data Arrays</strong> (the raw data that visualizations use)</li>
+</ol>
+<p>This happens automatically - you don't need to do anything special. Just play music and Freque starts analyzing!</p>
+<hr />
+<h1 id="frequency-data">Frequency Data</h1>
+<h2 id="what-are-frequencies">What Are Frequencies?</h2>
+<p>Every sound is made up of different frequencies - think of them as the "ingredients" that make up the sound. A bass drum has low frequencies, a cymbal has high frequencies, and a voice has a mix of frequencies.</p>
+<p>Freque breaks down the audio into 4096 individual frequency "bins" - each bin represents a small range of frequencies. This gives you incredibly detailed information about what's happening in the music at any moment.</p>
+<h2 id="how-frequency-data-is-calculated">How Frequency Data is Calculated</h2>
+<p>Every frame (60 times per second), Freque:</p>
+<ol type="1">
+<li>Takes a "snapshot" of the current audio</li>
+<li>Uses a mathematical process called FFT (Fast Fourier Transform) to break it into frequency components</li>
+<li>Converts this into an array of numbers from 0-255, where:
+<ul>
+<li><strong>0</strong> = no sound at that frequency</li>
+<li><strong>255</strong> = maximum sound at that frequency</li>
+</ul>
+</li>
+</ol>
+<h2 id="what-you-get">What You Get</h2>
+<p>Visualizations receive a <strong>frequencies array</strong> - this is a list of 4096 numbers, each representing the intensity of a specific frequency range at that moment. You can use this to:</p>
+<ul>
+<li>Make different parts of your visualization respond to different frequencies</li>
+<li>Create effects that "follow" the melody or bass line</li>
+<li>Build visualizations that highlight specific instruments</li>
+</ul>
+<h2 id="dominant-frequency">Dominant Frequency</h2>
+<p>Freque also calculates the <strong>dominant frequency</strong> - this is the frequency that's currently the loudest. It's useful for:</p>
+<ul>
+<li>Color changes based on pitch (low = red, high = blue, etc.)</li>
+<li>Effects that follow the main melody</li>
+<li>Visualizations that respond to the "center" of the sound</li>
+</ul>
+<h2 id="frequency-bands-bass-mid-treble">Frequency Bands: Bass, Mid, Treble</h2>
+<p>Freque automatically divides the frequency spectrum into three bands using actual musical frequency ranges (Hz), not percentage-based divisions. This ensures consistent and musically accurate frequency band detection regardless of FFT size or sample rate:</p>
+<ul>
+<li><strong>Bass (60-250 Hz)</strong> - The deep, low frequencies (kick drums, bass guitars, low synths). This range captures the fundamental frequencies of bass instruments and percussion.</li>
+<li><strong>Mid (250-2000 Hz)</strong> - The middle frequencies (vocals, guitars, most instruments). This range captures the "body" of the music where most melodic content lives.</li>
+<li><strong>Treble (2000-22050 Hz)</strong> - The high frequencies (cymbals, hi-hats, high synths, harmonics). This range captures brightness, sparkle, and high-frequency detail.</li>
+</ul>
+<p><strong>Why Hz-based instead of percentages?</strong> Using actual Hz ranges ensures that:</p>
+<ul>
+<li>Bass always means 60-250 Hz, regardless of audio settings</li>
+<li>Frequency bands are consistent across different FFT sizes</li>
+<li>Visualizations respond to the correct musical frequency ranges</li>
+<li>The system works accurately with different sample rates (44.1kHz, 48kHz, etc.)</li>
+</ul>
+<p>Each band gives you a single number (0-1) representing the energy in that range. This makes it easy to create visualizations where:</p>
+<ul>
+<li>Bass controls size or position</li>
+<li>Mid controls color or rotation</li>
+<li>Treble controls brightness or detail</li>
+</ul>
+<hr />
+<h1 id="musical-notes-detection">Musical Notes Detection</h1>
+<h2 id="what-is-note-detection">What is Note Detection?</h2>
+<p>Freque can identify which musical notes are being played in the audio. This is done through the AI Autopilot system, which uses advanced analysis to detect:</p>
+<ul>
+<li><strong>Individual Notes</strong> - The 12 semitones (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)</li>
+<li><strong>Chords</strong> - Groups of notes played together (major, minor, diminished, augmented)</li>
+<li><strong>Musical Key</strong> - The overall key the music is in</li>
+<li><strong>Harmonic Progression</strong> - How chords change over time</li>
+</ul>
+<h2 id="how-note-detection-works">How Note Detection Works</h2>
+<p>The system:</p>
+<ol type="1">
+<li>Analyzes the frequency data to find which frequencies are strongest</li>
+<li>Converts those frequencies to musical notes (using the standard A4 = 440 Hz reference)</li>
+<li>Calculates the "strength" of each note (how prominent it is)</li>
+<li>Groups notes together to identify chords</li>
+<li>Determines the musical key based on which notes are most common</li>
+</ol>
+<h2 id="what-you-can-do-with-notes">What You Can Do With Notes</h2>
+<p>Note detection enables advanced visualizations like:</p>
+<ul>
+<li><strong>Color by Note</strong> - Different colors for different notes</li>
+<li><strong>Chord Visualization</strong> - Visual patterns that match the chord structure</li>
+<li><strong>Key-Based Effects</strong> - Effects that change based on the musical key</li>
+<li><strong>Harmonic Reactivity</strong> - Visualizations that respond to chord changes</li>
+</ul>
+<p><strong>Note:</strong> Note detection is available through the AI Autopilot system. If you're creating a plugin, you can access this data through the <code>sharedAudioData.harmonic</code> object.</p>
+<hr />
+<h1 id="beat-detection">Beat Detection</h1>
+<h2 id="what-is-beat-detection">What is Beat Detection?</h2>
+<p>Beat detection identifies the rhythmic pulse of the music - the "thump" of the kick drum, the snap of the snare, or any sudden increase in energy. This is one of the most important features for creating reactive visualizations.</p>
+<h2 id="how-beat-detection-works">How Beat Detection Works</h2>
+<p>Freque uses multiple methods to detect beats:</p>
+<h3 id="basic-beat-detection">Basic Beat Detection</h3>
+<p>The simplest method looks for sudden spikes in overall energy:</p>
+<ul>
+<li>When energy jumps above a threshold (0.1 or 10% of maximum)</li>
+<li>And enough time has passed since the last beat (300ms minimum)</li>
+<li>A beat is detected!</li>
+</ul>
+<p>This is fast and works well for most music with clear beats.</p>
+<h3 id="enhanced-beat-detection">Enhanced Beat Detection</h3>
+<p>More advanced beat detection uses two signals:</p>
+<ol type="1">
+<li><strong>Energy Increase</strong> - How much louder the music got compared to recent average</li>
+<li><strong>Spectral Flux</strong> - How much the frequency content changed (new sounds starting)</li>
+</ol>
+<p>If either of these exceeds a threshold, a beat is detected. This catches beats even when the overall volume doesn't change much (like when a new instrument enters).</p>
+<h3 id="beat-confidence">Beat Confidence</h3>
+<p>The system also calculates <strong>beat confidence</strong> (0-1) - how sure it is that a beat actually occurred. This is useful for:</p>
+<ul>
+<li>Making effects stronger on "stronger" beats</li>
+<li>Filtering out false positives</li>
+<li>Creating more nuanced visual responses</li>
+</ul>
+<h2 id="what-you-get-from-beat-detection">What You Get From Beat Detection</h2>
+<p>Your visualizations receive:</p>
+<ul>
+<li><strong>beat</strong> - A true/false value indicating if a beat was detected this frame</li>
+<li><strong>beatStrength</strong> - A number (0-1) showing how strong the beat is</li>
+<li><strong>beatConfidence</strong> - A number (0-1) showing how confident the detection is</li>
+<li><strong>beatHistory</strong> - A list of recent beat timestamps (for tempo calculation)</li>
+</ul>
+<h2 id="using-beats-in-visualizations">Using Beats in Visualizations</h2>
+<p>Beats are perfect for:</p>
+<ul>
+<li><strong>Pulsing Effects</strong> - Make things grow or shrink on beats</li>
+<li><strong>Color Flashes</strong> - Bright color bursts on beats</li>
+<li><strong>Particle Bursts</strong> - Spawn particles or effects on beats</li>
+<li><strong>Transitions</strong> - Change visualization modes on beats</li>
+<li><strong>Rhythmic Patterns</strong> - Create patterns that match the music's rhythm</li>
+</ul>
+<hr />
+<h1 id="energy-calculation">Energy Calculation</h1>
+<h2 id="what-is-energy">What is Energy?</h2>
+<p>Energy is a measure of how "intense" or "loud" the audio is at any moment. It's calculated by averaging all the frequency values together. Think of it as the "volume" of the music, but more nuanced - it considers all frequencies, not just overall loudness.</p>
+<p>It's important to understand the difference between loudness and volume: <strong>Loudness</strong> is a subjective measure of how intensely our ears perceive a sound, while <strong>volume</strong> is a measure of the physical amplitude of a sound wave. Energy in Freque is more closely related to volume - it measures the actual physical intensity of the audio signal across all frequencies.</p>
+<h2 id="overall-energy">Overall Energy</h2>
+<p>The simplest energy calculation:</p>
+<ol type="1">
+<li>Takes all frequency values (0-255 each)</li>
+<li>Sums them up</li>
+<li>Divides by the total number of frequencies</li>
+<li>Normalizes to 0-1 range</li>
+</ol>
+<p>This gives you a single number representing the overall intensity of the music right now.</p>
+<h2 id="frequency-band-energy">Frequency Band Energy</h2>
+<p>Freque also calculates energy for each frequency band separately:</p>
+<h3 id="bass-energy">Bass Energy</h3>
+<p>Calculates the RMS (Root Mean Square) energy in the bass frequencies (60-250 Hz). This is useful for:</p>
+<ul>
+<li>Effects that respond to kick drums</li>
+<li>Low-frequency vibrations</li>
+<li>Deep, powerful visual effects</li>
+</ul>
+<h3 id="mid-energy">Mid Energy</h3>
+<p>Calculates energy in the mid frequencies (250-2000 Hz). This captures:</p>
+<ul>
+<li>Vocals</li>
+<li>Most instruments</li>
+<li>The "body" of the music</li>
+</ul>
+<h3 id="treble-energy">Treble Energy</h3>
+<p>Calculates energy in the treble frequencies (2000-22050 Hz). This captures:</p>
+<ul>
+<li>High-frequency details</li>
+<li>Cymbals and hi-hats</li>
+<li>Bright, sparkly sounds</li>
+<li>Harmonics and overtones</li>
+</ul>
+<p><strong>Note:</strong> All frequency band calculations use actual Hz ranges, ensuring musically accurate detection regardless of audio processing settings.</p>
+<h2 id="dominant-frequency-range">Dominant Frequency Range</h2>
+<p>Freque also determines which frequency band is currently dominant:</p>
+<ul>
+<li><strong>'bass'</strong> - Bass frequencies are strongest</li>
+<li><strong>'mid'</strong> - Mid frequencies are strongest</li>
+<li><strong>'treble'</strong> - Treble frequencies are strongest</li>
+</ul>
+<p>This is useful for automatic color scheme selection or mode switching based on the type of music playing.</p>
+<h2 id="using-energy-in-visualizations">Using Energy in Visualizations</h2>
+<p>Energy values are perfect for:</p>
+<ul>
+<li><strong>Size Control</strong> - Make things bigger when energy is high</li>
+<li><strong>Brightness Control</strong> - Make things brighter with more energy</li>
+<li><strong>Speed Control</strong> - Make animations faster with higher energy</li>
+<li><strong>Intensity Control</strong> - Control how strong effects are</li>
+<li><strong>Band-Specific Effects</strong> - Different effects for bass, mid, and treble</li>
+</ul>
+<hr />
+<h1 id="additional-audio-features">Additional Audio Features</h1>
+<h2 id="spectral-flux">Spectral Flux</h2>
+<p><strong>Spectral Flux</strong> measures how much the frequency content of the music is changing. Think of it as detecting when new sounds start or when the music changes character.</p>
+<p><strong>How it works:</strong></p>
+<ol type="1">
+<li>Compares the current frequency spectrum to the previous frame</li>
+<li>Counts how many frequencies increased (new sounds starting)</li>
+<li>Normalizes to 0-1 range</li>
+</ol>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Detecting when new instruments enter</li>
+<li>Creating effects that respond to musical changes</li>
+<li>Enhancing beat detection (beats often have high spectral flux)</li>
+<li>Triggering transitions when music changes</li>
+</ul>
+<h2 id="energy-change">Energy Change</h2>
+<p><strong>Energy Change</strong> is the difference between the current energy and the previous frame's energy. It tells you if the music is getting louder or quieter.</p>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Detecting crescendos (music getting louder)</li>
+<li>Detecting drops (sudden energy changes)</li>
+<li>Creating effects that respond to volume changes</li>
+<li>Making visualizations more sensitive to dynamics</li>
+</ul>
+<h2 id="tempo-detection">Tempo Detection</h2>
+<p><strong>Tempo</strong> is the speed of the music, measured in BPM (Beats Per Minute). Freque now uses advanced tempo detection methods that combine histogram analysis of beat intervals and autocorrelation for robust tempo estimation, even with complex rhythms or varying tempos.</p>
+<h3 id="how-tempo-detection-works">How Tempo Detection Works</h3>
+<p>Freque uses a sophisticated two-stage approach to detect tempo:</p>
+<h4 id="histogram-based-tempo-detection">Histogram-Based Tempo Detection (Primary Method)</h4>
+<p>When beats are being detected, the system:</p>
+<ol type="1">
+<li><strong>Tracks Beat Intervals:</strong> Records the time between consecutive beats over the last 10 seconds</li>
+<li><strong>Builds a Histogram:</strong> Groups similar intervals together to find the most common beat spacing</li>
+<li><strong>Identifies Patterns:</strong> Finds the most frequent interval, which represents the underlying tempo</li>
+<li><strong>Converts to BPM:</strong> Calculates BPM using the formula: <code>BPM = 60,000 / interval_in_milliseconds</code></li>
+<li><strong>Handles Multiples:</strong> Can detect half-time (slower) or double-time (faster) patterns, providing multiple tempo candidates</li>
+</ol>
+<p>This method is highly accurate because it filters out irregular beats and finds the consistent underlying pulse of the music.</p>
+<h4 id="autocorrelation-fallback">Autocorrelation Fallback</h4>
+<p>If not enough clear beats are detected (less than 4 beats in the last 10 seconds), the system uses autocorrelation:</p>
+<ol type="1">
+<li><strong>Analyzes Energy Patterns:</strong> Looks at the overall energy level over time</li>
+<li><strong>Finds Repeating Patterns:</strong> Uses autocorrelation to identify repeating energy patterns</li>
+<li><strong>Estimates Tempo:</strong> Converts the pattern repetition rate to BPM</li>
+</ol>
+<p>This fallback method provides a reliable tempo estimate even for less percussive music (like ambient or orchestral pieces) where individual beats are harder to detect.</p>
+<h4 id="tempo-smoothing">Tempo Smoothing</h4>
+<p>The detected tempo is smoothed over time to prevent sudden, jarring changes. This ensures:</p>
+<ul>
+<li>Stable BPM values that don't jump around</li>
+<li>Gradual transitions when tempo changes occur</li>
+<li>More reliable tempo values for visualizations</li>
+</ul>
+<h4 id="tempo-confidence-and-candidates">Tempo Confidence and Candidates</h4>
+<p>Freque provides additional information about tempo detection:</p>
+<ul>
+<li><strong>Tempo Confidence (0-1):</strong> How confident the system is in the detected tempo. Higher values (closer to 1) mean more reliable detection.</li>
+<li><strong>Tempo Candidates:</strong> Multiple potential tempos with their confidence scores. This helps identify cases where the music might be at half-time or double-time.</li>
+</ul>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Syncing animations to music speed</li>
+<li>Adjusting effect timing based on tempo</li>
+<li>Creating tempo-reactive visualizations</li>
+<li>Intelligent mode switching based on music pace</li>
+<li>Using confidence scores to decide when to trust the tempo value</li>
+</ul>
+<h4 id="using-tempo-in-visualizations">Using Tempo in Visualizations</h4>
+<p>Here's an example of how to use tempo and tempo confidence in your visualizations:</p>
+<pre><code>// Get tempo and its confidence
+const tempo = sharedAudioData.tempo;
+const tempoConfidence = sharedAudioData.tempoConfidence;
+
+if (tempoConfidence > 0.7) {
+    // Use tempo for effects if confident
+    console.log(`Current tempo: ${tempo} BPM with ${Math.round(tempoConfidence * 100)}% confidence`);
+    
+    // Example: Rotate speed based on tempo
+    const rotationSpeed = tempo / 120; // Normalize to 120 BPM
+    object.rotation += rotationSpeed * deltaTime;
+} else {
+    console.log('Tempo detection not confident, using fallback or previous tempo.');
+}
+
+// Check tempo candidates for alternative tempos
+if (sharedAudioData.tempoCandidates && sharedAudioData.tempoCandidates.length > 0) {
+    const topCandidate = sharedAudioData.tempoCandidates[0];
+    console.log(`Top tempo candidate: ${topCandidate.bpm} BPM (${Math.round(topCandidate.confidence * 100)}% confidence)`);
+}</code></pre>
+<h2 id="morph-intensity">Morph Intensity</h2>
+<p><strong>Morph Intensity</strong> is a combined metric that measures how "interesting" the audio is right now. It combines:</p>
+<ul>
+<li>Energy change (how much things are changing)</li>
+<li>Spectral flux (how much frequencies are changing)</li>
+<li>Silence boost (extra boost during quiet sections to keep things interesting)</li>
+</ul>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Automatic color morphing (change colors when music gets interesting)</li>
+<li>Effect intensity control</li>
+<li>Mode switching triggers</li>
+</ul>
+<h2 id="structure-detection">Structure Detection</h2>
+<p>Through the AI Autopilot system, Freque can detect musical structure:</p>
+<ul>
+<li><strong>Intro</strong> - The beginning of the song</li>
+<li><strong>Verse</strong> - The main sections</li>
+<li><strong>Chorus</strong> - The repeated, usually more energetic sections</li>
+<li><strong>Bridge</strong> - The contrasting sections</li>
+<li><strong>Outro</strong> - The ending</li>
+</ul>
+<p>This enables visualizations that respond to song structure, like using different effects for verses vs. choruses.</p>
+<hr />
+<h1 id="complete-audio-features-reference">Complete Audio Features Reference</h1>
+<p>Here's everything that's available to your visualizations in the <code>sharedAudioData</code> object:</p>
+<h2 id="basic-features">Basic Features</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>energy</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>Overall audio intensity (average of all frequencies)</td>
+</tr>
+<tr class="even">
+<td><code>beat</code></td>
+<td>Boolean</td>
+<td>true/false</td>
+<td>Whether a beat was detected this frame</td>
+</tr>
+<tr class="odd">
+<td><code>beatStrength</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>How strong the detected beat is</td>
+</tr>
+<tr class="even">
+<td><code>tempo</code></td>
+<td>Number</td>
+<td>BPM</td>
+<td>Estimated tempo in beats per minute (smoothed)</td>
+</tr>
+<tr class="odd">
+<td><code>tempoConfidence</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>How confident the tempo detection is (0 = low, 1 = high)</td>
+</tr>
+<tr class="even">
+<td><code>tempoCandidates</code></td>
+<td>Array of Objects</td>
+<td><code>[{bpm: N, confidence: M}]</code></td>
+<td>Alternative tempo suggestions with their confidence scores</td>
+</tr>
+<tr class="odd">
+<td><code>dominantFrequency</code></td>
+<td>Number</td>
+<td>Hz</td>
+<td>The frequency that's currently loudest (in Hertz)</td>
+</tr>
+<tr class="even">
+<td><code>dominantFreq</code></td>
+<td>String/Number</td>
+<td>'bass'/'mid'/'treble' or 0.2/0.5/0.8</td>
+<td>Which frequency band is dominant</td>
+</tr>
+</tbody>
+</table>
+<h2 id="frequency-data">Frequency Data</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>frequencies</code></td>
+<td>Uint8Array</td>
+<td>Array of 4096 values (0-255) representing frequency intensity</td>
+</tr>
+<tr class="even">
+<td><code>dataArray</code></td>
+<td>Uint8Array</td>
+<td>Same as frequencies (for compatibility)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="frequency-bands">Frequency Bands</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>frequencyBands.bass</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>RMS energy in bass frequencies (60-250 Hz)</td>
+</tr>
+<tr class="even">
+<td><code>frequencyBands.mid</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>RMS energy in mid frequencies (250-2000 Hz)</td>
+</tr>
+<tr class="odd">
+<td><code>frequencyBands.treble</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>RMS energy in treble frequencies (2000-22050 Hz)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="advanced-features">Advanced Features</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>energyChange</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>Change in energy from previous frame (for detecting crescendos/drops)</td>
+</tr>
+<tr class="even">
+<td><code>flux</code> or <code>spectralFlux</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>Rate of change in frequency content (detects new sounds starting)</td>
+</tr>
+<tr class="odd">
+<td><code>morphIntensity</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>Combined "interestingness" metric (energy change + flux + silence boost)</td>
+</tr>
+<tr class="even">
+<td><code>energyTrend</code></td>
+<td>String</td>
+<td>'rising'/'falling'/'stable'</td>
+<td>Direction energy is moving (via AI Autopilot)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="harmonic-features-ai-autopilot">Harmonic Features (AI Autopilot)</h2>
+<p>Available through <code>sharedAudioData.harmonic</code>:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>harmonic.chord</code></td>
+<td>String</td>
+<td>Detected chord (e.g., 'C major', 'Am', 'diminished')</td>
+</tr>
+<tr class="even">
+<td><code>harmonic.chordConfidence</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>How confident the chord detection is</td>
+</tr>
+<tr class="odd">
+<td><code>harmonic.key</code></td>
+<td>String</td>
+<td>Detected musical key (e.g., 'C', 'G', 'Dm')</td>
+</tr>
+<tr class="even">
+<td><code>harmonic.keyConfidence</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>How confident the key detection is</td>
+</tr>
+<tr class="odd">
+<td><code>harmonic.progression</code></td>
+<td>Array</td>
+<td>Recent chord progression history</td>
+</tr>
+</tbody>
+</table>
+<h2 id="structure-features-ai-autopilot">Structure Features (AI Autopilot)</h2>
+<p>Available through <code>sharedAudioData.structure</code>:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>structure.section</code></td>
+<td>String</td>
+<td>Current section type ('intro', 'verse', 'chorus', 'bridge', 'outro')</td>
+</tr>
+<tr class="even">
+<td><code>structure.sectionConfidence</code></td>
+<td>Number</td>
+<td>0-1</td>
+<td>How confident the section detection is</td>
+</tr>
+<tr class="odd">
+<td><code>structure.sectionDuration</code></td>
+<td>Number</td>
+<td>Milliseconds</td>
+<td>How long current section has been playing</td>
+</tr>
+<tr class="even">
+<td><code>structure.sectionHistory</code></td>
+<td>Array</td>
+<td>Recent section changes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-access-audio-data">How to Access Audio Data</h2>
+<p>In your plugin's <code>onUpdate</code> or <code>onRender</code> method, you receive <code>sharedAudioData</code> as the third parameter:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">onUpdate</span>(deltaTime<span class="op">,</span> timestamp<span class="op">,</span> sharedAudioData) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get overall energy</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> energy <span class="op">=</span> sharedAudioData<span class="op">.</span><span class="at">energy</span><span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get frequency bands</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> bass <span class="op">=</span> sharedAudioData<span class="op">.</span><span class="at">frequencyBands</span><span class="op">.</span><span class="at">bass</span><span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> mid <span class="op">=</span> sharedAudioData<span class="op">.</span><span class="at">frequencyBands</span><span class="op">.</span><span class="at">mid</span><span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> treble <span class="op">=</span> sharedAudioData<span class="op">.</span><span class="at">frequencyBands</span><span class="op">.</span><span class="at">treble</span><span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Check for beat</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (sharedAudioData<span class="op">.</span><span class="at">beat</span>) {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Do something on beat!</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get raw frequency data</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> frequencies <span class="op">=</span> sharedAudioData<span class="op">.</span><span class="at">frequencies</span><span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (frequencies) {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Access individual frequency bins</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> bassBin <span class="op">=</span> frequencies[<span class="dv">0</span>]<span class="op">;</span> <span class="co">// First bin (lowest frequency)</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> trebleBin <span class="op">=</span> frequencies[frequencies<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>]<span class="op">;</span> <span class="co">// Last bin (highest frequency)</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2 id="helper-methods">Helper Methods</h2>
+<p>The <code>FrequePluginBase</code> class provides convenient helper methods:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Get overall energy (0-1)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> energy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getAudioEnergy</span>()<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Get raw frequency array</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> frequencies <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getAudioFrequencies</span>()<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Get frequency band energy</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> bass <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getAudioEnergy</span>(<span class="st">'bass'</span>)<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mid <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getAudioEnergy</span>(<span class="st">'mid'</span>)<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> treble <span class="op">=</span> <span class="op">this</span><span class="op">.</span><span class="fu">getAudioEnergy</span>(<span class="st">'treble'</span>)<span class="op">;</span></span></code></pre></div>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<p><strong>Important:</strong> All audio data is calculated <strong>once per frame</strong> by the Master Animation Controller and shared with all visualizations. This means:</p>
+<ul>
+<li>No duplicate calculations - efficient!</li>
+<li>All visualizations use the same audio snapshot - synchronized!</li>
+<li>Audio data is always fresh - updated 60 times per second!</li>
+</ul>
+<p>You don't need to worry about performance when accessing audio data - it's already been optimized for you!</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Freque provides a comprehensive audio analysis system that breaks down music into understandable components:</p>
+<ul>
+<li><strong>Frequencies</strong> - Detailed frequency data (4096 bins)</li>
+<li><strong>Energy</strong> - Overall and band-specific intensity</li>
+<li><strong>Beats</strong> - Rhythmic pulse detection</li>
+<li><strong>Notes & Chords</strong> - Musical note and chord detection</li>
+<li><strong>Structure</strong> - Song section detection</li>
+<li><strong>Advanced Metrics</strong> - Spectral flux, energy change, morph intensity</li>
+</ul>
+<p>All of this data is available to your visualizations through the <code>sharedAudioData</code> object, updated 60 times per second for smooth, responsive visualizations that perfectly sync with your music!</p>
+    </main>
+</body>
+</html>
+

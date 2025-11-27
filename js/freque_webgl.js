@@ -26,6 +26,9 @@ class WebGLBeatDetector {
         this.beatSpeedBoost = 2.0; // Speed multiplier on beat
         this.beatCountBoost = 3; // Extra particles on beat
         
+        // Initialize tempo detector
+        this.tempoDetector = new TempoDetector();
+        
         // console.log('🥁 WebGL Beat Detector initialized');
     }
     
@@ -160,21 +163,25 @@ class WebGLBeatDetector {
     }
     
     getCurrentBPM() {
-        if (this.beatHistory.length < 2) return 0;
+        // Use enhanced tempo detector
+        const tempoResult = this.tempoDetector.detectTempoFromBeats(this.beatHistory);
         
-        const now = Date.now();
-        const recentBeats = this.beatHistory.filter(time => now - time < 10000); // Last 10 seconds
-        
-        if (recentBeats.length < 2) return 0;
-        
-        // Calculate average interval between beats
-        let totalInterval = 0;
-        for (let i = 1; i < recentBeats.length; i++) {
-            totalInterval += recentBeats[i] - recentBeats[i - 1];
+        // If beat-based detection has low confidence, try autocorrelation fallback
+        if (tempoResult.confidence < 0.3 && this.energyHistory.length >= 30) {
+            const autocorrResult = this.tempoDetector.detectTempoFromAutocorrelation(this.energyHistory);
+            if (autocorrResult.confidence > tempoResult.confidence) {
+                return {
+                    bpm: autocorrResult.tempo,
+                    confidence: autocorrResult.confidence
+                };
+            }
         }
         
-        const avgInterval = totalInterval / (recentBeats.length - 1);
-        return Math.round(60000 / avgInterval); // Convert to BPM
+        return {
+            bpm: tempoResult.tempo || 0,
+            confidence: tempoResult.confidence,
+            candidates: tempoResult.candidates || []
+        };
     }
 }
 

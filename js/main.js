@@ -1024,6 +1024,8 @@ class AudioAnalyzer {
         this.smoothedEnergy = 0;
         this.beatDetected = false;
         this.currentTempo = 0;
+        this.tempoConfidence = 0;
+        this.tempoCandidates = [];
         
         // History for analysis
         this.energyHistory = new Array(60).fill(0); // 1 second at 60fps
@@ -1033,6 +1035,21 @@ class AudioAnalyzer {
         // Enhanced analysis components
         this.harmonicAnalyzer = new HarmonicAnalyzer(this);
         this.structureDetector = new StructureDetector(this);
+        
+        // Initialize tempo detector
+        this.tempoDetector = new TempoDetector();
+        
+        // Initialize frequency band calculator
+        this.frequencyBandCalculator = new FrequencyBandCalculator();
+        
+        // Initialize frequency band energies (7 bands)
+        this.subBassEnergy = 0;    // 20-60 Hz
+        this.bassEnergy = 0;       // 60-250 Hz
+        this.lowMidEnergy = 0;     // 250-500 Hz
+        this.midEnergy = 0;        // 500-2000 Hz
+        this.highMidEnergy = 0;    // 2000-4000 Hz
+        this.trebleEnergy = 0;     // 4000-8000 Hz
+        this.airEnergy = 0;        // 8000-22050 Hz
         
     }
     
@@ -1121,36 +1138,48 @@ class AudioAnalyzer {
     }
     
     analyzeFrequencyBands(dataArray) {
-        const binCount = dataArray.length;
-        const bassEnd = Math.floor(binCount * 0.1);     // 0-10% (bass)
-        const midEnd = Math.floor(binCount * 0.5);      // 10-50% (mids) 
-        const trebleEnd = binCount;                     // 50-100% (treble)
+        // Get audio context parameters for Hz-based calculation
+        const analyser = this.audioMotion.analyser;
+        const sampleRate = analyser.context.sampleRate;
+        const fftSize = analyser.fftSize;
         
-        // Calculate energy in each band
-        let bassEnergy = 0, midEnergy = 0, trebleEnergy = 0;
+        // Calculate all 7 frequency bands using actual Hz ranges
+        const bands = this.frequencyBandCalculator.calculateAllBands(
+            dataArray,
+            sampleRate,
+            fftSize,
+            true // Include extended bands (subBass, lowMid, highMid, air)
+        );
         
-        for (let i = 0; i < bassEnd; i++) {
-            bassEnergy += dataArray[i] * dataArray[i];
-        }
-        for (let i = bassEnd; i < midEnd; i++) {
-            midEnergy += dataArray[i] * dataArray[i];
-        }
-        for (let i = midEnd; i < trebleEnd; i++) {
-            trebleEnergy += dataArray[i] * dataArray[i];
-        }
+        // Store all 7 band energies (normalized 0-1)
+        this.subBassEnergy = bands.subBass || 0;    // 20-60 Hz
+        this.bassEnergy = bands.bass || 0;          // 60-250 Hz
+        this.lowMidEnergy = bands.lowMid || 0;      // 250-500 Hz
+        this.midEnergy = bands.mid || 0;            // 500-2000 Hz
+        this.highMidEnergy = bands.highMid || 0;    // 2000-4000 Hz
+        this.trebleEnergy = bands.treble || 0;      // 4000-8000 Hz
+        this.airEnergy = bands.air || 0;            // 8000-22050 Hz
         
-        // Normalize by band size
-        this.bassEnergy = Math.sqrt(bassEnergy / bassEnd) / 255;
-        this.midEnergy = Math.sqrt(midEnergy / (midEnd - bassEnd)) / 255;
-        this.trebleEnergy = Math.sqrt(trebleEnergy / (trebleEnd - midEnd)) / 255;
+        // Determine dominant frequency (check all 7 bands)
+        const bandEnergies = {
+            subBass: this.subBassEnergy,
+            bass: this.bassEnergy,
+            lowMid: this.lowMidEnergy,
+            mid: this.midEnergy,
+            highMid: this.highMidEnergy,
+            treble: this.trebleEnergy,
+            air: this.airEnergy
+        };
         
-        // Determine dominant frequency
-        this.dominantFreq = 'mid';
-        if (this.bassEnergy > this.midEnergy && this.bassEnergy > this.trebleEnergy) {
-            this.dominantFreq = 'bass';
-        } else if (this.trebleEnergy > this.midEnergy && this.trebleEnergy > this.bassEnergy) {
-            this.dominantFreq = 'treble';
+        let maxEnergy = 0;
+        let dominantBand = 'mid';
+        for (const [band, energy] of Object.entries(bandEnergies)) {
+            if (energy > maxEnergy) {
+                maxEnergy = energy;
+                dominantBand = band;
+            }
         }
+        this.dominantFreq = dominantBand;
     }
     
     calculateSpectralFlux(dataArray) {
@@ -1201,26 +1230,26 @@ class AudioAnalyzer {
     }
     
     calculateTempo() {
-        if (this.beatHistory.length < 4) return;
+        // Use enhanced tempo detector
+        const tempoResult = this.tempoDetector.detectTempoFromBeats(this.beatHistory);
         
-        // Calculate intervals between recent beats
-        const intervals = [];
-        for (let i = 1; i < Math.min(this.beatHistory.length, 8); i++) {
-            const interval = this.beatHistory[i] - this.beatHistory[i-1];
-            // Filter out unrealistic intervals (too fast/slow)
-            if (interval > 200 && interval < 2000) { // 30-300 BPM range
-                intervals.push(interval);
+        // If beat-based detection has low confidence, try autocorrelation fallback
+        if (tempoResult.confidence < 0.3 && this.energyHistory.length >= 60) {
+            const autocorrResult = this.tempoDetector.detectTempoFromAutocorrelation(this.energyHistory);
+            if (autocorrResult.confidence > tempoResult.confidence) {
+                this.currentTempo = autocorrResult.tempo;
+                this.tempoConfidence = autocorrResult.confidence;
+            } else {
+                this.currentTempo = tempoResult.tempo;
+                this.tempoConfidence = tempoResult.confidence;
             }
+        } else {
+            this.currentTempo = tempoResult.tempo;
+            this.tempoConfidence = tempoResult.confidence;
         }
         
-        if (intervals.length > 0) {
-            // Find most common interval (tempo)
-            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-            this.currentTempo = Math.round(60000 / avgInterval); // Convert to BPM
-            
-            // Clamp to realistic range
-            this.currentTempo = Math.max(60, Math.min(200, this.currentTempo));
-        }
+        // Store tempo candidates for advanced use
+        this.tempoCandidates = tempoResult.candidates || [];
     }
     
     updateEnergyHistory() {
@@ -1248,27 +1277,37 @@ class AudioAnalyzer {
         else if (this.dominantFreq === 'treble') dominantFreqNumeric = 0.8;
         else if (this.dominantFreq === 'mid') dominantFreqNumeric = 0.5;
         
-        // Estimate tempo from energy if no tempo detected yet
-        let estimatedTempo = this.currentTempo;
-        if (estimatedTempo === 0 && this.smoothedEnergy > 0.1) {
-            // Estimate tempo based on energy level
-            if (this.smoothedEnergy > 0.4) estimatedTempo = 140; // High energy = fast tempo
-            else if (this.smoothedEnergy > 0.2) estimatedTempo = 120; // Medium energy = medium tempo
-            else estimatedTempo = 100; // Low energy = slow tempo
+        // Use detected tempo, fallback to energy-based estimation if needed
+        let finalTempo = this.currentTempo;
+        let finalTempoConfidence = this.tempoConfidence || 0;
+        let finalTempoCandidates = this.tempoCandidates || [];
+        
+        if (finalTempo === 0 && this.smoothedEnergy > 0.1) {
+            // Estimate tempo based on energy level (fallback only)
+            if (this.smoothedEnergy > 0.4) finalTempo = 140; // High energy = fast tempo
+            else if (this.smoothedEnergy > 0.2) finalTempo = 120; // Medium energy = medium tempo
+            else finalTempo = 100; // Low energy = slow tempo
+            finalTempoConfidence = 0.2; // Low confidence for energy-based estimation
         }
         
         return {
             // Basic audio features
             energy: this.smoothedEnergy,
             beat: this.beatDetected,
-            tempo: estimatedTempo,
+            tempo: finalTempo,
+            tempoConfidence: finalTempoConfidence,
+            tempoCandidates: finalTempoCandidates,
             dominantFreq: dominantFreqNumeric,
             energyTrend: this.getEnergyTrend(),
             beatStrength: this.beatDetected ? this.currentEnergy / (this.smoothedEnergy + 0.001) : 0,
             frequencyBands: {
-                bass: this.bassEnergy || 0,
-                mid: this.midEnergy || 0,
-                treble: this.trebleEnergy || 0
+                subBass: this.subBassEnergy || 0,    // 20-60 Hz
+                bass: this.bassEnergy || 0,          // 60-250 Hz
+                lowMid: this.lowMidEnergy || 0,      // 250-500 Hz
+                mid: this.midEnergy || 0,            // 500-2000 Hz
+                highMid: this.highMidEnergy || 0,    // 2000-4000 Hz
+                treble: this.trebleEnergy || 0,      // 4000-8000 Hz
+                air: this.airEnergy || 0             // 8000-22050 Hz
             },
             spectralFlux: this.spectralFlux || 0,
             
@@ -10520,6 +10559,10 @@ class FrequeVisualizer {
         this.morphProgress = 0;
         this.morphDuration = 5000;
         this.morphMode = 'energy';
+        
+        // Color morph manager (initialized after audioMotion is ready)
+        this.colorMorphManager = null;
+        this.proColorMorphManager = null;
 
         // Auto-hide fullscreen controls
         this.controlsTimeout = null;
@@ -11655,6 +11698,16 @@ class FrequeVisualizer {
                 this.audioMotion.canvas.style.opacity = this.visualizationOpacity.toString();
                 // Add unique identifier for z-index management
                 this.audioMotion.canvas.setAttribute('data-visualization', 'amvisualizer');
+            }
+            
+            // Initialize Color Morph Managers after AudioMotion is ready
+            if (typeof ColorMorphManager !== 'undefined') {
+                if (this.audioMotion) {
+                    this.colorMorphManager = new ColorMorphManager(this.audioMotion);
+                }
+                if (this.officialAudioMotion) {
+                    this.proColorMorphManager = new ColorMorphManager(this.officialAudioMotion);
+                }
             }
 
             // console.log('SpectrumAnalyzer initialized successfully');
@@ -28030,6 +28083,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 this.generateNewMorphTarget();
                 this.morphProgress = 0;
+                
+                // Initialize color morphing if both gradients are available
+                if (this.colorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                    this.colorMorphManager.startMorph(this.morphStartConfig.gradient, this.morphTargetConfig.gradient);
+                }
 
                 this.morphInterval = setInterval(() => {
                     this.updateMorph();
@@ -28097,6 +28155,11 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 this.generateNewProMorphTarget();
                 this.morphProgress = 0;
+                
+                // Initialize color morphing if both gradients are available
+                if (this.proColorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                    this.proColorMorphManager.startMorph(this.morphStartConfig.gradient, this.morphTargetConfig.gradient);
+                }
 
                 this.morphInterval = setInterval(() => {
                     this.updateProMorph();
@@ -28117,6 +28180,14 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 if (this.energyCheckInterval) {
                     clearInterval(this.energyCheckInterval);
                     this.energyCheckInterval = null;
+                }
+                
+                // Stop color morphing
+                if (this.colorMorphManager) {
+                    this.colorMorphManager.stopMorph();
+                }
+                if (this.proColorMorphManager) {
+                    this.proColorMorphManager.stopMorph();
                 }
 
                 // Sidebar morph button removed - functionality moved to footer
@@ -28247,11 +28318,21 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 if (this.morphProgress >= 1) {
                     this.morphProgress = 1;
 
+                    // Stop color morphing before applying final config
+                    if (this.colorMorphManager) {
+                        this.colorMorphManager.stopMorph();
+                    }
+
                     this.applyMorphConfig(this.morphTargetConfig);
 
                     this.morphStartConfig = this.morphTargetConfig;
                     this.generateNewMorphTarget();
                     this.morphProgress = 0;
+                    
+                    // Restart color morphing for new target
+                    if (this.colorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                        this.colorMorphManager.startMorph(this.morphStartConfig.gradient, this.morphTargetConfig.gradient);
+                    }
                     
                     // Process any queued Pro preset
                     if (this.pendingProPreset !== null) {
@@ -28274,7 +28355,14 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
                 } else {
                     const easedProgress = this.easeInOutCubic(this.morphProgress);
-                    const currentConfig = this.interpolateConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress);
+                    
+                    // Update color morphing if manager is available
+                    let morphedGradient = null;
+                    if (this.colorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                        morphedGradient = this.colorMorphManager.updateMorph(easedProgress);
+                    }
+                    
+                    const currentConfig = this.interpolateConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress, morphedGradient);
 
                     this.applyMorphConfig(currentConfig);
                 }
@@ -28290,12 +28378,22 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 if (this.morphProgress >= 1) {
                     this.morphProgress = 1;
 
+                    // Stop color morphing before applying final config
+                    if (this.proColorMorphManager) {
+                        this.proColorMorphManager.stopMorph();
+                    }
+
                     // Apply target configuration using direct property updates
                     this.applyProMorphConfig(this.morphTargetConfig);
 
                     this.morphStartConfig = this.morphTargetConfig;
                     this.generateNewProMorphTarget();
                     this.morphProgress = 0;
+                    
+                    // Restart color morphing for new target
+                    if (this.proColorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                        this.proColorMorphManager.startMorph(this.morphStartConfig.gradient, this.morphTargetConfig.gradient);
+                    }
                     
                     // Process any queued Pro preset
                     if (this.pendingProPreset !== null) {
@@ -28318,14 +28416,21 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
                 } else {
                     const easedProgress = this.easeInOutCubic(this.morphProgress);
-                    const currentConfig = this.interpolateProConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress);
+                    
+                    // Update color morphing if manager is available
+                    let morphedGradient = null;
+                    if (this.proColorMorphManager && this.morphStartConfig.gradient && this.morphTargetConfig.gradient) {
+                        morphedGradient = this.proColorMorphManager.updateMorph(easedProgress);
+                    }
+                    
+                    const currentConfig = this.interpolateProConfigs(this.morphStartConfig, this.morphTargetConfig, easedProgress, morphedGradient);
 
                     // Apply interpolated configuration using direct property updates
                     this.applyProMorphConfig(currentConfig);
                 }
             }
 
-            interpolateConfigs(start, target, progress) {
+            interpolateConfigs(start, target, progress, morphedGradient = null) {
                 const config = {};
 
                 // Always use locked parameters if they exist
@@ -28355,8 +28460,19 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
                 });
 
+                // Use morphed gradient if available, otherwise use smooth interpolation
+                if (morphedGradient && progress < 1) {
+                    // Use the interpolated gradient from ColorMorphManager
+                    config.gradient = morphedGradient;
+                } else if (progress >= 1) {
+                    // At completion, use target gradient
+                    config.gradient = target.gradient;
+                } else {
+                    // During morph, keep start gradient (will be replaced by morphed gradient)
+                    config.gradient = start.gradient;
+                }
+
                 // Keep these properties from start config to prevent jumps
-                config.gradient = start.gradient;
                 config.showPeaks = start.showPeaks;
                 config.roundBars = start.roundBars;
                 config.outlineBars = start.outlineBars;
@@ -28364,7 +28480,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
                 // Only switch these at the END of morph (when starting new morph)
                 if (progress >= 1) {
-                    config.gradient = target.gradient;
                     config.showPeaks = target.showPeaks;
                     config.roundBars = target.roundBars;
                     config.outlineBars = target.outlineBars;
@@ -28376,7 +28491,7 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                 return config;
             }
 
-            interpolateProConfigs(start, target, progress) {
+            interpolateProConfigs(start, target, progress, morphedGradient = null) {
                 const config = {};
 
                 // Always use locked parameters if they exist
@@ -28408,24 +28523,15 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
                 });
 
-                // Pro-specific gradient handling for smooth color transitions
-                // Create intermediate gradient steps during morphing
-                const availableGradients = ['classic', 'rainbow', 'prism', 'steelblue', 'orangered'];
-                const startGradientIndex = availableGradients.indexOf(start.gradient) || 0;
-                const targetGradientIndex = availableGradients.indexOf(target.gradient) || 0;
-                
-                if (startGradientIndex !== targetGradientIndex && progress < 1) {
-                    // Create smooth gradient transitions by stepping through intermediate gradients
-                    const totalSteps = Math.abs(targetGradientIndex - startGradientIndex);
-                    const currentStep = Math.floor(progress * totalSteps);
-                    const direction = targetGradientIndex > startGradientIndex ? 1 : -1;
-                    const intermediateIndex = (startGradientIndex + (currentStep * direction)) % availableGradients.length;
-                    config.gradient = availableGradients[Math.max(0, intermediateIndex)];
+                // Use morphed gradient if available (smooth color interpolation)
+                if (morphedGradient && progress < 1) {
+                    // Use the interpolated gradient from ColorMorphManager
+                    config.gradient = morphedGradient;
                 } else if (progress >= 1) {
                     // At completion, use target gradient
                     config.gradient = target.gradient;
                 } else {
-                    // Same gradient, keep start
+                    // During morph, keep start gradient (will be replaced by morphed gradient)
                     config.gradient = start.gradient;
                 }
 

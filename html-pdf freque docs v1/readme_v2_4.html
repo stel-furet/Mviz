@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freque README v2.4</title>
+    <link rel="stylesheet" href="freque-styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Freque Logo" class="logo">
+        </div>
+        <h1 class="header-subtitle">Freque README v2.4</h1>
+    </header>
+    <main>
+<h1 id="freque-plugin-documentation-v2.4">Freque Plugin Documentation
+v2.4</h1>
+<p><strong>Complete documentation for audio-reactive visualizations with
+2D Canvas, WebGL/WebGL2 shaders, advanced Three.js techniques, and
+procedural skeletal animation</strong></p>
+<hr />
+<h2 id="documentation-package">📦 Documentation Package</h2>
+<h3 id="total-size-125-kb">Total Size: ~125 KB</h3>
+<h3 id="files-9-comprehensive-guides">Files: 9 comprehensive guides</h3>
+<h3 id="version-2.4-november-14-2025">Version: 2.4 (November 14,
+2025)</h3>
+<hr />
+<h2 id="whats-new-in-v2.4">🆕 What’s New in v2.4</h2>
+<h3 id="glbgltf-character-integration-guide">GLB/GLTF Character
+Integration Guide</h3>
+<p><strong>NEW CAPABILITY:</strong> Complete implementation guide for
+audio-reactive character animation!</p>
+<ul>
+<li>✅ <strong>GLB/GLTF Model Loading</strong> - Load and integrate
+character models</li>
+<li>✅ <strong>Procedural Animation Patterns</strong> - Real-time bone
+rotation systems</li>
+<li>✅ <strong>Multi-Cycle Rhythm Layering</strong> - Organic,
+non-repetitive movement</li>
+<li>✅ <strong>Relative Transformations</strong> - Preserve base
+animation poses</li>
+<li>✅ <strong>Audio-Reactive Systems</strong> - Beat detection and
+energy mapping</li>
+<li>✅ <strong>Generic Patterns</strong> - Applicable to any animation
+style</li>
+<li>✅ <strong>Complete Code Examples</strong> - Ready-to-adapt
+implementations</li>
+</ul>
+<p><strong>Example Use Cases:</strong> Any character animation style -
+dancing, gesturing, idle motion, reactive poses, etc.</p>
+<h3 id="ui-enhancement-custom-dial-fill-colors">UI Enhancement: Custom
+Dial Fill Colors</h3>
+<p><strong>NEW FEATURE:</strong> Plugins can now specify custom dial
+fill colors using CSS variables!</p>
+<ul>
+<li>✅ <strong>Theme-Aware Colors</strong> - Use any CSS variable (e.g.,
+<code>--accent-color</code>)</li>
+<li>✅ <strong>Automatic Theme Support</strong> - Colors change with
+theme selection</li>
+<li>✅ <strong>Simple API</strong> - One property in plugin config:
+<code>dialFillColor: '--accent-color'</code></li>
+<li>✅ <strong>Visual Consistency</strong> - Easy to identify plugin
+dials</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">super</span>(<span class="st">&#39;myplugin&#39;</span><span class="op">,</span> visualizer<span class="op">,</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">dialFillColor</span><span class="op">:</span> <span class="st">&#39;--accent-color&#39;</span> <span class="co">// All dials use accent color</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<h3 id="documentation-updates">Documentation Updates</h3>
+<ul>
+<li><strong>Character Integration Guide</strong> → NEW (32 KB) -
+GLB/GLTF character animation guide</li>
+<li><strong>v2.4 Summary</strong> → NEW (7 KB) - Update overview and
+implementation details</li>
+<li><strong>Development Guide</strong> → Updated with dial fill color
+documentation</li>
+<li><strong>Claude Guide</strong> → Updated with dial color prompting
+examples</li>
+<li><strong>Quick Reference Card</strong> → Updated to v2.4 with dial
+color patterns</li>
+</ul>
+<hr />
+<h2 id="whats-new-in-v2.3">🆕 What’s New in v2.3</h2>
+<h3 id="ui-controls-update-dials-standardized-toggles">UI Controls
+Update: Dials &amp; Standardized Toggles</h3>
+<p><strong>Control System Improvements:</strong></p>
+<ul>
+<li>✅ <strong>Dial Controls</strong> - Rotary knobs replace sliders for
+professional feel</li>
+<li>✅ <strong>Standardized Toggle Styling</strong> - All toggles use
+<code>className: 'btn-primary-mixer'</code></li>
+<li>✅ <strong>Visual Consistency</strong> - Matches professional
+audio/video software UX</li>
+<li>✅ <strong>100% Backwards Compatible</strong> - Old code still
+works</li>
+</ul>
+<p><strong>Changes:</strong> - All numeric controls now use
+<code>type: 'dial'</code> instead of <code>type: 'slider'</code> - All
+toggle controls must include <code>className: 'btn-primary-mixer'</code>
+- Integration layer respects custom <code>className</code> config</p>
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Dial control (replaces slider)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;speed&#39;</span><span class="op">,</span> {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;dial&#39;</span><span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Speed&#39;</span><span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">min</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">max</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">step</span><span class="op">:</span> <span class="fl">0.1</span><span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> <span class="fl">1.0</span><span class="op">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> { <span class="kw">this</span><span class="op">.</span><span class="at">speed</span> <span class="op">=</span> value<span class="op">;</span> }</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Toggle control (with required className)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="fu">addControl</span>(<span class="st">&#39;audioReactive&#39;</span><span class="op">,</span> {</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">type</span><span class="op">:</span> <span class="st">&#39;checkbox&#39;</span><span class="op">,</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&#39;Audio Reactive&#39;</span><span class="op">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">checked</span><span class="op">:</span> <span class="kw">false</span><span class="op">,</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">className</span><span class="op">:</span> <span class="st">&#39;btn-primary-mixer&#39;</span><span class="op">,</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">onChange</span><span class="op">:</span> (value) <span class="kw">=&gt;</span> { <span class="kw">this</span><span class="op">.</span><span class="at">audioReactive</span> <span class="op">=</span> value<span class="op">;</span> }</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="whats-new-in-v2.2">🆕 What’s New in v2.2</h2>
+<h3 id="major-update-webglwebgl2-plugin-support">Major Update:
+WebGL/WebGL2 Plugin Support</h3>
+<p><strong>NEW CAPABILITY:</strong> Raw WebGL and WebGL2 shader-based
+plugins are now fully supported!</p>
+<ul>
+<li>✅ <strong>WebGL2 Shader Plugins</strong> - Create advanced
+procedural effects</li>
+<li>✅ <strong>WebGL 1.0 Plugins</strong> - Maximum browser
+compatibility</li>
+<li>✅ <strong>Context Flexibility</strong> - Plugins choose 2D, WebGL,
+or WebGL2</li>
+<li>✅ <strong>Lazy Context Loading</strong> - Base class no longer
+forces 2D context</li>
+<li>✅ <strong>100% Backwards Compatible</strong> - All existing plugins
+work unchanged</li>
+</ul>
+<p><strong>Example:</strong> The new PSYCH plugin uses WebGL2 for
+procedural liquid bubble effects running at 60fps in 4K.</p>
+<h3 id="documentation-updates-1">Documentation Updates</h3>
+<ul>
+<li><strong>Development Guide</strong> → v2.2 (38 KB) - Added
+WebGL/WebGL2 sections</li>
+<li><strong>Claude Guide</strong> → v2.2 (28 KB) - Added shader plugin
+prompting</li>
+<li><strong>v2.2 Summary</strong> → New (12 KB) - Architecture change
+details</li>
+</ul>
+<hr />
+<h2 id="documentation-files">📚 Documentation Files</h2>
+<h3 id="readme.md-start-here">1️⃣ <a href="README_V2_3.md">README.md</a>
+⭐ START HERE</h3>
+<p><strong>This file - Complete navigation guide</strong></p>
+<hr />
+<h3 id="documentation_updates_v2_4_summary.md-7-kb-new">2️⃣ <a
+href="DOCUMENTATION_UPDATES_V2_4_SUMMARY.md">DOCUMENTATION_UPDATES_V2_4_SUMMARY.md</a>
+(7 KB) ⭐ NEW</h3>
+<p><strong>What’s new in v2.4 and overview of procedural animation
+guide</strong></p>
+<p><strong>Contents:</strong> - What’s New in v2.4 summary -
+Documentation structure and organization - Procedural skeletal animation
+overview - Implementation patterns (relative transforms, multi-cycle,
+feet planting) - Audio integration patterns - Common pitfalls and
+solutions - Migration notes (100% backwards compatible) - Support and
+resources</p>
+<p><strong>Who should read this:</strong> - Anyone wanting a quick v2.4
+overview - Developers considering skeletal animation plugins - Technical
+leads evaluating new capabilities</p>
+<hr />
+<h3 id="gltf_character_plugin_integration_guide.md-32-kb-new">3️⃣ <a
+href="GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md">GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md</a>
+(32 KB) ⭐ NEW</h3>
+<p><strong>Complete guide to GLB/GLTF character animation in
+Three.js</strong></p>
+<p><strong>Contents:</strong> - Core concepts (procedural vs pre-baked
+animations) - Implementation architecture (bone systems, state machine)
+- Critical technical patterns (relative transforms, feet planting,
+multi-cycle layering) - Audio reactivity (energy mapping, beat
+detection, state transitions) - UI controls (mode toggles, sensitivity,
+positioning) - Common pitfalls &amp; solutions (character rotation, feet
+movement, repetition) - Complete code examples (full procedural method,
+integration, bone extraction) - Best practices for skeletal animation -
+Performance considerations - Testing checklist - Prompting Claude for
+character plugins</p>
+<p><strong>Who should read this:</strong> - Developers creating GLB/GLTF
+character plugins - Anyone implementing procedural bone manipulation -
+Those needing audio-reactive animation systems - Troubleshooting
+skeletal animation issues</p>
+<hr />
+<h3 id="documentation_updates_v2_2_summary.md-12-kb">4️⃣ <a
+href="DOCUMENTATION_UPDATES_V2_2_SUMMARY.md">DOCUMENTATION_UPDATES_V2_2_SUMMARY.md</a>
+(12 KB)</h3>
+<p><strong>What changed in v2.2 and why</strong></p>
+<p><strong>Contents:</strong> - Executive summary of architecture
+changes - Before/after comparison - Impact on existing plugins (none!) -
+New plugin types supported (WebGL/WebGL2) - Developer guidelines by
+plugin type - PSYCH plugin example - Testing recommendations</p>
+<p><strong>Who should read this:</strong> - Developers wanting to
+understand the v2.2 changes - Technical leads evaluating the new
+architecture - Anyone creating WebGL/WebGL2 plugins</p>
+<hr />
+<h3
+id="freque_plugin_development_guide_v2_2.md-38-kb-technical-reference">5️⃣
+<a
+href="FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md">FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md</a>
+(38 KB) ⭐ TECHNICAL REFERENCE</h3>
+<p><strong>The complete technical reference for plugin
+developers</strong></p>
+<p><strong>NEW in v2.2:</strong> - ✅ Canvas Context Types section - ✅
+2D Canvas Plugins section - ✅ WebGL/WebGL2 Plugins section (complete
+templates) - ✅ Three.js context handling notes - ✅ Plugin type
+decision guide - ✅ Context type compatibility matrix</p>
+<p><strong>Contents:</strong> - Quick Start (basic plugin template) -
+<strong>Canvas Context Types</strong> ⭐ NEW - <strong>2D Canvas
+Plugins</strong> ⭐ NEW<br />
+- <strong>WebGL/WebGL2 Plugins</strong> ⭐ NEW (complete templates) -
+<strong>Three.js Integration</strong> - Cube Camera System for Video
+Reflections - Layer Management - Color Space Management - Dual Mapping
+Modes - Audio Integration - UI Controls - Performance Optimization -
+Best Practices</p>
+<p><strong>Who should read this:</strong> - Developers manually coding
+plugins - Anyone implementing WebGL/WebGL2 shaders - Technical leads
+architecting new plugins</p>
+<hr />
+<h3 id="creating_plugins_with_claude_v2_2.md-28-kb-for-claude">6️⃣ <a
+href="CREATING_PLUGINS_WITH_CLAUDE_V2_2.md">CREATING_PLUGINS_WITH_CLAUDE_V2_2.md</a>
+(28 KB) ⭐ FOR CLAUDE</h3>
+<p><strong>Guide for using Claude to create Freque plugins</strong></p>
+<p><strong>NEW in v2.2:</strong> - ✅ WebGL/WebGL2 plugin prompting - ✅
+Procedural shader request patterns - ✅ 2D Canvas plugin templates - ✅
+WebGL troubleshooting section - ✅ PSYCH-style advanced requests</p>
+<p><strong>Contents:</strong> - Quick Start (10-minute first plugin) -
+The Universal Plugin Prompt Template - <strong>Requesting 2D Canvas
+Plugins</strong> ⭐ NEW - <strong>Requesting WebGL/WebGL2
+Plugins</strong> ⭐ NEW (shader effects) - Requesting Three.js Plugins -
+Video Reflection Systems - Common Request Patterns -
+<strong>Troubleshooting</strong> (expanded with WebGL) - Visual
+Description Library - Real-World Examples</p>
+<p><strong>Who should read this:</strong> - Non-technical users wanting
+to create plugins - Technical users who want to use Claude for faster
+development - Anyone learning effective prompting for code
+generation</p>
+<hr />
+<h3 id="cube_camera_quick_reference_v2_1.md-11-kb">7️⃣ <a
+href="CUBE_CAMERA_QUICK_REFERENCE_V2_1.md">CUBE_CAMERA_QUICK_REFERENCE_V2_1.md</a>
+(11 KB)</h3>
+<p><strong>One-page quick reference for cube camera
+implementation</strong></p>
+<p><strong>Contents:</strong> - When to Use Cube Cameras - 5-Step
+Implementation (copy-paste ready) - Advanced: Dynamic Positioning -
+Layer System - Performance Optimization - Common Issues &amp; Solutions
+- Complete Minimal Example - Asking Claude Template</p>
+<p><strong>Who should read this:</strong> - Developers implementing cube
+cameras RIGHT NOW - Quick reference during coding - Troubleshooting
+guide</p>
+<hr />
+<h3 id="chromospheres_analysis.md-12-kb">8️⃣ <a
+href="CHROMOSPHERES_ANALYSIS.md">CHROMOSPHERES_ANALYSIS.md</a> (12
+KB)</h3>
+<p><strong>Deep dive into Chrome Spheres v1.2.0 → v1.3.0
+changes</strong></p>
+<p><strong>Contents:</strong> - Executive Summary - Major Architectural
+Changes - Cube Camera System Implementation - Dynamic Positioning -
+Background Sphere Visibility - Dual Texture System - Color Space
+Management - Enhanced Quality Settings - Performance Optimizations -
+Architectural Lessons Learned</p>
+<p><strong>Who should read this:</strong> - Developers wanting to
+understand cube camera architecture - Anyone curious about the technical
+evolution - Technical leads evaluating the approach</p>
+<hr />
+<h3 id="documentation_updates_v2_1_summary.md-11-kb">9️⃣ <a
+href="DOCUMENTATION_UPDATES_V2_1_SUMMARY.md">DOCUMENTATION_UPDATES_V2_1_SUMMARY.md</a>
+(11 KB)</h3>
+<p><strong>What changed in v2.1 (previous update)</strong></p>
+<p><strong>Contents:</strong> - Float speed non-linear scaling - Video
+intensity auto-adjustment - Control update behavior - Minor
+clarifications</p>
+<hr />
+<h2 id="quick-navigation-guide">🎯 Quick Navigation Guide</h2>
+<h3 id="i-want-to">I want to…</h3>
+<p><strong>…understand what’s new in v2.4</strong> → Read <a
+href="DOCUMENTATION_UPDATES_V2_4_SUMMARY.md">DOCUMENTATION_UPDATES_V2_4_SUMMARY.md</a></p>
+<p><strong>…implement GLB/GLTF character animation</strong> → Read <a
+href="GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md">GLTF_CHARACTER_PLUGIN_INTEGRATION_GUIDE.md</a>
+→ See example character plugins for working implementations</p>
+<p><strong>…understand what’s new in v2.2</strong> → Read <a
+href="DOCUMENTATION_UPDATES_V2_2_SUMMARY.md">DOCUMENTATION_UPDATES_V2_2_SUMMARY.md</a></p>
+<p><strong>…create a WebGL/WebGL2 shader plugin</strong> → Read <a
+href="computer:///mnt/user-data/outputs/CREATING_PLUGINS_WITH_CLAUDE_V2_2.md">CREATING_PLUGINS_WITH_CLAUDE_V2_2.md</a>
+- WebGL sections → Reference <a
+href="computer:///mnt/user-data/outputs/FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md">FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md</a>
+- WebGL templates</p>
+<p><strong>…implement cube cameras myself</strong> → Read <a
+href="computer:///mnt/user-data/outputs/FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md">FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md</a>
+Cube Camera section → Use <a
+href="computer:///mnt/user-data/outputs/CUBE_CAMERA_QUICK_REFERENCE_V2_1.md">CUBE_CAMERA_QUICK_REFERENCE_V2_1.md</a>
+during coding</p>
+<p><strong>…use Claude to create a plugin with video
+reflections</strong> → Read <a
+href="computer:///mnt/user-data/outputs/CREATING_PLUGINS_WITH_CLAUDE_V2_2.md">CREATING_PLUGINS_WITH_CLAUDE_V2_2.md</a>
+Video Reflection section</p>
+<p><strong>…understand why Chrome Spheres works the way it does</strong>
+→ Read <a
+href="computer:///mnt/user-data/outputs/CHROMOSPHERES_ANALYSIS.md">CHROMOSPHERES_ANALYSIS.md</a></p>
+<p><strong>…see all available documentation</strong> → This README or <a
+href="computer:///mnt/user-data/outputs/INDEX_V2_2.md">INDEX.md</a></p>
+<hr />
+<h2 id="key-concepts">🔑 Key Concepts</h2>
+<h3 id="plugin-types-v2.2">Plugin Types (v2.2)</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 28%" />
+<col style="width: 37%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>When to Use</th>
+<th>Browser Support</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>2D Canvas</strong></td>
+<td>Simple visualizations, drawing API</td>
+<td>100%</td>
+<td>Waveforms, basic particles</td>
+</tr>
+<tr class="even">
+<td><strong>WebGL 1.0</strong></td>
+<td>GPU effects, max compatibility</td>
+<td>~97%</td>
+<td>GPU particles, basic shaders</td>
+</tr>
+<tr class="odd">
+<td><strong>WebGL2</strong></td>
+<td>Advanced shaders, modern features</td>
+<td>~95%</td>
+<td><strong>PSYCH</strong>, procedural effects</td>
+</tr>
+<tr class="even">
+<td><strong>Three.js</strong></td>
+<td>3D scenes, video reflections</td>
+<td>~97%</td>
+<td>Chrome Spheres, 3D objects</td>
+</tr>
+</tbody>
+</table>
+<h3 id="canvas-context-architecture-v2.2">Canvas Context Architecture
+(v2.2)</h3>
+<p><strong>The Problem:</strong> A canvas can only have ONE context
+type. Once you create a 2D context, you can’t get a WebGL context.</p>
+<p><strong>The Solution:</strong> The base class now uses lazy context
+loading. It doesn’t create any context until needed, allowing plugins to
+choose their type.</p>
+<p><strong>Result:</strong> WebGL/WebGL2 plugins now work! 🎉</p>
+<h3 id="backwards-compatibility">Backwards Compatibility</h3>
+<p>✅ <strong>All existing 2D plugins work unchanged</strong> ✅
+<strong>All existing Three.js plugins work unchanged</strong> ✅
+<strong>New: WebGL/WebGL2 plugins now possible</strong></p>
+<hr />
+<h2 id="getting-started-paths">🚀 Getting Started Paths</h2>
+<h3 id="path-1-non-technical-user-create-with-claude">Path 1:
+Non-Technical User (Create with Claude)</h3>
+<ol type="1">
+<li>Read “Quick Start” in <a
+href="computer:///mnt/user-data/outputs/CREATING_PLUGINS_WITH_CLAUDE_V2_2.md">CREATING_PLUGINS_WITH_CLAUDE_V2_2.md</a></li>
+<li>Choose plugin type (2D/WebGL/Three.js)</li>
+<li>Copy the appropriate template</li>
+<li>Fill in your vision</li>
+<li>Send to Claude</li>
+<li>Save and test the result</li>
+</ol>
+<p><strong>Time:</strong> 15 minutes to first plugin</p>
+<hr />
+<h3 id="path-2-developer-creating-webglwebgl2-plugin">Path 2: Developer
+Creating WebGL/WebGL2 Plugin</h3>
+<ol type="1">
+<li>Read “Canvas Context Types” in <a
+href="computer:///mnt/user-data/outputs/FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md">FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md</a></li>
+<li>Read “WebGL/WebGL2 Plugins” section</li>
+<li>Copy the appropriate template (WebGL or WebGL2)</li>
+<li>Implement shaders and uniforms</li>
+<li>Test at different resolutions</li>
+<li>Optimize for 60fps</li>
+</ol>
+<p><strong>Time:</strong> 2-4 hours for first WebGL plugin</p>
+<hr />
+<h3 id="path-3-developer-adding-video-reflections-three.js">Path 3:
+Developer Adding Video Reflections (Three.js)</h3>
+<ol type="1">
+<li>Scan <a
+href="computer:///mnt/user-data/outputs/DOCUMENTATION_UPDATES_V2_2_SUMMARY.md">DOCUMENTATION_UPDATES_V2_2_SUMMARY.md</a>
+for context</li>
+<li>Read Cube Camera System section in <a
+href="computer:///mnt/user-data/outputs/FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md">FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md</a></li>
+<li>Use <a
+href="computer:///mnt/user-data/outputs/CUBE_CAMERA_QUICK_REFERENCE_V2_1.md">CUBE_CAMERA_QUICK_REFERENCE_V2_1.md</a>
+during implementation</li>
+<li>Study Chrome Spheres plugin code for details</li>
+<li>Test performance and optimize</li>
+</ol>
+<p><strong>Time:</strong> 1-2 hours for first implementation</p>
+<hr />
+<h3 id="path-4-technical-lead-evaluating-v2.2">Path 4: Technical Lead
+Evaluating v2.2</h3>
+<ol type="1">
+<li>Read <a
+href="computer:///mnt/user-data/outputs/DOCUMENTATION_UPDATES_V2_2_SUMMARY.md">DOCUMENTATION_UPDATES_V2_2_SUMMARY.md</a>
+executive summary</li>
+<li>Review architectural changes (lazy context loading)</li>
+<li>Verify backwards compatibility claims</li>
+<li>Review WebGL plugin templates</li>
+<li>Consider implications for plugin ecosystem</li>
+</ol>
+<p><strong>Time:</strong> 30 minutes for evaluation</p>
+<hr />
+<h2 id="package-statistics">📊 Package Statistics</h2>
+<h3 id="file-count-by-version">File Count by Version</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Files</th>
+<th>Added</th>
+<th>Total Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v2.0</td>
+<td>5</td>
+<td>-</td>
+<td>~82 KB</td>
+</tr>
+<tr class="even">
+<td>v2.1</td>
+<td>7</td>
+<td>+2</td>
+<td>~105 KB</td>
+</tr>
+<tr class="odd">
+<td>v2.2</td>
+<td>9</td>
+<td>+2</td>
+<td>~120 KB</td>
+</tr>
+</tbody>
+</table>
+<h3 id="content-metrics">Content Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>v2.1</th>
+<th>v2.2</th>
+<th>Added</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Word Count</td>
+<td>57,200</td>
+<td>62,500</td>
+<td>+5,300</td>
+</tr>
+<tr class="even">
+<td>Code Examples</td>
+<td>106</td>
+<td>125</td>
+<td>+19</td>
+</tr>
+<tr class="odd">
+<td>Plugin Templates</td>
+<td>3</td>
+<td>6</td>
+<td>+3</td>
+</tr>
+<tr class="even">
+<td>Troubleshooting</td>
+<td>8</td>
+<td>13</td>
+<td>+5</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="version-history">📈 Version History</h2>
+<h3 id="v2.2-current-session---webglwebgl2-support">v2.2 (Current
+Session) - WebGL/WebGL2 Support</h3>
+<ul>
+<li>✅ Added WebGL/WebGL2 plugin architecture</li>
+<li>✅ Added context type flexibility</li>
+<li>✅ Updated Development Guide with WebGL sections</li>
+<li>✅ Updated Claude Guide with shader prompting</li>
+<li>✅ 100% backwards compatible</li>
+<li>✅ Complete templates for all plugin types</li>
+</ul>
+<h3 id="v2.1-november-9-2025">v2.1 (November 9, 2025)</h3>
+<ul>
+<li>✅ Added float speed scaling documentation</li>
+<li>✅ Added video intensity adjustment</li>
+<li>✅ Added control update behavior</li>
+<li>✅ Added minor clarifications</li>
+<li>✅ 100% implementation coverage</li>
+</ul>
+<h3 id="v2.0-november-8-2025">v2.0 (November 8, 2025)</h3>
+<ul>
+<li>✅ Added cube camera system</li>
+<li>✅ Added layer management</li>
+<li>✅ Added color space management</li>
+<li>✅ Added dynamic positioning</li>
+<li>✅ 95% implementation coverage</li>
+</ul>
+<h3 id="v1.0-previous">v1.0 (Previous)</h3>
+<ul>
+<li>✅ Basic Three.js integration</li>
+<li>✅ Standard patterns</li>
+<li>✅ Audio integration</li>
+<li>✅ UI controls</li>
+</ul>
+<hr />
+<h2 id="supported-plugin-types">✅ Supported Plugin Types</h2>
+<h3 id="before-v2.2">Before v2.2</h3>
+<p>✅ 2D Canvas plugins ✅ Three.js plugins (WebGL internally) ❌ Raw
+WebGL plugins (BROKEN) ❌ Raw WebGL2 plugins (BROKEN)</p>
+<h3 id="after-v2.2">After v2.2</h3>
+<p>✅ 2D Canvas plugins (unchanged) ✅ WebGL 1.0 plugins (NOW WORKS) 🆕
+✅ WebGL2 plugins (NOW WORKS) 🆕 ✅ Three.js plugins (unchanged)</p>
+<hr />
+<h2 id="real-world-examples">🎨 Real-World Examples</h2>
+<h3 id="d-canvas">2D Canvas</h3>
+<ul>
+<li>Waveform displays</li>
+<li>Spectrum analyzers</li>
+<li>Simple particle effects</li>
+<li>Text visualizations</li>
+</ul>
+<h3 id="webgl-1.0">WebGL 1.0</h3>
+<ul>
+<li>GPU-accelerated particle systems (10,000+ particles)</li>
+<li>Basic shader effects</li>
+<li>Maximum compatibility</li>
+</ul>
+<h3 id="webgl2">WebGL2</h3>
+<ul>
+<li><strong>PSYCH</strong> - Procedural liquid bubble shader 🆕</li>
+<li>Advanced noise-based effects</li>
+<li>Complex fragment shaders</li>
+<li>Raymarching/SDF techniques</li>
+</ul>
+<h3 id="three.js">Three.js</h3>
+<ul>
+<li><strong>Chrome Spheres</strong> - 3D with cube cameras</li>
+<li>3D object visualizations</li>
+<li>Environment mapping</li>
+<li>Video reflections</li>
+</ul>
+<hr />
+<h2 id="success-metrics">🎯 Success Metrics</h2>
+<p>After reading this documentation, you should be able to:</p>
+<p>✅ Choose the right plugin type for your visualization ✅ Explain why
+WebGL/WebGL2 plugins are now possible ✅ Create 2D, WebGL, or Three.js
+plugins ✅ Request shader-based plugins from Claude ✅ Implement cube
+cameras for video reflections ✅ Optimize for 60fps at 4K resolution ✅
+Troubleshoot common WebGL issues ✅ Understand the architecture changes
+in v2.2</p>
+<hr />
+<h2 id="support">📞 Support</h2>
+<h3 id="questions-about-webglwebgl2">Questions About WebGL/WebGL2?</h3>
+<ol type="1">
+<li>Check Development Guide WebGL sections</li>
+<li>Review Claude Guide shader prompting</li>
+<li>Study troubleshooting section</li>
+<li>Ask Claude with specific context</li>
+</ol>
+<h3 id="questions-about-implementation">Questions About
+Implementation?</h3>
+<ol type="1">
+<li>Check Quick Reference first</li>
+<li>Review relevant section in Development Guide</li>
+<li>Study example plugin code</li>
+<li>Ask Claude with specific context</li>
+</ol>
+<h3 id="questions-about-prompting">Questions About Prompting?</h3>
+<ol type="1">
+<li>Review Claude Guide examples</li>
+<li>Use provided templates</li>
+<li>Start simple and iterate</li>
+<li>Include performance requirements</li>
+</ol>
+<hr />
+<h2 id="conclusion">🎉 Conclusion</h2>
+<p>This documentation package provides everything needed to create
+<strong>any type</strong> of Freque plugin: 2D canvas effects,
+GPU-accelerated WebGL shaders, advanced WebGL2 procedural art, or
+sophisticated Three.js 3D scenes with video reflections.</p>
+<p><strong>Key Resources:</strong> - <strong>Learning:</strong> Start
+with this README - <strong>Technical:</strong>
+FREQUE_PLUGIN_DEVELOPMENT_GUIDE_V2_2.md - <strong>Prompting:</strong>
+CREATING_PLUGINS_WITH_CLAUDE_V2_2.md - <strong>Quick Impl:</strong>
+CUBE_CAMERA_QUICK_REFERENCE_V2_1.md - <strong>Architecture:</strong>
+DOCUMENTATION_UPDATES_V2_2_SUMMARY.md</p>
+<p><strong>Total Package v2.2:</strong> ~120 KB of comprehensive,
+production-ready documentation</p>
+<p><strong>NEW in v2.2:</strong> Full WebGL/WebGL2 support unlocks a
+whole new category of GPU-accelerated shader visualizations! 🚀</p>
+<hr />
+<p><strong>Happy plugin development! 🚀🎨🎵</strong></p>
+<p><em>Documentation v2.2 - WebGL/WebGL2 Enabled!</em> <em>Last Updated:
+Current Session</em> <em>Based on: Freque Plugin Architecture
+Update</em></p>
+    </main>
+    <footer>
+        <p>Freque Plugin Development Documentation</p>
+        <p>© 2025 Freque - Professional Audio Visualization Platform</p>
+    </footer>
+</body>
+</html>

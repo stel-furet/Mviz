@@ -20,9 +20,20 @@ class SpectrumAnalyzer {
             energy: 0,
             beat: false,
             tempo: 120,
+            tempoConfidence: 0,
+            tempoCandidates: [],
             dominantFrequency: 0,
             frequencies: null,  // Add frequencies array for plugins
             dataArray: null,    // Add raw dataArray for plugins
+            frequencyBands: { 
+                subBass: 0,    // 20-60 Hz
+                bass: 0,       // 60-250 Hz
+                lowMid: 0,     // 250-500 Hz
+                mid: 0,        // 500-2000 Hz
+                highMid: 0,    // 2000-4000 Hz
+                treble: 0,     // 4000-8000 Hz
+                air: 0         // 8000-22050 Hz
+            }, // Hz-based frequency bands (7 bands)
             // New properties for enhanced audio reactivity (v2.5)
             energyChange: 0,    // Delta from previous frame (for beat sensitivity)
             flux: 0,            // Spectral flux (frequency change rate)
@@ -31,6 +42,13 @@ class SpectrumAnalyzer {
         this.lastBeatTime = 0;
         this.previousEnergy = 0;  // For energyChange calculation
         this.previousSpectrum = null;  // For flux calculation
+        
+        // Initialize tempo detector
+        this.tempoDetector = new TempoDetector();
+        this.beatHistory = []; // Track beats for tempo detection
+        
+        // Initialize frequency band calculator
+        this.frequencyBandCalculator = new FrequencyBandCalculator();
 
         // Initialize all parameters with defaults
         this.resetToDefaults();
@@ -456,6 +474,9 @@ class SpectrumAnalyzer {
             this.cachedAudioFeatures.dominantFrequency = 0;
             this.cachedAudioFeatures.frequencies = null;
             this.cachedAudioFeatures.dataArray = null;
+            this.cachedAudioFeatures.frequencyBands = { 
+                subBass: 0, bass: 0, lowMid: 0, mid: 0, highMid: 0, treble: 0, air: 0 
+            };
             this.cachedAudioFeatures.energyChange = 0;
             this.cachedAudioFeatures.flux = 0;
             this.cachedAudioFeatures.morphIntensity = 0;
@@ -507,26 +528,87 @@ class SpectrumAnalyzer {
         if (energy > beatThreshold && timeSinceLastBeat > beatInterval) {
             beat = true;
             this.lastBeatTime = now;
+            // Add beat to history for tempo detection
+            this.beatHistory.push(now);
+            // Keep only recent beats (last 10 seconds)
+            this.beatHistory = this.beatHistory.filter(time => now - time < 10000);
         }
         
-        // Calculate dominant frequency (UNCHANGED)
-        let maxValue = 0;
-        let dominantBin = 0;
-        for (let i = 0; i < this.dataArray.length; i++) {
-            if (this.dataArray[i] > maxValue) {
-                maxValue = this.dataArray[i];
-                dominantBin = i;
+        // Calculate dominant frequency using Spectral Centroid (weighted average)
+        // This provides a stable, accurate representation of the "center of mass" of the frequency spectrum
+        let dominantFrequency = 0;
+        
+        if (this.analyser && this.analyser.context && this.dataArray.length > 0) {
+            const sampleRate = this.analyser.context.sampleRate;
+            const nyquist = sampleRate / 2;
+            const binCount = this.dataArray.length;
+            const binWidth = nyquist / binCount;
+            
+            // Calculate spectral centroid: weighted average of frequencies
+            // Weight each frequency by its energy (amplitude squared)
+            let totalEnergy = 0;
+            let weightedFrequencySum = 0;
+            
+            for (let i = 0; i < binCount; i++) {
+                const amplitude = this.dataArray[i] / 255; // Normalize to 0-1
+                const energy = amplitude * amplitude; // Square for energy weighting
+                const frequency = i * binWidth; // Convert bin index to Hz
+                
+                totalEnergy += energy;
+                weightedFrequencySum += frequency * energy;
             }
+            
+            // Calculate weighted average (spectral centroid)
+            if (totalEnergy > 0) {
+                dominantFrequency = weightedFrequencySum / totalEnergy;
+            } else {
+                dominantFrequency = 0;
+            }
+        } else {
+            // Fallback if analyser not available
+            dominantFrequency = 0;
         }
-        const dominantFrequency = (dominantBin / this.dataArray.length) * 22050; // Assuming 44.1kHz sample rate
+        
+        // Detect tempo using enhanced tempo detector
+        const tempoResult = this.tempoDetector.detectTempoFromBeats(this.beatHistory);
+        
+        // Calculate frequency bands using Hz-based ranges (7 bands)
+        let frequencyBands = { 
+            subBass: 0, bass: 0, lowMid: 0, mid: 0, highMid: 0, treble: 0, air: 0 
+        };
+        if (this.analyser && this.analyser.context) {
+            const sampleRate = this.analyser.context.sampleRate;
+            const fftSize = this.analyser.fftSize;
+            
+            // Calculate all 7 bands (extended bands included)
+            const bands = this.frequencyBandCalculator.calculateAllBands(
+                this.dataArray,
+                sampleRate,
+                fftSize,
+                true // Include extended bands (subBass, lowMid, highMid, air)
+            );
+            
+            frequencyBands = {
+                subBass: bands.subBass || 0,    // 20-60 Hz
+                bass: bands.bass || 0,           // 60-250 Hz
+                lowMid: bands.lowMid || 0,       // 250-500 Hz
+                mid: bands.mid || 0,             // 500-2000 Hz
+                highMid: bands.highMid || 0,     // 2000-4000 Hz
+                treble: bands.treble || 0,       // 4000-8000 Hz
+                air: bands.air || 0              // 8000-22050 Hz
+            };
+        }
         
         // Reuse cached object instead of creating new one
         this.cachedAudioFeatures.energy = Math.min(energy, 1);
         this.cachedAudioFeatures.beat = beat;
-        this.cachedAudioFeatures.tempo = 120; // Default tempo
+        this.cachedAudioFeatures.tempo = tempoResult.tempo;
+        this.cachedAudioFeatures.tempoConfidence = tempoResult.confidence;
+        this.cachedAudioFeatures.tempoCandidates = tempoResult.candidates;
         this.cachedAudioFeatures.dominantFrequency = dominantFrequency;
         this.cachedAudioFeatures.frequencies = this.dataArray;  // Pass frequency data for plugins
         this.cachedAudioFeatures.dataArray = this.dataArray;    // Pass raw dataArray for plugins
+        this.cachedAudioFeatures.frequencyBands = frequencyBands; // Hz-based frequency bands
         // New properties (v2.5)
         this.cachedAudioFeatures.energyChange = energyChange;
         this.cachedAudioFeatures.flux = flux;

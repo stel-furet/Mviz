@@ -1,13 +1,16 @@
 /**
  * Goo - Mandelbulb raymarching with refraction and reflection
  * 
- * Specifc Shader Code only: 
+ * Original Shader Code only, All other plugin code is sole property of Rapid PM LLC. No license for use outside of the Frequezoid application is agranted. : 
+ * Some shader specific code MIT, WTFPL license, see comments
+ * CC0: Inside the mandelbulb via mrange at Shadertoy.com
  * License: WTFPL, author: sam hocevar, found: https://stackoverflow.com/a/17897228/418488
  * License: MIT, author: Inigo Quilez, found: https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
- * All other code is original and sole property of Rapid PM. No license for use outside of the Frequezoid Application is agranted. 
+ * Frequezoid team Shader Code modifications CCO.
+ * 
  * 
  * @version 1.0.0
- * @author Frequezoid Team Some shader specific code MIT, WTFPL licence
+ * @author Frequezoid Team. 
  */
 
 class GooPlugin extends FrequePluginBase {
@@ -116,7 +119,7 @@ class GooPlugin extends FrequePluginBase {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
     }
-    
+    /**Shader code only CC0: Inside the mandelbulb */
     compileShaderProgram() {
         const gl = this.gl;
         

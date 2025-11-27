@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Camera Quick Reference</title>
+    <link rel="stylesheet" href="freque-styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Freque Logo" class="logo">
+        </div>
+        <h1 class="header-subtitle">Cube Camera Quick Reference</h1>
+    </header>
+    <main>
+<h1 id="cube-camera-quick-reference">Cube Camera Quick Reference</h1>
+<p><strong>For implementing video reflections in Freque Three.js
+plugins</strong></p>
+<hr />
+<h2 id="when-to-use">When to Use</h2>
+<p><strong>YES - Use Cube Cameras For:</strong> - Video reflections on
+metallic/chrome surfaces - Real-time environment mapping with video -
+Dynamic reflections that update every frame - Three.js r120+ video
+environment maps</p>
+<p><strong>NO - Don’t Need Cube Cameras For:</strong> - Static
+background image reflections (use EquirectangularReflectionMapping) -
+Direct video textures on surfaces (use UVMapping + flipY) -
+Non-reflective materials</p>
+<hr />
+<h2 id="step-implementation">5-Step Implementation</h2>
+<h3 id="step-1-create-cube-render-target">Step 1: Create Cube Render
+Target</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeRenderTarget</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">WebGLCubeRenderTarget</span>(<span class="dv">2048</span><span class="op">,</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">format</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">RGBAFormat</span><span class="op">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">generateMipmaps</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">minFilter</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">LinearMipmapLinearFilter</span><span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">magFilter</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">LinearFilter</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeRenderTarget</span><span class="op">.</span><span class="at">texture</span><span class="op">.</span><span class="at">encoding</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">sRGBEncoding</span><span class="op">;</span></span></code></pre></div>
+<p><strong>Resolution Guide:</strong> - 4096: Ultra quality (~402 MB GPU
+memory) - 2048: High quality (~100 MB) - <strong>Recommended</strong> -
+1024: Good quality (~25 MB)</p>
+<h3 id="step-2-create-cube-camera">Step 2: Create Cube Camera</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">CubeCamera</span>(<span class="fl">0.1</span><span class="op">,</span> <span class="dv">1000</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">cubeRenderTarget</span>)<span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">set</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">enable</span>(<span class="dv">1</span>)<span class="op">;</span>  <span class="co">// See layer 1</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">.</span><span class="fu">add</span>(<span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span>)<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeMapTexture</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">cubeRenderTarget</span><span class="op">.</span><span class="at">texture</span><span class="op">;</span></span></code></pre></div>
+<h3 id="step-3-create-video-sphere">Step 3: Create Video Sphere</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Large inverted sphere</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> geometry <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">SphereGeometry</span>(<span class="dv">500</span><span class="op">,</span> <span class="dv">120</span><span class="op">,</span> <span class="dv">80</span>)<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>geometry<span class="op">.</span><span class="fu">scale</span>(<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Video texture</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> videoTexture <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">VideoTexture</span>(videoElement)<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>videoTexture<span class="op">.</span><span class="at">mapping</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">EquirectangularReflectionMapping</span><span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>videoTexture<span class="op">.</span><span class="at">encoding</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">sRGBEncoding</span><span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Material and mesh</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> material <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">MeshBasicMaterial</span>({ <span class="dt">map</span><span class="op">:</span> videoTexture })<span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Mesh</span>(geometry<span class="op">,</span> material)<span class="op">;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">set</span>(<span class="dv">1</span>)<span class="op">;</span>  <span class="co">// Hidden from main camera</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">x</span> <span class="op">=</span> <span class="op">-</span><span class="dv">35</span> <span class="op">*</span> (<span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">180</span>)<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">.</span><span class="fu">add</span>(<span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span>)<span class="op">;</span></span></code></pre></div>
+<h3 id="step-4-apply-to-materials">Step 4: Apply to Materials</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// For chrome/metallic materials</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>material<span class="op">.</span><span class="at">envMap</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">cubeMapTexture</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>material<span class="op">.</span><span class="at">metalness</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>material<span class="op">.</span><span class="at">roughness</span> <span class="op">=</span> <span class="fl">0.0</span><span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>material<span class="op">.</span><span class="at">envMapIntensity</span> <span class="op">=</span> <span class="fl">0.5</span><span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>material<span class="op">.</span><span class="at">needsUpdate</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span></code></pre></div>
+<h3 id="step-5-update-every-frame">Step 5: Update Every Frame</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">onRender</span>(deltaTime<span class="op">,</span> timestamp<span class="op">,</span> sharedAudioData) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">videoElement</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="kw">this</span><span class="op">.</span><span class="at">videoElement</span><span class="op">.</span><span class="at">paused</span>) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update video texture</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">material</span><span class="op">.</span><span class="at">map</span><span class="op">.</span><span class="at">needsUpdate</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Hide reflective objects</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="fu">forEach</span>(s <span class="kw">=&gt;</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update cube camera</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Restore visibility</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="fu">forEach</span>(s <span class="kw">=&gt;</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="fu">render</span>(<span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">camera</span>)<span class="op">;</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="advanced-dynamic-positioning">Advanced: Dynamic Positioning</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Calculate average position</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> avgX <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> avgY <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> avgZ <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="fu">forEach</span>(s <span class="kw">=&gt;</span> {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    avgX <span class="op">+=</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="at">x</span><span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    avgY <span class="op">+=</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="at">y</span><span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    avgZ <span class="op">+=</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="at">z</span><span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>avgX <span class="op">/=</span> <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>avgY <span class="op">/=</span> <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>avgZ <span class="op">/=</span> <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="at">length</span><span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Move cube camera to average</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">set</span>(avgX<span class="op">,</span> avgY<span class="op">,</span> avgZ)<span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="layer-system">Layer System</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Layer 0: Visible to main camera (user sees)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Layer 1: Hidden from main camera (cube camera sees)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Hide from main camera, show to cube camera</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">set</span>(<span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Show to both cameras (toggle visibility)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">videoSphere</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">set</span>(<span class="kw">this</span><span class="op">.</span><span class="at">bgSphereVisible</span> <span class="op">?</span> <span class="dv">0</span> <span class="op">:</span> <span class="dv">1</span>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="performance-optimization">Performance Optimization</h2>
+<h3 id="quality-capture">Quality Capture</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Increase quality during cube camera update</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> originalPixelRatio <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="fu">getPixelRatio</span>()<span class="op">;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="fu">setPixelRatio</span>(<span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(originalPixelRatio <span class="op">*</span> <span class="fl">2.0</span><span class="op">,</span> <span class="fl">2.0</span>))<span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="fu">setPixelRatio</span>(originalPixelRatio)<span class="op">;</span></span></code></pre></div>
+<h3 id="anisotropic-filtering">Anisotropic Filtering</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> maxAnisotropy <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="at">capabilities</span><span class="op">.</span><span class="fu">getMaxAnisotropy</span>()<span class="op">;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeMapTexture</span><span class="op">.</span><span class="at">anisotropy</span> <span class="op">=</span> maxAnisotropy<span class="op">;</span></span></code></pre></div>
+<h3 id="update-frequency">Update Frequency</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update every frame (best quality)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Update every N frames (performance)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">frameCount</span> <span class="op">%</span> <span class="dv">2</span> <span class="op">===</span> <span class="dv">0</span>) {</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">cubeCamera</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">frameCount</span><span class="op">++;</span></span></code></pre></div>
+<hr />
+<h2 id="common-issues">Common Issues</h2>
+<h3 id="problem-black-spheres-no-reflections">Problem: Black spheres, no
+reflections</h3>
+<p><strong>Solutions:</strong> 1. Check video element is playing:
+<code>!video.paused &amp;&amp; video.readyState &gt;= 2</code> 2. Verify
+video texture needsUpdate: <code>videoTexture.needsUpdate = true</code>
+3. Ensure cube camera updates:
+<code>cubeCamera.update(renderer, scene)</code> 4. Check video sphere is
+visible to cube camera: <code>videoSphere.layers.set(1)</code> 5. Verify
+cube camera sees layer 1: <code>cubeCamera.layers.enable(1)</code></p>
+<h3 id="problem-reflections-wrong-colorbrightness">Problem: Reflections
+wrong color/brightness</h3>
+<p><strong>Solutions:</strong> 1. Set consistent encoding:
+<code>THREE.sRGBEncoding</code> everywhere 2. Renderer:
+<code>renderer.outputEncoding = THREE.sRGBEncoding</code> 3. Cube
+target:
+<code>cubeRenderTarget.texture.encoding = THREE.sRGBEncoding</code> 4.
+Video texture:
+<code>videoTexture.encoding = THREE.sRGBEncoding</code></p>
+<h3 id="problem-poor-performance">Problem: Poor performance</h3>
+<p><strong>Solutions:</strong> 1. Reduce cube map resolution: Use 1024
+or 2048 instead of 4096 2. Update less frequently: Every 2-3 frames
+instead of every frame 3. Use shared cube camera: Not per-object cameras
+4. Hide objects during capture: <code>mesh.visible = false</code> 5.
+Only update when needed: Check video is playing and mode is
+reflection</p>
+<hr />
+<h2 id="selectors">Selectors</h2>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Video element</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> video <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">&#39;#bgVideo&#39;</span>) <span class="op">||</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>              <span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">&#39;#bgVideoPlaceholder&#39;</span>) <span class="op">||</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>              <span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">&#39;video&#39;</span>)<span class="op">;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Background image</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> bgDiv <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">&#39;#bgImage&#39;</span>)<span class="op">;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> style <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="fu">getComputedStyle</span>(bgDiv)<span class="op">;</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> bgImage <span class="op">=</span> style<span class="op">.</span><span class="at">backgroundImage</span><span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> urlMatch <span class="op">=</span> bgImage<span class="op">.</span><span class="fu">match</span>(<span class="ss">/url</span><span class="sc">\([&#39;&quot;]?([^&#39;&quot;]+)[&#39;&quot;]?\)</span><span class="ss">/</span>)<span class="op">;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> imageUrl <span class="op">=</span> urlMatch[<span class="dv">1</span>]<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="complete-minimal-example">Complete Minimal Example</h2>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// In onInitialize()</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> video <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">&#39;#bgVideo&#39;</span>)<span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 1. Cube render target</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeRT</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">WebGLCubeRenderTarget</span>(<span class="dv">2048</span><span class="op">,</span> {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">format</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">RGBAFormat</span><span class="op">,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">generateMipmaps</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">minFilter</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">LinearMipmapLinearFilter</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeRT</span><span class="op">.</span><span class="at">texture</span><span class="op">.</span><span class="at">encoding</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">sRGBEncoding</span><span class="op">;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">// 2. Cube camera</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCam</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">CubeCamera</span>(<span class="fl">0.1</span><span class="op">,</span> <span class="dv">1000</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">cubeRT</span>)<span class="op">;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCam</span><span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">set</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">cubeCam</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">enable</span>(<span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">.</span><span class="fu">add</span>(<span class="kw">this</span><span class="op">.</span><span class="at">cubeCam</span>)<span class="op">;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">// 3. Video sphere</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> geom <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">SphereGeometry</span>(<span class="dv">500</span><span class="op">,</span> <span class="dv">120</span><span class="op">,</span> <span class="dv">80</span>)<span class="op">;</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>geom<span class="op">.</span><span class="fu">scale</span>(<span class="op">-</span><span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> tex <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">VideoTexture</span>(video)<span class="op">;</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>tex<span class="op">.</span><span class="at">mapping</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">EquirectangularReflectionMapping</span><span class="op">;</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>tex<span class="op">.</span><span class="at">encoding</span> <span class="op">=</span> THREE<span class="op">.</span><span class="at">sRGBEncoding</span><span class="op">;</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mat <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">MeshBasicMaterial</span>({ <span class="dt">map</span><span class="op">:</span> tex })<span class="op">;</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Mesh</span>(geom<span class="op">,</span> mat)<span class="op">;</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span><span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">set</span>(<span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span><span class="op">.</span><span class="at">rotation</span><span class="op">.</span><span class="at">y</span> <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">.</span><span class="fu">add</span>(<span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span>)<span class="op">;</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="co">// 4. Apply to material</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>myMaterial<span class="op">.</span><span class="at">envMap</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">cubeRT</span><span class="op">.</span><span class="at">texture</span><span class="op">;</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>myMaterial<span class="op">.</span><span class="at">metalness</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>myMaterial<span class="op">.</span><span class="at">roughness</span> <span class="op">=</span> <span class="fl">0.0</span><span class="op">;</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="co">// In onRender()</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (video <span class="op">&amp;&amp;</span> <span class="op">!</span>video<span class="op">.</span><span class="at">paused</span>) {</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span><span class="op">.</span><span class="at">material</span><span class="op">.</span><span class="at">map</span><span class="op">.</span><span class="at">needsUpdate</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="fu">forEach</span>(s <span class="kw">=&gt;</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">vidSphere</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">cubeCam</span><span class="op">.</span><span class="fu">update</span>(<span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">scene</span>)<span class="op">;</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">spheres</span><span class="op">.</span><span class="fu">forEach</span>(s <span class="kw">=&gt;</span> s<span class="op">.</span><span class="at">mesh</span><span class="op">.</span><span class="at">visible</span> <span class="op">=</span> <span class="kw">true</span>)<span class="op">;</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">renderer</span><span class="op">.</span><span class="fu">render</span>(<span class="kw">this</span><span class="op">.</span><span class="at">scene</span><span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">camera</span>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="asking-claude">Asking Claude</h2>
+<h3 id="template-request">Template Request</h3>
+<pre><code>Claude, create a Three.js plugin with chrome spheres reflecting video.
+
+Requirements:
+- Use cube camera system for video reflections
+- Support both video (#bgVideo) and background image (#bgImage)
+- Dual mode: direct texture AND chrome reflection
+- Shared cube camera with dynamic positioning (average sphere position)
+- 2048 cube map resolution for balance
+- Proper sRGB encoding throughout
+- Layer system to hide/show video sphere
+- Only update cube camera when in reflection mode and video playing
+
+Controls:
+- Toggle: Reflection vs Direct Texture
+- Toggle: Video vs Background Image  
+- Toggle: Show/Hide Background Sphere
+- Slider: Metalness 0-1, default 1.0
+- Slider: Roughness 0-1, default 0.0
+- Slider: Reflection Intensity 0-3, default 0.5</code></pre>
+<hr />
+<h2 id="reference-implementation">Reference Implementation</h2>
+<p><strong>See:</strong> Chrome Spheres plugin
+(<code>chromospheres-freque-plugin.js</code>)</p>
+<p><strong>Key Files:</strong> - Lines 564-663: Cube camera setup -
+Lines 1046-1126: Cube camera update in onRender - Lines 734-772:
+Material application (dual modes)</p>
+<hr />
+<h2 id="memory-costs">Memory Costs</h2>
+<pre><code>Cube Map Resolution → GPU Memory
+4096 × 6 faces × 4 bytes = ~402 MB
+2048 × 6 faces × 4 bytes = ~100 MB
+1024 × 6 faces × 4 bytes = ~25 MB</code></pre>
+<p><strong>Recommendation:</strong> Start with 2048, reduce to 1024 if
+needed.</p>
+<hr />
+<h2 id="render-cost">Render Cost</h2>
+<pre><code>Shared Cube Camera:
+6 render passes per frame (one for each cube face)
+
+Per-Object Cube Cameras (N objects):
+6N render passes per frame
+
+Recommendation: ALWAYS use shared camera</code></pre>
+<hr />
+<h2 id="control-update-behavior">Control Update Behavior</h2>
+<h3 id="immediate-vs-deferred-updates">Immediate vs Deferred
+Updates</h3>
+<p><strong>Controls with Immediate Effect:</strong> - Sphere Count -
+recreates all spheres instantly - Max Size - updates geometry
+immediately<br />
+- Spread - repositions spheres instantly - Metalness/Roughness - updates
+materials immediately - Reflection Intensity - updates materials
+immediately</p>
+<p><strong>Controls with Deferred Effect:</strong> - Float Speed -
+affects animation speed (next frame) - Audio toggles - affects
+processing (next frame) - Camera controls - updates camera (next
+frame)</p>
+<p><strong>Why It Matters:</strong> Immediate updates may cause a brief
+visual “pop” when adjusted during playback. This is intentional for
+shape/position changes to give instant user feedback.</p>
+<hr />
+<h2 id="advanced-video-intensity-adjustment">Advanced: Video Intensity
+Adjustment</h2>
+<p>Video cube maps are automatically reduced to 80% intensity:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Automatic in updateSphereMaterials()</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (mappingMode <span class="op">===</span> <span class="st">&#39;reflection&#39;</span> <span class="op">&amp;&amp;</span> envMapSource <span class="op">===</span> <span class="st">&#39;video&#39;</span>) {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    material<span class="op">.</span><span class="at">envMapIntensity</span> <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">envMapIntensity</span> <span class="op">*</span> <span class="fl">0.8</span><span class="op">;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>This maintains consistent appearance between video and image sources
+(video cube maps render brighter).</p>
+<hr />
+<h2 id="advanced-float-speed-scaling">Advanced: Float Speed Scaling</h2>
+<p>Float Speed uses non-linear scaling for better control:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 0-3 → 0-1.0x (slow to normal)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 3-10 → 1.0-2.0x (normal to double)</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> speedFactor <span class="op">=</span> value <span class="op">&lt;=</span> <span class="dv">3</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> value <span class="op">/</span> <span class="fl">3.0</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="fl">1.0</span> <span class="op">+</span> ((value <span class="op">-</span> <span class="dv">3</span>) <span class="op">/</span> <span class="fl">7.0</span>)<span class="op">;</span></span></code></pre></div>
+<p><strong>Center point at 3</strong> = normal speed (1.0x) for easy
+reset.</p>
+<hr />
+<p><strong>Quick Reference v1.0 - Based on Chrome Spheres
+v1.3.0</strong></p>
+    </main>
+    <footer>
+        <p>Freque Plugin Development Documentation</p>
+        <p>© 2025 Freque - Professional Audio Visualization Platform</p>
+    </footer>
+</body>
+</html>

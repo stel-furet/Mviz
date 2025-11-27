@@ -1,0 +1,225 @@
+/* Freque Brand Colors extracted from website */
+:root {
+    --freque-teal: #3EBFA6;
+    --freque-orange: #F5A623;
+    --freque-cream: #F5F1E8;
+    --freque-dark: #2C3E50;
+    --freque-text: #333333;
+    --freque-light-bg: #FAFAFA;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--freque-text);
+    background-color: white;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background: white;
+    padding: 30px 0;
+    margin-bottom: 40px;
+    border-bottom: 3px solid var(--freque-teal);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+}
+
+.header-title {
+    color: var(--freque-dark);
+    font-size: 2.5em;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+.header-subtitle {
+    color: var(--freque-text);
+    font-size: 1.2em;
+    font-weight: 300;
+    margin-left: 65px;
+}
+
+h1 {
+    color: var(--freque-dark);
+    font-size: 2.2em;
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--freque-teal);
+}
+
+h2 {
+    color: var(--freque-teal);
+    font-size: 1.8em;
+    margin: 25px 0 15px 0;
+    font-weight: 600;
+}
+
+h3 {
+    color: var(--freque-orange);
+    font-size: 1.4em;
+    margin: 20px 0 12px 0;
+    font-weight: 600;
+}
+
+h4 {
+    color: var(--freque-dark);
+    font-size: 1.2em;
+    margin: 15px 0 10px 0;
+    font-weight: 600;
+}
+
+p {
+    margin: 12px 0;
+}
+
+code {
+    background-color: var(--freque-light-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--freque-dark);
+}
+
+pre {
+    background-color: var(--freque-light-bg);
+    border-left: 4px solid var(--freque-teal);
+    padding: 15px;
+    margin: 15px 0;
+    overflow-x: auto;
+    border-radius: 4px;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+}
+
+ul, ol {
+    margin: 12px 0 12px 30px;
+}
+
+li {
+    margin: 8px 0;
+}
+
+ul li::marker {
+    color: var(--freque-teal);
+}
+
+blockquote {
+    border-left: 4px solid var(--freque-orange);
+    padding-left: 20px;
+    margin: 20px 0;
+    color: var(--freque-text);
+    font-style: italic;
+    background-color: var(--freque-cream);
+    padding: 15px 20px;
+    border-radius: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+}
+
+th {
+    background-color: var(--freque-teal);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+tr:nth-child(even) {
+    background-color: var(--freque-cream);
+}
+
+.note {
+    background-color: var(--freque-cream);
+    border-left: 4px solid var(--freque-orange);
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.warning {
+    background-color: #FFF3E0;
+    border-left: 4px solid var(--freque-orange);
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.tip {
+    background-color: #E8F5F1;
+    border-left: 4px solid var(--freque-teal);
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+strong {
+    color: var(--freque-dark);
+    font-weight: 600;
+}
+
+.q-bullet {
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 2px solid var(--freque-teal);
+    text-align: center;
+    color: var(--freque-text);
+    font-size: 0.9em;
+}
+
+@media print {
+    body {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    header {
+        page-break-after: avoid;
+    }
+    
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+    
+    pre {
+        page-break-inside: avoid;
+    }
+}
