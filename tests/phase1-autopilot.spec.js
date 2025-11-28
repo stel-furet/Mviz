@@ -48,7 +48,8 @@ test.describe('Phase 1: App Loading', () => {
         await page.goto('/');
         await page.waitForTimeout(2000);
         
-        const container = page.locator('#visualizer-container, #container, .visualizer-container');
+        // Actual container IDs in the app
+        const container = page.locator('#visualizationContainer, #visualizer');
         await expect(container.first()).toBeVisible();
     });
     
@@ -63,12 +64,13 @@ test.describe('Phase 1: App Loading', () => {
         expect(hasVisualizer).toBe(true);
     });
     
-    test('window.spectrumAnalyzer is defined', async ({ page }) => {
+    test('spectrumAnalyzer (audioMotion) is accessible via visualizer', async ({ page }) => {
         await page.goto('/');
         await page.waitForTimeout(2000);
         
+        // spectrumAnalyzer is accessed via window.visualizer.audioMotion
         const hasAnalyzer = await page.evaluate(() => {
-            return typeof window.spectrumAnalyzer !== 'undefined';
+            return window.visualizer && window.visualizer.audioMotion !== undefined;
         });
         
         expect(hasAnalyzer).toBe(true);
@@ -311,8 +313,9 @@ test.describe('Phase 1: Audio Analysis Integration', () => {
     });
     
     test('spectrumAnalyzer has cachedAudioFeatures', async ({ page }) => {
+        // cachedAudioFeatures is on window.visualizer.audioMotion
         const hasFeatures = await page.evaluate(() => {
-            return window.spectrumAnalyzer?.cachedAudioFeatures !== undefined;
+            return window.visualizer?.audioMotion?.cachedAudioFeatures !== undefined;
         });
         
         expect(hasFeatures).toBe(true);
