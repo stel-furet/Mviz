@@ -38,6 +38,26 @@ class AudioTestPlugin extends FrequePluginBase {
         // Musical note names
         this.noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         
+        // Beat history for graph visualization
+        this.beatHistory = []; // Array of {time: timestamp, strength: number, confidence: number}
+        this.maxHistoryLength = 100; // Keep last 100 beats for graph
+        this.lastBeatTime = 0;
+        
+        // Detection metrics tracking
+        this.lastBassEnergy = 0;
+        this.lastOverallEnergy = 0;
+        this.smoothedBassEnergy = 0;
+        this.smoothedOverallEnergy = 0;
+        this.smoothingFactor = 0.9;
+        
+        // Persist beat strength (show last value instead of 0)
+        this.lastBeatStrength = 0;
+        this.lastBeatConfidence = 0;
+        
+        // Scrollable text container
+        this.textScrollY = 0;
+        this.textMaxHeight = 0;
+        
         // Setup controls
         this.setupControls();
     }
@@ -143,6 +163,29 @@ class AudioTestPlugin extends FrequePluginBase {
             this.circleX = this.canvas.width / 2;
             this.circleY = this.canvas.height / 2;
             this.baseY = this.circleY;
+            
+            // Add mouse wheel event for scrolling
+            // Use passive: false to allow preventDefault if needed, but only prevent when over scrollable area
+            this.canvas.addEventListener('wheel', (e) => {
+                // Only prevent default if content is scrollable and we're over the text area
+                const panelX = 10;
+                const panelY = 10;
+                const panelWidth = 550;
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // Check if mouse is over the text panel area
+                if (mouseX >= panelX && mouseX <= panelX + panelWidth && 
+                    mouseY >= panelY && mouseY <= panelY + (this.canvas.height - 20)) {
+                    // Only prevent default if content actually overflows
+                    if (this.textMaxHeight > (this.canvas.height - 20 - 40)) {
+                        e.preventDefault();
+                    }
+                }
+                
+                this.onMouseWheel(e);
+            }, { passive: false });
         }
     }
     
@@ -242,6 +285,56 @@ class AudioTestPlugin extends FrequePluginBase {
             this.currentColor.s = 100;
             this.currentColor.l = 20;
         }
+        
+        // Track beat history for graph and persist beat strength
+        if (sharedAudioData.beat) {
+            const now = Date.now();
+            const beatStrength = sharedAudioData.beatStrength || 0;
+            const beatConfidence = sharedAudioData.beatConfidence || 0;
+            
+            // Update persisted values
+            this.lastBeatStrength = beatStrength;
+            this.lastBeatConfidence = beatConfidence;
+            
+            this.beatHistory.push({
+                time: now,
+                strength: beatStrength,
+                confidence: beatConfidence
+            });
+            // Keep only recent beats (last 100)
+            if (this.beatHistory.length > this.maxHistoryLength) {
+                this.beatHistory.shift();
+            }
+            this.lastBeatTime = now;
+        } else {
+            // When no beat detected, keep the last values (don't reset to 0)
+            // Only update if we have new data
+            if (sharedAudioData.beatStrength !== undefined) {
+                // Don't update - keep last value
+            }
+            if (sharedAudioData.beatConfidence !== undefined) {
+                // Update confidence even when no beat (it's always calculated)
+                this.lastBeatConfidence = sharedAudioData.beatConfidence;
+            }
+        }
+        
+        // Calculate bass energy for comparison
+        if (sharedAudioData.frequencyBands) {
+            // Combine subBass and bass for total bass energy (20-250 Hz)
+            const subBass = sharedAudioData.frequencyBands.subBass || 0;
+            const bass = sharedAudioData.frequencyBands.bass || 0;
+            this.lastBassEnergy = (subBass * 0.3 + bass * 0.7);
+            
+            // Update smoothed values
+            this.smoothedBassEnergy = (this.smoothingFactor * this.smoothedBassEnergy) + 
+                                     ((1 - this.smoothingFactor) * this.lastBassEnergy);
+        }
+        
+        // Update smoothed overall energy
+        const currentEnergy = sharedAudioData.energy || 0;
+        this.lastOverallEnergy = currentEnergy;
+        this.smoothedOverallEnergy = (this.smoothingFactor * this.smoothedOverallEnergy) + 
+                                    ((1 - this.smoothingFactor) * currentEnergy);
     }
     
     onRender(deltaTime, timestamp, sharedAudioData) {
@@ -265,16 +358,27 @@ class AudioTestPlugin extends FrequePluginBase {
             this.ctx.rotate(this.rotationAngle);
         }
         
+        // Calculate circle size based on beat confidence (visual feedback)
+        let circleRadius = this.circleRadius;
+        let circleOpacity = 1.0;
+        if (sharedAudioData && sharedAudioData.beatConfidence !== undefined) {
+            // Scale radius from 80% to 120% based on beat confidence
+            const confidence = Math.max(0, Math.min(1, sharedAudioData.beatConfidence));
+            circleRadius = this.circleRadius * (0.8 + confidence * 0.4);
+            // Opacity also varies with confidence
+            circleOpacity = 0.7 + confidence * 0.3;
+        }
+        
         // Draw circle with color
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, this.circleRadius, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, circleRadius, 0, Math.PI * 2);
         
         // Set fill color based on color toggle
         if (this.colorEnabled) {
-            const hsl = `hsl(${Math.round(this.currentColor.h)}, ${this.currentColor.s}%, ${this.currentColor.l}%)`;
+            const hsl = `hsla(${Math.round(this.currentColor.h)}, ${this.currentColor.s}%, ${this.currentColor.l}%, ${circleOpacity})`;
             this.ctx.fillStyle = hsl;
         } else {
-            this.ctx.fillStyle = '#4a90e2'; // Static blue when color is off
+            this.ctx.fillStyle = `rgba(74, 144, 226, ${circleOpacity})`; // Static blue when color is off
         }
         
         this.ctx.fill();
@@ -300,16 +404,44 @@ class AudioTestPlugin extends FrequePluginBase {
         if (!audioData) return;
         
         this.ctx.save();
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(10, 10, 550, 450);
         
+        // Draw main data panel (left side) - transparent background
+        const panelX = 10;
+        const panelY = 10;
+        const panelWidth = 550;
+        const panelHeight = height - 20;
+        
+        // Create scrollable text area using clipping
+        const scrollAreaHeight = panelHeight - 40; // Leave space for scroll indicators
+        const textStartY = panelY + 20;
+        const textEndY = textStartY + scrollAreaHeight;
+        
+        // Draw semi-transparent background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+        
+        // Draw beat history graph panel (right side)
+        const graphX = 580;
+        const graphY = 10;
+        const graphWidth = width - graphX - 10;
+        const graphHeight = 200;
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(graphX, graphY, graphWidth, graphHeight);
+        
+        // Set up text rendering (reduced font size by 20%: 14px -> 11px)
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '14px monospace';
+        this.ctx.font = '11px monospace';
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
         
-        let y = 20;
-        const lineHeight = 20;
+        // Clip to scrollable area
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rect(panelX, textStartY, panelWidth - 20, scrollAreaHeight);
+        this.ctx.clip();
+        
+        let y = textStartY - this.textScrollY;
+        const lineHeight = 16; // Reduced proportionally with font size (20px -> 16px, 20% reduction)
         
         // Tempo information
         this.ctx.fillText(`Tempo: ${audioData.tempo || 0} BPM`, 20, y);
@@ -328,17 +460,76 @@ class AudioTestPlugin extends FrequePluginBase {
         
         y += lineHeight;
         
-        // Energy
-        this.ctx.fillText(`Energy: ${((audioData.energy || 0) * 100).toFixed(1)}%`, 20, y);
+        // Energy comparison
+        this.ctx.fillText(`Overall Energy: ${((audioData.energy || 0) * 100).toFixed(1)}%`, 20, y);
+        y += lineHeight;
+        this.ctx.fillText(`Bass Energy (20-250 Hz): ${(this.lastBassEnergy * 100).toFixed(1)}%`, 20, y);
         y += lineHeight;
         
-        // Beat
+        y += lineHeight;
+        
+        // Beat detection - use persisted values
         this.ctx.fillText(`Beat: ${audioData.beat ? 'YES' : 'NO'}`, 20, y);
         y += lineHeight;
-        if (audioData.beatStrength) {
-            this.ctx.fillText(`Beat Strength: ${(audioData.beatStrength * 100).toFixed(1)}%`, 20, y);
+        // Always show last beat strength (persist value)
+        this.ctx.fillText(`Beat Strength: ${(this.lastBeatStrength * 100).toFixed(1)}%`, 20, y);
+        y += lineHeight;
+        // Show current beat confidence (always calculated)
+        this.ctx.fillText(`Beat Confidence: ${(this.lastBeatConfidence * 100).toFixed(1)}%`, 20, y);
+        y += lineHeight;
+        
+        y += lineHeight;
+        
+        // Beat detection metrics
+        this.ctx.fillStyle = '#ffff00'; // Yellow for metrics section
+        this.ctx.fillText(`--- Beat Detection Metrics ---`, 20, y);
+        y += lineHeight;
+        this.ctx.fillStyle = '#ffffff';
+        
+        // Calculate detection metrics
+        const epsilon = 0.001;
+        const smoothedBass = Math.max(this.smoothedBassEnergy, epsilon);
+        const smoothedOverall = Math.max(this.smoothedOverallEnergy, epsilon);
+        const bassIncrease = this.lastBassEnergy / smoothedBass;
+        const overallIncrease = this.lastOverallEnergy / smoothedOverall;
+        
+        // Calculate adaptive interval (estimate from tempo)
+        const tempo = audioData.tempo || 120;
+        const adaptiveInterval = tempo > 0 ? Math.max(100, Math.min(1000, 60000 / (tempo * 2))) : 300;
+        const timeSinceLastBeat = this.lastBeatTime > 0 ? Date.now() - this.lastBeatTime : 0;
+        
+        // Dynamic threshold (estimate)
+        const baseThreshold = 0.15;
+        const dynamicThreshold = baseThreshold * (1 + (1 - smoothedBass) * 0.3);
+        const clampedThreshold = Math.min(0.3, Math.max(0.1, dynamicThreshold));
+        
+        this.ctx.fillText(`Bass Increase: ${bassIncrease.toFixed(2)}x`, 20, y);
+        y += lineHeight;
+        this.ctx.fillText(`Overall Increase: ${overallIncrease.toFixed(2)}x`, 20, y);
+        y += lineHeight;
+        if (audioData.flux !== undefined) {
+            this.ctx.fillText(`Spectral Flux: ${(audioData.flux * 100).toFixed(1)}%`, 20, y);
             y += lineHeight;
         }
+        this.ctx.fillText(`Dynamic Threshold: ${(clampedThreshold * 100).toFixed(1)}%`, 20, y);
+        y += lineHeight;
+        this.ctx.fillText(`Adaptive Interval: ${adaptiveInterval.toFixed(0)}ms`, 20, y);
+        y += lineHeight;
+        this.ctx.fillText(`Time Since Last Beat: ${timeSinceLastBeat.toFixed(0)}ms`, 20, y);
+        y += lineHeight;
+        
+        // Detection state
+        this.ctx.fillStyle = '#00ff00'; // Green for state
+        this.ctx.fillText(`--- Detection State ---`, 20, y);
+        y += lineHeight;
+        this.ctx.fillStyle = '#ffffff';
+        
+        // Check if detector is warming up (estimate - if no beats detected yet and time is short)
+        const isWarmingUp = this.beatHistory.length === 0 && this.time < 0.5;
+        this.ctx.fillText(`Warmup: ${isWarmingUp ? 'YES' : 'NO'}`, 20, y);
+        y += lineHeight;
+        this.ctx.fillText(`Min Interval Active: ${timeSinceLastBeat < adaptiveInterval ? 'YES' : 'NO'}`, 20, y);
+        y += lineHeight;
         
         y += lineHeight;
         
@@ -451,7 +642,207 @@ class AudioTestPlugin extends FrequePluginBase {
             this.ctx.fillText(`Energy Change: ${(audioData.energyChange * 100).toFixed(1)}%`, 20, y);
         }
         
+        // Store max height for scrolling (content height only, not including scroll offset)
+        this.textMaxHeight = y - textStartY;
+        
+        // Restore clipping
         this.ctx.restore();
+        
+        // Draw scroll indicators if content overflows
+        if (this.textMaxHeight > scrollAreaHeight) {
+            // Top scroll indicator
+            if (this.textScrollY > 0) {
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.fillRect(panelX + panelWidth - 30, textStartY, 20, 20);
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('▲', panelX + panelWidth - 20, textStartY + 5);
+            }
+            
+            // Bottom scroll indicator
+            if (this.textScrollY < this.textMaxHeight - scrollAreaHeight) {
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.fillRect(panelX + panelWidth - 30, textEndY - 20, 20, 20);
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('▼', panelX + panelWidth - 20, textEndY - 15);
+            }
+        }
+        
+        // Draw beat history graph
+        this.drawBeatHistoryGraph(graphX + 10, graphY + 10, graphWidth - 20, graphHeight - 40);
+        
+        this.ctx.restore();
+    }
+    
+    // Handle mouse wheel for scrolling
+    onMouseWheel(event) {
+        const delta = event.deltaY;
+        const scrollSpeed = 20;
+        
+        // Calculate scroll area height
+        const panelHeight = (this.canvas ? this.canvas.height : 600) - 20;
+        const scrollAreaHeight = panelHeight - 40;
+        const maxScrollOffset = Math.max(0, this.textMaxHeight - scrollAreaHeight);
+        
+        if (delta > 0) {
+            // Scroll down
+            this.textScrollY = Math.min(maxScrollOffset, this.textScrollY + scrollSpeed);
+        } else {
+            // Scroll up
+            this.textScrollY = Math.max(0, this.textScrollY - scrollSpeed);
+        }
+        
+        // Clamp scroll position to valid range
+        this.textScrollY = Math.max(0, Math.min(maxScrollOffset, this.textScrollY));
+    }
+    
+    /**
+     * Draw a simple graph showing beat history
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} width - Graph width
+     * @param {number} height - Graph height
+     */
+    drawBeatHistoryGraph(x, y, width, height) {
+        if (this.beatHistory.length === 0) {
+            this.ctx.fillStyle = '#888888';
+            this.ctx.font = '12px monospace';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('No beats detected yet', x + width / 2, y + height / 2);
+            return;
+        }
+        
+        // Graph title
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = 'bold 12px monospace';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('Beat History (Last 10s)', x, y - 15);
+        
+        // Draw graph background
+        this.ctx.strokeStyle = '#444444';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(x, y, width, height);
+        
+        // Draw grid lines
+        this.ctx.strokeStyle = '#333333';
+        this.ctx.lineWidth = 0.5;
+        // Horizontal lines (confidence levels)
+        for (let i = 0; i <= 4; i++) {
+            const gridY = y + (height / 4) * i;
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, gridY);
+            this.ctx.lineTo(x + width, gridY);
+            this.ctx.stroke();
+        }
+        // Vertical line (time axis)
+        const now = Date.now();
+        const timeWindow = 10000; // 10 seconds
+        const currentTimeX = x + width;
+        this.ctx.beginPath();
+        this.ctx.moveTo(currentTimeX, y);
+        this.ctx.lineTo(currentTimeX, y + height);
+        this.ctx.stroke();
+        
+        // Draw beat points and lines
+        if (this.beatHistory.length > 1) {
+            // Draw confidence line
+            this.ctx.strokeStyle = '#00ff00';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            
+            let firstPoint = true;
+            for (let i = 0; i < this.beatHistory.length; i++) {
+                const beat = this.beatHistory[i];
+                const timeAgo = now - beat.time;
+                
+                // Only show beats within time window
+                if (timeAgo > timeWindow) continue;
+                
+                const graphX = x + width - (timeAgo / timeWindow) * width;
+                const graphY = y + height - (beat.confidence * height);
+                
+                if (firstPoint) {
+                    this.ctx.moveTo(graphX, graphY);
+                    firstPoint = false;
+                } else {
+                    this.ctx.lineTo(graphX, graphY);
+                }
+            }
+            this.ctx.stroke();
+            
+            // Draw beat strength line
+            this.ctx.strokeStyle = '#ff00ff';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            
+            firstPoint = true;
+            for (let i = 0; i < this.beatHistory.length; i++) {
+                const beat = this.beatHistory[i];
+                const timeAgo = now - beat.time;
+                
+                if (timeAgo > timeWindow) continue;
+                
+                const graphX = x + width - (timeAgo / timeWindow) * width;
+                const graphY = y + height - (beat.strength * height);
+                
+                if (firstPoint) {
+                    this.ctx.moveTo(graphX, graphY);
+                    firstPoint = false;
+                } else {
+                    this.ctx.lineTo(graphX, graphY);
+                }
+            }
+            this.ctx.stroke();
+            
+            // Draw beat markers (circles)
+            this.ctx.fillStyle = '#ffff00';
+            for (let i = 0; i < this.beatHistory.length; i++) {
+                const beat = this.beatHistory[i];
+                const timeAgo = now - beat.time;
+                
+                if (timeAgo > timeWindow) continue;
+                
+                const graphX = x + width - (timeAgo / timeWindow) * width;
+                const graphY = y + height - (beat.confidence * height);
+                
+                this.ctx.beginPath();
+                this.ctx.arc(graphX, graphY, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+        
+        // Draw axis labels
+        this.ctx.fillStyle = '#888888';
+        this.ctx.font = '10px monospace';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('0%', x - 25, y + height);
+        this.ctx.fillText('100%', x - 35, y);
+        this.ctx.textAlign = 'right';
+        this.ctx.fillText('10s ago', x + width, y + height + 15);
+        this.ctx.fillText('now', x + width, y + height + 15);
+        
+        // Draw legend
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.fillRect(x, y + height + 25, 10, 2);
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.textAlign = 'left';
+        this.ctx.font = '10px monospace';
+        this.ctx.fillText('Confidence', x + 15, y + height + 28);
+        
+        this.ctx.fillStyle = '#ff00ff';
+        this.ctx.fillRect(x + 100, y + height + 25, 10, 2);
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('Strength', x + 115, y + height + 28);
+        
+        this.ctx.fillStyle = '#ffff00';
+        this.ctx.beginPath();
+        this.ctx.arc(x + 180, y + height + 26, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('Beats', x + 190, y + height + 28);
     }
 }
 

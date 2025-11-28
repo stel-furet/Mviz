@@ -565,8 +565,9 @@ class GenreDetector {
 
 // Harmonic Analysis Engine for Enhanced Audio Analysis
 class HarmonicAnalyzer {
-    constructor(audioAnalyzer) {
-        this.audioAnalyzer = audioAnalyzer;
+    constructor(spectrumAnalyzer) {
+        // Accept spectrumAnalyzer instead of audioAnalyzer for independence
+        this.spectrumAnalyzer = spectrumAnalyzer;
         this.isRunning = false;
         
         // Harmonic analysis parameters
@@ -606,7 +607,8 @@ class HarmonicAnalyzer {
         if (!this.isRunning) return;
         
         try {
-            if (this.audioAnalyzer && this.audioAnalyzer.audioMotion && this.audioAnalyzer.audioMotion.analyser) {
+            // Get analyser from spectrumAnalyzer directly
+            if (this.spectrumAnalyzer && this.spectrumAnalyzer.analyser) {
                 this.detectChord();
                 this.detectKey();
                 this.analyzeHarmonicProgression();
@@ -621,7 +623,10 @@ class HarmonicAnalyzer {
     }
     
     detectChord() {
-        const analyser = this.audioAnalyzer.audioMotion.analyser;
+        // Get analyser from spectrumAnalyzer directly
+        const analyser = this.spectrumAnalyzer.analyser;
+        if (!analyser) return;
+        
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(dataArray);
         
@@ -697,8 +702,12 @@ class HarmonicAnalyzer {
     analyzeNoteStrengths(dataArray) {
         const noteStrengths = new Array(12).fill(0); // 12 semitones
         
+        // Get sample rate from analyser context
+        const analyser = this.spectrumAnalyzer.analyser;
+        if (!analyser || !analyser.context) return noteStrengths;
+        
         for (let i = 0; i < dataArray.length; i++) {
-            const frequency = (i * this.audioAnalyzer.audioMotion.analyser.context.sampleRate) / 
+            const frequency = (i * analyser.context.sampleRate) / 
                              (2 * dataArray.length);
             
             if (frequency < 80 || frequency > 2000) continue; // Focus on musical range
@@ -1033,7 +1042,17 @@ class AudioAnalyzer {
         this.tempoHistory = [];
         
         // Enhanced analysis components
-        this.harmonicAnalyzer = new HarmonicAnalyzer(this);
+        // Get HarmonicAnalyzer from spectrumAnalyzer (shared instance, independent of Autopilot)
+        const spectrumAnalyzer = this.audioMotion;
+        if (spectrumAnalyzer && spectrumAnalyzer.harmonicAnalyzer) {
+            // Reference the shared instance from spectrum-analyzer
+            this.harmonicAnalyzer = spectrumAnalyzer.harmonicAnalyzer;
+        } else {
+            // Fallback: create own instance if spectrum-analyzer not available (shouldn't happen)
+            console.warn('AudioAnalyzer: spectrumAnalyzer.harmonicAnalyzer not available, creating fallback instance');
+            this.harmonicAnalyzer = new HarmonicAnalyzer(spectrumAnalyzer || this);
+            this.harmonicAnalyzer.start();
+        }
         this.structureDetector = new StructureDetector(this);
         
         // Initialize tempo detector
@@ -1041,6 +1060,9 @@ class AudioAnalyzer {
         
         // Initialize frequency band calculator
         this.frequencyBandCalculator = new FrequencyBandCalculator();
+        
+        // Initialize enhanced beat detector
+        this.beatDetector = new BeatDetectorEnhanced();
         
         // Initialize frequency band energies (7 bands)
         this.subBassEnergy = 0;    // 20-60 Hz
@@ -1051,6 +1073,10 @@ class AudioAnalyzer {
         this.trebleEnergy = 0;     // 4000-8000 Hz
         this.airEnergy = 0;        // 8000-22050 Hz
         
+        // Beat detection properties
+        this.beatStrength = 0;
+        this.beatConfidence = 0;
+        
     }
     
     start() {
@@ -1060,7 +1086,8 @@ class AudioAnalyzer {
         // Debug the audioMotion connection
         
         // Start enhanced analysis components
-        this.harmonicAnalyzer.start();
+        // Note: harmonicAnalyzer is already running in spectrum-analyzer, don't start it again
+        // Only start structureDetector (it's still Autopilot-specific)
         this.structureDetector.start();
         
         this.analyze();
@@ -1074,7 +1101,8 @@ class AudioAnalyzer {
         }
         
         // Stop enhanced analysis components
-        this.harmonicAnalyzer.stop();
+        // Note: harmonicAnalyzer is managed by spectrum-analyzer, don't stop it here
+        // Only stop structureDetector (it's still Autopilot-specific)
         this.structureDetector.stop();
         
     }
@@ -1204,14 +1232,40 @@ class AudioAnalyzer {
     }
     
     detectBeats() {
-        // Enhanced beat detection using both energy and spectral flux
-        const energyIncrease = this.currentEnergy / (this.smoothedEnergy + 0.001);
-        const fluxThreshold = 0.05; // More sensitive flux detection
+        // Enhanced beat detection using frequency-weighted bass-focused method
+        // Calculate bass energy (20-250 Hz) for beat detection
+        let bassEnergy = 0;
+        if (this.audioMotion && this.audioMotion.analyser && this.audioMotion.dataArray) {
+            const sampleRate = this.audioMotion.analyser.context.sampleRate;
+            const fftSize = this.audioMotion.analyser.fftSize || 8192;
+            bassEnergy = this.beatDetector.calculateBassEnergy(
+                this.audioMotion.dataArray,
+                sampleRate,
+                fftSize,
+                this.frequencyBandCalculator
+            );
+        }
         
-        // Beat detected if energy spike OR significant spectral change
-        this.beatDetected = (energyIncrease > this.beatThreshold) || 
-                           (this.spectralFlux > fluxThreshold);
+        // Get current tempo for adaptive interval
+        const currentTempo = this.currentTempo || 120;
         
+        // Calculate energy change
+        const energyChange = Math.abs(this.currentEnergy - this.smoothedEnergy);
+        
+        // Detect beat using enhanced detector
+        const beatResult = this.beatDetector.detectBeat(
+            bassEnergy,
+            this.currentEnergy,
+            this.spectralFlux,
+            currentTempo,
+            energyChange
+        );
+        
+        this.beatDetected = beatResult.beat;
+        this.beatStrength = beatResult.beatStrength;
+        this.beatConfidence = beatResult.beatConfidence;
+        
+        // Update beat history for tempo detection
         if (this.beatDetected) {
             const now = Date.now();
             const lastBeat = this.beatHistory[this.beatHistory.length - 1] || 0;
@@ -1221,10 +1275,6 @@ class AudioAnalyzer {
                 this.beatHistory.push(now);
                 // Keep only recent beats (last 10 seconds)
                 this.beatHistory = this.beatHistory.filter(time => now - time < 10000);
-                
-                // Log beat detection for debugging (every 4 beats)
-                if (this.beatHistory.length % 4 === 0) {
-                }
             }
         }
     }
@@ -1255,6 +1305,11 @@ class AudioAnalyzer {
     updateEnergyHistory() {
         this.energyHistory.shift();
         this.energyHistory.push(this.currentEnergy);
+        
+        // Update tempo detector's energy history for continuous autocorrelation
+        if (this.tempoDetector && typeof this.tempoDetector.updateEnergyHistory === 'function') {
+            this.tempoDetector.updateEnergyHistory(this.currentEnergy);
+        }
     }
     
     // Public getters for decision engine
@@ -1294,12 +1349,13 @@ class AudioAnalyzer {
             // Basic audio features
             energy: this.smoothedEnergy,
             beat: this.beatDetected,
+            beatStrength: this.beatStrength,
+            beatConfidence: this.beatConfidence,
             tempo: finalTempo,
             tempoConfidence: finalTempoConfidence,
             tempoCandidates: finalTempoCandidates,
             dominantFreq: dominantFreqNumeric,
             energyTrend: this.getEnergyTrend(),
-            beatStrength: this.beatDetected ? this.currentEnergy / (this.smoothedEnergy + 0.001) : 0,
             frequencyBands: {
                 subBass: this.subBassEnergy || 0,    // 20-60 Hz
                 bass: this.bassEnergy || 0,          // 60-250 Hz

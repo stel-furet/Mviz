@@ -6,14 +6,17 @@
 
 - ** Need a way for user to see thumbnails of visualizations
 - Remove Starfall Fluidit, IZ from header
+- Fix Record performance! 
+- Find and fix cases where green outline does not display-proba Kal related
 
-- Add a GLSL Shader Loader based on the viewer to header - need sto have a copy code feature, save code as preset or glsl file. Should point to a folder or custom folder. Pre - loaded viz's - Can it auto select params to be audio rective?
+- Add a GLSL Shader Loader (based on the viewer) to header - needs to have a copy code feature, save code as preset or glsl file. Should point to a folder or custom folder. Pre - loaded viz's - Can it auto select params to be audio rective?
 
 - Playlist needs to read subfolders. Itunes folder for example 
 - Fix Wait state on Advanced AM, Make sure it's always default when app is fresh 
 - BCVA buttons to BG Color, BG IMG, Video, Audio
 - Strobe Feature - Canvas flashes on and off. This includes all canvas. It may be easire to put an opaque canvas on top of all otehr canvases. Beat reactive. Speed adjust. 
-- 
+- Control sections not opening in build in channels
+
 
 - **Fix ChromeSphere Presets**: Fix current chromesphere presets
 

@@ -257,6 +257,9 @@ class MasterAnimationController {
             // Return empty audio data if no analyzer available
             return {
                 energy: 0,
+                beat: false,
+                beatStrength: 0,
+                beatConfidence: 0,
                 bass: 0,
                 mid: 0,
                 treble: 0,
@@ -271,7 +274,14 @@ class MasterAnimationController {
                 tempoCandidates: [],
                 rawData: null,
                 dataArray: null,
-                analyser: null
+                analyser: null,
+                harmonic: {
+                    chord: null,
+                    chordConfidence: 0,
+                    key: null,
+                    keyConfidence: 0,
+                    progression: []
+                }
             };
         }
         

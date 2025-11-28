@@ -19,6 +19,8 @@ class SpectrumAnalyzer {
         this.cachedAudioFeatures = {
             energy: 0,
             beat: false,
+            beatStrength: 0,
+            beatConfidence: 0,
             tempo: 120,
             tempoConfidence: 0,
             tempoCandidates: [],
@@ -43,12 +45,24 @@ class SpectrumAnalyzer {
         this.previousEnergy = 0;  // For energyChange calculation
         this.previousSpectrum = null;  // For flux calculation
         
+        // Dominant frequency smoothing (exponential moving average)
+        this.dominantFreqSmoothingFactor = 0.88; // Higher = more smoothing (0.88 = moderate smoothing)
+        this.smoothedDominantFrequency = 0;
+        
         // Initialize tempo detector
         this.tempoDetector = new TempoDetector();
         this.beatHistory = []; // Track beats for tempo detection
         
         // Initialize frequency band calculator
         this.frequencyBandCalculator = new FrequencyBandCalculator();
+        
+        // Initialize enhanced beat detector
+        this.beatDetector = new BeatDetectorEnhanced();
+        
+        // Initialize harmonic analyzer (independent of Autopilot)
+        // This makes harmonic data available to plugins via sharedAudioData
+        this.harmonicAnalyzer = new HarmonicAnalyzer(this);
+        this.harmonicAnalyzer.start(); // Start automatically - always running
 
         // Initialize all parameters with defaults
         this.resetToDefaults();
@@ -470,6 +484,8 @@ class SpectrumAnalyzer {
             // Reuse cached object instead of creating new one
             this.cachedAudioFeatures.energy = 0;
             this.cachedAudioFeatures.beat = false;
+            this.cachedAudioFeatures.beatStrength = 0;
+            this.cachedAudioFeatures.beatConfidence = 0;
             this.cachedAudioFeatures.tempo = 0;
             this.cachedAudioFeatures.dominantFrequency = 0;
             this.cachedAudioFeatures.frequencies = null;
@@ -480,6 +496,13 @@ class SpectrumAnalyzer {
             this.cachedAudioFeatures.energyChange = 0;
             this.cachedAudioFeatures.flux = 0;
             this.cachedAudioFeatures.morphIntensity = 0;
+            this.cachedAudioFeatures.harmonic = {
+                chord: null,
+                chordConfidence: 0,
+                key: null,
+                keyConfidence: 0,
+                progression: []
+            };
             return this.cachedAudioFeatures;
         }
         
@@ -518,17 +541,40 @@ class SpectrumAnalyzer {
         const silenceBoost = (1 - energy) * 0.7; // Strong boost during quiet sections
         const morphIntensity = Math.min(1, (energyChange * 20) + (flux * 10) + silenceBoost);
         
-        // Simple beat detection based on energy spikes (UNCHANGED)
-        const now = Date.now();
-        const timeSinceLastBeat = now - (this.lastBeatTime || 0);
-        const beatThreshold = 0.1; // Lowered from 0.3 to 0.1 for more sensitivity
-        const beatInterval = 300; // Reduced from 500ms to 300ms for more frequent beats
+        // Enhanced beat detection using frequency-weighted bass-focused method
+        // Calculate bass energy (20-250 Hz) for beat detection
+        let bassEnergy = 0;
+        if (this.analyser && this.analyser.context) {
+            const sampleRate = this.analyser.context.sampleRate;
+            const fftSize = this.analyser.fftSize || 8192;
+            bassEnergy = this.beatDetector.calculateBassEnergy(
+                this.dataArray,
+                sampleRate,
+                fftSize,
+                this.frequencyBandCalculator
+            );
+        }
         
-        let beat = false;
-        if (energy > beatThreshold && timeSinceLastBeat > beatInterval) {
-            beat = true;
+        // Get current tempo for adaptive interval
+        const currentTempo = this.cachedAudioFeatures.tempo || 120;
+        
+        // Detect beat using enhanced detector
+        const beatResult = this.beatDetector.detectBeat(
+            bassEnergy,
+            energy,
+            flux,
+            currentTempo,
+            energyChange
+        );
+        
+        const beat = beatResult.beat;
+        const beatStrength = beatResult.beatStrength;
+        const beatConfidence = beatResult.beatConfidence;
+        
+        // Update beat history for tempo detection
+        if (beat) {
+            const now = Date.now();
             this.lastBeatTime = now;
-            // Add beat to history for tempo detection
             this.beatHistory.push(now);
             // Keep only recent beats (last 10 seconds)
             this.beatHistory = this.beatHistory.filter(time => now - time < 10000);
@@ -569,6 +615,30 @@ class SpectrumAnalyzer {
             dominantFrequency = 0;
         }
         
+        // Apply temporal smoothing to reduce jitter (exponential moving average)
+        // Only smooth if we have a valid frequency value
+        if (dominantFrequency > 0) {
+            // Initialize smoothed value on first valid reading
+            if (this.smoothedDominantFrequency === 0) {
+                this.smoothedDominantFrequency = dominantFrequency;
+            } else {
+                // Exponential moving average: smoothed = (factor * smoothed) + ((1 - factor) * current)
+                this.smoothedDominantFrequency = (this.dominantFreqSmoothingFactor * this.smoothedDominantFrequency) + 
+                                                 ((1 - this.dominantFreqSmoothingFactor) * dominantFrequency);
+            }
+        } else {
+            // If no frequency detected, slowly decay the smoothed value
+            this.smoothedDominantFrequency = this.smoothedDominantFrequency * 0.95;
+        }
+        
+        // Use smoothed value for output
+        dominantFrequency = this.smoothedDominantFrequency;
+        
+        // Update tempo detector's energy history for continuous autocorrelation
+        if (this.tempoDetector && typeof this.tempoDetector.updateEnergyHistory === 'function') {
+            this.tempoDetector.updateEnergyHistory(energy);
+        }
+        
         // Detect tempo using enhanced tempo detector
         const tempoResult = this.tempoDetector.detectTempoFromBeats(this.beatHistory);
         
@@ -599,9 +669,31 @@ class SpectrumAnalyzer {
             };
         }
         
+        // Add harmonic data (chord, key, progression) - available to plugins
+        if (this.harmonicAnalyzer) {
+            this.cachedAudioFeatures.harmonic = {
+                chord: this.harmonicAnalyzer.getCurrentChord(),
+                chordConfidence: this.harmonicAnalyzer.getChordConfidence(),
+                key: this.harmonicAnalyzer.getCurrentKey(),
+                keyConfidence: this.harmonicAnalyzer.getKeyConfidence(),
+                progression: this.harmonicAnalyzer.getHarmonicProgression()
+            };
+        } else {
+            // Fallback if harmonicAnalyzer not available
+            this.cachedAudioFeatures.harmonic = {
+                chord: null,
+                chordConfidence: 0,
+                key: null,
+                keyConfidence: 0,
+                progression: []
+            };
+        }
+        
         // Reuse cached object instead of creating new one
         this.cachedAudioFeatures.energy = Math.min(energy, 1);
         this.cachedAudioFeatures.beat = beat;
+        this.cachedAudioFeatures.beatStrength = beatStrength;
+        this.cachedAudioFeatures.beatConfidence = beatConfidence;
         this.cachedAudioFeatures.tempo = tempoResult.tempo;
         this.cachedAudioFeatures.tempoConfidence = tempoResult.confidence;
         this.cachedAudioFeatures.tempoCandidates = tempoResult.candidates;
