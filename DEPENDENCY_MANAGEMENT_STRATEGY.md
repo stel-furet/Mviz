@@ -157,13 +157,89 @@ When adding a new audio analysis module:
    - Verify module loads without errors
    - Verify dependencies are available when module is instantiated
 
+## main.js Split: New src/ Folder Structure
+
+The main.js split (Stage 1) will create a new `src/` folder with extracted classes.
+
+### Load Order for Extracted Classes
+
+```html
+<!-- ============================================
+     EXTRACTED CLASSES FROM main.js
+     Stage 1: Global Classes (no ES6 modules)
+     See MAIN_JS_SPLIT_ANALYSIS.md for details
+     ============================================ -->
+
+<!-- Tier 1: Independent Autopilot Classes -->
+<script src="src/autopilot/ParameterController.js"></script>
+<script src="src/autopilot/GenreDetector.js"></script>
+<script src="src/autopilot/StructureDetector.js"></script>
+<script src="src/autopilot/AudioAnalyzer.js"></script>
+<script src="src/autopilot/DecisionEngine.js"></script>
+
+<!-- Tier 2: Recording & Streaming -->
+<script src="src/recording/RecordManager.js"></script>
+<script src="src/streaming/LiveDisplayManager.js"></script>
+<script src="src/streaming/StreamManager.js"></script>
+
+<!-- Tier 3: Effects Controllers -->
+<script src="src/effects/KaleidoscopeController.js"></script>
+<script src="src/effects/VisualEffectsController.js"></script>
+<script src="src/effects/FluidNebulaController.js"></script>
+
+<!-- Tier 4: UI Controllers -->
+<script src="src/ui/MixerController.js"></script>
+<script src="src/ui/FooterController.js"></script>
+<script src="src/ui/PanelManager.js"></script>
+
+<!-- Tier 5: Core Modules -->
+<script src="src/core/AudioInputManager.js"></script>
+<script src="src/core/VideoInputManager.js"></script>
+<script src="src/playlist/PlaylistManager.js"></script>
+<script src="src/playlist/PlaylistUI.js"></script>
+<script src="src/visualization/MorphController.js"></script>
+<script src="src/visualization/ModeManager.js"></script>
+
+<!-- Tier 6: Main Entry Point -->
+<script src="src/core/FrequeVisualizer.js"></script>
+<script src="src/main.js"></script>
+```
+
+### Extracted Class Dependencies
+
+| Class | Dependencies | Used By |
+|-------|--------------|---------|
+| ParameterController | None | AIAutopilot |
+| GenreDetector | None | AudioAnalyzer |
+| StructureDetector | AudioAnalyzer | AIAutopilot |
+| AudioAnalyzer | TempoDetector, FrequencyBandCalculator, BeatDetectorEnhanced | AIAutopilot |
+| DecisionEngine | ParameterController | AIAutopilot |
+| RecordManager | None | FrequeVisualizer |
+| LiveDisplayManager | None | FrequeVisualizer |
+| StreamManager | None | FrequeVisualizer |
+| KaleidoscopeController | None | FrequeVisualizer |
+| VisualEffectsController | None | FrequeVisualizer |
+| FluidNebulaController | None | FrequeVisualizer |
+| MixerController | None | FrequeVisualizer |
+| FooterController | None | FrequeVisualizer |
+| PanelManager | None | FrequeVisualizer |
+| AudioInputManager | None | FrequeVisualizer |
+| VideoInputManager | None | FrequeVisualizer |
+| PlaylistManager | None | FrequeVisualizer |
+| PlaylistUI | PlaylistManager | FrequeVisualizer |
+| MorphController | None | FrequeVisualizer |
+| ModeManager | None | FrequeVisualizer |
+| FrequeVisualizer | All above | window.visualizer |
+
+---
+
 ## Future Considerations
 
-If the codebase grows significantly, consider:
-- ES6 modules with explicit imports/exports
-- Build system (Webpack, Rollup) for dependency management
-- Dependency injection container
-- Module bundling for production
+**Stage 2 (ES6 Modules):** After Stage 1 is complete and stable:
+- Convert to ES6 modules with explicit imports/exports
+- Add Vite for bundling
+- Add barrel exports (index.js files)
+- See `MIGRATION_PLAN.md` for details
 
 For now, the current approach (global classes with parameter passing) is sufficient and maintainable.
 

@@ -1,5 +1,24 @@
 # Freque → Vite ES6 Migration Plan (Revised)
 
+> ## ⚠️ IMPORTANT: This is STAGE 2 (Future Project)
+> 
+> **This plan is NOT being executed now.**
+> 
+> **Current Work:** Stage 1 - Global Classes Split (see `MAIN_JS_SPLIT_ANALYSIS.md`)
+> - Split main.js into ~22 smaller files
+> - Keep current global class architecture
+> - No ES6 modules yet
+> - No Vite/bundler yet
+> 
+> **This Plan (Stage 2):** To be executed AFTER Stage 1 is complete and stable
+> - Convert to ES6 modules
+> - Add Vite bundler
+> - Add code protection
+> 
+> **Estimated Start:** After Stage 1 completion (~4-5 weeks from Stage 1 start)
+
+---
+
 ## Key Changes From Original Plan
 
 | Concern | Solution |
@@ -10,6 +29,17 @@
 | **Code protection** | ✅ Multi-layer approach added (see Phase 6) |
 | **Browser delivery** | ✅ No change |
 | **Electron delivery** | ✅ No change + additional V8 bytecode option |
+
+---
+
+## Prerequisites
+
+Before starting this plan, ensure:
+- [ ] Stage 1 (Global Classes Split) is complete
+- [ ] All automated tests pass
+- [ ] App is stable and functional
+- [ ] Git tag `phase-4-complete` exists
+- [ ] main.js is now ~2,000 lines (FrequeVisualizer.js)
 
 ---
 

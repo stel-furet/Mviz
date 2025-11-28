@@ -1,0 +1,29 @@
+{
+  "name": "freque",
+  "version": "2.8.0",
+  "description": "FREQUE - Advanced Music Visualizer with Live Display and Multiple Visualization Modes",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:phase1": "npx playwright test tests/phase1-autopilot.spec.js",
+    "test:phase2": "npx playwright test tests/phase2-effects.spec.js",
+    "test:phase3": "npx playwright test tests/phase3-ui.spec.js",
+    "test:phase4": "npx playwright test tests/phase4-core.spec.js",
+    "test:report": "npx playwright show-report",
+    "serve": "npx http-server -p 3000 -c-1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "keywords": [
+    "music",
+    "visualizer",
+    "audio",
+    "visualization",
+    "spectrum",
+    "analyzer"
+  ],
+  "author": "Freque",
+  "license": "UNLICENSED"
+}
+

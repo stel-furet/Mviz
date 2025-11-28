@@ -618,7 +618,15 @@
     <!-- Official AudioMotion Analyzer v4.5.1 (Local) -->
     <script src="js/audiomotion-analyzer.js"></script>
     
+    <!-- ============================================
+         EXTRACTED CLASSES FROM main.js (Stage 1)
+         Load order matters - see DEPENDENCY_MANAGEMENT_STRATEGY.md
+         ============================================ -->
     
+    <!-- Tier 1: Independent Autopilot Classes -->
+    <script src="src/autopilot/ParameterController.js"></script>
+    
+    <!-- Main application -->
     <script src="js/main.js"></script>
 </head>
 <body>
