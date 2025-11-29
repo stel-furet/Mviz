@@ -1639,7 +1639,7 @@ class PluginMixerIntegration {
         if (!mixerChannels) return;
         
         const channelStrips = Array.from(mixerChannels.querySelectorAll('.channel-strip'));
-        let currentZIndex = 1; // Start at z-index 1
+        let pluginZIndex = this.zIndexMap['plugins']; // Plugins start at z-index from zIndexMap
         
         channelStrips.forEach((strip, index) => {
             const channelType = strip.getAttribute('data-channel');
@@ -1647,14 +1647,12 @@ class PluginMixerIntegration {
             
             let zIndex = null;
             
-            // Skip audio input (no z-index) and kaleidoscope (fixed at 100)
-            if (channelType === 'audioinput') {
-                return; // No z-index for audio
-            } else if (channelType === 'kaleidoscope') {
-                zIndex = 100; // Fixed z-index for kaleidoscope
-            } else {
-                // Assign z-index based on position in DOM (left = low, right = high)
-                zIndex = currentZIndex++;
+            // Determine z-index based on channel type
+            if (this.zIndexMap.hasOwnProperty(channelType)) {
+                zIndex = this.zIndexMap[channelType];
+            } else if (pluginName) {
+                // Plugin channel - assign incrementing z-index starting at plugins base
+                zIndex = pluginZIndex++;
             }
             
             // Apply z-index to the appropriate elements
@@ -1662,8 +1660,6 @@ class PluginMixerIntegration {
                 this.applyZIndexToVisualization(channelType, pluginName, zIndex);
             }
         });
-        
-        // Z-index values updated after drag-drop
     }
     
     /**
