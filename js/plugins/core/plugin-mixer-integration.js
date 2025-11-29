@@ -111,6 +111,9 @@ class PluginMixerIntegration {
         // Load plugin credits
         this.loadPluginCredits(plugin.pluginName, plugin.metadata.credits);
         
+        // Apply z-index to the new plugin (on top of existing plugins, below Kaleidoscope)
+        this.recalculateZIndexes();
+        
         return channelStrip;
     }
     
@@ -1623,6 +1626,9 @@ class PluginMixerIntegration {
         
         // Save the new order to localStorage
         this.saveChannelOrder();
+        
+        // Apply z-indexes to actual canvas elements
+        this.recalculateZIndexes();
     }
     
     /**
