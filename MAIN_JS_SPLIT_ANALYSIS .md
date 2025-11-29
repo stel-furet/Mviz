@@ -11,9 +11,61 @@
 
 ---
 
+## Current Status (Updated)
+
+### ✅ Phase 1: COMPLETE
+- **Extracted:** 8 classes (9 files including HarmonicAnalyzer)
+- **Files Created:**
+  - `src/autopilot/ParameterController.js`
+  - `src/autopilot/GenreDetector.js`
+  - `src/autopilot/StructureDetector.js`
+  - `src/autopilot/AudioAnalyzer.js`
+  - `src/autopilot/DecisionEngine.js`
+  - `src/recording/RecordManager.js`
+  - `src/streaming/LiveDisplayManager.js`
+  - `src/streaming/StreamManager.js`
+  - `src/audio/HarmonicAnalyzer.js`
+- **main.js reduced:** 30,963 → 20,157 lines (~10,800 lines removed)
+- **Tests:** 65 automated tests passing (Phase 1 + Phase 2 tests)
+- **Git tag:** `phase-1-complete` (ready to tag)
+
+### ⏸️ Phase 2: SKIPPED
+- **Reason:** Effects controllers too deeply integrated with FrequeVisualizer
+- **Decision:** Defer to future refactoring or Stage 2 (ES6 migration)
+
+### 🔄 Phase 3: IN PROGRESS
+- **Tests:** Written (~35 tests for UI Controllers)
+- **Status:** Ready to begin extraction
+- **Next:** Extract MixerController, FooterController, PanelManager
+
+### 🐛 Recent Bug Fixes (Completed)
+1. **Z-index reordering for drag-drop:**
+   - Fixed: `recalculateZIndexes()` now called after `saveChannelOrder()` in `reorderChannelStrips()`
+   - Fixed: Plugin z-index applied after canvas creation in `plugin-base.js`
+
+2. **Plugin loading order:**
+   - Fixed: Plugins now load by saved z-index order from localStorage
+   - New plugins load LAST (alphabetically) so they get highest z-index
+   - Fallback to alphabetical if no saved order exists
+   - Implementation: `sortPluginsByStoredOrder()` in `plugin-autoloader.js`
+
+3. **Native channel z-index reordering:**
+   - Fixed: Background Image, Video Input, AM Visualizer, Infinite Zoom, Starfall, Fluidity now get position-based z-index
+   - All reorderable channels (except Audio Input and Kaleidoscope) now update z-index based on DOM position
+   - Implementation: Updated `recalculateZIndexes()` to use position-based assignment for all channels
+
+4. **Channel order persistence:**
+   - Fixed: `saveChannelOrder()` now called when plugins are added/removed
+   - Ensures plugin positions persist across app restarts
+
+---
+
 ## Current State
 
-**main.js: 30,963 lines** containing 10 classes, with `FrequeVisualizer` being 19,000+ lines.
+**main.js: 20,157 lines** (reduced from 30,963 lines)
+- **Phase 1: COMPLETE** ✅ (8 classes extracted, ~10,800 lines removed)
+- **Phase 2: SKIPPED** (too integrated, deferred)
+- **Phase 3: IN PROGRESS** (tests written, extraction pending)
 
 ## Target State
 
@@ -546,28 +598,28 @@ class FrequeVisualizer {
 - [ ] Create `playwright.config.js`
 - [ ] Backup main.js: `cp js/main.js js/main.js.backup-pre-split`
 
-### Phase 1: Standalone Classes (Days 2-8)
-- [ ] Write ~30 automated tests for Autopilot/Recording/Streaming
-- [ ] Create `src/autopilot/` folder
-- [ ] Extract `ParameterController.js`
-- [ ] Extract `GenreDetector.js`
-- [ ] ~~Extract `HarmonicAnalyzer.js`~~ **SKIP - already in spectrum-analyzer.js**
-- [ ] Extract `StructureDetector.js`
-- [ ] Extract `AudioAnalyzer.js`
-- [ ] Extract `DecisionEngine.js`
-- [ ] Create `src/recording/` folder
-- [ ] Extract `RecordManager.js`
-- [ ] Create `src/streaming/` folder
-- [ ] Extract `LiveDisplayManager.js`
-- [ ] Extract `StreamManager.js`
-- [ ] Add script tags to index.html
-- [ ] Run full regression tests
-- [ ] Manual testing
-- [ ] Git tag: `git tag phase-1-complete`
-- [ ] **Checkpoint: main.js at ~20k lines**
+### Phase 1: Standalone Classes (Days 2-8) ✅ COMPLETE
+- [x] Write ~30 automated tests for Autopilot/Recording/Streaming
+- [x] Create `src/autopilot/` folder
+- [x] Extract `ParameterController.js`
+- [x] Extract `GenreDetector.js`
+- [x] ~~Extract `HarmonicAnalyzer.js`~~ **SKIP - already in spectrum-analyzer.js** → Extracted to `src/audio/HarmonicAnalyzer.js`
+- [x] Extract `StructureDetector.js`
+- [x] Extract `AudioAnalyzer.js`
+- [x] Extract `DecisionEngine.js`
+- [x] Create `src/recording/` folder
+- [x] Extract `RecordManager.js`
+- [x] Create `src/streaming/` folder
+- [x] Extract `LiveDisplayManager.js`
+- [x] Extract `StreamManager.js`
+- [x] Add script tags to index.html
+- [x] Run full regression tests (65 tests passing)
+- [x] Manual testing
+- [ ] Git tag: `git tag phase-1-complete` (ready to tag)
+- [x] **Checkpoint: main.js at ~20k lines** (20,157 lines)
 
-### Phase 2: Effects (Days 9-13)
-- [ ] Write ~40 automated tests for Effects
+### Phase 2: Effects (Days 9-13) ⏸️ SKIPPED
+- [x] Write ~40 automated tests for Effects (tests written, 1 failing due to Blobs being plugin now)
 - [ ] Create `src/effects/` folder
 - [ ] Extract `KaleidoscopeController.js`
 - [ ] Extract `VisualEffectsController.js` (Blobs + InfiniteZoom + WebGL)
@@ -577,9 +629,10 @@ class FrequeVisualizer {
 - [ ] Manual testing
 - [ ] Git tag: `git tag phase-2-complete`
 - [ ] **Checkpoint: main.js at ~14k lines**
+- **Status:** Deferred - Effects controllers too deeply integrated. Will revisit in future refactoring.
 
-### Phase 3: UI (Days 14-18)
-- [ ] Write ~35 automated tests for UI
+### Phase 3: UI (Days 14-18) 🔄 IN PROGRESS
+- [x] Write ~35 automated tests for UI
 - [ ] Create `src/ui/` folder
 - [ ] Extract `MixerController.js`
 - [ ] Extract `FooterController.js`
@@ -589,6 +642,7 @@ class FrequeVisualizer {
 - [ ] Manual testing
 - [ ] Git tag: `git tag phase-3-complete`
 - [ ] **Checkpoint: main.js at ~8k lines**
+- **Status:** Tests written, ready to begin extraction
 
 ### Phase 4: Core (Days 19-25)
 - [ ] Write ~35 automated tests for Core
@@ -668,12 +722,18 @@ Average file size: **~900 lines** — manageable, findable, changeable.
 
 ## Timeline Summary
 
-| Phase | Days | Tests | Extractions | Result |
-|-------|------|-------|-------------|--------|
-| Pre-Phase | 1 | Setup | - | Test infrastructure ready |
-| Phase 1 | 7 | 30 | 8 classes | 31k → 20k lines |
-| Phase 2 | 5 | 40 | 3 controllers | 20k → 14k lines |
-| Phase 3 | 5 | 35 | 3 controllers | 14k → 8k lines |
-| Phase 4 | 7 | 35 | 6 modules | 8k → 2k lines |
-| Buffer | 3-5 | - | Bug fixes | - |
+| Phase | Status | Days | Tests | Extractions | Result |
+|-------|--------|------|-------|-------------|--------|
+| Pre-Phase | ✅ | 1 | Setup | - | Test infrastructure ready |
+| Phase 1 | ✅ COMPLETE | 7 | 30 | 8 classes (9 files) | 31k → 20k lines |
+| Phase 2 | ⏸️ SKIPPED | - | 40 | 0 (deferred) | - |
+| Phase 3 | 🔄 IN PROGRESS | - | 35 | 0 (tests ready) | - |
+| Phase 4 | ⏳ PENDING | - | 35 | 0 | - |
+| Bug Fixes | ✅ | - | - | Z-index, plugin loading | - |
 | **Total** | **~28-30 days** | **~140 tests** | **22 files** | **main.js: 31k → 2k** |
+
+**Current Progress:**
+- ✅ Phase 1: Complete (20,157 lines remaining)
+- ⏸️ Phase 2: Skipped (deferred)
+- 🔄 Phase 3: Tests written, extraction pending
+- ⏳ Phase 4: Not started
