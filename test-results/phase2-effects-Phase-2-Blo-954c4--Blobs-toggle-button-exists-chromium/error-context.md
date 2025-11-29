@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - button "i" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - heading "FREQUEZOID" [level=1] [ref=e6]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button "B" [ref=e9] [cursor=pointer]:
+            - generic [ref=e10]: B
+          - button "C" [ref=e11] [cursor=pointer]:
+            - generic [ref=e12]: C
+          - button "V" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]: V
+          - button "A" [ref=e15] [cursor=pointer]:
+            - generic [ref=e16]: A
+        - generic [ref=e17]:
+          - button "Visualizer" [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]: Visualizer
+          - button "Random" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]: Random
+          - button "Start Morph" [ref=e22] [cursor=pointer]:
+            - generic [ref=e23]: Start Morph
+          - combobox [ref=e24]:
+            - option "Slow"
+            - option "Medium"
+            - option "Fast"
+            - option "Ultra"
+            - option "Energy" [selected]
+          - generic [ref=e26]: Energy
+        - generic [ref=e28]:
+          - button "Kaleidoscope" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]: Kaleidoscope
+          - button "Infinite Zoom" [ref=e31] [cursor=pointer]:
+            - generic [ref=e32]: Infinite Zoom
+          - button "Starfall" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: Starfall
+          - button "Fluidity" [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]: Fluidity
+      - combobox [ref=e38] [cursor=pointer]:
+        - option "Steel Gray" [selected]
+        - option "Light Vibrant"
+        - option "Sunset"
+        - option "Aurora"
+  - text: ▼
+  - main [ref=e40]:
+    - generic [ref=e41]: Click to dismiss
+  - contentinfo [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - button "Playlist" [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: Playlist
+        - button "⏮" [ref=e49] [cursor=pointer]
+        - button "▶" [disabled] [ref=e50] [cursor=pointer]
+        - button "⏭" [ref=e51] [cursor=pointer]
+        - button "Toggle Loop (Off)" [ref=e52] [cursor=pointer]:
+          - img [ref=e53]
+      - img "Volume" [ref=e56] [cursor=pointer]
+      - generic [ref=e60]:
+        - generic [ref=e61]: No tracks available
+        - generic [ref=e63]: 0:00 / 0:00
+      - button "⛶" [ref=e64] [cursor=pointer]
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - button "Display 1" [ref=e67] [cursor=pointer]
+          - button "⚙" [ref=e68] [cursor=pointer]
+        - generic [ref=e69]:
+          - button "Display 2" [ref=e70] [cursor=pointer]
+          - button "⚙" [ref=e71] [cursor=pointer]
+        - generic [ref=e72]:
+          - button "Display 3" [ref=e73] [cursor=pointer]
+          - button "⚙" [ref=e74] [cursor=pointer]
+        - generic [ref=e75]:
+          - button "Record" [ref=e76] [cursor=pointer]:
+            - generic [ref=e77]: Record
+          - button "⚙" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - button "Autopilot" [ref=e80] [cursor=pointer]:
+            - generic [ref=e81]: Autopilot
+          - button "⚙" [ref=e82] [cursor=pointer]
+        - button "Mixer" [ref=e84] [cursor=pointer]:
+          - generic [ref=e85]: Mixer
+  - text: ▼
+```

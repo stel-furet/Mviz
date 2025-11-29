@@ -114,6 +114,9 @@ class PluginMixerIntegration {
         // Apply z-index to the new plugin (on top of existing plugins, below Kaleidoscope)
         this.recalculateZIndexes();
         
+        // Save the updated channel order to localStorage
+        this.saveChannelOrder();
+        
         return channelStrip;
     }
     
@@ -138,6 +141,9 @@ class PluginMixerIntegration {
         
         // Recalculate z-indexes for remaining plugins
         this.recalculateZIndexes();
+        
+        // Save the updated channel order to localStorage
+        this.saveChannelOrder();
         
         return true;
     }
