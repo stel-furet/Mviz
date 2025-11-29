@@ -6,7 +6,6 @@
 
 class PluginMixerIntegration {
     constructor() {
-        // console.log('🔥 CACHE BUSTER: Plugin Mixer Integration v1761853300 LOADED - FIXED VIDEO Z-INDEX');
         this.channelStrips = new Map();
         this.dragDropEnabled = false;
         this.currentDragElement = null;

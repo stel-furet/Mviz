@@ -1048,7 +1048,6 @@ class FrequeVisualizer {
             
             // Phase 1: Test LiveDisplayManager
             this.liveDisplayManager = new LiveDisplayManager(this, 'test');
-            // console.log('✅ Phase 1: LiveDisplayManager created successfully');
             
             // Test Phase 1 functionality
             testLiveDisplayManager();
@@ -1230,15 +1229,11 @@ class FrequeVisualizer {
             this.audioMotion = new SpectrumAnalyzer(document.getElementById('visualizer'), this.visualizationModes[this.currentMode]);
 
             // Initialize official AudioMotion (new hybrid system)
-            // console.log('🔍 Checking for AudioMotionAnalyzer:', typeof AudioMotionAnalyzer);
             if (typeof AudioMotionAnalyzer !== 'undefined') {
-                // console.log('🎵 Official AudioMotion library detected, initializing hybrid system');
                 try {
                     // Use the same audio context AND canvas as the custom analyzer
                     const sharedAudioContext = this.audioMotion.audioCtx;
                     const sharedCanvas = this.audioMotion.canvas;
-                    // console.log('🔗 Sharing audio context:', sharedAudioContext);
-                    // console.log('🎨 Sharing canvas:', sharedCanvas);
                     
                     this.officialAudioMotion = new AudioMotionAnalyzer(
                         null, // No container - we're providing the canvas directly
@@ -1254,9 +1249,7 @@ class FrequeVisualizer {
                             canvas: sharedCanvas // Share the same canvas
                         }
                     );
-                    // console.log('✅ Official AudioMotion initialized successfully with shared context:', this.officialAudioMotion);
                 } catch (error) {
-                    // console.error('❌ Failed to initialize Official AudioMotion:', error);
                     this.officialAudioMotion = null;
                 }
             } else {
@@ -1281,7 +1274,6 @@ class FrequeVisualizer {
                 }
             }
 
-            // console.log('SpectrumAnalyzer initialized successfully');
 
         } catch (error) {
             throw error;
@@ -1517,7 +1509,6 @@ class FrequeVisualizer {
         // Update button state
         button.classList.add('active');
         
-        // console.log('Footer Autopilot settings panel opened');
     }
 
     closeFooterAutopilotSettingsPanel() {
@@ -1527,7 +1518,6 @@ class FrequeVisualizer {
         if (panel) panel.style.display = 'none';
         if (button) button.classList.remove('active');
         
-        // console.log('Footer Autopilot settings panel closed');
     }
 
 
@@ -1540,7 +1530,6 @@ class FrequeVisualizer {
     }
 
     initializeDisplaySettingsPanels() {
-        // console.log('Initializing display settings panels...');
         
         // Initialize display 1 settings
         this.initializeDisplayPanelSettings('display1');
@@ -1611,7 +1600,6 @@ class FrequeVisualizer {
             activeBtn.classList.add('active');
         }
         
-        // console.log(`Display ${displayId}: Mode set to ${mode}`);
     }
 
     setDisplaySharpness(displayId, value) {
@@ -1640,7 +1628,6 @@ class FrequeVisualizer {
         btn.classList.toggle('active');
         btn.textContent = `Mirror Background: ${isActive ? 'Off' : 'On'}`;
         
-        // console.log(`Display ${displayId}: Mirror background ${isActive ? 'disabled' : 'enabled'}`);
     }
 
     applyDisplayPreset(displayId, preset) {
@@ -1961,7 +1948,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.autoColorSchemes;
                     e.target.textContent = `Auto Color Schemes: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    // console.log(`🎨 Auto color schemes: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -1977,7 +1963,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.parameterControlEnabled;
                     e.target.textContent = `Parameter Control: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    // console.log(`🎛️ Parameter control: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -1993,7 +1978,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.learningEnabled;
                     e.target.textContent = `Learning: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    // console.log(`🧠 Pattern learning: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -2029,7 +2013,6 @@ class FrequeVisualizer {
                     };
                     this.aiAutopilot.parameterController.recordUserFeedback('positive', context);
                     this.updateFeedbackStats();
-                    // console.log('👍 User liked current settings');
                 }
             });
         }
@@ -2047,7 +2030,6 @@ class FrequeVisualizer {
                     };
                     this.aiAutopilot.parameterController.recordUserFeedback('negative', context);
                     this.updateFeedbackStats();
-                    // console.log('👎 User disliked current settings');
                 }
             });
         }
@@ -2683,7 +2665,6 @@ class FrequeVisualizer {
             document.addEventListener('click', closeOnOutsideClick);
         }, 100);
 
-        // console.log('Custom audio input dropdown created');
     }
 
     addPlaylistControlsGroup(container) {
@@ -3072,9 +3053,7 @@ class FrequeVisualizer {
         dropdown.appendChild(content);
         
         // Refresh stats if camera is already active
-        // console.log(`Video panel opened - videoMode: ${this.videoMode}, cameraInfo:`, this.cameraInfo);
         if (this.videoMode === 'camera' && this.cameraInfo) {
-            // console.log('Refreshing camera stats for reopened panel...');
             // Small delay to ensure DOM is ready
             setTimeout(() => {
                 this.updateCameraStats();
@@ -3114,7 +3093,6 @@ class FrequeVisualizer {
             document.addEventListener('click', closeOnOutsideClick);
         }, 100);
 
-        // console.log('Custom video input dropdown created');
     }
 
     addControlGroup(container, groupLabel, sliders) {
@@ -4055,7 +4033,6 @@ class FrequeVisualizer {
         // Check if live audio is enabled
         const isActive = this.liveAudioEnabled;
         
-        // console.log('A button state check:', {
         //     liveAudioEnabled: this.liveAudioEnabled,
         //     isActive: isActive
         // });
@@ -4074,7 +4051,6 @@ class FrequeVisualizer {
         // Check if video is active using existing video system
         const isActive = this.videoMode === 'camera' || this.videoMode === 'file';
         
-        // console.log('V button state check:', {
         //     videoMode: this.videoMode,
         //     isActive: isActive
         // });
@@ -4093,7 +4069,6 @@ class FrequeVisualizer {
         // Check if visualization is enabled
         const isActive = this.visualizationEnabled;
         
-        // console.log('Visualizer button state check:', {
         //     visualizationEnabled: this.visualizationEnabled,
         //     isActive: isActive
         // });
@@ -4126,7 +4101,6 @@ class FrequeVisualizer {
         // Footer Morph Button
         const footerMorphBtn = document.getElementById('footerMorphBtn');
         if (footerMorphBtn) {
-            // console.log('Initializing footer morph button');
             footerMorphBtn.addEventListener('click', () => {
                 this.toggleMorph();
             });
@@ -4137,7 +4111,6 @@ class FrequeVisualizer {
         // Footer Morph Speed Select
         const footerMorphSpeedSelect = document.getElementById('footerMorphSpeedSelect');
         if (footerMorphSpeedSelect) {
-            // console.log('Initializing footer morph speed select');
             footerMorphSpeedSelect.addEventListener('change', (e) => {
                 this.setMorphSpeed(e.target.value);
             });
@@ -4416,7 +4389,6 @@ class FrequeVisualizer {
         
         // Also update file info if image already exists
         if (this.backgroundImage && this.backgroundImageFileName) {
-            // console.log('🖼️ Background image already exists, updating panel file info');
         this.updateBackgroundPanelStates(panel);
         }
     }
@@ -4520,7 +4492,6 @@ class FrequeVisualizer {
         
         if (fileInfo && fileName && fileSize && imagePreview) {
             if (this.backgroundImage && this.backgroundImageFileName) {
-                // console.log('🖼️ Updating background panel file info:', {
                 //     fileName: this.backgroundImageFileName,
                 //     fileSize: this.backgroundImageFileSize,
                 //     hasImage: !!this.backgroundImage
@@ -4533,20 +4504,16 @@ class FrequeVisualizer {
                 // Create preview image
                 const img = new Image();
                 img.onload = () => {
-                    // console.log('🖼️ Image loaded successfully for preview');
                     imagePreview.innerHTML = '';
                     imagePreview.appendChild(img);
                 };
                 img.onerror = (e) => {
-                    // console.error('❌ Error loading image for preview:', e);
                 };
                 img.src = this.backgroundImage;
             } else {
-                // console.log('🖼️ No background image, hiding file info');
                 fileInfo.style.display = 'none';
             }
         } else {
-            // console.log('🖼️ Missing file info elements:', {
             //     fileInfo: !!fileInfo,
             //     fileName: !!fileName,
             //     fileSize: !!fileSize,
@@ -4573,7 +4540,6 @@ class FrequeVisualizer {
             window.pluginMixerIntegration.reapplyZIndexes();
         }
         
-        // console.log('Background image toggled to:', this.backgroundImageEnabled);
     }
 
     formatFileSize(bytes) {
@@ -4679,13 +4645,10 @@ class FrequeVisualizer {
                 // Connect functionality to static HTML elements
                 this.connectStaticHeaderElements();
                 
-                // console.log('🎛️ AM Visualizer panel opened');
             } else {
                 panel.style.display = 'none';
-                // console.log('🎛️ AM Visualizer panel closed');
             }
         } else {
-            // console.error('❌ Header visualizer panel not found');
         }
     }
 
@@ -4724,7 +4687,6 @@ class FrequeVisualizer {
         // Connect dropdown item functionality
         this.connectDropdownItems();
         
-        // console.log('🔗 Connected static header elements to functionality');
     }
 
     connectDropdownItems() {
@@ -4790,7 +4752,6 @@ class FrequeVisualizer {
             });
         });
         
-        // console.log('🔗 Connected dropdown items functionality');
     }
 
     createPlaylistPanel() {
@@ -5700,7 +5661,6 @@ class FrequeVisualizer {
     }
 
     loadPresetOptions(selectElement) {
-        // console.log('Loading preset options, current presets:', this.savedPresets);
         
         // Clear existing options except the first one
         while (selectElement.children.length > 1) {
@@ -5727,10 +5687,8 @@ class FrequeVisualizer {
                 option.textContent = preset.name || `Preset ${originalIndex + 1}`;
                 
                 selectElement.appendChild(option);
-                // console.log('Added option:', option.textContent, 'value:', option.value);
             });
         } else {
-            // console.log('No presets found');
         }
     }
 
@@ -5983,7 +5941,6 @@ class FrequeVisualizer {
                         console.log('Found audio inputs:', audioInputs);
 
                     } catch (err) {
-                        // console.error('getUserMedia error:', err);
 
                         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                             this.showError('Microphone blocked. Click the lock icon in the address bar, set Microphone to "Allow", then refresh the page.');
@@ -6028,7 +5985,6 @@ class FrequeVisualizer {
     }
 
     clearAudioInput() {
-        // console.log('🗑️ Clearing audio input - resetting to initial state');
         
         // Stop any current live audio input
         this.stopLiveInput();
@@ -6067,7 +6023,6 @@ class FrequeVisualizer {
         // Update footer Live Audio button state
         this.updateFooterLiveAudioButton();
         
-        // console.log('✅ Audio input cleared successfully');
     }
 
     async initializeVideoInput() {
@@ -6095,11 +6050,9 @@ class FrequeVisualizer {
 
     updateVideoDeviceList() {
         // Header-only video controls (sidebar removed)
-        // console.log('Video device list update - header controls only');
         
         // Update mixer video camera select dropdown
         if (window.multiDisplayManager && window.multiDisplayManager.updateMixerVideoCameraSelect) {
-            // console.log('Updating mixer video camera select with available devices');
             window.multiDisplayManager.updateMixerVideoCameraSelect();
         }
     }
@@ -6120,7 +6073,6 @@ class FrequeVisualizer {
     }
 
     clearVideoInput() {
-        // console.log('🗑️ Clearing video input - resetting to initial state');
         
         // Stop any current video input
         this.stopVideoInput();
@@ -6156,7 +6108,6 @@ class FrequeVisualizer {
         const headerClearBtn = document.getElementById('headerVideoClearInputBtn');
         const mixerClearBtn = document.getElementById('mixerVideoClearInputBtn');
         
-        // console.log('✅ Video input cleared successfully');
     }
 
     toggleVideoPlayback() {
@@ -6191,7 +6142,6 @@ class FrequeVisualizer {
             timestamp: Date.now()
         };
         localStorage.setItem('mviz_video_source', JSON.stringify(videoSource));
-        // console.log('Video source saved:', videoSource);
     }
     
     saveVideoInputMode() {
@@ -6216,7 +6166,6 @@ class FrequeVisualizer {
             const saved = localStorage.getItem('mviz_video_source');
             if (saved) {
                 const videoSource = JSON.parse(saved);
-                // console.log('Video source loaded:', videoSource);
                 return videoSource;
             }
         } catch (e) {
@@ -6232,15 +6181,9 @@ class FrequeVisualizer {
     }
 
     updateVisualizationAspectRatio() {
-        // console.log('=== updateVisualizationAspectRatio called ===');
-        // console.log('matchVisualizationAspect:', this.matchVisualizationAspect);
-        // console.log('videoElement exists:', !!this.videoElement);
-        // console.log('audioMotion exists:', !!this.audioMotion);
-        // console.log('videoMode:', this.videoMode);
 
         // DISABLED: Don't resize canvas to match video aspect ratio
         // This ensures visualizations render correctly regardless of video presence
-        // console.log('✓ Canvas resizing disabled - preserving visualization rendering quality');
         
                 return;
     }
@@ -6256,7 +6199,6 @@ class FrequeVisualizer {
                 const containerWidth = rect.width || 800;
                 const containerHeight = rect.height || 400;
 
-                // console.log(`Restoring original canvas dimensions: ${containerWidth}x${containerHeight}`);
 
                 this.audioMotion.canvas.width = containerWidth;
                 this.audioMotion.canvas.height = containerHeight;
@@ -6317,12 +6259,10 @@ class FrequeVisualizer {
                 }
             }
             
-            // console.log('Video audio connected to AudioMotion with gain control');
             
             // Set isConnected flag so regular AM visualizations can access audio data
             if (this.audioMotion) {
                 this.audioMotion.isConnected = true;
-                // console.log('🔗 Set audioMotion.isConnected = true for video audio');
             }
             
             // Reconnect official AudioMotion if it needs connection
@@ -6462,7 +6402,6 @@ class FrequeVisualizer {
             
             footerAutopilotBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // console.log('Footer Autopilot button clicked');
                 if (this.aiAutopilot) {
                     if (this.aiAutopilot.isActive) {
                         this.aiAutopilot.deactivate();
@@ -6479,7 +6418,6 @@ class FrequeVisualizer {
         if (footerAutopilotSettingsBtn) {
             footerAutopilotSettingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // console.log('Footer Autopilot settings button clicked');
                 this.toggleFooterAutopilotSettingsPanel();
             });
         }
@@ -6532,7 +6470,6 @@ class FrequeVisualizer {
                 const timing = e.target.dataset.timing;
                 if (this.aiAutopilot) {
                     this.aiAutopilot.changeTiming = timing;
-                    // console.log(`⏱️ Change timing set to: ${timing}`);
                     
                     // Update button states
                     document.querySelectorAll('.timing-btn').forEach(b => b.classList.remove('active'));
@@ -6547,7 +6484,6 @@ class FrequeVisualizer {
                 const sensitivity = e.target.dataset.sensitivity;
                 if (this.aiAutopilot) {
                     this.aiAutopilot.sensitivity = sensitivity;
-                    // console.log(`🎚️ Sensitivity set to: ${sensitivity}`);
                     
                     // Update button states
                     document.querySelectorAll('.sensitivity-btn').forEach(b => b.classList.remove('active'));
@@ -6563,12 +6499,10 @@ class FrequeVisualizer {
                 if (this.aiAutopilot) {
                     if (genre === 'auto') {
                         this.aiAutopilot.manualGenre = null;
-                        // console.log(`🎵 Genre detection set to: Auto`);
                     } else {
                         this.aiAutopilot.manualGenre = genre;
                         this.aiAutopilot.currentGenre = genre;
                         this.aiAutopilot.genreConfidence = 1.0;
-                        // console.log(`🎵 Manual genre set to: ${genre}`);
                     }
                     
                     // Update button states
@@ -6757,10 +6691,8 @@ class FrequeVisualizer {
 
     // Learning Analytics Dashboard Methods
     openLearningAnalyticsDashboard() {
-        // console.log('Opening Learning Analytics Dashboard...');
         const modal = document.getElementById('learningAnalyticsModal');
         if (modal) {
-            // console.log('Modal found, setting display to flex');
             modal.style.display = 'flex';
             this.updateDashboardAnalytics();
             this.logActivity('Learning Analytics Dashboard opened');
@@ -6987,7 +6919,6 @@ class FrequeVisualizer {
 
     closePlaylistPanel() {
         // Playlist is now embedded - no close functionality needed
-        // console.log('Playlist is embedded - no close functionality needed');
     }
 
     updatePlaylistFromManager(playlist) {
@@ -7021,7 +6952,6 @@ class FrequeVisualizer {
             
             // Debug URL validity
             if (track.url) {
-                // console.log(`Track "${track.title}" has URL: ${track.url.substring(0, 50)}...`);
             } else {
                 // Track has no URL - needs rescan
             }
@@ -7053,7 +6983,6 @@ class FrequeVisualizer {
             this.updatePlaylistPanelDisplay(this.currentPlaylistPanel);
         }
         
-        // console.log(`✅ Visualizer playlist updated with ${this.playlist.length} tracks`);
         
         // Debug: Check if any tracks have valid URLs and clear track display if needed
         const playableTracks = this.playlist.filter(t => t.url && t.url.startsWith('blob:'));
@@ -7064,16 +6993,12 @@ class FrequeVisualizer {
                 trackTitle.textContent = 'No track loaded';
             }
         }
-        // console.log(`Playable tracks: ${playableTracks.length}/${this.playlist.length}`);
         
         // Try to initialize first track if we haven't already and now have valid URLs
         this.tryInitializeFirstTrack();
     }
     
     playTrackById(trackId) {
-        // console.log('=== playTrackById called ===');
-        // console.log('trackId:', trackId);
-        // console.log('playlistManager exists:', !!this.playlistManager);
         
         if (!this.playlistManager) {
             console.error('PlaylistManager not available');
@@ -7081,7 +7006,6 @@ class FrequeVisualizer {
         }
         
         const track = this.playlistManager.findTrackById(trackId);
-        // console.log('Found track:', track ? `${track.title} by ${track.artist}` : 'null');
         
         if (!track) {
             console.error('Track not found for ID:', trackId);
@@ -7095,17 +7019,12 @@ class FrequeVisualizer {
         }
         
         // Find index in current playlist
-        // console.log('Current playlist length:', this.playlist?.length || 0);
-        // console.log('Looking for URL:', track.url);
         
         const index = this.playlist.findIndex(t => t.url === track.url);
-        // console.log('Found index:', index);
         
         if (index >= 0) {
-            // console.log(`Playing track at index ${index}: ${track.title}`);
             // Use selectTrack to load the track, then force playback
             this.selectTrack(index).then(() => {
-                // console.log('Track selected, starting playback...');
                 this.play(); // Force playback to start
             }).catch(error => {
                 console.error('Error selecting/playing track:', error);
@@ -7118,7 +7037,6 @@ class FrequeVisualizer {
 
     initializeCloseButtonHandler() {
         // Close button removed - playlist is now embedded in sidebar
-        // console.log('Playlist is embedded - no close button handler needed');
     }
 
     async startVideoInput(deviceId) {
@@ -7139,7 +7057,6 @@ class FrequeVisualizer {
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => {
                         track.stop();
-                        // console.log('Stopped video track:', track.label);
                     });
                     this.videoStream = null;
                 }
@@ -7394,7 +7311,6 @@ class FrequeVisualizer {
 
             // Get actual video dimensions
             const settings = this.videoStream.getVideoTracks()[0].getSettings();
-            // console.log(`Video started: ${
             //     settings.width
             // }x${
             //     settings.height
@@ -7428,7 +7344,6 @@ class FrequeVisualizer {
             this.saveVideoSource('camera', deviceId);
 
             // Header controls only (sidebar removed)
-            // console.log('Camera started - header controls only');
 
             // Add cleanup listener for unexpected stream end
             const videoTrack = this.videoStream.getVideoTracks()[0];
@@ -7512,7 +7427,6 @@ class FrequeVisualizer {
         const headerContainer = document.getElementById('headerCameraStatsContainer');
         const mixerContainer = document.getElementById('mixerCameraStatsContainer');
         
-        // console.log('Stats container check:', {
         //     sidebar: !!sidebarContainer,
         //     header: !!headerContainer,
         //     mixer: !!mixerContainer
@@ -7521,11 +7435,9 @@ class FrequeVisualizer {
         const statsContainers = [sidebarContainer, headerContainer, mixerContainer].filter(Boolean);
         
         if (statsContainers.length === 0) {
-            // console.log('No camera stats containers found - video panel may be closed');
             return;
         }
         
-        // console.log(`Updating camera stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
         if (statsContainer && this.cameraInfo) {
@@ -7621,7 +7533,6 @@ class FrequeVisualizer {
 
             // Get container reference
             const container = document.getElementById('visualizationContainer');
-            // console.log('Container found:', !!container);
 
             // Create backdrop if needed
             if (!document.getElementById('videoBackdrop')) {
@@ -7676,7 +7587,6 @@ class FrequeVisualizer {
                     window.pluginMixerIntegration.reapplyZIndexes();
                 }
             } else {
-                // console.log('Reusing existing video element...');
                 // For video file switching, we need to remove and recreate the video element
                 // because once a MediaElementSourceNode is created, it can't be disconnected properly
                 console.log('Removing old video element for clean audio reconnection...');
@@ -7888,9 +7798,6 @@ class FrequeVisualizer {
 
             // Update UI
             this.videoMode = 'file';
-            // console.log('Video file loaded successfully, setting mode to:', this.videoMode);
-            // console.log('Video element opacity:', this.videoElement.style.opacity);
-            // console.log('Video element display:', this.videoElement.style.display);
             this.updateVideoToggleState();
             
             // Now detect video file info after mode is set
@@ -7924,16 +7831,13 @@ class FrequeVisualizer {
                 this.streamManager.reconfigureCapture();
             }
 
-            // console.log('Video file started:', file.name);
             
             // Debug video visibility after a short delay
             setTimeout(() => {
                 this.debugVideoVisibility();
             }, 500);
 
-            // console.log('✅ Video file started successfully');
         } catch (error) {
-            // console.error('❌ Error starting video file:', error);
             console.error('Error stack:', error.stack);
             this.showError(`Failed to load video: ${error.message}`);
             this.stopVideoInput();
@@ -7946,44 +7850,18 @@ class FrequeVisualizer {
         const mainArea = document.querySelector('.main-area');
         const visualizer = document.getElementById('visualizer');
         
-        // console.log('=== VIDEO DEBUG INFO ===');
-        // console.log('Video Mode:', this.videoMode);
-        // console.log('Video Element exists:', !!videoElement);
         
         if (videoElement) {
             const rect = videoElement.getBoundingClientRect();
             const computedStyle = window.getComputedStyle(videoElement);
             
-            // console.log('Video Element:');
-            // console.log('  - Position:', computedStyle.position);
-            // console.log('  - Z-index:', computedStyle.zIndex);
-            // console.log('  - Opacity:', computedStyle.opacity);
-            // console.log('  - Display:', computedStyle.display);
-            // console.log('  - Width:', computedStyle.width);
-            // console.log('  - Height:', computedStyle.height);
-            // console.log('  - Filter:', computedStyle.filter);
-            // console.log('  - BoundingRect:', rect);
-            // console.log('  - Src:', videoElement.src);
-            // console.log('  - ReadyState:', videoElement.readyState);
-            // console.log('  - Paused:', videoElement.paused);
-            // console.log('  - Current Time:', videoElement.currentTime);
         }
         
-        // console.log('\nContainer backgrounds:');
-        // console.log('  - Visualization Container BG:', container.style.backgroundColor);
-        // console.log('  - Main Area BG:', mainArea.style.backgroundColor);
-        // console.log('  - Visualizer BG:', visualizer.style.backgroundColor);
         
-        // console.log('\nAudioMotion Canvas:');
         if (this.audioMotion && this.audioMotion.canvas) {
             const canvasStyle = window.getComputedStyle(this.audioMotion.canvas);
-            // console.log('  - Z-index:', canvasStyle.zIndex);
-            // console.log('  - Position:', canvasStyle.position);
-            // console.log('  - Visibility:', canvasStyle.visibility);
-            // console.log('  - Display:', canvasStyle.display);
         }
         
-        // console.log('=== END DEBUG INFO ===');
     }
 
     detectVideoFileInfo() {
@@ -7996,7 +7874,6 @@ class FrequeVisualizer {
                 loop: this.videoFileLoopMode
             };
 
-            // console.log('📹 Video File Info:', videoInfo);
 
             // Update stats if needed - with small delay to ensure DOM is ready
             setTimeout(() => {
@@ -8014,7 +7891,6 @@ class FrequeVisualizer {
             document.getElementById('mixerCameraStatsContainer')
         ].filter(Boolean);
         
-        // console.log('Video file stats containers found:', {
         //     sidebar: !!document.getElementById('cameraStatsContainer'),
         //     header: !!document.getElementById('headerCameraStatsContainer'),
         //     mixer: !!document.getElementById('mixerCameraStatsContainer'),
@@ -8026,7 +7902,6 @@ class FrequeVisualizer {
             return;
         }
         
-        // console.log(`Updating video file stats in ${statsContainers.length} container(s)`);
         
         statsContainers.forEach(statsContainer => {
         if (statsContainer && videoInfo) {
@@ -8129,7 +8004,6 @@ class FrequeVisualizer {
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => {
                         track.stop();
-                        // console.log('Stopped video track:', track.label);
                     });
                     this.videoStream = null;
                 }
@@ -8287,7 +8161,6 @@ class FrequeVisualizer {
                 this.streamManager.channel.postMessage({type: 'display-settings', data: this.streamManager.displaySettings});
             }
             
-            // console.log(`Applied ${preset} preset:`, settings);
         }
     }
 
@@ -8456,7 +8329,6 @@ class FrequeVisualizer {
         // Apply combined filters
         this.videoElement.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
 
-        // console.log('Applied filters to LIVE VIDEO (videoElement):', this.videoElement.style.filter);
 
         // Apply vignette overlay
         this.applyVignette();
@@ -9494,8 +9366,6 @@ https://rogueamoeba.com/loopback/
     }
 
     setVisualizationMode(modeIndex) {
-        // console.log(`🎨 setVisualizationMode called: ${this.currentMode} → ${modeIndex}`);
-        // console.trace('🎨 setVisualizationMode call stack');
         this.currentMode = modeIndex;
         // Save to localStorage for persistence
         localStorage.setItem('freque_am_currentMode', modeIndex.toString());
@@ -9507,9 +9377,7 @@ https://rogueamoeba.com/loopback/
             // DON'T apply brightness boost to standard presets - they're already tuned
 
             try {
-                // console.log('Setting visualization mode', modeIndex, 'with config:', config);
                 this.audioMotion.setOptions(config);
-                // console.log('Visualization mode applied successfully');
             } catch (error) {
                 console.warn(`Could not set visualization mode ${modeIndex}:`, error);
             }
@@ -9602,7 +9470,6 @@ https://rogueamoeba.com/loopback/
         // Sidebar vizModeToggle removed - functionality moved to header
 
         if (this.audioMotion) {
-            // console.log('Setting random visualization with config:', randomConfig);
             this.audioMotion.setOptions(randomConfig);
 
             const preset = {
@@ -9631,7 +9498,6 @@ https://rogueamoeba.com/loopback/
     // Pro Random Visualization Methods
     setRandomProVisualization() {
         if (!this.officialAudioMotion) {
-            // console.error('❌ Official AudioMotion not available for Pro random');
             return;
         }
 
@@ -9975,7 +9841,6 @@ https://rogueamoeba.com/loopback/
     toggleBlobs() {
         this.blobsEnabled = !this.blobsEnabled;
         
-        // console.log('🔵 Blobs toggle:', {
         //     enabled: this.blobsEnabled,
         //     visualization: !!this.blobsVisualization,
         //     canvas: this.blobsVisualization ? this.blobsVisualization.canvas : null
@@ -9983,10 +9848,8 @@ https://rogueamoeba.com/loopback/
         
         if (this.blobsEnabled) {
             this.blobsVisualization.start();
-            // console.log('🔵 Blobs enabled');
         } else {
             this.blobsVisualization.stop();
-            // console.log('🔵 Blobs disabled');
         }
         
         this.updateBlobsButton();
@@ -10006,7 +9869,6 @@ https://rogueamoeba.com/loopback/
     toggleWebGL() {
         this.webglEnabled = !this.webglEnabled;
         
-        // console.log('🎮 WebGL toggle:', {
         //     enabled: this.webglEnabled,
         //     visualization: !!this.webglVisualization,
         //     canvas: this.webglVisualization ? this.webglVisualization.canvas : null
@@ -10015,7 +9877,6 @@ https://rogueamoeba.com/loopback/
         if (this.webglEnabled) {
             if (this.webglVisualization) {
                 this.webglVisualization.start();
-                // console.log('🎮 WebGL enabled');
             } else {
                 console.error('🎮 WebGL visualization not initialized!');
                 this.webglEnabled = false; // Revert if not initialized
@@ -10023,7 +9884,6 @@ https://rogueamoeba.com/loopback/
         } else {
             if (this.webglVisualization) {
                 this.webglVisualization.stop();
-                // console.log('🎮 WebGL disabled');
             }
         }
         
@@ -10076,22 +9936,18 @@ https://rogueamoeba.com/loopback/
         const panel = document.getElementById('headerBlobsPanel');
         const btn = document.getElementById('headerBlobsBtn');
         
-        // console.log('🔵 toggleHeaderBlobs called', { panel, btn });
         
         // Toggle panel visibility
         if (panel) {
             const isVisible = panel.style.display !== 'none';
-            // console.log('🔵 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
             
             if (isVisible) {
                 panel.style.display = 'none';
-                // console.log('🔵 Panel hidden');
             } else {
                 this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
-                // console.log('🔵 Positioning panel:', { buttonRect });
                 
                 // Position relative to viewport, then adjust for scroll
                 panel.style.position = 'fixed';
@@ -10100,7 +9956,6 @@ https://rogueamoeba.com/loopback/
                 panel.style.zIndex = '1000';
                 
                 panel.style.display = 'block';
-                // console.log('🔵 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
             }
         } else {
             console.error('🔵 headerBlobsPanel not found!');
@@ -10111,22 +9966,18 @@ https://rogueamoeba.com/loopback/
         const panel = document.getElementById('headerWebGLPanel');
         const btn = document.getElementById('headerWebGLBtn');
         
-        // console.log('🎮 toggleHeaderWebGL called', { panel, btn });
         
         // Toggle panel visibility
         if (panel) {
             const isVisible = panel.style.display !== 'none';
-            // console.log('🎮 Panel visibility:', { isVisible, currentDisplay: panel.style.display });
             
             if (isVisible) {
                 panel.style.display = 'none';
-                // console.log('🎮 Panel hidden');
             } else {
                 this.closeAllPanels(); // CLOSE ALL PANELS FIRST
                 // Position panel below button
                 const buttonRect = btn.getBoundingClientRect();
                 
-                // console.log('🎮 Positioning panel:', { buttonRect });
                 
                 // Position relative to viewport, then adjust for scroll
                 panel.style.position = 'fixed';
@@ -10135,7 +9986,6 @@ https://rogueamoeba.com/loopback/
                 panel.style.zIndex = '1000';
                 
                 panel.style.display = 'block';
-                // console.log('🎮 Panel shown at position:', { left: panel.style.left, top: panel.style.top });
             }
         } else {
             console.error('🎮 headerWebGLPanel not found!');
@@ -10229,7 +10079,6 @@ https://rogueamoeba.com/loopback/
         // so no particle scaling is needed. The effect is recalculated each frame
         // based on current canvas dimensions and center positions.
         
-        // console.log('🔮 Kaleidoscope canvases resized to:', newWidth, 'x', newHeight);
     }
 
     setupBlobsControls() {
@@ -10368,7 +10217,6 @@ https://rogueamoeba.com/loopback/
     }
 
     setupWebGLControls() {
-        // console.log('🎮 WebGL: Setting up controls...');
         
         // Check if WebGL is supported before setting up controls
         if (this.webglVisualization && !this.webglVisualization.webglSupported) {
@@ -10379,7 +10227,6 @@ https://rogueamoeba.com/loopback/
         // Opacity slider
         const opacitySlider = document.getElementById('webglOpacitySlider');
         const opacityValue = document.getElementById('webglOpacityValue');
-        // console.log('🎮 WebGL: Opacity slider found:', !!opacitySlider, 'Value element found:', !!opacityValue);
         if (opacitySlider && opacityValue) {
             opacitySlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -10393,15 +10240,12 @@ https://rogueamoeba.com/loopback/
         // Particle Count slider
         const particleCountSlider = document.getElementById('webglParticleCountSlider');
         const particleCountValue = document.getElementById('webglParticleCountValue');
-        // console.log('🎮 WebGL: Particle count slider found:', !!particleCountSlider, 'Value element found:', !!particleCountValue);
         if (particleCountSlider && particleCountValue) {
             particleCountSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 particleCountValue.textContent = value;
-                // console.log('🎮 WebGL: Particle count slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleCount: value });
-                    // console.log('🎮 WebGL: Settings updated for particle count:', value);
                     // Update mixer UI via MultiDisplayManager
                     if (window.multiDisplayManager) {
                         window.multiDisplayManager.updateMixerStarfallParticleCountSlider();
@@ -10417,12 +10261,10 @@ https://rogueamoeba.com/loopback/
         // Particle Size slider
         const particleSizeSlider = document.getElementById('webglParticleSizeSlider');
         const particleSizeValue = document.getElementById('webglParticleSizeValue');
-        // console.log('🎮 WebGL: Particle size slider found:', !!particleSizeSlider, 'Value element found:', !!particleSizeValue);
         if (particleSizeSlider && particleSizeValue) {
             particleSizeSlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 particleSizeValue.textContent = value + 'px';
-                // console.log('🎮 WebGL: Particle size slider changed to:', value);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ particleSize: value });
                     // Update mixer UI via MultiDisplayManager
@@ -10438,7 +10280,6 @@ https://rogueamoeba.com/loopback/
         // Speed slider
         const speedSlider = document.getElementById('webglSpeedSlider');
         const speedValue = document.getElementById('webglSpeedValue');
-        // console.log('🎮 WebGL: Speed slider found:', !!speedSlider, 'Value element found:', !!speedValue);
         if (speedSlider && speedValue) {
             speedSlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
@@ -10456,7 +10297,6 @@ https://rogueamoeba.com/loopback/
         // Gravity slider
         const gravitySlider = document.getElementById('webglGravitySlider');
         const gravityValue = document.getElementById('webglGravityValue');
-        // console.log('🎮 WebGL: Gravity slider found:', !!gravitySlider, 'Value element found:', !!gravityValue);
         if (gravitySlider && gravityValue) {
             gravitySlider.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
@@ -10474,7 +10314,6 @@ https://rogueamoeba.com/loopback/
         // Saturation slider
         const saturationSlider = document.getElementById('webglSaturationSlider');
         const saturationValue = document.getElementById('webglSaturationValue');
-        // console.log('🎮 WebGL: Saturation slider found:', !!saturationSlider, 'Value element found:', !!saturationValue);
         if (saturationSlider && saturationValue) {
             saturationSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -10491,11 +10330,9 @@ https://rogueamoeba.com/loopback/
 
         // Color scheme dropdown
         const colorSchemeSelect = document.getElementById('webglColorSchemeSelect');
-        // console.log('🎮 WebGL: Color scheme dropdown found:', !!colorSchemeSelect);
         if (colorSchemeSelect) {
             colorSchemeSelect.addEventListener('change', (e) => {
                 const scheme = e.target.value;
-                // console.log('🎮 WebGL: Color scheme changed to:', scheme);
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     this.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
                     // Update mixer UI via MultiDisplayManager
@@ -10509,7 +10346,6 @@ https://rogueamoeba.com/loopback/
         // Twinkle intensity slider
         const twinkleSlider = document.getElementById('webglTwinkleSlider');
         const twinkleValue = document.getElementById('webglTwinkleValue');
-        // console.log('🎮 WebGL: Twinkle slider found:', !!twinkleSlider, 'Value element found:', !!twinkleValue);
         if (twinkleSlider && twinkleValue) {
             twinkleSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -10527,7 +10363,6 @@ https://rogueamoeba.com/loopback/
         // Star percentage slider
         const starPercentageSlider = document.getElementById('webglStarPercentageSlider');
         const starPercentageValue = document.getElementById('webglStarPercentageValue');
-        // console.log('🎮 WebGL: Star percentage slider found:', !!starPercentageSlider, 'Value element found:', !!starPercentageValue);
         if (starPercentageSlider && starPercentageValue) {
             starPercentageSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -10568,10 +10403,8 @@ https://rogueamoeba.com/loopback/
             beatIntensitySlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 beatIntensityValue.textContent = value + '%';
-                // console.log('🎮 WebGL: Beat intensity slider changed to:', value);
                 if (this.webglVisualization) {
                     this.webglVisualization.setSettings({ beatIntensity: value });
-                    // console.log('🎮 WebGL: Beat intensity settings updated:', value);
                 } else {
                     console.warn('🎮 WebGL: Visualization not available for beat intensity update');
                 }
@@ -10585,15 +10418,12 @@ https://rogueamoeba.com/loopback/
         const beatReactControls = document.getElementById('webglBeatReactControls');
         if (beatReactBtn) {
             beatReactBtn.addEventListener('click', () => {
-                // console.log('🥁 Beat React button clicked');
                 if (this.webglVisualization && this.webglVisualization.currentVisualization) {
                     const currentState = this.webglVisualization.currentVisualization.beatReact;
-                    // console.log('🥁 Beat React current state:', currentState);
                     
                     this.webglVisualization.currentVisualization.beatReact = !currentState;
                     const newState = this.webglVisualization.currentVisualization.beatReact;
                     
-                    // console.log('🥁 Beat React toggled to:', newState);
                     beatReactBtn.textContent = `Beat React: ${newState ? 'On' : 'Off'}`;
                     beatReactBtn.classList.toggle('active', newState);
                     
@@ -11236,7 +11066,6 @@ https://rogueamoeba.com/loopback/
     }
 
     setupCollapsiblePresets() {
-        // console.log('🔧 Setting up collapsible preset sections');
         
         const collapsibleHeaders = document.querySelectorAll('.mixer-panel-floating .collapsible-header');
         
@@ -11279,7 +11108,6 @@ https://rogueamoeba.com/loopback/
                 // Save state
                 localStorage.setItem(storageKey, (!wasExpanded).toString());
                 
-                // console.log('📋 Preset section toggled:', {
                 //     section: targetId,
                 //     expanded: !wasExpanded
                 // });
@@ -11289,7 +11117,6 @@ https://rogueamoeba.com/loopback/
             header._collapsibleHandler = clickHandler;
             header.addEventListener('click', clickHandler);
             
-            // console.log('✅ Collapsible preset section initialized:', {
             //     targetId: targetId,
             //     expanded: isExpanded
             // });
@@ -11342,18 +11169,13 @@ https://rogueamoeba.com/loopback/
     
     // Advanced Preset Controls Setup and Management
     setupAdvancedPresetControls() {
-        // console.log('🎛️ Setting up Advanced Preset Controls...');
         
         // Show/hide controls when Pro presets are active
         const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro[data-official-preset]');
         const advancedControls = document.getElementById('advancedPresetControls');
         
-        // console.log('🎛️ Found Pro preset buttons:', headerAMProPresetButtons.length);
-        // console.log('🎛️ Found advanced controls container:', !!advancedControls);
         
         if (advancedControls) {
-            // console.log('🎛️ Advanced controls current display:', advancedControls.style.display);
-            // console.log('🎛️ Advanced controls parent:', advancedControls.parentElement?.id);
         }
         
         if (!advancedControls) {
@@ -11363,11 +11185,8 @@ https://rogueamoeba.com/loopback/
         
         // Show controls when Pro preset is clicked
         headerAMProPresetButtons.forEach((button, index) => {
-            // console.log(`🎛️ Adding click listener to Pro preset button ${index}:`, button.textContent);
             button.addEventListener('click', () => {
-                // console.log('🎛️ Pro preset button clicked, showing advanced controls');
                 advancedControls.style.display = 'block';
-                // console.log('🎛️ Advanced controls display after setting:', advancedControls.style.display);
                 setTimeout(() => this.loadAdvancedControlsFromPreset(), 100);
             });
         });
@@ -11793,7 +11612,6 @@ https://rogueamoeba.com/loopback/
                         
                         // Debug logging for color preset
                         if (button.preset === 'color') {
-                            // console.log('🎨 Color preset toggled:', !currentState, 'audioPresets.color:', this.nebulaVisualization.settings.audioPresets.color);
                         }
                         
                         // Special handling for color preset toggle
@@ -11893,7 +11711,6 @@ https://rogueamoeba.com/loopback/
     
     applyNebulaColorPreset(presetName) {
         if (!this.nebulaVisualization) {
-            // console.warn('🎨 Cannot apply color preset - nebula visualization not available');
             return;
         }
         
@@ -11909,7 +11726,6 @@ https://rogueamoeba.com/loopback/
         
         const preset = presets[presetName];
         if (!preset) {
-            // console.warn('🎨 Unknown preset:', presetName);
             return;
         }
         
@@ -11988,7 +11804,6 @@ https://rogueamoeba.com/loopback/
                     console.log('📥 Nebula presets imported from UI');
                 } catch (error) {
                     alert('Error importing presets: ' + error);
-                    // console.error('❌ Nebula preset import error:', error);
                 }
                 
                 // Reset file input
@@ -12019,7 +11834,6 @@ https://rogueamoeba.com/loopback/
             });
         }
         
-        // console.log('🔄 Nebula preset dropdown updated:', this.nebulaVisualization.savedPresets.length, 'presets');
     }
     
     updateNebulaUIFromSettings() {
@@ -12061,7 +11875,6 @@ https://rogueamoeba.com/loopback/
             this.updateNebulaPresetButton(preset, document.getElementById(`headerNebula${preset.charAt(0).toUpperCase() + preset.slice(1)}PresetBtn`));
         });
         
-        // console.log('🔄 Nebula UI updated from settings');
     }
     
     updateNebulaSliderValue(sliderId, value, displayValue) {
@@ -12387,7 +12200,6 @@ https://rogueamoeba.com/loopback/
         const segmentsSlider = document.getElementById('kaleidoscopeSegments');
         if (!segmentsSlider) {
             // Kaleidoscope panel is not open, skip UI updates
-            // console.log('🔄 Kaleidoscope preset applied but panel not open - skipping UI updates');
             return;
         }
         
@@ -12475,7 +12287,6 @@ https://rogueamoeba.com/loopback/
             this.kaleidoscopeVideoCanvas.classList.remove('pulse-active');
         }
         
-        // console.log('Applied filters to kaleidoscope canvas:', this.kaleidoscopeVideoCanvas.style.filter);
     }
 
     applyKaleidoscopeEffect() {
@@ -13055,7 +12866,6 @@ https://rogueamoeba.com/loopback/
         // });
 
         if (!this.backgroundImage || !this.backgroundImageEnabled) {
-            // console.log('❌ Background image not drawn - missing image or disabled');
             return;
         }
 
@@ -13063,13 +12873,11 @@ https://rogueamoeba.com/loopback/
         if (!this.cachedBackgroundImage) {
             this.cachedBackgroundImage = new Image();
             this.cachedBackgroundImage.onload = () => {
-                // console.log('🖼️ Background image cached:', {
                 //     imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
                 //     dataUrlLength: this.backgroundImage.length
                 // });
             };
             this.cachedBackgroundImage.onerror = (e) => {
-                // console.error('❌ Background image failed to load:', e);
                 this.cachedBackgroundImage = null;
             };
             this.cachedBackgroundImage.src = this.backgroundImage;
@@ -13077,7 +12885,6 @@ https://rogueamoeba.com/loopback/
 
         // Only draw if image is loaded
         if (this.cachedBackgroundImage && this.cachedBackgroundImage.complete && this.cachedBackgroundImage.naturalWidth > 0) {
-            // console.log('🖼️ Drawing cached background image:', {
             //     imageSize: `${this.cachedBackgroundImage.width}x${this.cachedBackgroundImage.height}`,
             //     dataUrlLength: this.backgroundImage.length
             // });
@@ -13135,7 +12942,6 @@ https://rogueamoeba.com/loopback/
                     break;
             }
 
-            // console.log('📐 Background image draw calculations:', {
             //     imgAspect,
             //     canvasAspect,
             //     drawX, drawY, drawWidth, drawHeight
@@ -13143,7 +12949,6 @@ https://rogueamoeba.com/loopback/
 
             ctx.save();
             ctx.globalAlpha = this.backgroundImageOpacity / 100;
-            // console.log('🎭 Applied opacity:', ctx.globalAlpha);
             
             // Build filter string for all effects
             const filters = [];
@@ -13180,7 +12985,6 @@ https://rogueamoeba.com/loopback/
             // // console.log('✅ Background image drawn successfully');
             ctx.restore();
         } else {
-            // console.log('⏳ Background image not ready yet, skipping draw');
         }
     }
 
@@ -13220,14 +13024,12 @@ https://rogueamoeba.com/loopback/
                 this.loadPresetOptions(headerSelector);
             }
         } else {
-            // console.error('❌ No active visualization system to save');
         }
     }
 
     // Pro Preset Saving Methods
     saveCurrentProAsPreset(name) {
         if (!this.officialAudioMotion) {
-            // console.error('❌ Official AudioMotion not available for Pro preset saving');
             return;
         }
 
@@ -13371,7 +13173,6 @@ https://rogueamoeba.com/loopback/
     toggleVisualization() {
         this.visualizationEnabled = !this.visualizationEnabled;
 
-        // console.log('🔄 AM Visualization toggled:', {
         //     enabled: this.visualizationEnabled,
         //     backgroundImageEnabled: this.backgroundImageEnabled,
         //     hasBackgroundImage: !!this.backgroundImage
@@ -13390,7 +13191,6 @@ https://rogueamoeba.com/loopback/
             if (this.visualizationEnabled) { // Resume visualization - restart the animation loop
                 this.audioMotion.animate();
             } else { // Stop main visualization but keep animation loop for Infinite Zoom
-                // console.log('🔄 Forcing visualization redraw after AM toggle');
                 this.audioMotion.draw();
                 // Don't cancel animation frame - let it continue for Infinite Zoom
                 // The animation loop will handle skipping main visualization when disabled
@@ -13444,7 +13244,6 @@ https://rogueamoeba.com/loopback/
             window.multiDisplayManager.updateHeaderAMVisualizationOpacitySlider();
         }
         
-        // console.log('🎨 AM Visualizer opacity set to:', this.visualizationOpacity);
     }
 
     // Set Official AudioMotion Preset (Hybrid System)
@@ -13706,7 +13505,6 @@ https://rogueamoeba.com/loopback/
     // Check if Official AudioMotion is available
     isOfficialAudioMotionAvailable() {
         const available = typeof AudioMotionAnalyzer !== 'undefined' && this.officialAudioMotion !== null;
-        // console.log('🔍 Official AudioMotion availability check:', {
         //     libraryLoaded: typeof AudioMotionAnalyzer !== 'undefined',
         //     instanceCreated: !!this.officialAudioMotion,
         //     available: available
@@ -13749,7 +13547,6 @@ https://rogueamoeba.com/loopback/
             window.multiDisplayManager.updateMixerInfiniteZoomOpacitySlider();
         }
         
-        // console.log('🎨 Infinite Zoom opacity set to:', this.infiniteZoomOpacity);
     }
 
     getCurrentConfig() {
@@ -13863,7 +13660,6 @@ https://rogueamoeba.com/loopback/
     // Pro Preset Loading Methods
     loadProPreset(preset) {
         if (!this.officialAudioMotion) {
-            // console.error('❌ Official AudioMotion not available for Pro preset loading');
             return;
         }
         
@@ -13899,7 +13695,6 @@ https://rogueamoeba.com/loopback/
         
         // Initialize official AudioMotion if needed
         if (!this.officialAudioMotion) {
-            // console.log('🔄 Initializing official AudioMotion for preset loading...');
             // Use existing initialization logic
             this.initAudioMotion();
         }
@@ -13912,7 +13707,6 @@ https://rogueamoeba.com/loopback/
             // Reconnect audio sources
             this.reconnectOfficialAudioMotion();
             
-            // console.log('🔄 Switched to official AudioMotion for preset loading');
         }
     }
 
@@ -15071,7 +14865,6 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.shape = e.target.value;
                     this.infiniteZoom.updateObjectShapes();
-                    // console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
                 }
             });
         }
@@ -15083,7 +14876,6 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.shape = e.target.value;
                     this.infiniteZoom.updateObjectShapes();
-                    // console.log(`🔍 Infinite Zoom shape set to: ${e.target.value}`);
                     
                     // Update mixer shape select
                     if (window.multiDisplayManager && window.multiDisplayManager.updateMixerInfiniteZoomShapeSelect) {
@@ -15221,7 +15013,6 @@ https://rogueamoeba.com/loopback/
                 if (this.infiniteZoom) {
                     this.infiniteZoom.rotationSpeed = value;
                     this.infiniteZoom.baseRotationSpeed = value;
-                    // console.log('🔍 Rotation slider changed to:', value, 'Base:', this.infiniteZoom.baseRotationSpeed);
                 }
             });
         }
@@ -15248,7 +15039,6 @@ https://rogueamoeba.com/loopback/
                 infiniteZoomSensitivityValue.textContent = value + '%';
                 if (this.infiniteZoom) {
                     this.infiniteZoom.sensitivity = value / 100; // Convert 0-100 to 0-1
-                    // console.log('🔍 Sensitivity changed to:', this.infiniteZoom.sensitivity);
                 }
             });
         }
@@ -15261,7 +15051,6 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.beatReact = !this.infiniteZoom.beatReact;
                     infiniteZoomBeatReactBtn.textContent = `Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`;
                     infiniteZoomBeatReactBtn.classList.toggle('active', this.infiniteZoom.beatReact);
-                    // console.log('🔍 Beat React toggled to:', this.infiniteZoom.beatReact);
                     
                     // Show/hide beat reaction controls
                     const controls = document.getElementById('infiniteZoomBeatReactControls');
@@ -15330,7 +15119,6 @@ https://rogueamoeba.com/loopback/
                     this.infiniteZoom.beatRotation = !this.infiniteZoom.beatRotation;
                     infiniteZoomBeatRotationBtn.textContent = `Beat Rotation: ${this.infiniteZoom.beatRotation ? 'On' : 'Off'}`;
                     infiniteZoomBeatRotationBtn.classList.toggle('active', this.infiniteZoom.beatRotation);
-                    // console.log('🔍 Beat Rotation toggled to:', this.infiniteZoom.beatRotation);
                 }
             });
         }
@@ -15427,13 +15215,8 @@ https://rogueamoeba.com/loopback/
 
         const headerInfiniteZoomSpeedSlider = document.getElementById('headerInfiniteZoomSpeedSlider');
         const headerInfiniteZoomSpeedValue = document.getElementById('headerInfiniteZoomSpeedValue');
-        // console.log('Speed slider found:', !!headerInfiniteZoomSpeedSlider, 'Speed value found:', !!headerInfiniteZoomSpeedValue);
-        // console.log('Speed slider element:', headerInfiniteZoomSpeedSlider);
-        // console.log('Speed value element:', headerInfiniteZoomSpeedValue);
         if (headerInfiniteZoomSpeedSlider && headerInfiniteZoomSpeedValue) {
-            // console.log('Setting up Speed slider event listener');
             headerInfiniteZoomSpeedSlider.addEventListener('input', (e) => {
-                // console.log('Speed slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomSpeedValue.textContent = value;
                 if (this.infiniteZoom) {
@@ -15455,20 +15238,14 @@ https://rogueamoeba.com/loopback/
                     window.multiDisplayManager.updateMixerInfiniteZoomSpeedSlider();
                 }
             });
-            // console.log('Speed slider event listener attached successfully');
         } else {
             console.error('Speed slider or value element not found!');
         }
 
         const headerInfiniteZoomRotationSlider = document.getElementById('headerInfiniteZoomRotationSlider');
         const headerInfiniteZoomRotationValue = document.getElementById('headerInfiniteZoomRotationValue');
-        // console.log('Rotation slider found:', !!headerInfiniteZoomRotationSlider, 'Rotation value found:', !!headerInfiniteZoomRotationValue);
-        // console.log('Rotation slider element:', headerInfiniteZoomRotationSlider);
-        // console.log('Rotation value element:', headerInfiniteZoomRotationValue);
         if (headerInfiniteZoomRotationSlider && headerInfiniteZoomRotationValue) {
-            // console.log('Setting up Rotation slider event listener');
             headerInfiniteZoomRotationSlider.addEventListener('input', (e) => {
-                // console.log('Rotation slider input event triggered:', e.target.value);
                 const value = parseFloat(e.target.value);
                 headerInfiniteZoomRotationValue.textContent = value.toFixed(1);
                 if (this.infiniteZoom) {
@@ -15481,20 +15258,14 @@ https://rogueamoeba.com/loopback/
                     window.multiDisplayManager.updateMixerInfiniteZoomRotationSlider();
                 }
             });
-            // console.log('Rotation slider event listener attached successfully');
         } else {
             console.error('Rotation slider or value element not found!');
         }
 
         const headerInfiniteZoomOpacitySlider = document.getElementById('headerInfiniteZoomOpacitySlider');
         const headerInfiniteZoomOpacityValue = document.getElementById('headerInfiniteZoomOpacityValue');
-        // console.log('Opacity slider found:', !!headerInfiniteZoomOpacitySlider, 'Opacity value found:', !!headerInfiniteZoomOpacityValue);
-        // console.log('Opacity slider element:', headerInfiniteZoomOpacitySlider);
-        // console.log('Opacity value element:', headerInfiniteZoomOpacityValue);
         if (headerInfiniteZoomOpacitySlider && headerInfiniteZoomOpacityValue) {
-            // console.log('Setting up Opacity slider event listener');
             headerInfiniteZoomOpacitySlider.addEventListener('input', (e) => {
-                // console.log('Opacity slider input event triggered:', e.target.value);
                 const value = parseInt(e.target.value);
                 headerInfiniteZoomOpacityValue.textContent = value + '%';
                 if (this.infiniteZoom) {
@@ -15505,7 +15276,6 @@ https://rogueamoeba.com/loopback/
                     });
                 }
             });
-            // console.log('Opacity slider event listener attached successfully');
         } else {
             console.error('Opacity slider or value element not found!');
         }
@@ -15623,14 +15393,10 @@ https://rogueamoeba.com/loopback/
         // Fluid Dynamics Viscosity slider
         const fluidDynamicsViscositySlider = document.getElementById('headerFluidDynamicsViscositySlider');
         const fluidDynamicsViscosityValue = document.getElementById('headerFluidDynamicsViscosityValue');
-        // console.log('🌊 Looking for viscosity slider:', !!fluidDynamicsViscositySlider, !!fluidDynamicsViscosityValue);
         if (fluidDynamicsViscositySlider && fluidDynamicsViscosityValue) {
-            // console.log('🌊 Attaching viscosity slider event listener');
             fluidDynamicsViscositySlider.addEventListener('input', (e) => {
-                // console.log('🌊 Viscosity slider moved to:', e.target.value);
                 const value = parseFloat(e.target.value);
                 fluidDynamicsViscosityValue.textContent = value.toFixed(1);
-                // console.log('🌊 Fluid Dynamics object:', !!this.fluidDynamics, 'updateConfig method:', !!this.fluidDynamics?.updateConfig);
                 if (this.fluidDynamics && this.fluidDynamics.updateConfig) {
                     this.fluidDynamics.updateConfig({ VELOCITY_DISSIPATION: value });
                 } else {
@@ -16620,7 +16386,6 @@ https://rogueamoeba.com/loopback/
                     this.updateVisualizationAspectRatio();
                 }
                 
-                // console.log('Match visualization aspect ratio:', this.matchVisualizationAspect);
             });
         }
 
@@ -16629,7 +16394,6 @@ https://rogueamoeba.com/loopback/
         document.querySelectorAll('.btn-preset:not([data-target="fileBrowser"])').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const preset = e.target.dataset.preset;
-                // console.log('Applying LIVE VIDEO preset:', preset);
                 this.applyVideoPreset(preset);
             });
         });
@@ -16819,10 +16583,8 @@ https://rogueamoeba.com/loopback/
             videoFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files?.[0];
                 if (file && file.type.startsWith('video/')) {
-                    // console.log('Selected video file:', file.name, file.type);
                     await this.startVideoFile(file);
                     // Header controls only (sidebar removed)
-                    // console.log('Video file loaded - header controls only');
                     // Reset file input for reselection
                     e.target.value = '';
                 } else if (file) {
@@ -16846,11 +16608,9 @@ https://rogueamoeba.com/loopback/
         // Footer Live Audio button
         const footerLiveAudioBtn = document.getElementById('footerLiveAudioBtn');
         if (footerLiveAudioBtn) {
-            // console.log('Footer Live Audio button found, adding event listener');
             footerLiveAudioBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Live Audio button clicked');
                 
                 // Always show audio input menu (panel)
                     this.showAudioInputMenu();
@@ -16862,11 +16622,9 @@ https://rogueamoeba.com/loopback/
         // Footer Live Video button
         const footerLiveVideoBtn = document.getElementById('footerLiveVideoBtn');
         if (footerLiveVideoBtn) {
-            // console.log('Footer Live Video button found, adding event listener');
             footerLiveVideoBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Live Video button clicked');
                 
                 // Always show video settings panel
                     this.showVideoInputMenu();
@@ -16878,11 +16636,9 @@ https://rogueamoeba.com/loopback/
         // Footer Live Color button
         const footerLiveColorBtn = document.getElementById('footerLiveColorBtn');
         if (footerLiveColorBtn) {
-            // console.log('Footer Live Color button found, adding event listener');
             footerLiveColorBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Live Color button clicked');
                 
                 // Show color picker
                 this.showColorPicker();
@@ -16894,27 +16650,22 @@ https://rogueamoeba.com/loopback/
         // Footer Live Background button
         const footerLiveBackgroundBtn = document.getElementById('footerLiveBackgroundBtn');
         if (footerLiveBackgroundBtn) {
-            // console.log('Footer Live Background button found, adding event listener');
             footerLiveBackgroundBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Live Background button clicked - opening background panel');
                 
                 // Only show background image selection panel (no toggle functionality)
                 this.showBackgroundImageSelection();
             });
         } else {
-            // console.error('Footer Live Background button not found');
         }
 
         // Footer Playlist button
         const footerPlaylistBtn = document.getElementById('footerPlaylistBtn');
         if (footerPlaylistBtn) {
-            // console.log('Footer Playlist button found, adding event listener');
             footerPlaylistBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Playlist button clicked');
                 
                 // Show playlist panel
                 this.showPlaylistPanel();
@@ -16926,11 +16677,9 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer button
         const footerVisualizerBtn = document.getElementById('footerVisualizerBtn');
         if (footerVisualizerBtn) {
-            // console.log('Footer Visualizer button found, adding event listener');
             footerVisualizerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Visualizer button clicked');
                 
                 // Always show the visualizer panel (like A and V buttons)
                 this.showVisualizerPanel();
@@ -16942,11 +16691,9 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer Toggle button
         const footerVisualizerToggleBtn = document.getElementById('footerVisualizerToggleBtn');
         if (footerVisualizerToggleBtn) {
-            // console.log('Footer Visualizer Toggle button found, adding event listener');
             footerVisualizerToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Visualizer Toggle button clicked');
                 
                 // Toggle visualization ON/OFF
                 this.toggleVisualization();
@@ -16958,11 +16705,9 @@ https://rogueamoeba.com/loopback/
         // Footer Visualizer Random button
         const footerVisualizerRandomBtn = document.getElementById('footerVisualizerRandomBtn');
         if (footerVisualizerRandomBtn) {
-            // console.log('Footer Visualizer Random button found, adding event listener');
             footerVisualizerRandomBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Footer Visualizer Random button clicked');
                 
                 // Set random visualization mode
                 this.setRandomVisualization();
@@ -17667,7 +17412,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
 
             startProMorphing() {
                 if (!this.officialAudioMotion) {
-                    // console.error('❌ Official AudioMotion not available for Pro morphing');
                     return;
                 }
 
@@ -17736,7 +17480,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     this.updateProMorph();
                 }, 50);
 
-                // console.log('🎨 Started Pro morphing with config:', this.morphStartConfig);
             }
 
             stopMorphing() {
@@ -17920,7 +17663,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         
                         // Restart morph in Pro mode since user had morph active
                         if (wasMorphing) {
-                            // console.log('🔄 Restarting morph in Pro mode after preset switch');
                             this.startProMorphing();
                         }
                     }
@@ -17981,7 +17723,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                         
                         // Restart morph in Pro mode since user had morph active
                         if (wasMorphing) {
-                            // console.log('🔄 Restarting morph in Pro mode after preset switch');
                             this.startProMorphing();
                         }
                     }
@@ -18198,7 +17939,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     }
 
                 } catch (error) {
-                    // console.error('❌ Error applying Pro morph config:', error);
                 }
             }
 
@@ -19048,7 +18788,6 @@ window.debugBackgroundImage = function() {
 
 // Global function to test background image loading
 window.testBackgroundImage = function() {
-    // console.log('🧪 Testing background image functionality...');
     if (window.visualizer) {
         console.log('Current state:', {
             hasImage: !!window.visualizer.backgroundImage,
@@ -19063,7 +18802,6 @@ window.testBackgroundImage = function() {
         testCanvas.height = 600;
         const testCtx = testCanvas.getContext('2d');
         
-        // console.log('Testing background image DOM element...');
         // Background image is now handled by DOM element, not canvas drawing
         
         // Add test canvas to page for visual inspection
@@ -19081,7 +18819,6 @@ window.testBackgroundImage = function() {
 
 // Global function to inspect main canvas
 window.inspectMainCanvas = function() {
-    // console.log('🔍 Inspecting main canvas...');
     const mainCanvas = document.querySelector('#visualizationCanvas');
     if (mainCanvas) {
         console.log('Main canvas found:', {
@@ -19214,7 +18951,6 @@ FrequeVisualizer.prototype.applyFluidDynamicsDefaultPreset = function() {
         beatReactBtn.classList.add('active');
     }
 
-    // console.log('🔄 Applied Default preset - restored all settings to initial app values');
 };
 
 // Apply Ambient Preset - purple scheme, all sliders minimum
@@ -19284,7 +19020,6 @@ FrequeVisualizer.prototype.applyFluidDynamicsAmbientPreset = function() {
             this.fluidDynamics.setSpeed(0.5);
         }
 
-        // console.log('🟣 Applied Ambient preset - calm purple fluid with minimal settings');
     }
 
 // Apply Metal Preset - fire scheme, all sliders maximum
@@ -19354,7 +19089,6 @@ FrequeVisualizer.prototype.applyFluidDynamicsMetalPreset = function() {
             this.fluidDynamics.setSpeed(2.5);
         }
 
-        // console.log('🔥 Applied Metal preset - intense fire fluid with maximum settings');
     };
 
 // Apply Random Preset - randomize all fluid settings
@@ -19439,7 +19173,6 @@ FrequeVisualizer.prototype.applyFluidDynamicsRandomPreset = function() {
         this.fluidDynamics.setSpeed(parseFloat(speed));
     }
 
-    // console.log(`🎲 Applied Random preset - ${numColors} random colors with randomized settings`);
 };
 
 // Fluid Preset Management Methods
@@ -19519,7 +19252,6 @@ FrequeVisualizer.prototype.saveCurrentFluidPreset = function() {
     
     this.saveFluidPresets();
     this.updateFluidPresetSelector();
-    // console.log(`💾 Saved fluid preset: ${name}`);
 };
 
 FrequeVisualizer.prototype.loadFluidPreset = function(index) {
@@ -19624,7 +19356,6 @@ FrequeVisualizer.prototype.loadFluidPreset = function(index) {
         }
     }
     
-    // console.log(`📂 Loaded fluid preset: ${preset.name}`);
 };
 
 FrequeVisualizer.prototype.updateFluidPresetSelector = function() {

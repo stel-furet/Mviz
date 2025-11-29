@@ -81,7 +81,6 @@ class FluidDynamicsVisualization {
         // Initialize advanced beat detection system
         this.initializeBeatDetection();
         
-        // console.log('🌊 Pavel Fluid Dynamics System initialized with advanced spectrum colors, energy physics, and beat detection');
     }
     
     createCanvas() {
@@ -106,7 +105,6 @@ class FluidDynamicsVisualization {
         const visualizationContainer = document.getElementById('visualizationContainer');
         if (visualizationContainer) {
             visualizationContainer.appendChild(this.canvas);
-            // console.log('🌊 Fluid canvas created and added to visualizationContainer');
         } else {
             console.error('🌊 VisualizationContainer not found!');
         }
@@ -129,7 +127,6 @@ class FluidDynamicsVisualization {
             });
             
             if (this.gl) {
-                // console.log('🌊 WebGL2 context created for Pavel Fluid System');
             }
         } catch (error) {
             console.warn('🌊 WebGL2 not supported, trying WebGL1:', error);
@@ -170,7 +167,6 @@ class FluidDynamicsVisualization {
         // Initialize framebuffers
         this.initializeFramebuffers();
         
-        // console.log('🌊 Pavel WebGL context ready for Fluid Dynamics');
         return true;
     }
     
@@ -200,7 +196,6 @@ class FluidDynamicsVisualization {
             supportRenderTextureFormat: !!supportRenderTextureFormat
         };
         
-        // console.log('🌊 WebGL extensions initialized:', {
         //     linearFiltering: this.ext.supportLinearFiltering,
         //     renderTexture: this.ext.supportRenderTextureFormat
         // });
@@ -526,7 +521,6 @@ class FluidDynamicsVisualization {
         // Initialize blit system for rendering
         this.initializeBlit();
         
-        // console.log('🌊 Pavel shader programs initialized:', Object.keys(this.programs));
     }
     
     initializeBlit() {
@@ -673,7 +667,6 @@ class FluidDynamicsVisualization {
         // Initialize sunrays framebuffers
         this.initSunraysFramebuffers();
         
-        // console.log('🌊 Pavel framebuffer system initialized:', {
         //     simRes,
         //     dyeRes,
         //     texType: texType === gl.HALF_FLOAT ? 'HALF_FLOAT' : 'FLOAT'
@@ -726,7 +719,6 @@ class FluidDynamicsVisualization {
             }
         }
         
-        // console.log('🌊 Pavel Fluid Dynamics initialization complete');
         return true;
     }
     
@@ -762,7 +754,6 @@ class FluidDynamicsVisualization {
             }
         }, 16);
         
-        // console.log('🌊 Pavel Fluid Dynamics started - SHOULD BE RED');
     }
     
     stop() {
@@ -770,7 +761,6 @@ class FluidDynamicsVisualization {
         if (this.canvas) {
             this.canvas.style.display = 'none';
         }
-        // console.log('🌊 Pavel Fluid Dynamics stopped');
     }
     
     resize() {
@@ -794,13 +784,11 @@ class FluidDynamicsVisualization {
                 this.gl.viewport(0, 0, newWidth, newHeight);
             }
             
-            // console.log(`🌊 Pavel Fluid canvas resized to: ${newWidth} x ${newHeight}`);
         
         // Reinitialize framebuffers after resize
         if (this.gl && this.isActive) {
             this.gl.viewport(0, 0, newWidth, newHeight);
             this.initializeFramebuffers();
-            // console.log('🌊 Framebuffers reinitialized after resize');
         }
         }
     }
@@ -1817,7 +1805,6 @@ class FluidDynamicsVisualization {
     setColorScheme(schemeName) {
         if (this.colorPalettes[schemeName]) {
             this.currentPalette = this.colorPalettes[schemeName];
-            // console.log(`🎨 Color scheme changed to: ${schemeName}`, this.currentPalette);
             
             // Update the dropdown to reflect the current selection
             const dropdown = document.getElementById('headerFluidDynamicsColorScheme');
@@ -1866,7 +1853,6 @@ class FluidDynamicsVisualization {
             this.energyPhysics.energySensitivity.pressure = changes.pressureResponse;
         }
         
-        // console.log('🔧 Energy physics config updated:', this.energyPhysics.energySensitivity);
     }
     
     // Update opacity
@@ -1913,7 +1899,6 @@ class FluidDynamicsVisualization {
     // Update saturation
     setSaturation(saturation) {
         this.saturation = Math.max(0.0, Math.min(2.0, saturation));
-        // console.log(`🎨 Fluid saturation set to: ${this.saturation}`);
     }
     
     // Apply saturation to color
@@ -1941,13 +1926,11 @@ class FluidDynamicsVisualization {
     // Toggle beat react functionality
     setBeatReact(enabled) {
         this.beatReactEnabled = enabled;
-        // console.log(`🥁 Beat React ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     setSpeed(speed) {
         this.baseSpeed = speed;  // Store the user-set base speed
         this.updateEffectiveSpeed();  // Calculate effective speed with audio
-        // console.log(`🌊 Base animation speed set to: ${speed.toFixed(1)}x`);
     }
     
     // Calculate effective speed combining base speed and audio energy
@@ -1983,7 +1966,6 @@ class FluidDynamicsVisualization {
         this.currentPalette = colors;
         // Mark that we're using custom colors
         this.usingCustomColors = true;
-        // console.log(`🎨 Applied ${colors.length} custom colors:`, colors);
     }
     
     addWaitingAnimation() {
@@ -2071,7 +2053,6 @@ class FluidDynamicsVisualization {
         this.config.CURL = 5; // Very low curl - gentle mixing only
         this.config.DENSITY_DISSIPATION = 0.95; // Slower fade for gentle presence
         
-        // console.log('🌊 Entering waiting animation mode - very slow, dim colors matching current scheme');
     }
     
     restoreFromWaitingMode() {

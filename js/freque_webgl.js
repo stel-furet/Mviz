@@ -29,18 +29,15 @@ class WebGLBeatDetector {
         // Initialize tempo detector
         this.tempoDetector = new TempoDetector();
         
-        // console.log('🥁 WebGL Beat Detector initialized');
     }
     
     update(audioFeatures) {
         if (!audioFeatures) {
-            // console.log('🥁 WebGL Beat Detector: No audio features provided');
             return;
         }
         
         // Debug logging (very rare to avoid spam)
         if (Math.random() < 0.001) { // 0.1% chance to log
-            // console.log('🥁 WebGL Beat Detector update - audioFeatures:', {
             //     frequencies: audioFeatures.frequencies ? audioFeatures.frequencies.length : 'none',
             //     waveform: audioFeatures.waveform ? audioFeatures.waveform.length : 'none',
             //     energy: audioFeatures.energy,
@@ -136,7 +133,6 @@ class WebGLBeatDetector {
     
     setBeatIntensity(intensity) {
         this.beatIntensity = Math.max(0, Math.min(1, intensity));
-        // console.log('🥁 WebGL Beat intensity set to:', this.beatIntensity);
     }
     
     getBeatEffects(beatReactEnabled = false) {
@@ -220,7 +216,6 @@ class WebGLVisualizationManager {
         // Beat detection system
         this.beatDetector = new WebGLBeatDetector();
         
-        // console.log('🎮 WebGL Visualization Manager initialized');
     }
     
     initialize() {
@@ -258,7 +253,6 @@ class WebGLVisualizationManager {
             this.initializeWebGL();
             
             this.isInitialized = true;
-            // console.log('🎮 WebGL canvas created and added to container');
         } else {
             console.error('🎮 WebGL: visualizationContainer not found!');
         }
@@ -284,7 +278,6 @@ class WebGLVisualizationManager {
             if (this.gl) {
                 this.webgl2Supported = true;
                 this.webglSupported = true;
-                // console.log('🎮 WebGL2 context created successfully');
             }
         } catch (error) {
             console.warn('🎮 WebGL2 not supported, trying WebGL:', error);
@@ -305,7 +298,6 @@ class WebGLVisualizationManager {
                 if (this.gl) {
                     this.webglSupported = true;
                     this.webgl2Supported = false;
-                    // console.log('🎮 WebGL context created successfully');
                 }
             } catch (error) {
                 console.error('🎮 WebGL not supported:', error);
@@ -322,7 +314,6 @@ class WebGLVisualizationManager {
         // Initialize default visualization (particle system)
         this.initializeDefaultVisualization();
         
-        // console.log('🎮 WebGL initialization complete:', {
         //     webglSupported: this.webglSupported,
         //     webgl2Supported: this.webgl2Supported,
         //     canvasSize: `${this.canvas.width}x${this.canvas.height}`
@@ -332,7 +323,6 @@ class WebGLVisualizationManager {
     initializeDefaultVisualization() {
         // Initialize particle system as default visualization
         this.currentVisualization = new WebGLParticleSystem(this);
-        // console.log('🎮 Default WebGL visualization (Particle System) initialized');
     }
     
     showWebGLError() {
@@ -449,7 +439,6 @@ class WebGLVisualizationManager {
         
         this.setCanvasDimensions(newWidth, newHeight, oldWidth, oldHeight);
         
-        // console.log('🎮 WebGL canvas resized to:', newWidth, 'x', newHeight);
     }
     
     setCanvasDimensions(width, height, oldWidth = null, oldHeight = null) {
@@ -478,7 +467,6 @@ class WebGLVisualizationManager {
             this.currentVisualization.onResize(width, height, oldWidth, oldHeight);
         }
         
-        // console.log('🎮 WebGL canvas dimensions set:', width, 'x', height, 'WebGL context valid:', !!this.gl);
     }
     
     start() {
@@ -505,7 +493,6 @@ class WebGLVisualizationManager {
             this.currentVisualization.start();
         }
         
-        // console.log('🎮 WebGL visualization started (no independent animation loop)');
     }
     
     stop() {
@@ -523,7 +510,6 @@ class WebGLVisualizationManager {
             this.canvas.style.opacity = '0';
         }
         
-        // console.log('🎮 WebGL visualization stopped (animation loop continues)');
     }
     
     update(audioFeatures = null) {
@@ -741,7 +727,6 @@ class WebGLParticleSystem {
         };
         this.colors = this.colorSchemes[this.currentColorScheme];
         
-        // console.log('🎮 WebGL Particle System initialized');
     }
     
     initialize() {
@@ -765,7 +750,6 @@ class WebGLParticleSystem {
         // Generate initial particles
         this.generateInitialParticles();
         
-        // console.log('🎮 Particle System: Initialization complete');
         return true;
     }
     
@@ -873,7 +857,6 @@ class WebGLParticleSystem {
             starShape: this.gl.getAttribLocation(this.program, 'a_starShape')
         };
         
-        // console.log('🎮 Particle System: Shaders compiled successfully');
         return true;
     }
     
@@ -904,7 +887,6 @@ class WebGLParticleSystem {
         // Create star shape buffer for particle shapes (0.0 = circle, 1.0 = star)
         this.starShapeBuffer = this.gl.createBuffer();
         
-        // console.log('🎮 Particle System: Buffers created successfully');
         return true;
     }
     
@@ -915,7 +897,6 @@ class WebGLParticleSystem {
             this.addParticle();
         }
         
-        // console.log('🎮 Particle System: Generated', this.particles.length, 'initial particles');
     }
     
     addParticle() {
@@ -991,7 +972,6 @@ class WebGLParticleSystem {
             
             // Debug beat react status (very rarely)
             if (beatInfo.beat && this.beatReact && beatEffects.sizeMultiplier > 1.0 && Math.random() < 0.01) {
-                // console.log('🥁 Beat React ACTIVE:', { 
                 //     beatDetected: beatInfo.beat,
                 //     beatReactEnabled: this.beatReact,
                 //     sizeMultiplier: beatEffects.sizeMultiplier,
@@ -1168,7 +1148,6 @@ class WebGLParticleSystem {
                 const totalSizeMultiplier = beatSizeMultiplier * energySizeMultiplier * bassSizeMultiplier;
                 const finalSize = sampleParticle.size * sampleParticle.life * totalSizeMultiplier;
                 
-                // console.log('🎮 WebGL: Rendering', this.particles.length, 'particles. Sample particle:', {
                 //     baseSize: sampleParticle.size,
                 //     life: sampleParticle.life,
                 //     beatSizeMultiplier: beatSizeMultiplier,
@@ -1260,11 +1239,9 @@ class WebGLParticleSystem {
         if (!this.isInitialized) {
             this.initialize();
         }
-        // console.log('🎮 Particle System: Started');
     }
     
     stop() {
-        // console.log('🎮 Particle System: Stopped');
     }
     
     onResize(width, height, oldWidth, oldHeight) {
@@ -1279,7 +1256,6 @@ class WebGLParticleSystem {
             });
         }
         
-        // console.log('🎮 Particle System: Resized to', width, 'x', height);
     }
     
     setColorScheme(schemeName) {
@@ -1292,7 +1268,6 @@ class WebGLParticleSystem {
                 particle.color = this.getSaturatedColor();
             });
             
-            // console.log('🎮 WebGL: Color scheme changed to:', schemeName);
         } else {
             console.warn('🎮 WebGL: Unknown color scheme:', schemeName);
         }
@@ -1301,7 +1276,6 @@ class WebGLParticleSystem {
     setSettings(settings) {
         // Only log occasionally to avoid spam
         if (Math.random() < 0.1) { // 10% chance to log
-            // console.log('🎮 WebGL: setSettings called with:', settings);
         }
         
         if (settings.particleCount !== undefined) {
@@ -1314,7 +1288,6 @@ class WebGLParticleSystem {
                 for (let i = 0; i < this.particleCount - oldCount; i++) {
                     this.addParticle();
                 }
-                // console.log('🎮 WebGL: Added', this.particleCount - oldCount, 'new particles');
             } else if (this.particleCount < oldCount) {
                 // Remove excess particles (remove oldest ones)
                 this.particles = this.particles.slice(0, this.particleCount);
@@ -1331,7 +1304,6 @@ class WebGLParticleSystem {
             this.particles.forEach(particle => {
                 particle.size *= sizeRatio;
             });
-            // console.log('🎮 WebGL: Particle size changed from', oldSize, 'to', this.particleSize);
         }
         
         if (settings.speed !== undefined) {
@@ -1344,20 +1316,17 @@ class WebGLParticleSystem {
                 particle.vx *= speedRatio;
                 particle.vy *= speedRatio;
             });
-            // console.log('🎮 WebGL: Speed changed from', oldSpeed, 'to', this.speed);
         }
         
         if (settings.gravity !== undefined) {
             const oldGravity = this.gravity;
             this.gravity = Math.max(0, Math.min(2, settings.gravity));
-            // console.log('🎮 WebGL: Gravity changed from', oldGravity, 'to', this.gravity);
             // Gravity affects all particles in real-time during updateParticles
         }
         
         if (settings.saturation !== undefined) {
             const oldSaturation = this.saturation;
             this.saturation = Math.max(0, Math.min(1, settings.saturation / 100)); // Convert 0-100 to 0.0-1.0
-            // console.log('🎮 WebGL: Saturation changed from', oldSaturation, 'to', this.saturation);
             
             // Update existing particle colors
             this.particles.forEach(particle => {
@@ -1372,7 +1341,6 @@ class WebGLParticleSystem {
         if (settings.twinkleIntensity !== undefined) {
             const oldIntensity = this.twinkleIntensity;
             this.twinkleIntensity = Math.max(0, Math.min(1, settings.twinkleIntensity / 100)); // Convert 0-100 to 0.0-1.0
-            // console.log('🎮 WebGL: Twinkle intensity changed from', oldIntensity, 'to', this.twinkleIntensity);
             
             // Update existing particles - reassign twinkle status based on new intensity
             this.particles.forEach(particle => {
@@ -1386,7 +1354,6 @@ class WebGLParticleSystem {
         if (settings.starPercentage !== undefined) {
             const oldPercentage = this.starPercentage;
             this.starPercentage = Math.max(0, Math.min(1, settings.starPercentage / 100)); // Convert 0-100 to 0.0-1.0
-            // console.log('🎮 WebGL: Star percentage changed from', oldPercentage, 'to', this.starPercentage);
             
             // Update existing particles - reassign star shape based on new percentage
             this.particles.forEach(particle => {
@@ -1397,7 +1364,6 @@ class WebGLParticleSystem {
         if (settings.opacity !== undefined) {
             const oldOpacity = this.opacity;
             this.opacity = Math.max(0, Math.min(1, settings.opacity / 100)); // Convert 0-100 to 0.0-1.0
-            // console.log('🎮 WebGL: Opacity changed from', oldOpacity, 'to', this.opacity);
             // Opacity is applied in real-time during rendering via uniform
         }
         
@@ -1459,7 +1425,6 @@ class WebGLParticleSystem {
             this.trebleReact = settings.trebleReact;
         }
         
-        // console.log('🎮 Particle System: Settings updated and applied to existing particles', settings);
     }
     
     getSettings() {

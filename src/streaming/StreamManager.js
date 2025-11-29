@@ -371,7 +371,6 @@ class StreamManager {
                 console.log('PC Signaling state:', this.pc.signalingState);
                 
                 if (this.pc.connectionState === 'connected') {
-                    // console.log('✅ WebRTC connection established successfully!');
                 } else if (this.pc.connectionState === 'failed') {
                     console.log('❌ Connection failed, may need to restart');
                     this.handleStreamingError(new Error('WebRTC connection failed'));
@@ -387,7 +386,6 @@ class StreamManager {
 
                 this.channel.postMessage({type: 'offer', data: offer});
                 this.hasOffered = true;
-                // console.log('✅ Offer sent successfully');
             } else {
                 console.log('Offer already sent, skipping duplicate');
             }
@@ -495,14 +493,10 @@ class StreamManager {
                     
                     // Debug: Log what video elements are available
                     if (frameCount % 60 === 0) { // Log every 60 frames to avoid spam
-                        // console.log('Capture debug - videoMode:', this.visualizer.videoMode);
-                        // console.log('Available video elements:', {
                         //     captureVideoElement: !!this.visualizer.captureVideoElement,
                         //     videoElement: !!this.visualizer.videoElement
                         // });
-                        // console.log('Selected videoSource:', videoSource ? videoSource.constructor.name : 'none');
                         // if (videoSource) {
-                        //     console.log('VideoSource details:', {
                         //         readyState: videoSource.readyState,
                         //         dimensions: videoSource.videoWidth + 'x' + videoSource.videoHeight,
                         //         paused: videoSource.paused,
@@ -513,7 +507,6 @@ class StreamManager {
 
                     if (videoSource && videoSource.readyState >= 2) {
                         if (frameCount % 60 === 0) {
-                            // console.log('Video source found for capture:', videoSource.constructor.name, 'ready state:', videoSource.readyState, 'dimensions:', videoSource.videoWidth + 'x' + videoSource.videoHeight);
                         }
                         // Clear temp canvas
                         this.tempVideoCtx.clearRect(0, 0, this.tempVideoCanvas.width, this.tempVideoCanvas.height);
@@ -1025,10 +1018,8 @@ class StreamManager {
 // Phase 1: Test LiveDisplayManager functionality
 async function testLiveDisplayManager() {
     try {
-        // console.log('🧪 Phase 1: Testing LiveDisplayManager...');
         
         if (!window.visualizer || !window.visualizer.liveDisplayManager) {
-            // console.error('❌ Phase 1: LiveDisplayManager not available');
             return;
         }
         
@@ -1036,24 +1027,19 @@ async function testLiveDisplayManager() {
         
         // Test 1: Verify composite canvas creation
         await manager.setupCompositeCanvas();
-        // console.log('✅ Test 1: Composite canvas created:', manager.compositeCanvas.width, 'x', manager.compositeCanvas.height);
         
         // Test 2: Verify streaming capability
         const videoStream = manager.compositeCanvas.captureStream(30);
-        // console.log('✅ Test 2: Stream created with tracks:', videoStream.getTracks().length);
         
         // Test 3: Verify compositing works
         manager.startCompositing();
-        // console.log('✅ Test 3: Compositing started');
         
         // Stop compositing after 1 second
         setTimeout(() => {
             manager.stopStreaming();
-            // console.log('✅ Phase 1: All tests passed - LiveDisplayManager is working correctly');
         }, 1000);
         
     } catch (error) {
-        // console.error('❌ Phase 1: Test failed:', error);
     }
 }
 

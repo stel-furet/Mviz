@@ -118,4 +118,3 @@
             }
         };
         
-        // console.log('✓ Lightweight metadata parser loaded');

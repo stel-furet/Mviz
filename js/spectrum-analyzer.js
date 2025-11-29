@@ -88,7 +88,6 @@ class SpectrumAnalyzer {
         // Handle resize
         window.addEventListener('resize', () => this.handleResize());
 
-        // console.log('Enhanced SpectrumAnalyzer created with channelLayout support');
     }
 
     resetToDefaults() { // Full AudioMotion parameter set with single quotes for strings
@@ -240,7 +239,6 @@ class SpectrumAnalyzer {
             // Channel splitter for stereo
             this.splitter = this.audioCtx.createChannelSplitter(2);
 
-            // console.log('Audio context initialized with stereo support:', {
             //     sampleRate: this.audioCtx.sampleRate,
             //     fftSize: this.analyser.fftSize,
             //     frequencyBinCount: this.analyser.frequencyBinCount
@@ -734,7 +732,6 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (Math.random() < 0.01) { // Reduce console spam - only log 1% of the time
-                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
@@ -774,7 +771,6 @@ class SpectrumAnalyzer {
                     // No audio data available (disabled viz)
                 } else if (audioFeatures && audioFeatures.energy === 0) {
                     // Try to generate basic audio features if AI features have no energy
-                    // console.log('🔍 AI features have no energy (disabled viz), trying basic audio features...');
                     const basicFeatures = this.generateBasicAudioFeatures();
                     if (basicFeatures.energy > 0) {
                         audioFeatures = basicFeatures;
@@ -844,13 +840,11 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (!isCapturedViaKaleidoscope) {
-                    // console.log('🔍 AI features have no energy, trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
                     audioFeatures = basicFeatures;
                     if (!isCapturedViaKaleidoscope) {
-                        // console.log('🔍 Using basic audio features instead:', audioFeatures);
                     }
                 }
             }
@@ -895,13 +889,11 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (!isFluidCapturedViaKaleidoscope) {
-                    // console.log('🌊 AI features have no energy for Fluid, trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
                     audioFeatures = basicFeatures;
                     if (!isFluidCapturedViaKaleidoscope) {
-                        // console.log('🌊 Using basic audio features for Fluid instead:', audioFeatures);
                     }
                 }
             }
@@ -946,13 +938,11 @@ class SpectrumAnalyzer {
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
                 if (!isWebGLCapturedViaKaleidoscope) {
-                    // console.log('🔍 AI features have no energy, trying basic audio features...');
                 }
                 const basicFeatures = this.generateBasicAudioFeatures();
                 if (basicFeatures.energy > 0) {
                     audioFeatures = basicFeatures;
                     if (!isWebGLCapturedViaKaleidoscope) {
-                        // console.log('🔍 Using basic audio features instead:', audioFeatures);
                     }
                 }
             }
@@ -1203,12 +1193,10 @@ class SpectrumAnalyzer {
         if (! isVideoActive) { // Only fill background when video is NOT active
             if (!hasBackgroundImage) {
                 // Only fill with background color if no background image
-                // console.log('🎨 Filling with background color:', this.backgroundColor);
             this.ctx.fillStyle = this.backgroundColor;
             this.ctx.fillRect(0, 0, width, height);
 
             if (this.showBgColor && this.backgroundColor !== '#ffffff') {
-                    // console.log('🎭 Applying background overlay:', `rgba(0, 0, 0, ${this.bgAlpha})`);
                 this.ctx.fillStyle = `rgba(0, 0, 0, ${
                     this.bgAlpha
                 })`;
@@ -1216,11 +1204,9 @@ class SpectrumAnalyzer {
                 }
             } else {
                 // Clear canvas for transparency when background image is active
-                // console.log('🧹 Clearing canvas for background image transparency');
                 this.ctx.clearRect(0, 0, width, height);
             }
         } else { // Clear canvas for transparency when video is active
-            // console.log('🧹 Clearing canvas for video transparency');
             this.ctx.clearRect(0, 0, width, height);
         }
 
@@ -1228,15 +1214,12 @@ class SpectrumAnalyzer {
 
         // Only apply overlay if showBgColor is true AND background is not pure white AND no background image
         if (this.showBgColor && this.backgroundColor !== '#ffffff' && !hasBackgroundImage) {
-            // console.log('🎭 Applying background overlay (no background image)');
             this.ctx.fillStyle = `rgba(0, 0, 0, ${
                 this.bgAlpha
             })`;
             this.ctx.fillRect(0, 0, width, height);
         } else if (hasBackgroundImage) {
-            // console.log('✅ Skipping overlay - background image is active');
         } else {
-            // console.log('✅ No overlay - background image should be visible');
         }
 
         // Draw based on mode - radial takes precedence over channel layout
@@ -1246,7 +1229,6 @@ class SpectrumAnalyzer {
             return;
         }
         
-        // console.log('🎨 Drawing visualization elements:', {
         //     radial: this.radial,
         //     channelLayout: this.channelLayout,
         //     mode: this.mode,
@@ -1255,22 +1237,16 @@ class SpectrumAnalyzer {
         // });
         
         if (this.radial) {
-            // console.log('🌀 Drawing radial visualization');
             this.drawRadial();
         } else if (this.channelLayout === 'dual-vertical') {
-            // console.log('📊 Drawing dual vertical visualization');
             this.drawDualVertical();
         } else if (this.channelLayout === 'dual-horizontal') {
-            // console.log('📊 Drawing dual horizontal visualization');
             this.drawDualHorizontal();
         } else if (this.mode === 10) {
-            // console.log('📈 Drawing line graph visualization');
             this.drawLineGraph();
         } else if (this.mode === 6 && this.ledBars) {
-            // console.log('💡 Drawing LED bars visualization');
             this.drawLEDBars();
         } else if (this.mode === 0 && this.barSpace === 0) {
-            // console.log('🌊 Drawing fluid spectrum visualization');
             this.drawFluidSpectrum(); // Use fluid drawing for mode 0 with no bar space
         } else {
             this.drawBars();

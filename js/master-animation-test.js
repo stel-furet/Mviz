@@ -55,7 +55,6 @@ class MasterAnimationTestSystem {
     render(deltaTime, timestamp) {
         // Disable render logging to reduce console spam
         // if (this.testCounter % 300 === 0) {
-        //     console.log(`🧪 Test System Render: Frame ${this.testCounter}, Delta: ${deltaTime.toFixed(2)}ms`);
         // }
     }
     

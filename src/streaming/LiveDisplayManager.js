@@ -203,7 +203,6 @@ class LiveDisplayManager {
     
     // Set the BroadcastChannel from DisplayInstance
     setChannel(channel) {
-        // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting channel`, channel);
         this.channel = channel;
         
         // Set up message handler for the channel
@@ -213,23 +212,18 @@ class LiveDisplayManager {
     // Set up message handler for the channel
     setupChannelMessageHandler() {
         if (!this.channel) {
-            // console.error(`DEBUG LiveDisplayManager ${this.displayId}: Cannot set up message handler - no channel`);
             return;
         }
         
-        // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Setting up channel message handler`);
         
         // Handle incoming messages
         this.channel.onmessage = async (event) => {
-            // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Raw message event:`, event);
             
             if (!event.data) {
-                // console.error(`DEBUG LiveDisplayManager ${this.displayId}: Received empty message event`);
                 return;
             }
             
             const { type, data } = event.data;
-            // console.log(`DEBUG LiveDisplayManager ${this.displayId}: Received message:`, type, data);
             
             switch (type) {
                 case 'answer':
@@ -239,46 +233,35 @@ class LiveDisplayManager {
                     await this.handleIceCandidate(data);
                     break;
                 case 'display-ready':
-                    // console.log(`LiveDisplay ${this.displayId}: Display window ready`);
                     // Store that display is ready, but only create offer if we're streaming
                     this.displayReady = true;
                     // Only create and send offer if we're already streaming
                     if (this.isStreaming && this.pc) {
-                        // console.log(`LiveDisplay ${this.displayId}: Display ready and streaming - creating offer`);
                         this.createAndSendOffer();
                     } else {
-                        // console.log(`LiveDisplay ${this.displayId}: Display ready but not streaming yet - will create offer when streaming starts`);
                     }
                     break;
                 case 'pong':
-                    // console.log(`LiveDisplay ${this.displayId}: Pong received`);
                     break;
                 case 'display-settings':
                     // Update display settings
                     if (data) {
-                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Received display settings:`, data);
-                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Current settings:`, this.displaySettings);
                         
                         // Update capture settings
                         if (data.captureVideo !== undefined) {
-                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVideo from ${this.displaySettings.captureVideo} to ${data.captureVideo}`);
                             this.displaySettings.captureVideo = data.captureVideo;
                         }
                         if (data.captureVisualization !== undefined) {
-                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureVisualization from ${this.displaySettings.captureVisualization} to ${data.captureVisualization}`);
                             this.displaySettings.captureVisualization = data.captureVisualization;
                         }
                         if (data.captureKaleidoscope !== undefined) {
                             this.displaySettings.captureKaleidoscope = data.captureKaleidoscope;
                         }
                         if (data.captureInfiniteZoom !== undefined) {
-                            // console.log(`DEBUG LiveDisplay ${this.displayId}: Updating captureInfiniteZoom from ${this.displaySettings.captureInfiniteZoom} to ${data.captureInfiniteZoom}`);
                             this.displaySettings.captureInfiniteZoom = data.captureInfiniteZoom;
                         }
                         
-                        // console.log(`DEBUG LiveDisplay ${this.displayId}: Updated settings:`, this.displaySettings);
                     } else {
-                        // console.error(`DEBUG LiveDisplay ${this.displayId}: Received empty display settings`);
                     }
                     break;
             }
@@ -291,7 +274,6 @@ class LiveDisplayManager {
         
         // Use resolution from displaySettings
         const resolution = this.displaySettings.resolution || '1080p';
-        // console.log(`DEBUG LiveDisplay ${this.displayId}: Getting dimensions for resolution: ${resolution}`);
         
         if (resolution === 'canvas') {
             // Use current canvas dimensions with validation
@@ -299,24 +281,20 @@ class LiveDisplayManager {
             if (canvas && canvas.width > 0 && canvas.height > 0) {
                 targetWidth = canvas.width;
                 targetHeight = canvas.height;
-                // console.log(`DEBUG LiveDisplay ${this.displayId}: Using canvas dimensions: ${targetWidth}x${targetHeight}`);
             } else {
                 // Canvas not ready or invalid dimensions - fallback to 1080p
                 targetWidth = 1920;
                 targetHeight = 1080;
-                // console.log(`DEBUG LiveDisplay ${this.displayId}: Canvas not ready, using default: ${targetWidth}x${targetHeight}`);
             }
         } else {
             const preset = this.resolutionPresets[resolution];
             if (preset) {
                 targetWidth = preset.width;
                 targetHeight = preset.height;
-                // console.log(`DEBUG LiveDisplay ${this.displayId}: Using preset dimensions for ${resolution}: ${targetWidth}x${targetHeight}`);
             } else {
                 // Default to 1080p if preset not found
                 targetWidth = 1920;
                 targetHeight = 1080;
-                // console.log(`DEBUG LiveDisplay ${this.displayId}: Preset not found, using default: ${targetWidth}x${targetHeight}`);
             }
         }
         
@@ -329,14 +307,11 @@ class LiveDisplayManager {
         const canvas = this.visualizer.audioMotion?.canvas;
         if (canvas) {
             targetAspect = canvas.width / canvas.height;
-            // console.log(`✓ LiveDisplay ${this.displayId} using canvas aspect ratio: ${canvas.width}x${canvas.height} (${targetAspect.toFixed(3)})`);
         } else {
             // Fallback to manual aspect ratio setting
             const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
-            // console.log(`✓ LiveDisplay ${this.displayId} using manual aspect ratio: ${ratioW}:${ratioH} (${targetAspect.toFixed(3)})`);
         }
-        // console.log(`LiveDisplay ${this.displayId} final targetAspect:`, targetAspect);
         
         // Calculate final dimensions
         const currentAspect = targetWidth / targetHeight;
@@ -691,7 +666,6 @@ class LiveDisplayManager {
             
             // Check if channel is available
             if (!this.channel) {
-                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot start streaming - no channel available`);
                 return;
             }
             
@@ -709,7 +683,6 @@ class LiveDisplayManager {
             // Get stream from composite canvas with frame rate from displaySettings
             const frameRate = this.displaySettings.frameRate || 30;
             this.stream = this.compositeCanvas.captureStream(frameRate);
-            // console.log(`LiveDisplay ${this.displayId}: Stream created with ${this.stream.getVideoTracks().length} video tracks`);
             
             // Debug stream properties
             this.stream.getVideoTracks().forEach((track, index) => {
@@ -717,7 +690,6 @@ class LiveDisplayManager {
             
             // Always create a fresh WebRTC connection
             if (this.pc) {
-                // console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection`);
                 this.pc.close();
                 this.pc = null;
             }
@@ -730,7 +702,6 @@ class LiveDisplayManager {
             this.setupWebRTC();
             
             // Always create and send offer after setup
-            // console.log(`LiveDisplay ${this.displayId}: Creating offer after WebRTC setup`);
             
             // Add a small delay to ensure the WebRTC connection is fully set up
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -738,10 +709,8 @@ class LiveDisplayManager {
             // Create and send offer
             await this.createAndSendOffer();
             
-            // console.log(`LiveDisplay ${this.displayId}: Streaming started successfully`);
             
         } catch (err) {
-            // console.error(`LiveDisplay ${this.displayId}: Error starting streaming:`, err);
             this.stopStreaming();
         }
     }
@@ -750,7 +719,6 @@ class LiveDisplayManager {
     setupWebRTC() {
         // Create a new RTCPeerConnection
         if (this.pc) {
-            // console.log(`LiveDisplay ${this.displayId}: Closing existing peer connection in setupWebRTC`);
             this.pc.close();
         }
         
@@ -764,32 +732,25 @@ class LiveDisplayManager {
             this.stream.getTracks().forEach(track => {
                 try {
                     const sender = this.pc.addTrack(track, this.stream);
-                    // console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection:`, sender ? 'success' : 'failed');
                 } catch (err) {
-                    // console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection:`, err);
                 }
             });
         } else {
-            // console.error(`LiveDisplay ${this.displayId}: No stream or tracks available to add!`);
             
             // If we don't have a stream yet, try to recreate it
             if (!this.stream && this.compositeCanvas) {
                 try {
                     const frameRate = this.displaySettings.frameRate || 30;
                     this.stream = this.compositeCanvas.captureStream(frameRate);
-                    // console.log(`LiveDisplay ${this.displayId}: Recreated stream with ${this.stream.getTracks().length} tracks`);
                     
                     // Now try to add the tracks
                     this.stream.getTracks().forEach(track => {
                         try {
                             const sender = this.pc.addTrack(track, this.stream);
-                            // console.log(`LiveDisplay ${this.displayId}: Added ${track.kind} track to peer connection (retry):`, sender ? 'success' : 'failed');
                         } catch (err) {
-                            // console.error(`LiveDisplay ${this.displayId}: Error adding track to peer connection (retry):`, err);
                         }
                     });
                 } catch (err) {
-                    // console.error(`LiveDisplay ${this.displayId}: Error recreating stream:`, err);
                 }
             }
         }
@@ -819,13 +780,10 @@ class LiveDisplayManager {
     async createAndSendOffer() {
         try {
             if (!this.channel) {
-                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot send offer - no channel available`);
                 return;
             }
             
             if (!this.pc) {
-                // console.error(`DEBUG LiveDisplay ${this.displayId}: Cannot create offer - no peer connection available`);
-                // console.log(`DEBUG LiveDisplay ${this.displayId}: Will create offer when streaming starts`);
                 return;
             }
             
@@ -836,7 +794,6 @@ class LiveDisplayManager {
             // Note: 'auto' now uses the preset value of 60 Mbps (no resolution-based override needed)
             // The preset values are already optimized per quality level
             
-            // console.log(`DEBUG LiveDisplay ${this.displayId}: Setting video bitrate to ${bitrate/1000000} Mbps (${videoQuality})`);
             
             // Create offer with specific codec preferences
             const offerOptions = {
@@ -851,11 +808,9 @@ class LiveDisplayManager {
             
             // Get the current description after it's been set
             const currentDescription = this.pc.localDescription;
-            // console.log(`LiveDisplay ${this.displayId}: Original SDP set as local description`);
             
             // We'll apply the bitrate setting when sending to the remote peer
             // This avoids the m-line order issue
-            // console.log(`LiveDisplay ${this.displayId}: Created offer with bitrate ${bitrate/1000000} Mbps`);
             
             // Send offer to display window - serialize the RTCSessionDescription object
             // Include the bitrate information for the remote peer to apply
@@ -867,9 +822,7 @@ class LiveDisplayManager {
                     bitrate: bitrate
                 }
             });
-            // console.log(`LiveDisplay ${this.displayId}: Offer sent to display window`);
         } catch (error) {
-            // console.error(`LiveDisplay ${this.displayId}: Error creating offer:`, error);
         }
     }
     
@@ -884,15 +837,12 @@ class LiveDisplayManager {
                 });
                 
                 await this.pc.setRemoteDescription(answer);
-                // console.log(`LiveDisplay ${this.displayId}: Answer set`);
                 
                 // Process any pending ICE candidates
                 this.processPendingIceCandidates();
             } else {
-                // console.log(`LiveDisplay ${this.displayId}: Ignoring answer - wrong state: ${this.pc.signalingState}`);
             }
         } catch (error) {
-            // console.error(`LiveDisplay ${this.displayId}: Error handling answer:`, error);
         }
     }
     
@@ -903,13 +853,10 @@ class LiveDisplayManager {
             
             if (this.pc.remoteDescription) {
                 await this.pc.addIceCandidate(candidate);
-                // console.log(`LiveDisplay ${this.displayId}: ICE candidate added`);
             } else {
                 this.pendingIceCandidates.push(candidate);
-                // console.log(`LiveDisplay ${this.displayId}: ICE candidate queued`);
             }
         } catch (error) {
-            // console.error(`LiveDisplay ${this.displayId}: Error adding ICE candidate:`, error);
         }
     }
     
@@ -926,21 +873,17 @@ class LiveDisplayManager {
             this.displayWindow = window.open(`Display.html?displayId=${this.displayId}`, `LiveDisplay_${this.displayId}`, windowFeatures);
             
             if (this.displayWindow) {
-                // console.log(`LiveDisplay ${this.displayId}: Display window opened`);
                 return true;
             } else {
-                // console.error(`LiveDisplay ${this.displayId}: Failed to open display window`);
                 return false;
             }
         } catch (error) {
-            // console.error(`LiveDisplay ${this.displayId}: Error opening display window:`, error);
             return false;
         }
     }
     
     // Restart streaming with new settings
     async restartStream() {
-        // console.log(`LiveDisplay ${this.displayId}: Restarting stream with new settings...`);
         
         // Save display window reference and state
         const displayWindow = this.displayWindow;
@@ -979,14 +922,12 @@ class LiveDisplayManager {
         // Start streaming again with new settings
         await this.startStreaming();
         
-        // console.log(`LiveDisplay ${this.displayId}: Stream restarted successfully`);
     }
     
     // Internal method to stop streaming with option to keep channels
     async stopStreamingInternal(closeAll = true) {
         if (!this.isStreaming) return;
         
-        // console.log(`LiveDisplay ${this.displayId}: Stopping streaming${closeAll ? '' : ' (keeping channels)'}...`);
         this.isStreaming = false;
         
         // Stop compositing
@@ -1034,7 +975,6 @@ class LiveDisplayManager {
             }
         }
         
-        // console.log(`LiveDisplay ${this.displayId}: Streaming stopped${closeAll ? '' : ' (keeping channels)'}`);
     }
     
     // Stop streaming and clean up all resources

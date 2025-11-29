@@ -104,7 +104,6 @@ class RecordManager {
         
         this.loadSettings();
         this.detectSupportedFormats();
-        // console.log('RecordManager initialized with aspect ratio:', this.aspectRatio);
         this.initializeUI();
         this.updateFileExtensionDisplay();
         
@@ -549,7 +548,6 @@ class RecordManager {
             // Header button toggles background image ON/OFF
             backgroundImgBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // console.log('🔘 Header Background IMG button clicked - toggling background image');
                 
                 if (this.visualizer) {
                     // Toggle background image enabled state
@@ -562,11 +560,9 @@ class RecordManager {
                     this.updateMixerBackgroundToggleButton();
                     this.visualizer.updateFooterBackgroundButton();
                     
-                    // console.log('🔘 Header background toggle changed to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
-                        // console.log('🔄 Forcing visualization redraw after header background toggle');
                         this.visualizer.audioMotion.draw();
                     }
                 }
@@ -588,7 +584,6 @@ class RecordManager {
         if (mixerBackgroundSelect && mixerBackgroundImageFile) {
             // // console.log('✅ Mixer background select button found, adding event listener');
             mixerBackgroundSelect.addEventListener('click', () => {
-                // console.log('🖱️ Mixer background select button clicked');
                 mixerBackgroundImageFile.click();
             });
         } else {
@@ -603,9 +598,7 @@ class RecordManager {
         if (mixerBackgroundToggle) {
             // // console.log('✅ Mixer background toggle button found, adding event listener');
             mixerBackgroundToggle.addEventListener('click', () => {
-                // console.log('🖱️ Mixer background toggle button clicked');
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer background toggle - current state:', {
                     //     enabled: this.visualizer.backgroundImageEnabled,
                     //     hasImage: !!this.visualizer.backgroundImage
                     // });
@@ -620,11 +613,9 @@ class RecordManager {
                     this.updateBackgroundToggleButton(); // Update header toggle too
                     this.visualizer.updateFooterBackgroundButton(); // Update footer button
                     
-                    // console.log('🔘 Mixer background toggle changed to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
-                        // console.log('🔄 Forcing visualization redraw after mixer background toggle');
                         this.visualizer.audioMotion.draw();
                     }
                 }
@@ -767,12 +758,10 @@ class RecordManager {
             // // console.log('✅ Mixer video toggle button found, adding event listener');
             mixerVideoToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer video toggle clicked - current state:', this.visualizer.videoMode);
                     
                     // Toggle video state
                     this.visualizer.toggleVideoPlayback();
                     
-                    // console.log('🔘 Mixer video toggle changed to:', this.visualizer.videoMode);
                 }
             });
         } else {
@@ -805,18 +794,15 @@ class RecordManager {
             // // console.log('✅ Mixer video source select found, adding event listener');
             mixerVideoCameraSelect.addEventListener('change', (e) => {
                 const value = e.target.value;
-                // console.log('📹 Mixer video source changed to:', value);
                 
                 if (value === 'file') {
                     // File selection - trigger file picker (allow replacement of current file)
-                    // console.log('📁 Mixer video file selection triggered');
                 const videoFileInput = document.getElementById('videoFileInput');
                 if (videoFileInput) {
                         // Reset the input value to allow selecting the same file again
                         videoFileInput.value = '';
                     videoFileInput.click();
                 } else {
-                    // console.error('❌ Video file input not found');
                 }
                 } else if (value && this.visualizer) {
                     // Camera device ID - use existing camera selection logic
@@ -837,7 +823,6 @@ class RecordManager {
             mixerVideoPresetButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const preset = button.getAttribute('data-preset');
-                    // console.log('🎨 Mixer video preset clicked:', preset);
                     
                     if (this.visualizer && preset) {
                         // Use existing video preset logic
@@ -847,9 +832,7 @@ class RecordManager {
                         mixerVideoPresetButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
                         
-                        // console.log('🎨 Video preset applied:', preset);
                     } else {
-                        // console.error('❌ Visualizer or preset not found:', {
                         //     visualizer: !!this.visualizer,
                         //     preset: preset
                         // });
@@ -1098,7 +1081,6 @@ class RecordManager {
                     this.visualizer.videoInvert = !this.visualizer.videoInvert;
                     this.visualizer.applyVideoFilters();
                     
-                    // console.log('🔘 Mixer video invert toggled to:', this.visualizer.videoInvert);
                     
                     // Update button text and state
                     const effectText = mixerVideoInvert.querySelector('.effect-text');
@@ -1124,7 +1106,6 @@ class RecordManager {
                     // Use cycleVideoMirror() method exactly like header
                     this.visualizer.cycleVideoMirror();
                     
-                    // console.log('🔘 Mixer video mirror cycled to:', this.visualizer.videoMirror);
                     
                     // Update button text exactly like header implementation
                     const effectText = mixerVideoMirror.querySelector('.effect-text');
@@ -1152,7 +1133,6 @@ class RecordManager {
                     // Use toggleVideoPulse() method exactly like header
                     this.visualizer.toggleVideoPulse();
                     
-                    // console.log('🔘 Mixer video pulse toggled to:', this.visualizer.videoPulse);
                     
                     // Update button text exactly like header implementation
                     const effectText = mixerVideoPulse.querySelector('.effect-text');
@@ -1185,7 +1165,6 @@ class RecordManager {
                     // Use setVideoPulseRate() method exactly like header
                     this.visualizer.setVideoPulseRate(value);
                     
-                    // console.log('🔘 Mixer video pulse rate set to:', value);
                     
                     // Update display value
                     const mixerVideoPulseRateValue = document.getElementById('mixerVideoPulseRateValue');
@@ -1246,7 +1225,6 @@ class RecordManager {
                     // Update audio gain node
                     if (this.visualizer.videoAudioGain) {
                         this.visualizer.videoAudioGain.gain.value = this.visualizer.videoFileMuted ? 0 : this.visualizer.volume;
-                        // console.log('Video audio gain set to:', this.visualizer.videoFileMuted ? 0 : this.visualizer.volume);
                     }
                     
                     // Update both mixer and header buttons
@@ -1255,7 +1233,6 @@ class RecordManager {
                     }
                     this.updateHeaderVideoFileButtons();
                     
-                    // console.log('🔘 Mixer video file mute toggled to:', this.visualizer.videoFileMuted);
                 }
             });
         } else {
@@ -1270,7 +1247,6 @@ class RecordManager {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    // console.log('🗑️ Clearing video file from mixer');
                     
                     // Stop and clear the video file
                     this.visualizer.stopVideoInput();
@@ -1306,7 +1282,6 @@ class RecordManager {
                         }
                     }
                     
-                    // console.log('✅ Video file cleared successfully');
                 }
             });
         } else {
@@ -1321,7 +1296,6 @@ class RecordManager {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    // console.log('🗑️ Clearing video input from mixer');
                     this.visualizer.clearVideoInput();
                 }
             });
@@ -1334,10 +1308,8 @@ class RecordManager {
         // Mixer audio toggle button
         const mixerAudioToggle = document.getElementById('mixerAudioToggle');
         if (mixerAudioToggle) {
-            // console.log('✅ Mixer audio toggle button found, adding event listener');
             mixerAudioToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer audio toggle clicked - current state:', this.visualizer.liveAudioEnabled);
                     
                     // Toggle live audio state
                     this.visualizer.toggleLiveAudio();
@@ -1345,46 +1317,37 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAudioToggle();
                     
-                    // console.log('🔘 Mixer audio toggle changed to:', this.visualizer.liveAudioEnabled);
                 }
             });
         } else {
-            // console.error('❌ Mixer audio toggle button not found');
         }
 
         // Mixer audio device select dropdown
         const mixerAudioDeviceSelect = document.getElementById('mixerAudioDeviceSelect');
         if (mixerAudioDeviceSelect) {
-            // console.log('✅ Mixer audio device select found, adding event listener');
             mixerAudioDeviceSelect.addEventListener('change', (e) => {
                 const deviceId = e.target.value;
-                // console.log('🎤 Mixer audio device changed to:', deviceId);
                 
                 if (deviceId && this.visualizer) {
                     // Select the audio device
                     this.visualizer.selectAudioDevice(deviceId);
                     
-                    // console.log('🎤 Mixer audio device selected:', deviceId);
                 }
             });
         } else {
-            // console.error('❌ Mixer audio device select not found');
         }
 
         // Mixer audio clear input button
         const mixerAudioClearInputBtn = document.getElementById('mixerAudioClearInputBtn');
         if (mixerAudioClearInputBtn) {
-            // console.log('✅ Mixer audio clear input button found, adding event listener');
             mixerAudioClearInputBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.visualizer) {
-                    // console.log('🗑️ Clearing audio input from mixer');
                     this.visualizer.clearAudioInput();
                 }
             });
         } else {
-            // console.error('❌ Mixer audio clear input button not found');
         }
         
         // Mixer audio monitor button
@@ -1404,10 +1367,8 @@ class RecordManager {
         // Mixer AM toggle button
         const mixerAMToggle = document.getElementById('mixerAMToggle');
         if (mixerAMToggle) {
-            // console.log('✅ Mixer AM toggle button found, adding event listener');
             mixerAMToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer AM toggle clicked - current state:', this.visualizer.visualizationEnabled);
                     
                     // Toggle AM visualization state
                     this.visualizer.toggleVisualization();
@@ -1415,17 +1376,14 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAMToggle();
                     
-                    // console.log('🔘 Mixer AM toggle changed to:', this.visualizer.visualizationEnabled);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM toggle button not found');
         }
 
         // Mixer AM opacity slider (restored)
         const mixerAMOpacitySlider = document.getElementById('mixerAMOpacitySlider');
         if (mixerAMOpacitySlider) {
-            // console.log('✅ Mixer AM opacity slider found, initializing custom slider');
             this.mixerAMOpacitySlider = this.initializeVerticalSlider(mixerAMOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -1441,18 +1399,15 @@ class RecordManager {
                     // Sync with header slider
                     this.updateHeaderAMVisualizationOpacitySlider();
                     
-                    // console.log('🎨 Mixer AM opacity changed to:', value, '% (', opacityValue, ')');
                 }
             });
         } else {
-            // console.error('❌ Mixer AM opacity slider not found');
         }
 
         // Header AM Visualization Opacity slider
         const headerAMVisualizationOpacity = document.getElementById('headerAMVisualizationOpacity');
         const headerAMVisualizationOpacityValue = headerAMVisualizationOpacity ? headerAMVisualizationOpacity.nextElementSibling : null;
         if (headerAMVisualizationOpacity && headerAMVisualizationOpacityValue) {
-            // console.log('✅ Header AM visualization opacity slider found, adding event listener');
             headerAMVisualizationOpacity.addEventListener('input', (e) => {
                 if (this.visualizer) {
                     const value = parseInt(e.target.value);
@@ -1463,18 +1418,15 @@ class RecordManager {
                     // Sync with mixer slider
                     this.updateMixerAMOpacitySlider();
                     
-                    // console.log('🎨 Header AM visualization opacity changed to:', value, '% (', opacityValue, ')');
                 }
             });
         } else {
-            // console.error('❌ Header AM visualization opacity slider not found');
         }
 
         // Header AM Background Opacity slider
         const headerAMBackgroundOpacity = document.getElementById('headerAMBackgroundOpacity');
         const headerAMBackgroundOpacityValue = headerAMBackgroundOpacity ? headerAMBackgroundOpacity.nextElementSibling : null;
         if (headerAMBackgroundOpacity && headerAMBackgroundOpacityValue) {
-            // console.log('✅ Header AM background opacity slider found, adding event listener');
             headerAMBackgroundOpacity.addEventListener('input', (e) => {
                 if (this.visualizer) {
                     const value = parseInt(e.target.value);
@@ -1493,14 +1445,12 @@ class RecordManager {
                             this.visualizer.officialAudioMotion.bgAlpha = opacityValue;
                             this.visualizer.officialAudioMotion.showBgColor = value > 0;
                         }
-                        // console.log('🎨 Background opacity updated directly - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
                     }
                     
                     headerAMBackgroundOpacityValue.textContent = value + '%';
                 }
             });
         } else {
-            // console.error('❌ Header AM background opacity slider not found');
         }
 
         // Header AM Preset buttons
@@ -1529,12 +1479,10 @@ class RecordManager {
                         const headerAMProPresetButtons = document.querySelectorAll('#headerVisualizerPanel .btn-preset-pro');
                         headerAMProPresetButtons.forEach(btn => btn.classList.remove('active'));
                         
-                        // console.log('🎨 Applied AM preset:', presetIndex, this.visualizer.visualizationModes[presetIndex]);
                     }
                 });
             });
         } else {
-            // console.error('❌ Header AM preset buttons not found');
         }
 
         // Header AM Pro Preset buttons (Official AudioMotion)
@@ -1584,10 +1532,8 @@ class RecordManager {
         // Mixer AM Random button
         const mixerAMRandomBtn = document.getElementById('mixerAMRandomBtn');
         if (mixerAMRandomBtn) {
-            // console.log('✅ Mixer AM random button found, adding event listener');
             mixerAMRandomBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎲 Mixer AM random button clicked');
                     
                     // Set random visualization mode
                     this.visualizer.setRandomVisualization();
@@ -1595,20 +1541,16 @@ class RecordManager {
                     // Update mixer dropdown
                     this.updateMixerAMVizModeSelect();
                     
-                    // console.log('🎲 Mixer AM random mode set to:', this.visualizer.currentMode);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM random button not found');
         }
 
         // Mixer AM Morph button
         const mixerAMMorphBtn = document.getElementById('mixerAMMorphBtn');
         if (mixerAMMorphBtn) {
-            // console.log('✅ Mixer AM morph button found, adding event listener');
             mixerAMMorphBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔄 Mixer AM morph button clicked - current state:', this.visualizer.isMorphing);
                     
                     // Toggle morph state
                     this.visualizer.toggleMorph();
@@ -1616,21 +1558,17 @@ class RecordManager {
                     // Update mixer UI
                     this.updateMixerAMMorphButton();
                     
-                    // console.log('🔄 Mixer AM morph toggled to:', this.visualizer.isMorphing);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM morph button not found');
         }
 
         // Mixer AM Morph Speed dropdown
         const mixerAMMorphSpeedSelect = document.getElementById('mixerAMMorphSpeedSelect');
         if (mixerAMMorphSpeedSelect) {
-            // console.log('✅ Mixer AM morph speed select found, adding event listener');
             mixerAMMorphSpeedSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const speed = e.target.value;
-                    // console.log('⚡ Mixer AM morph speed selected:', speed);
                     
                     // Set morph speed
                     this.visualizer.setMorphSpeed(speed);
@@ -1638,11 +1576,9 @@ class RecordManager {
                     // Update energy container visibility
                     this.updateMixerAMEnergyContainer();
                     
-                    // console.log('⚡ Mixer AM morph speed changed to:', speed);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM morph speed select not found');
         }
 
         // ========== AM PRESET CONTROLS ==========
@@ -1742,11 +1678,9 @@ class RecordManager {
         // Mixer AM Preset Selector
         const mixerAMPresetSelector = document.getElementById('mixerAMPresetSelector');
         if (mixerAMPresetSelector) {
-            // console.log('✅ Mixer AM preset selector found, adding event listener');
             mixerAMPresetSelector.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.value !== '') {
                     const presetIndex = parseInt(e.target.value);
-                    // console.log('📁 Mixer AM preset selected:', presetIndex);
                     
                     // Load preset
                     this.visualizer.loadPreset(presetIndex);
@@ -1754,20 +1688,16 @@ class RecordManager {
                     // Reset dropdown
                     e.target.value = '';
                     
-                    // console.log('📁 Mixer AM preset loaded:', presetIndex);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM preset selector not found');
         }
 
         // Mixer AM Save Preset Button
         const mixerAMSavePresetBtn = document.getElementById('mixerAMSavePresetBtn');
         if (mixerAMSavePresetBtn) {
-            // console.log('✅ Mixer AM save preset button found, adding event listener');
             mixerAMSavePresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('💾 Mixer AM save preset clicked');
                     
                     // Save current preset
                     const presetName = prompt('Enter preset name:');
@@ -1778,44 +1708,35 @@ class RecordManager {
                     // Update both dropdowns
                     this.updateMixerAMPresetSelector();
                     
-                    // console.log('💾 Mixer AM preset saved');
                 }
             });
         } else {
-            // console.error('❌ Mixer AM save preset button not found');
         }
 
         // Mixer AM Export Presets Button
         const mixerAMExportPresetsBtn = document.getElementById('mixerAMExportPresetsBtn');
         if (mixerAMExportPresetsBtn) {
-            // console.log('✅ Mixer AM export presets button found, adding event listener');
             mixerAMExportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('📤 Mixer AM export presets clicked');
                     
                     // Export presets
                     this.visualizer.exportPresets();
                     
-                    // console.log('📤 Mixer AM presets exported');
                 }
             });
         } else {
-            // console.error('❌ Mixer AM export presets button not found');
         }
 
         // Mixer AM Import Presets Button
         const mixerAMImportPresetsBtn = document.getElementById('mixerAMImportPresetsBtn');
         const mixerAMImportPresetsFile = document.getElementById('mixerAMImportPresetsFile');
         if (mixerAMImportPresetsBtn && mixerAMImportPresetsFile) {
-            // console.log('✅ Mixer AM import presets button found, adding event listener');
             mixerAMImportPresetsBtn.addEventListener('click', () => {
-                // console.log('📥 Mixer AM import presets clicked');
                 mixerAMImportPresetsFile.click();
             });
             
             mixerAMImportPresetsFile.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.files.length > 0) {
-                    // console.log('📥 Mixer AM import file selected');
                     
                     // Import presets
                     this.visualizer.importPresets(e.target.files[0]);
@@ -1823,30 +1744,24 @@ class RecordManager {
                     // Update both dropdowns
                     this.updateMixerAMPresetSelector();
                     
-                    // console.log('📥 Mixer AM presets imported');
                 }
             });
         } else {
-            // console.error('❌ Mixer AM import presets controls not found');
         }
 
         // Mixer AM Color Scheme Select
         const mixerAMColorSchemeSelect = document.getElementById('mixerAMColorSchemeSelect');
         if (mixerAMColorSchemeSelect) {
-            // console.log('✅ Mixer AM color scheme select found, adding event listener');
             mixerAMColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer) {
                     const scheme = e.target.value;
-                    // console.log('🎨 Mixer AM color scheme selected:', scheme);
                     
                     // Set color scheme
                     this.visualizer.setColorScheme(scheme);
                     
-                    // console.log('🎨 Mixer AM color scheme changed to:', scheme);
                 }
             });
         } else {
-            // console.error('❌ Mixer AM color scheme select not found');
         }
 
         // ========== INFINITE ZOOM CHANNEL ==========
@@ -1854,10 +1769,8 @@ class RecordManager {
         // Mixer Infinite Zoom toggle button
         const mixerInfiniteZoomToggle = document.getElementById('mixerInfiniteZoomToggle');
         if (mixerInfiniteZoomToggle) {
-            // console.log('✅ Mixer Infinite Zoom toggle button found, adding event listener');
             mixerInfiniteZoomToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer Infinite Zoom toggle clicked - current state:', this.visualizer.infiniteZoom ? this.visualizer.infiniteZoom.isActive : false);
                     
                     // Toggle Infinite Zoom state
                     this.visualizer.toggleInfiniteZoom();
@@ -1868,13 +1781,11 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Infinite Zoom toggle button not found');
         }
 
         // Mixer Infinite Zoom opacity slider
         const mixerInfiniteZoomOpacitySlider = document.getElementById('mixerInfiniteZoomOpacitySlider');
         if (mixerInfiniteZoomOpacitySlider) {
-            // console.log('✅ Mixer Infinite Zoom opacity slider found, initializing custom slider');
             this.mixerInfiniteZoomOpacitySlider = this.initializeVerticalSlider(mixerInfiniteZoomOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -1890,13 +1801,11 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Infinite Zoom opacity slider not found');
         }
 
         // Mixer Infinite Zoom Shape Select
         const mixerInfiniteZoomShapeSelect = document.getElementById('mixerInfiniteZoomShapeSelect');
         if (mixerInfiniteZoomShapeSelect) {
-            // console.log('✅ Mixer Infinite Zoom shape select found, adding event listener');
             mixerInfiniteZoomShapeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const shape = e.target.value;
@@ -1914,7 +1823,6 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Infinite Zoom shape select not found');
         }
 
         // ========== INFINITE ZOOM SLIDERS ==========
@@ -1949,7 +1857,6 @@ class RecordManager {
         const mixerInfiniteZoomMinSizeDial = document.getElementById('mixerInfiniteZoomMinSizeDial');
         const mixerInfiniteZoomMinSizeValue = document.getElementById('mixerInfiniteZoomMinSizeValue');
         if (mixerInfiniteZoomMinSizeDial && mixerInfiniteZoomMinSizeValue) {
-            // console.log('✅ Mixer Infinite Zoom min size dial found, adding event listener');
             mixerInfiniteZoomMinSizeDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.detail.value);
@@ -1977,7 +1884,6 @@ class RecordManager {
         const mixerInfiniteZoomMaxSizeDial = document.getElementById('mixerInfiniteZoomMaxSizeDial');
         const mixerInfiniteZoomMaxSizeValue = document.getElementById('mixerInfiniteZoomMaxSizeValue');
         if (mixerInfiniteZoomMaxSizeDial && mixerInfiniteZoomMaxSizeValue) {
-            // console.log('✅ Mixer Infinite Zoom max size dial found, adding event listener');
             mixerInfiniteZoomMaxSizeDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.detail.value);
@@ -2005,7 +1911,6 @@ class RecordManager {
         const mixerInfiniteZoomDensityDial = document.getElementById('mixerInfiniteZoomDensityDial');
         const mixerInfiniteZoomDensityValue = document.getElementById('mixerInfiniteZoomDensityValue');
         if (mixerInfiniteZoomDensityDial && mixerInfiniteZoomDensityValue) {
-            // console.log('✅ Mixer Infinite Zoom density dial found, adding event listener');
             mixerInfiniteZoomDensityDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.detail.value);
@@ -2037,7 +1942,6 @@ class RecordManager {
         const mixerInfiniteZoomSpeedDial = document.getElementById('mixerInfiniteZoomSpeedDial');
         const mixerInfiniteZoomSpeedValue = document.getElementById('mixerInfiniteZoomSpeedValue');
         if (mixerInfiniteZoomSpeedDial && mixerInfiniteZoomSpeedValue) {
-            // console.log('✅ Mixer Infinite Zoom speed dial found, adding event listener');
             mixerInfiniteZoomSpeedDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseInt(e.detail.value);
@@ -2070,7 +1974,6 @@ class RecordManager {
         const mixerInfiniteZoomRotationDial = document.getElementById('mixerInfiniteZoomRotationDial');
         const mixerInfiniteZoomRotationValue = document.getElementById('mixerInfiniteZoomRotationValue');
         if (mixerInfiniteZoomRotationDial && mixerInfiniteZoomRotationValue) {
-            // console.log('✅ Mixer Infinite Zoom rotation dial found, adding event listener');
             mixerInfiniteZoomRotationDial.addEventListener('dialchange', (e) => {
                 if (this.visualizer && this.visualizer.infiniteZoom) {
                     const value = parseFloat(e.detail.value);
@@ -2125,10 +2028,8 @@ class RecordManager {
         // Mixer Blobs toggle button
         const mixerBlobsToggle = document.getElementById('mixerBlobsToggle');
         if (mixerBlobsToggle) {
-            // console.log('✅ Mixer Blobs toggle button found, adding event listener');
             mixerBlobsToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer Blobs toggle clicked - current state:', this.visualizer.blobsEnabled);
                     
                     // Toggle Blobs state
                     this.visualizer.toggleBlobs();
@@ -2139,13 +2040,11 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Blobs toggle button not found');
         }
 
         // Mixer Blobs opacity slider
         const mixerBlobsOpacitySlider = document.getElementById('mixerBlobsOpacitySlider');
         if (mixerBlobsOpacitySlider) {
-            // console.log('✅ Mixer Blobs opacity slider found, initializing custom slider');
             this.mixerBlobsOpacitySlider = this.initializeVerticalSlider(mixerBlobsOpacitySlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -2161,7 +2060,6 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Blobs opacity slider not found');
         }
 
         // ========== BLOBS CONTROL SLIDERS ==========
@@ -2413,10 +2311,8 @@ class RecordManager {
         // Mixer Starfall toggle button
         const mixerStarfallToggle = document.getElementById('mixerStarfallToggle');
         if (mixerStarfallToggle) {
-            // console.log('✅ Mixer Starfall toggle button found, adding event listener');
             mixerStarfallToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer Starfall toggle clicked - current state:', this.visualizer.webglEnabled);
                     
                     // Toggle Starfall state
                     this.visualizer.toggleWebGL();
@@ -2427,21 +2323,17 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Starfall toggle button not found');
         }
 
         // Mixer Starfall opacity slider
         const mixerStarfallOpacitySlider = document.getElementById('mixerStarfallOpacitySlider');
         if (mixerStarfallOpacitySlider) {
-            // console.log('✅ Mixer Starfall opacity slider found, initializing');
             this.mixerStarfallOpacitySlider = this.initializeVerticalSlider(mixerStarfallOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
-                    // console.log('🎚️ Mixer Starfall opacity changed to:', value);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ opacity: value });
                 }
             });
         } else {
-            // console.error('❌ Mixer Starfall opacity slider not found');
         }
 
         // ========== STARFALL CONTROL SLIDERS ==========
@@ -2452,12 +2344,10 @@ class RecordManager {
             mixerStarfallColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.webglVisualization && this.visualizer.webglVisualization.currentVisualization) {
                     const scheme = e.target.value;
-                    // console.log('🎨 Mixer Starfall color scheme changed to:', scheme);
                     this.visualizer.webglVisualization.currentVisualization.setSettings({ colorScheme: scheme });
                 }
             });
         } else {
-            // console.error('❌ Mixer Starfall color scheme dropdown not found');
         }
 
         // Particle Count Dial
@@ -2600,10 +2490,8 @@ class RecordManager {
         // Mixer Fluidity toggle button
         const mixerFluidityToggle = document.getElementById('mixerFluidityToggle');
         if (mixerFluidityToggle) {
-            // console.log('✅ Mixer Fluidity toggle button found, adding event listener');
             mixerFluidityToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer Fluidity toggle clicked - current state:', this.visualizer.fluidDynamicsEnabled);
                     
                     // Toggle Fluidity state
                     this.visualizer.toggleFluidDynamics();
@@ -2614,23 +2502,19 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Fluidity toggle button not found');
         }
 
         // Mixer Fluidity opacity slider
         const mixerFluidityOpacitySlider = document.getElementById('mixerFluidityOpacitySlider');
         if (mixerFluidityOpacitySlider) {
-            // console.log('✅ Mixer Fluidity opacity slider found, initializing');
             this.mixerFluidityOpacitySlider = this.initializeVerticalSlider(mixerFluidityOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.fluidDynamics) {
-                    // console.log('🎚️ Mixer Fluidity opacity changed to:', value);
                     // Convert 0-100 to 0.0-1.0 for fluid dynamics opacity
                     const opacityValue = value / 100;
                     this.visualizer.fluidDynamics.setOpacity(opacityValue);
                 }
             });
         } else {
-            // console.error('❌ Mixer Fluidity opacity slider not found');
         }
 
         // ========== FLUIDITY PRESET CONTROLS ==========
@@ -2640,7 +2524,6 @@ class RecordManager {
         if (mixerFluidityDefaultPresetBtn) {
             mixerFluidityDefaultPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎨 Mixer Fluidity Default preset clicked');
                     // Call the same function as header button
                     const headerBtn = document.getElementById('headerFluidDynamicsDefaultPresetBtn');
                     if (headerBtn) headerBtn.click();
@@ -2652,7 +2535,6 @@ class RecordManager {
         if (mixerFluidityAmbientPresetBtn) {
             mixerFluidityAmbientPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎨 Mixer Fluidity Ambient preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsAmbientPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2663,7 +2545,6 @@ class RecordManager {
         if (mixerFluidityMetalPresetBtn) {
             mixerFluidityMetalPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎨 Mixer Fluidity Metal preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsMetalPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2674,7 +2555,6 @@ class RecordManager {
         if (mixerFluidityRandomPresetBtn) {
             mixerFluidityRandomPresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎨 Mixer Fluidity Random preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsRandomPresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2686,7 +2566,6 @@ class RecordManager {
         if (mixerFluidityPresetSelector) {
             mixerFluidityPresetSelector.addEventListener('change', (e) => {
                 if (this.visualizer && e.target.value) {
-                    // console.log('🎨 Mixer Fluidity user preset selected:', e.target.value);
                     // Sync with header dropdown
                     const headerSelector = document.getElementById('headerFluidDynamicsPresetSelector');
                     if (headerSelector) {
@@ -2702,7 +2581,6 @@ class RecordManager {
         if (mixerFluditySavePresetBtn) {
             mixerFluditySavePresetBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('💾 Mixer Fluidity Save preset clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsSavePresetBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2713,7 +2591,6 @@ class RecordManager {
         if (mixerFluidityExportPresetsBtn) {
             mixerFluidityExportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('📤 Mixer Fluidity Export presets clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsExportPresetsBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2724,7 +2601,6 @@ class RecordManager {
         if (mixerFluidityImportPresetsBtn) {
             mixerFluidityImportPresetsBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('📥 Mixer Fluidity Import presets clicked');
                     const headerBtn = document.getElementById('headerFluidDynamicsImportPresetsBtn');
                     if (headerBtn) headerBtn.click();
                 }
@@ -2913,7 +2789,6 @@ class RecordManager {
         if (mixerFluidityBeatReactBtn) {
             mixerFluidityBeatReactBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🎵 Mixer Fluidity Beat React clicked');
                     // Sync with header button
                     const headerBtn = document.getElementById('headerFluidDynamicsBeatReactBtn');
                     if (headerBtn) headerBtn.click();
@@ -3014,10 +2889,8 @@ class RecordManager {
         // Mixer Nebula toggle button
         const mixerNebulaToggle = document.getElementById('mixerNebulaToggle');
         if (mixerNebulaToggle) {
-            // console.log('✅ Mixer Nebula toggle button found, adding event listener');
             mixerNebulaToggle.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Mixer Nebula toggle clicked - current state:', this.visualizer.nebulaEnabled);
                     
                     // Toggle Nebula state
                     this.visualizer.toggleNebula();
@@ -3037,16 +2910,13 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Nebula toggle button not found');
         }
 
         // Mixer Nebula opacity slider
         const mixerNebulaOpacitySlider = document.getElementById('mixerNebulaOpacitySlider');
         if (mixerNebulaOpacitySlider) {
-            // console.log('✅ Mixer Nebula opacity slider found, initializing');
             this.mixerNebulaOpacitySlider = this.initializeVerticalSlider(mixerNebulaOpacitySlider, (value) => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🎚️ Mixer Nebula opacity changed to:', value);
                     // Convert 0-100 to 0.0-1.0 for nebula opacity
                     const opacityValue = value / 100;
                     this.visualizer.nebulaVisualization.updateSetting('overallOpacity', opacityValue);
@@ -3061,17 +2931,14 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Nebula opacity slider not found');
         }
 
         // Mixer Nebula color scheme dropdown
         const mixerNebulaColorSchemeSelect = document.getElementById('mixerNebulaColorSchemeSelect');
         if (mixerNebulaColorSchemeSelect) {
-            // console.log('✅ Mixer Nebula color scheme select found, adding event listener');
             mixerNebulaColorSchemeSelect.addEventListener('change', (e) => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
                     const scheme = e.target.value;
-                    // console.log('🎨 Mixer Nebula color scheme changed to:', scheme);
                     
                     // Apply color scheme by triggering the appropriate header button
                     const headerBtn = document.getElementById(`nebulaPreset${scheme.charAt(0).toUpperCase() + scheme.slice(1)}`);
@@ -3084,7 +2951,6 @@ class RecordManager {
                 }
             });
         } else {
-            // console.error('❌ Mixer Nebula color scheme select not found');
         }
 
         // ========== NEBULA PRESET CONTROLS ==========
@@ -3094,7 +2960,6 @@ class RecordManager {
         if (mixerNebulaPresetDefault) {
             mixerNebulaPresetDefault.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🎨 Mixer Nebula Default preset clicked');
                     // Reset to default settings
                     this.visualizer.nebulaVisualization.resetToDefaults();
                     this.updateMixerNebulaControlSliders();
@@ -3106,7 +2971,6 @@ class RecordManager {
         if (mixerNebulaPresetCinematic) {
             mixerNebulaPresetCinematic.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🎨 Mixer Nebula Cinematic preset clicked');
                     // Apply cinematic preset
                     const cinematicSettings = {
                         cameraDistance: 120,
@@ -3129,7 +2993,6 @@ class RecordManager {
         if (mixerNebulaPresetEnergetic) {
             mixerNebulaPresetEnergetic.addEventListener('click', () => {
                 if (this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🎨 Mixer Nebula Energetic preset clicked');
                     // Apply energetic preset
                     const energeticSettings = {
                         filamentDensity: 3.0,
@@ -3153,7 +3016,6 @@ class RecordManager {
         if (mixerNebulaUserPresetSelect) {
             mixerNebulaUserPresetSelect.addEventListener('change', (e) => {
                 if (e.target.value && this.visualizer && this.visualizer.nebulaVisualization) {
-                    // console.log('🎨 Mixer Nebula user preset selected:', e.target.value);
                     this.visualizer.nebulaVisualization.loadPreset(e.target.value);
                     this.updateMixerNebulaControlSliders();
                     e.target.value = ''; // Reset dropdown
@@ -3309,7 +3171,6 @@ class RecordManager {
         // Mixer audio volume slider
         const mixerAudioVolumeSlider = document.getElementById('mixerAudioVolumeSlider');
         if (mixerAudioVolumeSlider) {
-            // console.log('✅ Mixer audio volume slider found, initializing custom slider');
             this.mixerAudioVolumeSlider = this.initializeVerticalSlider(mixerAudioVolumeSlider, (value) => {
                 if (this.visualizer) {
                     // Convert 0-100 to 0.0-1.0
@@ -3322,18 +3183,15 @@ class RecordManager {
                         valueDisplay.textContent = value;
                     }
                     
-                    // console.log('🔊 Mixer audio volume changed to:', value, '% (', volumeValue, ')');
                 }
             });
         } else {
-            // console.error('❌ Mixer audio volume slider not found');
         }
 
         // Mixer file input handler
         if (mixerBackgroundImageFile) {
             mixerBackgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                // console.log('📁 Mixer background image file selected:', {
                 //     name: file?.name,
                 //     type: file?.type,
                 //     size: file?.size,
@@ -3357,7 +3215,6 @@ class RecordManager {
                     
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        // console.log('📁 Mixer background image loaded successfully');
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -3378,7 +3235,6 @@ class RecordManager {
                             this.updateBackgroundImageUI(); // Update header UI too
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
                             
-                            // console.log('🔄 Updating mixer UI with:', {
                             //     fileName: file.name,
                             //     fileSize: file.size,
                             //     hasImage: !!this.visualizer.backgroundImage
@@ -3386,11 +3242,9 @@ class RecordManager {
                         }
                     };
                     reader.onerror = (e) => {
-                        // console.error('❌ Error reading mixer background image file:', e);
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    // console.log('📁 No file selected');
                 }
             });
         }
@@ -3399,7 +3253,6 @@ class RecordManager {
         if (backgroundImageFile) {
             backgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                // console.log('📁 Background image file selected:', {
                 //     name: file?.name,
                 //     type: file?.type,
                 //     size: file?.size,
@@ -3409,23 +3262,19 @@ class RecordManager {
                 if (file) {
                     // Validate file type
                     if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-                        // console.error('❌ Invalid file type:', file.type);
                         alert('Please select a JPG or PNG image file.');
                         return;
                     }
 
                     // Validate file size (2MB limit)
                     if (file.size > 2 * 1024 * 1024) {
-                        // console.error('❌ File too large:', file.size, 'bytes');
                         alert('File size must be less than 2MB.');
                         return;
                     }
 
-                    // console.log('✅ File validation passed, reading...');
                     // Read file as data URL
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        // console.log('📖 File read successfully, data URL length:', e.target.result.length);
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -3450,11 +3299,9 @@ class RecordManager {
                                 this.visualizer.updateBackgroundPanelStates(backgroundPanel);
                             }
                             
-                            // console.log('💾 Background image saved and enabled');
                         }
                     };
                     reader.onerror = (e) => {
-                        // console.error('❌ File read error:', e);
                     };
                     reader.readAsDataURL(file);
                 }
@@ -3604,7 +3451,6 @@ class RecordManager {
             
             sidebarBackgroundImgBtn.addEventListener('click', () => {
                 if (this.visualizer) {
-                    // console.log('🔘 Sidebar Background IMG button clicked - current state:', {
                     //     enabled: this.visualizer.backgroundImageEnabled,
                     //     hasImage: !!this.visualizer.backgroundImage
                     // });
@@ -3614,7 +3460,6 @@ class RecordManager {
                     this.visualizer.saveBackgroundImage();
                     this.updateBackgroundToggleButton(); // Header controls only
                     
-                    // console.log('🔘 Sidebar Background IMG button toggled to:', this.visualizer.backgroundImageEnabled);
                     
                     // Force redraw of visualization
                     if (this.visualizer.audioMotion) {
@@ -3637,7 +3482,6 @@ class RecordManager {
         if (false) { // Disabled - sidebar removed
             sidebarBackgroundImageFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                // console.log('📁 Sidebar Background image file selected:', {
                 //     name: file?.name,
                 //     type: file?.type,
                 //     size: file?.size,
@@ -3647,7 +3491,6 @@ class RecordManager {
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        // console.log('📖 Sidebar File read successfully, data URL length:', e.target.result.length);
                         if (this.visualizer) {
                             this.visualizer.backgroundImage = e.target.result;
                             this.visualizer.backgroundImageEnabled = true; // Auto-enable when image is loaded
@@ -3658,11 +3501,9 @@ class RecordManager {
                             this.visualizer.updateBackgroundImageElement();
                             this.updateBackgroundImageUI(); // Header controls only
                             this.visualizer.updateFooterBackgroundButton(); // Update footer button
-                            // console.log('💾 Sidebar Background image saved and enabled');
                         }
                     };
                     reader.onerror = (e) => {
-                        // console.error('❌ Sidebar File read error:', e);
                         this.showError('Failed to read image file');
                     };
                     reader.readAsDataURL(file);
@@ -4059,7 +3900,6 @@ class RecordManager {
         const mixerBackgroundFileSize = document.getElementById('mixerBackgroundFileSize');
         const mixerBackgroundImagePreview = document.getElementById('mixerBackgroundImagePreview');
 
-        // console.log('🔍 Mixer UI elements found:', {
         //     fileInfo: !!mixerBackgroundFileInfo,
         //     fileName: !!mixerBackgroundFileName,
         //     fileSize: !!mixerBackgroundFileSize,
@@ -4068,7 +3908,6 @@ class RecordManager {
 
         if (mixerBackgroundFileInfo && mixerBackgroundFileName && mixerBackgroundFileSize && mixerBackgroundImagePreview) {
             if (this.visualizer && this.visualizer.backgroundImage) {
-                // console.log('✅ Showing mixer background file info');
                 mixerBackgroundFileInfo.style.display = 'block';
                 
                 // Display filename and file size
@@ -4076,28 +3915,23 @@ class RecordManager {
                 const fileSize = this.visualizer.backgroundImageFileSize || 0;
                 const fileSizeText = fileSize > 0 ? this.formatFileSize(fileSize) : '';
                 
-                // console.log('📝 Setting mixer UI text:', { filename, fileSizeText });
                 mixerBackgroundFileName.textContent = filename;
                 mixerBackgroundFileSize.textContent = fileSizeText;
                 
                 // Create preview image
                 const img = new Image();
                 img.onload = () => {
-                    // console.log('🖼️ Mixer preview image loaded, setting background');
                     mixerBackgroundImagePreview.style.backgroundImage = `url(${this.visualizer.backgroundImage})`;
                     mixerBackgroundImagePreview.style.backgroundSize = 'cover';
                     mixerBackgroundImagePreview.style.backgroundPosition = 'center';
                 };
                 img.onerror = (e) => {
-                    // console.error('❌ Error loading mixer preview image:', e);
                 };
                 img.src = this.visualizer.backgroundImage;
             } else {
-                // console.log('❌ No background image data, hiding mixer file info');
                 mixerBackgroundFileInfo.style.display = 'none';
             }
         } else {
-            // console.error('❌ Mixer UI elements not found');
         }
     }
 
@@ -4190,7 +4024,6 @@ class RecordManager {
                 const activeButton = document.querySelector(`#mixerVideoPreset${activePreset.charAt(0).toUpperCase() + activePreset.slice(1).replace('-', '')}`);
                 if (activeButton) {
                     activeButton.classList.add('active');
-                    // console.log('📝 Mixer video preset button activated:', activePreset);
                 } else {
                     console.warn('⚠️ Mixer video preset button not found for:', activePreset);
                 }
@@ -4474,7 +4307,6 @@ class RecordManager {
                     mixerAudioToggle.classList.remove('active');
             }
         } else {
-            // console.error('❌ Mixer audio toggle not found for update');
         }
     }
 
@@ -4490,7 +4322,6 @@ class RecordManager {
                 valueDisplay.textContent = volumePercent;
             }
         } else {
-            // console.error('❌ Mixer audio volume slider not found for update');
         }
     }
 
@@ -4523,7 +4354,6 @@ class RecordManager {
                 }
             }
         } else {
-            // console.error('❌ Mixer audio device select not found for update');
         }
     }
 
@@ -4541,7 +4371,6 @@ class RecordManager {
                     mixerAMToggle.classList.remove('active');
             }
         } else {
-            // console.error('❌ Mixer AM toggle not found for update');
         }
     }
 
@@ -4557,7 +4386,6 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer AM opacity slider not found for update');
         }
     }
 
@@ -4592,7 +4420,6 @@ class RecordManager {
         if (mixerAMVizModeSelect && this.visualizer) {
             mixerAMVizModeSelect.value = this.visualizer.currentMode.toString();
         } else {
-            // console.error('❌ Mixer AM viz mode select not found for update');
         }
     }
 
@@ -4613,7 +4440,6 @@ class RecordManager {
                 }
             }
         } else {
-            // console.error('❌ Mixer AM morph button not found for update');
         }
     }
 
@@ -4622,7 +4448,6 @@ class RecordManager {
         if (mixerAMMorphSpeedSelect && this.visualizer) {
             mixerAMMorphSpeedSelect.value = this.visualizer.morphMode;
         } else {
-            // console.error('❌ Mixer AM morph speed select not found for update');
         }
     }
 
@@ -4633,7 +4458,6 @@ class RecordManager {
             const isEnergyMode = this.visualizer.morphMode === 'energy';
             mixerAMEnergyContainer.style.display = isEnergyMode ? 'block' : 'none';
             } else {
-            // console.error('❌ Mixer AM energy container not found for update');
         }
     }
 
@@ -4665,7 +4489,6 @@ class RecordManager {
                 });
             }
         } else {
-            // console.error('❌ Mixer AM preset selector not found for update');
         }
     }
 
@@ -4674,7 +4497,6 @@ class RecordManager {
         if (mixerAMColorSchemeSelect && this.visualizer) {
             mixerAMColorSchemeSelect.value = this.visualizer.currentColorScheme || 'default';
             } else {
-            // console.error('❌ Mixer AM color scheme select not found for update');
         }
     }
 
@@ -4692,7 +4514,6 @@ class RecordManager {
                     mixerInfiniteZoomToggle.classList.remove('active');
             }
         } else {
-            // console.error('❌ Mixer Infinite Zoom toggle not found for update');
         }
     }
 
@@ -4708,7 +4529,6 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer Infinite Zoom opacity slider not found for update');
         }
     }
 
@@ -4717,7 +4537,6 @@ class RecordManager {
         if (mixerInfiniteZoomShapeSelect && this.visualizer && this.visualizer.infiniteZoom) {
             mixerInfiniteZoomShapeSelect.value = this.visualizer.infiniteZoom.shape || 'circle';
         } else {
-            // console.error('❌ Mixer Infinite Zoom shape select not found for update');
         }
     }
 
@@ -4812,7 +4631,6 @@ class RecordManager {
                 }
             }
         } else {
-            // console.error('❌ Mixer Blobs toggle not found for update');
         }
     }
 
@@ -4828,7 +4646,6 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer Blobs opacity slider not found for update');
         }
     }
 
@@ -4956,7 +4773,6 @@ class RecordManager {
                     mixerStarfallToggle.classList.remove('active');
             }
         } else {
-            // console.error('❌ Mixer Starfall toggle not found for update');
         }
     }
 
@@ -4972,7 +4788,6 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer Starfall opacity slider not found for update');
         }
     }
 
@@ -5079,7 +4894,6 @@ class RecordManager {
                 mixerFluidityToggle.classList.remove('active');
             }
         } else {
-            // console.error('❌ Mixer Fluidity toggle not found for update');
         }
     }
 
@@ -5095,7 +4909,6 @@ class RecordManager {
                 valueDisplay.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer Fluidity opacity slider not found for update');
         }
     }
 
@@ -5336,7 +5149,6 @@ class RecordManager {
     }
 
     updateHeaderVideoFileButtons() {
-        // console.log('🔄 updateHeaderVideoFileButtons called');
         
         const headerLoopBtn = document.getElementById('headerVideoFileLoopBtn');
         const headerMuteBtn = document.getElementById('headerVideoFileMuteBtn');
@@ -5353,7 +5165,6 @@ class RecordManager {
             headerMuteBtn.textContent = muted ? 'Muted' : 'Sound';
             headerMuteBtn.classList.toggle('active', muted);
             
-            // console.log('📝 Header video file buttons updated:', { loop, muted });
         } else {
             console.log('ℹ️ Header video file buttons not found (panel may be closed)');
         }
@@ -5436,26 +5247,22 @@ class RecordManager {
     updateBackgroundOpacity(value) {
         const opacityValue = value / 100; // Convert 0-100 to 0.0-1.0
         
-        // console.log('🎨 Updating background opacity for all visualization systems:', value + '%');
         
         // Update custom AudioMotion (regular visualizations)
         if (this.audioMotion) {
             this.audioMotion.bgAlpha = opacityValue;
             this.audioMotion.showBgColor = value > 0;
-            // console.log('🎨 Updated custom AudioMotion background opacity');
         }
         
         // Update official AudioMotion (Pro visualizations) if active
         if (this.officialAudioMotion && this.useOfficialAudioMotion) {
             this.officialAudioMotion.bgAlpha = opacityValue;
             this.officialAudioMotion.showBgColor = value > 0;
-            // console.log('🎨 Updated official AudioMotion background opacity');
         }
         
         // Future visualization systems can be added here
         // Example: if (this.futureVisualization) { this.futureVisualization.setBackgroundOpacity(opacityValue); }
         
-        // console.log('🎨 Background opacity update complete - bgAlpha:', opacityValue, ', showBgColor:', value > 0);
     }
 
     formatFileSize(bytes) {
@@ -5469,7 +5276,6 @@ class RecordManager {
     updateUI() {
         // Footer recording info only (sidebar recording info removed)
         // The footer updateFooterRecordingInfo() method handles all recording info display
-        // console.log('RecordManager.updateUI() - footer recording info handled by updateFooterRecordingInfo()');
     }
     
     getRecordingDimensions() {
@@ -5507,12 +5313,7 @@ class RecordManager {
         let targetAspect;
         
         // Debug aspect ratio calculation
-        // console.log('videoMode:', this.visualizer?.videoMode);
-        // console.log('videoElement exists:', !!this.visualizer?.videoElement);
         if (this.visualizer?.videoElement) {
-            // console.log('videoWidth:', this.visualizer.videoElement.videoWidth);
-            // console.log('videoHeight:', this.visualizer.videoElement.videoHeight);
-            // console.log('videoReadyState:', this.visualizer.videoElement.readyState);
         }
         
         // Always use window/canvas dimensions for recording - don't force video aspect ratio
@@ -5525,7 +5326,6 @@ class RecordManager {
         const [ratioW, ratioH] = this.aspectRatio.split(':').map(Number);
             targetAspect = ratioW / ratioH;
         }
-        // console.log('=========================')
         
         const currentAspect = targetWidth / targetHeight;
         
@@ -5533,13 +5333,10 @@ class RecordManager {
         if (currentAspect > targetAspect) {
             // Too wide, adjust width
             targetWidth = Math.round(targetHeight * targetAspect);
-            // console.log(`Adjusted width to fit aspect ratio: ${targetWidth}x${targetHeight}`);
         } else if (currentAspect < targetAspect) {
             // Too tall, adjust height
             targetHeight = Math.round(targetWidth / targetAspect);
-            // console.log(`Adjusted height to fit aspect ratio: ${targetWidth}x${targetHeight}`);
         } else {
-            // console.log(`Aspect ratio already matches: ${targetWidth}x${targetHeight}`);
         }
         
         return { width: targetWidth, height: targetHeight };
@@ -6382,7 +6179,6 @@ class RecordManager {
                 try {
                     this.visualizer.videoAudioGain.connect(gainNode);
                     hasAudioSource = true;
-                    // console.log('Connected video audio to recording');
                 } catch (e) {
                     console.error('Error connecting video audio:', e);
                 }

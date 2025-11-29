@@ -120,7 +120,6 @@ class AudioAnalyzer {
             } else {
                 // Debug: Check why audio data isn't available
                 if (this.analysisFrame && this.analysisFrame % 300 === 0) { // Every 5 seconds
-                    // console.warn('⚠️ AudioMotion or analyser not available:', {
                     //     audioMotion: !!this.audioMotion,
                     //     analyser: !!(this.audioMotion && this.audioMotion.analyser)
                     // });

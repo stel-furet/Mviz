@@ -29,10 +29,8 @@ class PlaylistManager {
         }
         
         // Test default artwork generation
-        // console.log('Default artwork generated:', this.defaultArtwork.substring(0, 50) + '...');
         
         // Test app icon generation
-        // console.log('App icon generated:', this.appIcon.substring(0, 50) + '...');
         
         // Check music-metadata library availability
         this.checkMetadataLibrary();
@@ -45,7 +43,6 @@ class PlaylistManager {
         
         // Phase 4: Activate tabbed interface
         document.body.classList.add('tab-interface-active');
-        // console.log('✓ Tabbed interface activated');
         
         // Phase 3 test: Add temporary test function for Audio + Video tabs
         // testAudioTab removed - functionality moved to sidebar
@@ -179,7 +176,6 @@ class PlaylistManager {
             </div>
         `;
         
-        // console.log('Playlist dropdown content populated');
         
         // Re-initialize event handlers after populating content
         if (this.visualizer) {
@@ -194,7 +190,6 @@ class PlaylistManager {
     
     initializeCloseButton() {
         // Close button removed - playlist is now embedded in sidebar
-        // console.log('Playlist is embedded - no close button needed');
     }
     
     showRescanNotification() {
@@ -269,7 +264,6 @@ class PlaylistManager {
             };
             
             await store.put(folderData);
-            // console.log('✅ Folder handle stored in IndexedDB');
             
         } catch (error) {
             console.error('Error storing folder handle:', error);
@@ -289,7 +283,6 @@ class PlaylistManager {
                 request.onsuccess = () => {
                     const result = request.result;
                     if (result && result.handle) {
-                        // console.log('✅ Folder handle loaded from IndexedDB:', result.name);
                         resolve(result.handle);
                     } else {
                         resolve(null);
@@ -311,14 +304,12 @@ class PlaylistManager {
             // Try to load stored folder handle
             const storedHandle = await this.loadFolderHandle();
             if (!storedHandle) {
-                // console.log('No stored folder handle found - user will need to rescan manually');
                 this.showRescanNotification();
                 return;
             }
             
             // Check if current playlist is from the same folder
             if (this.currentPlaylist.folderPath === 'Imported') {
-                // console.log('Imported playlist detected - cannot auto-rescan, user must select folder');
                 this.showRescanNotification();
                 return;
             }
@@ -346,7 +337,6 @@ class PlaylistManager {
             // Process files progressively
             await this.processFilesProgressively(files);
             
-            // console.log('✅ Background rescan completed');
             this.hideBackgroundScanIndicator();
             
         } catch (error) {
@@ -378,7 +368,6 @@ class PlaylistManager {
                         existingTrack.url = newTrack.url;
                         existingTrack.file = newTrack.file;
                         existingTrack._needsRescan = false;
-                        // console.log(`✅ Enabled playback for: ${existingTrack.title}`);
                     }
                 }
             });
@@ -470,7 +459,6 @@ class PlaylistManager {
             const appIcon = document.getElementById('appIcon');
             if (appIcon && this.appIcon) {
                 appIcon.src = this.appIcon;
-                // console.log('✓ App icon initialized');
             }
             
             // Initialize tab click handlers (inactive until Phase 5)
@@ -492,11 +480,9 @@ class PlaylistManager {
                 // If clicking outside open panel, close it
                 if (openPanel && !openPanel.contains(e.target)) {
                     openPanel.classList.remove('show');
-                    // console.log('Panel closed (click outside)');
                 }
             });
             
-            // console.log('✓ Tabbed interface initialized (hidden)');
             
         } catch (error) {
             console.error('Error initializing tabbed interface:', error);
@@ -536,7 +522,6 @@ class PlaylistManager {
         // Use our embedded lightweight metadata parser
         if (typeof window.lightweightMetadata !== 'undefined') {
             this.musicMetadata = window.lightweightMetadata;
-            // console.log('✓ Lightweight metadata parser ready (supports MP3 ID3 tags)');
             return;
         }
         
@@ -550,7 +535,6 @@ class PlaylistManager {
             const cached = localStorage.getItem('freque_current_playlist');
             if (cached) {
                 this.currentPlaylist = JSON.parse(cached);
-                // console.log('Loaded cached playlist:', this.currentPlaylist.tracks?.length || 0, 'tracks');
                 
                 // Note: Cached playlists don't have file objects or blob URLs
                 // They will display metadata but won't be playable until folder is rescanned
@@ -606,7 +590,6 @@ class PlaylistManager {
                 // Update cache index
                 this.updateCacheIndex(folderHash, this.currentPlaylist.folderPath);
                 
-                // console.log('Playlist saved to cache (metadata only, URLs preserved in memory)');
             }
         } catch (error) {
             console.error('Error saving playlist to cache:', error);
@@ -671,7 +654,6 @@ class PlaylistManager {
     
     async scanFolder() {
         try {
-            // console.log('Starting folder scan...');
             
             // Check if File System Access API is available
             if (!('showDirectoryPicker' in window)) {
@@ -681,7 +663,6 @@ class PlaylistManager {
             
             // Show directory picker
             const directoryHandle = await window.showDirectoryPicker();
-            // console.log('Folder selected:', directoryHandle.name);
             
             // Store folder handle for future use
             this.folderHandle = directoryHandle;
@@ -713,7 +694,6 @@ class PlaylistManager {
                 return;
             }
             
-            // console.log(`Found ${files.length} audio files`);
             
             // Check file limit
             if (files.length > this.maxFiles) {
@@ -750,18 +730,14 @@ class PlaylistManager {
             // Save to cache (metadata only, preserves in-memory version with URLs)
             this.saveToCacheOnly();
             
-            // console.log(`✅ Playlist created with ${this.currentPlaylist.tracks.length} tracks`);
-            // console.log('First few tracks:', this.currentPlaylist.tracks.slice(0, 3).map(t => `${t.title} by ${t.artist}`));
             
             // Test first track URL validity immediately
             if (this.currentPlaylist.tracks.length > 0) {
                 const firstTrack = this.currentPlaylist.tracks[0];
-                // console.log('Testing first track URL validity:', firstTrack.url);
                 
                 // Test if blob URL is accessible
                 fetch(firstTrack.url)
                     .then(response => {
-                        // console.log('✅ Blob URL is valid and accessible');
                     })
                     .catch(error => {
                         console.error('❌ Blob URL is invalid:', error);
@@ -911,7 +887,6 @@ class PlaylistManager {
     
     async extractMetadata(file) {
         try {
-            // console.log(`Extracting metadata from: ${file.name}`);
             
             const track = {
                 id: this.generateTrackId(file),
@@ -934,7 +909,6 @@ class PlaylistManager {
                         track.duration = 0; // Will be calculated via Web Audio API
                         track.artwork = this.defaultArtwork; // Use default for now
                         
-                        // console.log(`✓ Metadata extracted: "${track.title}" by ${track.artist} (${track.album})`);
                     } else {
                         this.applyFallbackMetadata(track, file);
                     }
@@ -956,7 +930,6 @@ class PlaylistManager {
             // Create object URL for playback
             track.url = URL.createObjectURL(file);
             track.file = file; // Keep reference to original file
-            // console.log(`Created blob URL for ${track.title}: ${track.url}`);
             
             return track;
             
@@ -1049,7 +1022,6 @@ class PlaylistManager {
         // Use current order if user has customized it, otherwise sort alphabetically
         let tracksToDisplay;
         if (this.currentPlaylist.hasCustomOrder) {
-            // console.log('Using custom track order');
             tracksToDisplay = this.currentPlaylist.tracks;
         } else {
             // Using alphabetical sort
@@ -1093,7 +1065,6 @@ class PlaylistManager {
         } else if (hasPlaylistActions) {
             console.log('New dropdown content with playlist actions already exists');
         } else {
-            // console.error('Dropdown element not found!');
         }
         
         // Update header playlist if it exists
@@ -1104,9 +1075,6 @@ class PlaylistManager {
         const headerPlaylist = document.getElementById('headerPlaylistDropdown');
         if (!headerPlaylist) return;
         
-        // console.log('Updating header playlist...');
-        // console.log('Current playlist exists:', !!this.currentPlaylist);
-        // console.log('Current playlist tracks:', this.currentPlaylist?.tracks?.length || 0);
         
         // Create the header playlist content directly
         this.renderHeaderPlaylistContent(headerPlaylist);
@@ -1419,12 +1387,10 @@ class PlaylistManager {
     }
     
     renderTrackList(tracks) {
-        // console.log('=== renderTrackList called ===');
         const tracksContainer = document.getElementById('playlistTracks');
         // tracksContainer found check
         
         if (!tracksContainer) {
-            // console.error('playlistTracks container not found!');
             return;
         }
         
@@ -1679,7 +1645,6 @@ class PlaylistManager {
         const draggedIndex = tracks.findIndex(t => t.id === draggedTrackId);
         const targetIndex = tracks.findIndex(t => t.id === targetTrackId);
         
-        // console.log(`Reordering: dragged index ${draggedIndex}, target index ${targetIndex}`);
         
         if (draggedIndex === -1 || targetIndex === -1) {
             console.error('Could not find tracks for reordering:', { draggedTrackId, targetTrackId });
@@ -1694,7 +1659,6 @@ class PlaylistManager {
         // Store track references
         const draggedTrack = tracks[draggedIndex];
         
-        // console.log(`Moving "${draggedTrack.title}" from position ${draggedIndex} to ${targetIndex}`);
         
         // Remove dragged track and insert at target position
         const [removedTrack] = tracks.splice(draggedIndex, 1);
@@ -1709,13 +1673,9 @@ class PlaylistManager {
         // Update current track index in visualizer if the playing track was moved
         if (this.visualizer.audio && this.visualizer.audio.src) {
             const currentPlayingUrl = this.visualizer.audio.src;
-            // console.log('Checking if playing track was moved...');
-            // console.log('Current audio URL:', currentPlayingUrl);
             
             // Find the track that's currently playing
             const newIndex = this.currentPlaylist.tracks.findIndex(track => track.url === currentPlayingUrl);
-            // console.log('New index for playing track:', newIndex);
-            // console.log('Old current track index:', this.visualizer.currentTrackIndex);
             
             if (newIndex >= 0 && newIndex !== this.visualizer.currentTrackIndex) {
                 console.log(`🔄 Updating current track index from ${this.visualizer.currentTrackIndex} to ${newIndex} after reorder`);
@@ -1726,11 +1686,9 @@ class PlaylistManager {
             } else if (newIndex === -1) {
                 console.error('Currently playing track not found in reordered playlist!');
             } else {
-                // console.log('Playing track index unchanged');
             }
         }
         
-        // console.log(`✅ Track reordered successfully - custom order enabled`);
         
         // Save and update display
         this.savePlaylist();
@@ -1789,7 +1747,6 @@ class PlaylistManager {
     playTrack(trackId) {
         const track = this.findTrackById(trackId);
         if (track && this.visualizer) {
-            // console.log(`Playing track: ${track.title} by ${track.artist}`);
             this.visualizer.playTrackById(trackId);
         }
     }

@@ -13,7 +13,6 @@ class MultiDisplayManager {
     }
     
     init() {
-        // console.log('🎯 MultiDisplayManager: Initializing with LiveDisplayManager integration');
         this.setupDisplayButtons();
         this.setupSettingsPanels();
         
@@ -23,7 +22,6 @@ class MultiDisplayManager {
 
     // Initialize mixer control synchronization
     initializeMixerControls() {
-        // console.log('🔧 Initializing mixer controls...');
         
         // Initialize all mixer control synchronization immediately
         // Background controls
@@ -644,7 +642,6 @@ class MultiDisplayManager {
                 mixerBlobsOpacityValue.textContent = opacityPercent;
             }
         } else {
-            // console.error('❌ Mixer Blobs opacity slider not found for update');
         }
     }
 
@@ -1140,18 +1137,14 @@ class DisplayInstance {
         
         // Create BroadcastChannel for this display
         this.channel = new BroadcastChannel(`freque-live-display-${displayId}`);
-        // console.log(`DEBUG DisplayInstance ${displayId}: Created BroadcastChannel: freque-live-display-${displayId}`);
         
         // Create a dedicated channel for settings
         this.settingsChannel = new BroadcastChannel(`freque-live-display-settings-${displayId}`);
-        // console.log(`DEBUG DisplayInstance ${displayId}: Created settings channel: freque-live-display-settings-${displayId}`);
         
         // Share the channel with the LiveDisplayManager
         if (this.displayManager) {
-            // console.log(`DEBUG DisplayInstance ${displayId}: Sharing channel with LiveDisplayManager`);
             this.displayManager.setChannel(this.channel);
         } else {
-            // console.error(`DEBUG DisplayInstance ${displayId}: No LiveDisplayManager to share channel with`);
         }
     }
     
@@ -1196,7 +1189,6 @@ class DisplayInstance {
             
             // Merge with defaults to ensure new properties are added
             const mergedSettings = { ...defaults, ...parsedSettings };
-            // console.log(`DEBUG DisplayInstance ${this.displayId}: Merged settings:`, mergedSettings);
             return mergedSettings;
         }
         
@@ -1230,7 +1222,6 @@ class DisplayInstance {
         const checkWindow = setInterval(() => {
             if (this.window && this.window.closed) {
                 clearInterval(checkWindow);
-                // console.log(`Display ${this.displayId} window was closed manually`);
                 this.close();
             }
         }, 1000);
@@ -1242,15 +1233,12 @@ class DisplayInstance {
     startStream() {
         if (!this.window) return;
         
-        // console.log(`DEBUG DisplayInstance ${this.displayId}: Starting stream`);
         
         // Delegate to LiveDisplayManager
         if (this.displayManager) {
-            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings before streaming:`, this.settings);
             
         // Send initial settings via dedicated settings channel
         if (this.settingsChannel) {
-            // console.log(`DEBUG DisplayInstance ${this.displayId}: Sending initial settings via settings channel`);
             this.settingsChannel.postMessage({
                 type: 'display-settings',
                 data: this.settings
@@ -1266,13 +1254,10 @@ class DisplayInstance {
     
     // Update settings for this specific display
     updateSettings(settings) {
-        // console.log(`DEBUG DisplayInstance ${this.displayId}: Updating settings:`, settings);
-        // console.log(`DEBUG DisplayInstance ${this.displayId}: Current settings:`, this.settings);
         
         this.settings = { ...this.settings, ...settings };
         this.saveDisplaySettings();
         
-        // console.log(`DEBUG DisplayInstance ${this.displayId}: New settings:`, this.settings);
         
         // Send settings via dedicated settings channel
         if (this.settingsChannel) {
@@ -1311,6 +1296,5 @@ class DisplayInstance {
         this.window = null;
         this.isConnected = false;
         
-        // console.log(`Display ${this.displayId}: Closed`);
     }
 }

@@ -44,7 +44,6 @@ class InfiniteZoomVisualization {
         this.energyHistory = [];
         this.beatSensitivity = 0.7;
         
-        // console.log('🔍 Infinite Zoom Visualization initialized');
     }
     
     initialize() {
@@ -78,13 +77,11 @@ class InfiniteZoomVisualization {
             this.density = Math.floor(0.5 * maxDensity); // 50% of max density
         }
         
-        // console.log('🔍 Infinite Zoom canvas created and added to container');
     }
     
     start() {
         this.isActive = true;
         this.generateInitialObjects();
-        // console.log('🔍 Infinite Zoom started');
     }
     
     stop() {
@@ -93,7 +90,6 @@ class InfiniteZoomVisualization {
         if (this.canvas && this.canvas.parentNode) {
             this.canvas.parentNode.removeChild(this.canvas);
         }
-        // console.log('🔍 Infinite Zoom stopped');
     }
     
     generateInitialObjects() {
@@ -142,7 +138,6 @@ class InfiniteZoomVisualization {
         
         // Debug logging
         if (this.beatReact) {
-            // console.log('🔍 Infinite Zoom update called - Beat React:', this.beatReact, 'Audio Features:', !!audioFeatures);
         }
         
         // Always call audio response FIRST to calculate new speeds
@@ -152,14 +147,12 @@ class InfiniteZoomVisualization {
         const oldZoom = this.currentZoom;
         this.currentZoom += this.zoomSpeed;
         if (this.beatReact && this.zoomSpeed !== 0) {
-            // console.log('🔍 Zoom update - Speed:', this.zoomSpeed, 'Old:', oldZoom.toFixed(3), 'New:', this.currentZoom.toFixed(3));
         }
         
         // Update rotation
         const oldRotation = this.currentRotation;
         this.currentRotation += this.rotationSpeed * 0.01; // Scale rotation speed
         if (this.beatReact && this.rotationSpeed !== 0) {
-            // console.log('🔍 Rotation update - Speed:', this.rotationSpeed, 'Old:', oldRotation.toFixed(3), 'New:', this.currentRotation.toFixed(3));
         }
         
         // Update object positions based on zoom direction
@@ -209,9 +202,6 @@ class InfiniteZoomVisualization {
     }
     
     updateAudioResponse(audioFeatures) {
-        // console.log('🔍 updateAudioResponse called with:', audioFeatures);
-        // console.log('🔍 Beat React enabled:', this.beatReact);
-        // console.log('🔍 Beat controls - Zoom:', this.beatZoom, 'Rotation:', this.beatRotation, 'Density:', this.beatDensity, 'Shape:', this.beatShape);
         
         // Use test features only if no audio features at all
         if (!audioFeatures) {
@@ -222,12 +212,9 @@ class InfiniteZoomVisualization {
                 tempo: 120,
                 dominantFrequency: 1000
             };
-            // console.log('🔍 Using test audio features (no audio features):', testFeatures);
             audioFeatures = testFeatures;
         } else if (audioFeatures.energy === 0) {
-            // console.log('🔍 Real audio features received but energy is 0 - using as-is');
         } else {
-            // console.log('🔍 Using real audio features with energy:', audioFeatures.energy);
         }
         
         // Track energy history
@@ -240,7 +227,6 @@ class InfiniteZoomVisualization {
         if (this.beatReact) {
             const currentEnergy = audioFeatures.energy || 0;
             const avgEnergy = this.energyHistory.reduce((sum, e) => sum + e, 0) / this.energyHistory.length;
-            // console.log('🔍 Beat React processing - currentEnergy:', currentEnergy, 'avgEnergy:', avgEnergy, 'history length:', this.energyHistory.length);
             
             // Beat Zoom - adjust zoom speed based on current energy (scaled by sensitivity)
             if (this.beatZoom) {
@@ -249,7 +235,6 @@ class InfiniteZoomVisualization {
                 const zoomRange = 1.0 * this.sensitivity; // Reduced from 2.0 to 1.0 for more balanced effect
                 // Invert the calculation: higher energy = more positive zoom (zoom in)
                 this.zoomSpeed = (0.2 - currentEnergy) * zoomRange;
-                // console.log('🔍 Beat Zoom - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'New Speed:', this.zoomSpeed);
             } else {
                 // Restore base zoom speed when beat zoom is off
                 this.zoomSpeed = this.baseZoomSpeed;
@@ -263,7 +248,6 @@ class InfiniteZoomVisualization {
                 const rotationRange = 20 * this.sensitivity; // Reduced from 100 to 20 for more balanced effect
                 // Invert the calculation: higher energy = more positive rotation (clockwise)
                 this.rotationSpeed = (0.2 - currentEnergy) * rotationRange;
-                // console.log('🔍 Beat Rotation - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'New Speed:', this.rotationSpeed);
             } else {
                 // Restore base rotation speed when beat rotation is off
                 this.rotationSpeed = this.baseRotationSpeed;
@@ -278,7 +262,6 @@ class InfiniteZoomVisualization {
                 if (this.objects.length < targetDensity) {
                     this.addObject();
                 }
-                // console.log('🔍 Beat Density - Energy:', currentEnergy, 'Sensitivity:', this.sensitivity, 'Multiplier:', densityMultiplier, 'Target Density:', targetDensity, 'Current Objects:', this.objects.length);
             }
             
             // Beat Shape - change shape on beat
@@ -287,9 +270,7 @@ class InfiniteZoomVisualization {
                 const currentIndex = shapes.indexOf(this.shape);
                 this.shape = shapes[(currentIndex + 1) % shapes.length];
                 this.updateObjectShapes();
-                // console.log(`🔍 Beat Shape changed to: ${this.shape} (beat detected!)`);
             } else if (this.beatShape) {
-                // console.log('🔍 Beat Shape enabled but no beat detected - beat:', audioFeatures.beat);
             }
             
             // Add objects on beat (general)
@@ -304,13 +285,11 @@ class InfiniteZoomVisualization {
             
             // Debug logging
             if (this.beatZoom || this.beatRotation || this.beatDensity) {
-                // console.log(`🔍 Beat React - Energy: ${currentEnergy.toFixed(2)}, Zoom: ${this.zoomSpeed.toFixed(3)}, Rotation: ${this.rotationSpeed.toFixed(3)}`);
             }
         } else {
             // Beat React is disabled - restore all base values
             this.zoomSpeed = this.baseZoomSpeed;
             this.rotationSpeed = this.baseRotationSpeed;
-            // console.log('🔍 Beat React disabled - Restored base values - Zoom:', this.zoomSpeed, 'Rotation:', this.rotationSpeed);
         }
     }
     
@@ -518,7 +497,6 @@ class InfiniteZoomVisualization {
                 const rect = container.getBoundingClientRect();
                 this.canvas.width = rect.width;
                 this.canvas.height = rect.height;
-                // console.log(`🔍 Infinite Zoom canvas resized to: ${rect.width}x${rect.height}`);
             }
         }
     }
@@ -607,7 +585,6 @@ class AIAutopilot {
             all: [0, 1, 2, 3, 4, 5, 6] // All modes
         };
         
-        // console.log('🤖 AI Autopilot initialized with enhanced parameter control and pattern learning');
     }
     
     activate() {
@@ -621,7 +598,6 @@ class AIAutopilot {
         this.modeHistory = [this.visualizer.currentMode];
         
         // Don't force a mode change on activation - respect current mode and scope
-        // console.log('🤖 AI Autopilot activated with scope:', this.scope);
         this.updateUI();
     }
     
@@ -686,7 +662,6 @@ class AIAutopilot {
         const audioFeatures = this.audioAnalyzer.getCurrentFeatures();
         
         // Debug logging
-        // console.log('🤖 Enhanced Decision Making:', {
         //     energy: audioFeatures.energy?.toFixed(3),
         //     beat: audioFeatures.beat,
         //     tempo: audioFeatures.tempo,
@@ -700,8 +675,6 @@ class AIAutopilot {
         // Use multi-layered intelligence if enabled
         if (this.multiLayeredIntelligenceEnabled && this.multiLayeredIntelligence) {
             const currentParams = this.getCurrentParameters();
-            // console.log('🧠 Multi-layered intelligence: Making decision for scope:', this.scope, 'current mode:', this.visualizer.currentMode);
-            // console.log('🧠 Current audioMotion params:', {
             //     linearBoost: this.visualizer.audioMotion?.linearBoost,
             //     gradient: this.visualizer.audioMotion?.gradient,
             //     fillAlpha: this.visualizer.audioMotion?.fillAlpha,
@@ -715,10 +688,8 @@ class AIAutopilot {
             );
             
             if (decision) {
-                // console.log('🧠 Multi-layered intelligence decision:', decision);
                 return; // Multi-layered intelligence handles everything
             } else {
-                // console.log('🧠 Multi-layered intelligence: No decision made');
             }
         }
         

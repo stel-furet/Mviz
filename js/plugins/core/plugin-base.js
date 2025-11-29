@@ -108,9 +108,6 @@ class FrequePluginBase {
      * Register plugin with Plugin Manager for UI and canvas management
      */
     registerWithPluginManager() {
-        // console.log(`🔌 REGISTER DEBUG: ${this.pluginName} attempting to register with plugin manager`);
-        // console.log(`🔌 REGISTER DEBUG: Plugin manager exists:`, !!window.pluginManager);
-        // console.log(`🔌 REGISTER DEBUG: Mixer integration exists:`, !!window.pluginMixerIntegration);
         
         if (window.pluginManager && window.pluginMixerIntegration) {
             window.pluginManager.registerPlugin(this);

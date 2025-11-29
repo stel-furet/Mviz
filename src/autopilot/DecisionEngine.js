@@ -101,8 +101,6 @@ class DecisionEngine {
             this.lastDecision = Date.now();
             
             // Log detailed switch reasoning
-            // console.log(`🎨 Autopilot: ${this.getModeName(this.visualizer.currentMode)} → ${this.getModeName(targetMode)}`);
-            // console.log(`   Energy: ${energy.toFixed(2)}, Freq: ${dominantFreq}, BPM: ${tempo}, Trend: ${energyTrend.toFixed(3)}`);
             
             // Evaluate additional automation
             this.evaluateColorSchemeChange(energy, dominantFreq);
@@ -265,19 +263,15 @@ class DecisionEngine {
         if (dominantFreq === 'bass' && energy > 0.15) {
             // Bass-heavy = darker schemes
             this.visualizer.setColorScheme('metal');
-            // console.log('🎨 Color: Bass-heavy → Metal');
         } else if (dominantFreq === 'treble' && energy > 0.15) {
             // Treble-heavy = brighter schemes  
             this.visualizer.setColorScheme('psychedelic');
-            // console.log('🎨 Color: Treble-heavy → Psychedelic');
         } else if (energy > 0.2) {
             // Medium energy = vibrant schemes
             this.visualizer.setColorScheme('luigi');
-            // console.log('🎨 Color: Medium energy → Luigi');
         } else {
             // Low energy = calm schemes
             this.visualizer.setColorScheme('earthtones');
-            // console.log('🎨 Color: Low energy → Earthtones');
         }
     }
     
@@ -285,10 +279,8 @@ class DecisionEngine {
         // Auto-activate kaleidoscope for high energy sections
         if (energy > 0.8 && beat && !this.visualizer.kaleidoscopeEnabled) {
             this.visualizer.toggleKaleidoscope();
-            // console.log('🔮 Autopilot activated kaleidoscope (high energy)');
         } else if (energy < 0.4 && this.visualizer.kaleidoscopeEnabled) {
             this.visualizer.toggleKaleidoscope();
-            // console.log('🔮 Autopilot deactivated kaleidoscope (low energy)');
         }
     }
 }

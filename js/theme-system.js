@@ -61,6 +61,5 @@ function updateThemeElements(themeName) {
     
     // Update any custom elements that need theme colors
     // This will be expanded as we add more theme-aware components
-    // console.log(`Theme applied: ${themeName}`, colors);
 }
 

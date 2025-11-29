@@ -200,7 +200,6 @@ class ParameterController {
         // Learn from this adjustment
         this.learnFromUserAdjustment(adjustment);
         
-        // console.log(`👤 User adjusted ${parameterName}: ${oldValue.toFixed(3)} → ${newValue.toFixed(3)}`);
     }
     
     // Learn from user adjustments
@@ -314,7 +313,6 @@ class ParameterController {
         // Learn from feedback
         this.learnFromFeedback(feedbackEntry);
         
-        // console.log(`👤 User feedback: ${feedback}`, context);
     }
     
     // Learn from user feedback
