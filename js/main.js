@@ -1192,7 +1192,6 @@ class FrequeVisualizer {
         const checkInterval = 500; // Check every 500ms
         let elapsed = 0;
         
-        console.log('⏳ Waiting for tracks to have valid URLs...');
         
         while (elapsed < maxWaitTime) {
             // Check if we have at least one track with a valid URL
@@ -1201,7 +1200,6 @@ class FrequeVisualizer {
             );
             
             if (validTracks.length > 0) {
-                console.log(`✅ Found ${validTracks.length} tracks with valid URLs`);
                 return;
             }
             
@@ -1994,7 +1992,6 @@ class FrequeVisualizer {
                     this.aiAutopilot.patternLearning.performanceMetrics = {};
                     this.aiAutopilot.patternLearning.saveLearningData();
                     this.updateLearningAnalytics();
-                    console.log('🧠 Learning data reset');
                 }
             });
         }
@@ -2117,7 +2114,6 @@ class FrequeVisualizer {
                     const isOn = this.aiAutopilot.multiLayeredIntelligenceEnabled;
                     e.target.textContent = `Multi-layered Intelligence: ${isOn ? 'On' : 'Off'}`;
                     e.target.classList.toggle('active', isOn);
-                    console.log(`🧠 Multi-layered intelligence: ${isOn ? 'enabled' : 'disabled'}`);
                 }
             });
         }
@@ -2138,10 +2134,8 @@ class FrequeVisualizer {
                     );
                     
                     if (decision) {
-                        console.log('🧠 Test intelligence result:', decision);
                         alert(`Intelligence Decision: ${decision.reason}\nAction: ${decision.action}\nConfidence: ${Math.round(decision.confidence * 100)}%\nSource: ${decision.sourceLayer}`);
                     } else {
-                        console.log('🧠 No intelligence decision available');
                         alert('No intelligence decision available');
                     }
                 }
@@ -2171,7 +2165,6 @@ class FrequeVisualizer {
                 e.stopPropagation();
                 if (this.aiAutopilot) {
                     this.aiAutopilot.testParameterControl();
-                    console.log('🧪 Test parameter control triggered');
                 }
             });
         }
@@ -2183,7 +2176,6 @@ class FrequeVisualizer {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.aiAutopilot && this.aiAutopilot.multiLayeredIntelligence) {
-                    console.log('🧪 Testing parameter changes...');
                     
                     // Test dramatic parameter changes
                     const testParams = {
@@ -3853,14 +3845,11 @@ class FrequeVisualizer {
         // Initialize video playlist UI (manager already initialized in init())
         // Use setTimeout to ensure DOM is fully updated before attaching handlers
         console.log('About to initialize video playlist UI in 50ms...');
-        console.log('this.videoPlaylistManager exists:', !!this.videoPlaylistManager);
-        console.log('window.VideoPlaylistManager exists:', typeof window.VideoPlaylistManager);
         
         // Store reference to visualizer for use in timeout
         const visualizer = this;
         
         setTimeout(() => {
-            console.log('Timeout fired, checking videoPlaylistManager:', !!visualizer.videoPlaylistManager);
             console.log('Visualizer is:', visualizer);
             
             if (visualizer.videoPlaylistManager) {
@@ -3894,8 +3883,6 @@ class FrequeVisualizer {
     }
     
     initializeVideoPlaylistUI() {
-        console.log('=== initializeVideoPlaylistUI called ===');
-        console.log('this is:', this);
         console.log('this.videoPlaylistManager:', this.videoPlaylistManager);
         
         if (!this.videoPlaylistManager) {
@@ -3904,7 +3891,6 @@ class FrequeVisualizer {
             console.error('window.visualizer.videoPlaylistManager:', window.visualizer?.videoPlaylistManager);
             return;
         }
-        console.log('VideoPlaylistManager exists:', !!this.videoPlaylistManager);
         
         // Store reference for use in event handlers
         const manager = this.videoPlaylistManager;
@@ -3919,7 +3905,6 @@ class FrequeVisualizer {
             scanBtn.parentNode.replaceChild(newScanBtn, scanBtn);
             
             newScanBtn.addEventListener('click', (e) => {
-                console.log('=== VIDEO PLAYLIST BUTTON CLICKED ===');
                 e.stopPropagation();
                 console.log('manager:', !!manager);
                 console.log('scanFolder method:', !!(manager && manager.scanFolder));
@@ -8910,7 +8895,6 @@ class FrequeVisualizer {
 
     // Audio device selection method for mixer
     async selectAudioDevice(deviceId) {
-        console.log('🎤 selectAudioDevice called with:', deviceId);
         await this.startLiveInput(deviceId);
     }
 
@@ -8970,7 +8954,6 @@ class FrequeVisualizer {
             this.streamSource.connect(this.monitorGainNode);
             this.monitorGainNode.connect(this.audioMotion.audioCtx.destination);
             
-            console.log('✅ Audio monitoring enabled');
         } catch (e) {
             console.error('Failed to setup audio monitoring:', e);
         }
@@ -9002,7 +8985,6 @@ class FrequeVisualizer {
         // Update UI
         this.updateAudioMonitorButton();
         
-        console.log('🔊 Audio monitoring:', this.audioMonitoringEnabled ? 'ON' : 'OFF');
     }
     
     updateAudioMonitorButton() {
@@ -9506,7 +9488,6 @@ https://rogueamoeba.com/loopback/
         // Apply to official AudioMotion
         this.officialAudioMotion.setOptions(randomProConfig);
         
-        console.log('🎲 Applied random Pro config:', randomProConfig);
         
         // Save as "Last Random" preset for reference
         const preset = {
@@ -10042,7 +10023,6 @@ https://rogueamoeba.com/loopback/
             panel.style.left = left + 'px';
             panel.style.top = top + 'px';
             
-            console.log(`🔵 Blobs panel positioned at: ${left}px, ${top}px`);
         }
     }
 
@@ -11750,7 +11730,6 @@ https://rogueamoeba.com/loopback/
                     const success = this.nebulaVisualization.loadPreset(index);
                     if (success) {
                         this.updateNebulaUIFromSettings();
-                        console.log('📂 Nebula preset loaded from dropdown');
                     }
                 }
                 // Reset dropdown to default
@@ -11768,7 +11747,6 @@ https://rogueamoeba.com/loopback/
                 if (name && name.trim() !== '') {
                     this.nebulaVisualization.saveCurrentAsPreset(name.trim());
                     this.updateNebulaPresetDropdown();
-                    console.log('💾 Nebula preset saved from UI');
                 }
             });
         }
@@ -11780,7 +11758,6 @@ https://rogueamoeba.com/loopback/
                 if (!this.nebulaVisualization) return;
                 
                 this.nebulaVisualization.exportPresets();
-                console.log('📤 Nebula presets exported from UI');
             });
         }
         
@@ -11801,7 +11778,6 @@ https://rogueamoeba.com/loopback/
                     const count = await this.nebulaVisualization.importPresets(file);
                     this.updateNebulaPresetDropdown();
                     alert(`Successfully imported ${count} nebula presets!`);
-                    console.log('📥 Nebula presets imported from UI');
                 } catch (error) {
                     alert('Error importing presets: ' + error);
                 }
@@ -12856,7 +12832,6 @@ https://rogueamoeba.com/loopback/
     }
 
     drawBackgroundImage(ctx, canvasWidth, canvasHeight) {
-        // // console.log('🎨 drawBackgroundImage called:', {
         //     hasImage: !!this.backgroundImage,
         //     enabled: this.backgroundImageEnabled,
         //     opacity: this.backgroundImageOpacity,
@@ -12978,11 +12953,9 @@ https://rogueamoeba.com/loopback/
             // Apply all filters
             if (filters.length > 0) {
                 ctx.filter = filters.join(' ');
-                // // console.log('🎨 Applied background image filters:', ctx.filter);
             }
             
             ctx.drawImage(this.cachedBackgroundImage, drawX, drawY, drawWidth, drawHeight);
-            // // console.log('✅ Background image drawn successfully');
             ctx.restore();
         } else {
         }
@@ -13054,7 +13027,6 @@ https://rogueamoeba.com/loopback/
             this.loadPresetOptions(headerSelector);
         }
         
-        console.log('💾 Saved Pro preset:', preset.name, preset.config);
     }
 
     getCurrentProConfig() {
@@ -13082,7 +13054,6 @@ https://rogueamoeba.com/loopback/
             }
         });
         
-        console.log('📋 Extracted Pro config:', config);
         return config;
     }
 
@@ -13167,7 +13138,6 @@ https://rogueamoeba.com/loopback/
             };
         }
         
-        console.log('🗑️ All user presets cleared');
     }
 
     toggleVisualization() {
@@ -13251,7 +13221,6 @@ https://rogueamoeba.com/loopback/
         // Queue Pro preset if morph is running
         if (this.isMorphing) {
             this.pendingProPreset = presetIndex;
-            console.log('🎵 Pro preset queued - will switch when morph cycle completes:', presetIndex);
             return;
         }
         
@@ -13652,7 +13621,6 @@ https://rogueamoeba.com/loopback/
                     item.classList.remove('active');
                 });
                 
-                console.log('📂 Loaded regular preset:', preset.name);
             }
         }
     }
@@ -13677,7 +13645,6 @@ https://rogueamoeba.com/loopback/
         // Start waiting state monitoring for Advanced visualizations
         this.startAdvancedWaitingStateMonitoring();
         
-        console.log('📂 Loaded Pro preset:', preset.name, preset.config);
     }
 
     switchToOfficialAudioMotion() {
@@ -15095,7 +15062,6 @@ https://rogueamoeba.com/loopback/
                         this.infiniteZoom.beatShape = false;
                     }
                     
-                    console.log(`🔍 Infinite Zoom Beat React: ${this.infiniteZoom.beatReact ? 'On' : 'Off'}`);
                 }
             });
         }
@@ -17169,11 +17135,9 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                             if (e.shiftKey && window.memoryProfiler) {
                                 e.preventDefault();
                                 window.memoryProfiler.start();
-                                console.log('🔍 Memory Profiler STARTED - Press Ctrl+P to stop and generate report');
                             } else if (e.ctrlKey && window.memoryProfiler) {
                                 e.preventDefault();
                                 window.memoryProfiler.stop();
-                                console.log('🔍 Memory Profiler STOPPED - Check console for report');
                             }
                             break;
                         case 'Escape':
@@ -17652,7 +17616,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     if (this.pendingProPreset !== null) {
                         const queuedPreset = this.pendingProPreset;
                         this.pendingProPreset = null;
-                        console.log('🎵 Processing queued Pro preset from REGULAR morph completion:', queuedPreset);
                         
                         // Temporarily stop morph to allow Pro preset switch
                         const wasMorphing = this.isMorphing;
@@ -17712,7 +17675,6 @@ document.getElementById('playBtn').addEventListener('click', () => this.togglePl
                     if (this.pendingProPreset !== null) {
                         const queuedPreset = this.pendingProPreset;
                         this.pendingProPreset = null;
-                        console.log('🎵 Processing queued Pro preset from PRO morph completion:', queuedPreset);
                         
                         // Temporarily stop morph to allow Pro preset switch
                         const wasMorphing = this.isMorphing;
@@ -18560,11 +18522,9 @@ window.visualizer = new FrequeVisualizer();
 
 // Add comprehensive diagnostic helper function to window
 window.diagnoseLiveDisplayAndRecord = function() {
-    console.log('======== LIVE DISPLAY & RECORD DIAGNOSTICS ========');
     console.log('');
     
     // Record Manager State
-    console.log('📹 RECORD MANAGER:');
     if (window.visualizer?.recordManager) {
         const rm = window.visualizer.recordManager;
         console.log(`  isRecording: ${rm.isRecording}`);
@@ -18572,12 +18532,10 @@ window.diagnoseLiveDisplayAndRecord = function() {
         console.log(`  compositeCtx: ${!!rm.compositeCtx}`);
         console.log(`  frameRate: ${rm.frameRate}`);
     } else {
-        console.log('  ❌ RecordManager not initialized');
     }
     console.log('');
     
     // Live Display Managers State (check multiDisplayManager)
-    console.log('📺 LIVE DISPLAY MANAGERS:');
     if (window.multiDisplayManager?.displayManagers && window.multiDisplayManager.displayManagers.size > 0) {
         let displayIndex = 1;
         window.multiDisplayManager.displayManagers.forEach((displayManager, displayId) => {
@@ -18590,12 +18548,10 @@ window.diagnoseLiveDisplayAndRecord = function() {
             displayIndex++;
         });
     } else {
-        console.log('  ❌ No active live displays');
     }
     console.log('');
     
     // Plugin State
-    console.log('🔌 PLUGINS:');
     if (window.pluginManager) {
         const plugins = window.pluginManager.getAllPlugins();
         console.log(`  Total plugins: ${plugins.length}`);
@@ -18608,19 +18564,16 @@ window.diagnoseLiveDisplayAndRecord = function() {
             console.log(`      kaleidoscope: ${window.visualizer?.[`kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`] ? 'ON' : 'OFF'}`);
         });
     } else {
-        console.log('  ❌ PluginManager not initialized');
     }
     console.log('');
     
     // Kaleidoscope State
-    console.log('🔮 KALEIDOSCOPE:');
     if (window.visualizer) {
         console.log(`  enabled: ${window.visualizer.kaleidoscopeEnabled}`);
         console.log(`  applyToViz: ${window.visualizer.kaleidoscopeApplyToViz}`);
         console.log(`  applyToVideo: ${window.visualizer.kaleidoscopeApplyToVideo}`);
         console.log(`  vizCanvas: ${window.visualizer.kaleidoscopeVizCanvas?.width}x${window.visualizer.kaleidoscopeVizCanvas?.height}`);
     } else {
-        console.log('  ❌ Visualizer not initialized');
     }
     console.log('');
     
@@ -18640,7 +18593,6 @@ if (window.pluginAutoLoader) {
     const refreshBtn = document.getElementById('refreshPluginsBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', async () => {
-            console.log('🔌 Manual plugin refresh triggered');
             refreshBtn.disabled = true;
             refreshBtn.textContent = 'Refreshing...';
             
@@ -18851,7 +18803,6 @@ window.inspectMainCanvas = function() {
         
         console.log('Main canvas copy added to page (blue border)');
     } else {
-        console.log('❌ Main canvas not found');
         console.log('Available canvas elements:', document.querySelectorAll('canvas'));
     }
 };
@@ -19388,7 +19339,6 @@ FrequeVisualizer.prototype.exportFluidPresets = function() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        console.log('📤 Fluid presets exported successfully');
     } catch (e) {
         console.error('Error exporting fluid presets:', e);
         alert('Failed to export fluid presets');
@@ -19406,7 +19356,6 @@ FrequeVisualizer.prototype.importFluidPresets = function(file) {
                     this.savedFluidPresets = imported;
                     this.saveFluidPresets();
                     this.updateFluidPresetSelector();
-                    console.log(`📥 Imported ${imported.length} fluid presets`);
                 }
             } else {
                 alert('Invalid fluid preset file format');

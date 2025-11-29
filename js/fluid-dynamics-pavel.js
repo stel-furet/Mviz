@@ -145,7 +145,6 @@ class FluidDynamicsVisualization {
                 });
                 
                 if (this.gl) {
-                    console.log('🌊 WebGL1 context created for Pavel Fluid System');
                 }
             } catch (error) {
                 console.error('🌊 WebGL not supported:', error);
@@ -1785,7 +1784,6 @@ class FluidDynamicsVisualization {
             this.blit(null);
         } else {
             // Fallback: just display the dye texture directly
-            console.log('🌊 Rendering dye texture to screen');
         }
     }
     
@@ -1950,13 +1948,11 @@ class FluidDynamicsVisualization {
     setAudioSpeedEnabled(enabled) {
         this.audioSpeedEnabled = enabled;
         this.updateEffectiveSpeed();
-        console.log(`🎵 Audio-driven speed ${enabled ? 'enabled' : 'disabled'}`);
     }
     
     setAudioSpeedSensitivity(sensitivity) {
         this.audioSpeedSensitivity = sensitivity;
         this.updateEffectiveSpeed();
-        console.log(`🎵 Audio speed sensitivity set to: ${sensitivity.toFixed(1)}`);
     }
     
     // Set custom colors (for random presets)
@@ -2067,7 +2063,6 @@ class FluidDynamicsVisualization {
                 this.config.DENSITY_DISSIPATION = this.waitingAnimation.originalPhysics.density;
             }
             
-            console.log('🌊 Exiting waiting animation mode - restored audio-reactive operation');
         }
     }
 }

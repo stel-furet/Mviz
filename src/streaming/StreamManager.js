@@ -372,10 +372,8 @@ class StreamManager {
                 
                 if (this.pc.connectionState === 'connected') {
                 } else if (this.pc.connectionState === 'failed') {
-                    console.log('❌ Connection failed, may need to restart');
                     this.handleStreamingError(new Error('WebRTC connection failed'));
                 } else if (this.pc.connectionState === 'disconnected') {
-                    console.log('⚠️ Connection disconnected');
                 }
             };
 
@@ -944,7 +942,6 @@ class StreamManager {
         console.warn('Connection error: ' + errorMessage);
         
         // Don't automatically retry - this was causing connection loops
-        console.log('❌ Streaming stopped due to error. Manual restart required.');
         
         // Reset streaming state without auto-retry
         this.isStreaming = false;

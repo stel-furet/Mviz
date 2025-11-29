@@ -36,7 +36,6 @@ class MasterAnimationTestSystem {
         
         if (success) {
             this.isRegistered = true;
-            console.log('🧪 Master Animation Test System registered successfully');
         } else {
             console.error('🧪 Failed to register Master Animation Test System');
         }
@@ -59,7 +58,6 @@ class MasterAnimationTestSystem {
     }
     
     cleanup() {
-        console.log('🧪 Test System cleanup called');
         this.testCounter = 0;
         this.isRegistered = false;
     }
@@ -82,7 +80,6 @@ class MasterAnimationTestSystem {
         // Test 3: Get registered systems
         const systems = controller.getRegisteredSystems();
         
-        console.log('🧪 Master Animation Controller Test Results:', {
             performanceStats: stats,
             testSystemStatus: systemStatus,
             registeredSystems: systems,
@@ -100,11 +97,9 @@ class MasterAnimationTestSystem {
         const controller = window.masterAnimationController;
         
         // Test deactivation
-        console.log('🧪 Testing system deactivation...');
         controller.setSystemActive('test-system', false);
         
         setTimeout(() => {
-            console.log('🧪 Testing system reactivation...');
             controller.setSystemActive('test-system', true);
         }, 2000);
     }
@@ -138,5 +133,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    console.log('🧪 Master Animation Test System initialized. Use window.testMasterAnimation for manual testing.');
 });

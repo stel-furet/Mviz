@@ -182,7 +182,6 @@ class NebulaVisualization {
     savePresets() {
         try {
             localStorage.setItem('MVpro_nebula_presets', JSON.stringify(this.savedPresets));
-            console.log('💾 Nebula presets saved to localStorage');
         } catch (e) {
             console.error('Error saving nebula presets:', e);
         }
@@ -247,7 +246,6 @@ class NebulaVisualization {
         this.savedPresets.push(preset);
         
         this.savePresets();
-        console.log('💾 Nebula preset saved:', name);
         return preset;
     }
     
@@ -274,7 +272,6 @@ class NebulaVisualization {
         this.updateStarField();
         this.applyColorAdjustments();
         
-        console.log('📂 Nebula preset loaded:', preset.name);
         return true;
     }
     
@@ -296,7 +293,6 @@ class NebulaVisualization {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        console.log('📤 Nebula presets exported');
     }
     
     importPresets(file) {
@@ -311,7 +307,6 @@ class NebulaVisualization {
                         this.savedPresets = [...this.savedPresets, ...data.presets];
                         
                         this.savePresets();
-                        console.log('📥 Nebula presets imported:', data.presets.length);
                         resolve(data.presets.length);
                     } else {
                         reject('Invalid preset file format');
@@ -1072,14 +1067,6 @@ class NebulaVisualization {
         // Apply updates efficiently
         if (needsColorUpdate) {
             this.applyColorAdjustments();
-            // Debug: Log color changes occasionally
-            if (Math.floor(time * 10) % 30 === 0) {
-                console.log('🎨 Morphing color update:', {
-                    hue: Math.round(this.settings.hueShift),
-                    saturation: Math.round(this.settings.saturation),
-                    speed: morphSpeed
-                });
-            }
         }
         
         if (needsFilamentRecreation) {
@@ -1154,7 +1141,6 @@ class NebulaVisualization {
         this.morphingBaselines = null;
         this.lastMorphingRecreation = null;
         
-        console.log('🔄 Morphing baselines reset');
     }
     
     refreshOriginalColors() {
@@ -1912,7 +1898,6 @@ class NebulaVisualization {
         // Find the best entry point on figure-8 where camera faces nebula center
         this.flyThrough.entryPoint = this.findNebulaFacingEntryPoint();
         
-        console.log('🚁 Fly-through started - transitioning to nebula-facing entry point');
     }
     
     

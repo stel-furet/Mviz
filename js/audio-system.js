@@ -279,7 +279,6 @@ class InfiniteZoomVisualization {
                 if (now - this.lastBeatTime > 200) { // Debounce
                     this.addObject();
                     this.lastBeatTime = now;
-                    console.log(`🔍 Beat detected - added object. Energy: ${avgEnergy.toFixed(2)}`);
                 }
             }
             
@@ -616,7 +615,6 @@ class AIAutopilot {
         this.audioAnalyzer.stop();
         this.decisionEngine.stop();
         
-        console.log('🤖 AI Autopilot deactivated');
         this.updateUI();
     }
     
@@ -654,7 +652,6 @@ class AIAutopilot {
     
     setIntensity(level) {
         this.intensity = level;
-        console.log(`🎛️ Autopilot intensity set to: ${level}`);
     }
     
     // Enhanced decision making with parameter control and pattern learning
@@ -722,7 +719,6 @@ class AIAutopilot {
             );
             
             if (userPreferenceRecommendations) {
-                console.log('👤 Using user preference recommendations');
                 parameterRecommendations = {
                     visualization: userPreferenceRecommendations,
                     video: {},
@@ -738,7 +734,6 @@ class AIAutopilot {
                 );
                 
                 if (patternRecommendations) {
-                    console.log('🧠 Using pattern learning recommendations');
                     parameterRecommendations = {
                         visualization: patternRecommendations.parameters,
                         video: {},
@@ -782,13 +777,6 @@ class AIAutopilot {
             );
             
             if (predictions && predictions.confidence >= 0.8) {
-                console.log('🎯 Predictive behavior triggered:', {
-                    modeChange: predictions.modeChange?.reason,
-                    parameterAdjustments: Object.keys(predictions.parameterAdjustment || {}),
-                    timing: predictions.timing?.reason,
-                    confidence: Math.round(predictions.confidence * 100) + '%'
-                });
-                
                 // Execute predictions if timing is right
                 if (predictions.timing?.immediate) {
                     this.predictiveBehavior.executePrediction(predictions);
@@ -845,7 +833,6 @@ class AIAutopilot {
             
             this.lastLearningUpdate = Date.now();
             
-            console.log(`🧠 Learning from decision: effectiveness=${effectiveness.toFixed(3)}`);
             
         } catch (error) {
             console.error('Error in learning from decision:', error);
@@ -1093,7 +1080,6 @@ class AIAutopilot {
     
     // Test method to force parameter changes
     testParameterControl() {
-        console.log('🧪 Testing parameter control...');
         
         // Force a genre detection
         const testGenre = 'electronic';
@@ -1120,7 +1106,6 @@ class AIAutopilot {
             this.scope
         );
         
-        console.log('🧪 Test recommendations:', recommendations);
         
         // Apply parameter changes
         this.parameterController.applyParameterChanges(recommendations);

@@ -124,7 +124,6 @@ class WebGLBeatDetector {
             
             // Log beat detection for debugging (very rarely)
             if (Math.random() < 0.01) { // 1% chance to log
-                console.log(`🥁 WebGL Beat detected - Energy: ${energyIncrease.toFixed(2)}, Flux: ${this.spectralFlux.toFixed(3)}, Confidence: ${this.beatConfidence.toFixed(2)}`);
             }
         } else {
             this.beatDetected = false;
@@ -387,12 +386,10 @@ class WebGLVisualizationManager {
             webglPanel.style.display = 'none';
         }
         
-        console.log('🎮 WebGL UI disabled due to lack of WebGL support');
     }
     
     // Test method to simulate WebGL not supported (for testing error handling)
     testWebGLNotSupported() {
-        console.log('🎮 WebGL: Testing error handling - simulating WebGL not supported');
         this.webglSupported = false;
         this.webgl2Supported = false;
         this.gl = null;
@@ -401,7 +398,6 @@ class WebGLVisualizationManager {
     
     // Test method to restore WebGL support (for testing error handling)
     testWebGLSupported() {
-        console.log('🎮 WebGL: Testing error handling - restoring WebGL support');
         this.initializeWebGL();
     }
     
@@ -1132,9 +1128,6 @@ class WebGLParticleSystem {
     render() {
         if (!this.gl || !this.program || this.particles.length === 0) {
             // Debug: Log why rendering is skipped
-            if (!this.gl) console.log('🎮 WebGL: Render skipped - no GL context');
-            if (!this.program) console.log('🎮 WebGL: Render skipped - no shader program');
-            if (this.particles.length === 0) console.log('🎮 WebGL: Render skipped - no particles');
             return;
         }
         
@@ -1291,7 +1284,6 @@ class WebGLParticleSystem {
             } else if (this.particleCount < oldCount) {
                 // Remove excess particles (remove oldest ones)
                 this.particles = this.particles.slice(0, this.particleCount);
-                console.log('🎮 WebGL: Removed', oldCount - this.particleCount, 'particles');
             }
         }
         

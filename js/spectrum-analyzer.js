@@ -831,11 +831,9 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isCapturedViaKaleidoscope) {
-                    console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isCapturedViaKaleidoscope) {
-                    console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 }
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
@@ -880,11 +878,9 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isFluidCapturedViaKaleidoscope) {
-                    console.log('🌊 Generated basic audio features for Fluid:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isFluidCapturedViaKaleidoscope) {
-                    console.log('🌊 No audio data available for Fluid - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 }
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy
@@ -929,11 +925,9 @@ class SpectrumAnalyzer {
             if (!audioFeatures && this.analyser && this.dataArray) {
                 audioFeatures = this.generateBasicAudioFeatures();
                 if (!isWebGLCapturedViaKaleidoscope) {
-                    console.log('🔍 Generated basic audio features:', audioFeatures);
                 }
             } else if (!audioFeatures) {
                 if (!isWebGLCapturedViaKaleidoscope) {
-                    console.log('🔍 No audio data available - analyser:', !!this.analyser, 'dataArray:', !!this.dataArray);
                 }
             } else if (audioFeatures && audioFeatures.energy === 0) {
                 // Try to generate basic audio features if AI features have no energy

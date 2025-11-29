@@ -1678,7 +1678,6 @@ class PlaylistManager {
             const newIndex = this.currentPlaylist.tracks.findIndex(track => track.url === currentPlayingUrl);
             
             if (newIndex >= 0 && newIndex !== this.visualizer.currentTrackIndex) {
-                console.log(`🔄 Updating current track index from ${this.visualizer.currentTrackIndex} to ${newIndex} after reorder`);
                 this.visualizer.currentTrackIndex = newIndex;
                 
                 // Also update the track info display to reflect the new position
@@ -1719,7 +1718,6 @@ class PlaylistManager {
         this.displayPlaylist();
         this.visualizer.updatePlaylistFromManager(this.currentPlaylist);
         
-        console.log('✅ Playlist reset to alphabetical order');
     }
     
     moveTrackToArtist(trackId, targetArtist) {
@@ -1861,7 +1859,6 @@ class PlaylistManager {
                     await writable.write(JSON.stringify(exportData, null, 2));
                     await writable.close();
                     
-                    console.log(`✅ Playlist exported to: ${fileHandle.name}`);
                     console.log(`${exportData.trackCount} tracks saved successfully`);
                     
                 } catch (saveError) {
@@ -1897,7 +1894,6 @@ class PlaylistManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        console.log(`✅ Playlist downloaded: ${exportData.trackCount} tracks`);
     }
     
     async importPlaylist(file) {
@@ -1992,7 +1988,6 @@ class PlaylistManager {
                 this.showToast(`Playlist imported successfully! ${importData.tracks.length} tracks ready to play.`, 'success');
             }
             
-            console.log(`✅ Playlist imported: ${importData.tracks.length} tracks (${tracksNeedingRescan} need rescanning)`);
             
         } catch (error) {
             console.error('Error importing playlist:', error);

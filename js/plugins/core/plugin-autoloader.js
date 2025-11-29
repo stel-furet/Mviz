@@ -78,7 +78,6 @@ class PluginAutoLoader {
         if (!window.pluginFolderManager) return;
         
         if (window.pluginFolderManager.hasCustomFolder()) {
-            console.log('🔌 Scanning custom plugin folder...');
             await window.pluginFolderManager.scanAndLoadCustomPlugins();
         }
     }
@@ -132,7 +131,6 @@ class PluginAutoLoader {
             // Handle missing plugins - immediately unload them
             for (const missingPlugin of missingPlugins) {
                 if (!this.missingPlugins.has(missingPlugin)) {
-                    console.log(`🔌 Plugin removed: ${missingPlugin} - auto-unloading...`);
                     this.missingPlugins.add(missingPlugin);
                     
                     // Immediately unload the plugin

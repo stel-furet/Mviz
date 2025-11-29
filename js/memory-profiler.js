@@ -53,7 +53,6 @@ class MemoryProfiler {
         this.stutterEvents = [];
         this.frameTimings = [];
         this.lastSampleTime = performance.now();
-        console.log('🔍 Memory Profiler started - monitoring for GC pauses and stuttering');
     }
     
     stop() {
@@ -212,12 +211,6 @@ class MemoryProfiler {
         };
         
         console.group('🔍 Memory Profiler Report');
-        console.log('📊 Summary:', report.summary);
-        console.log('🗑️ GC Events:', report.gcEvents);
-        console.log('⚡ Stutter Events:', report.stutterEvents);
-        console.log('📈 Memory Trend:', report.memoryTrend);
-        console.log('🎯 Frame Performance:', report.framePerformance);
-        console.log('💡 Recommendations:', report.recommendations);
         console.groupEnd();
         
         return report;

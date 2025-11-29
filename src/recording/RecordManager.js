@@ -582,7 +582,6 @@ class RecordManager {
         const mixerBackgroundImageFile = document.getElementById('mixerBackgroundImageFile');
         
         if (mixerBackgroundSelect && mixerBackgroundImageFile) {
-            // // console.log('✅ Mixer background select button found, adding event listener');
             mixerBackgroundSelect.addEventListener('click', () => {
                 mixerBackgroundImageFile.click();
             });
@@ -596,7 +595,6 @@ class RecordManager {
         // Mixer background toggle button
         const mixerBackgroundToggle = document.getElementById('mixerBackgroundToggle');
         if (mixerBackgroundToggle) {
-            // // console.log('✅ Mixer background toggle button found, adding event listener');
             mixerBackgroundToggle.addEventListener('click', () => {
                 if (this.visualizer) {
                     //     enabled: this.visualizer.backgroundImageEnabled,
@@ -627,7 +625,6 @@ class RecordManager {
         // Mixer background opacity slider (custom JS slider)
         const mixerBackgroundOpacity = document.getElementById('mixerBackgroundOpacity');
         if (mixerBackgroundOpacity) {
-            // // console.log('✅ Mixer background opacity slider found, initializing custom slider');
             this.mixerOpacitySlider = this.initializeVerticalSlider(mixerBackgroundOpacity, (value) => {
                 if (this.visualizer) {
                     this.visualizer.backgroundImageOpacity = value;
@@ -657,7 +654,6 @@ class RecordManager {
         // Mixer background sizing buttons
         const mixerSizingButtons = document.querySelectorAll('#mixerBackgroundSizeFit, #mixerBackgroundSizeFill, #mixerBackgroundSizeStretch, #mixerBackgroundSizeOriginal');
         if (mixerSizingButtons.length > 0) {
-            // // console.log('✅ Mixer background sizing buttons found, adding event listeners');
             mixerSizingButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const size = button.getAttribute('data-size');
@@ -686,7 +682,6 @@ class RecordManager {
         // Mixer background saturation slider
         const mixerBackgroundSaturation = document.getElementById('mixerBackgroundSaturation');
         if (mixerBackgroundSaturation) {
-            // // console.log('✅ Mixer background saturation slider found, adding event listener');
             mixerBackgroundSaturation.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundSaturation.value);
                 
@@ -709,7 +704,6 @@ class RecordManager {
         // Mixer background posterization slider
         const mixerBackgroundPosterize = document.getElementById('mixerBackgroundPosterize');
         if (mixerBackgroundPosterize) {
-            // // console.log('✅ Mixer background posterize slider found, adding event listener');
             mixerBackgroundPosterize.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundPosterize.value);
                 
@@ -732,7 +726,6 @@ class RecordManager {
         // Mixer background contrast slider
         const mixerBackgroundContrast = document.getElementById('mixerBackgroundContrast');
         if (mixerBackgroundContrast) {
-            // // console.log('✅ Mixer background contrast slider found, adding event listener');
             mixerBackgroundContrast.addEventListener('input', () => {
                 const value = parseInt(mixerBackgroundContrast.value);
                 
@@ -755,7 +748,6 @@ class RecordManager {
         // Mixer video toggle button
         const mixerVideoToggle = document.getElementById('mixerVideoToggle');
         if (mixerVideoToggle) {
-            // // console.log('✅ Mixer video toggle button found, adding event listener');
             mixerVideoToggle.addEventListener('click', () => {
                 if (this.visualizer) {
                     
@@ -771,7 +763,6 @@ class RecordManager {
         // Mixer video opacity slider (custom JS slider)
         const mixerVideoOpacity = document.getElementById('mixerVideoOpacity');
         if (mixerVideoOpacity) {
-            // // console.log('✅ Mixer video opacity slider found, initializing custom slider');
             this.mixerVideoOpacitySlider = this.initializeVerticalSlider(mixerVideoOpacity, (value) => {
                 if (this.visualizer) {
                     this.visualizer.setVideoOpacity(value / 100);
@@ -791,7 +782,6 @@ class RecordManager {
         // Mixer video source select dropdown (cameras + file)
         const mixerVideoCameraSelect = document.getElementById('mixerVideoCameraSelect');
         if (mixerVideoCameraSelect) {
-            // // console.log('✅ Mixer video source select found, adding event listener');
             mixerVideoCameraSelect.addEventListener('change', (e) => {
                 const value = e.target.value;
                 
@@ -819,7 +809,6 @@ class RecordManager {
         // Mixer video preset buttons
         const mixerVideoPresetButtons = document.querySelectorAll('#mixerVideoPresetNormal, #mixerVideoPresetDreamy, #mixerVideoPresetNoir, #mixerVideoPresetCyberpunk, #mixerVideoPresetVintage, #mixerVideoPresetRetroTv, #mixerVideoPresetUnderwater, #mixerVideoPresetInfrared, #mixerVideoPresetAcid, #mixerVideoPresetThermal, #mixerVideoPresetMatrix, #mixerVideoPresetGlitch');
         if (mixerVideoPresetButtons.length > 0) {
-            // // console.log('✅ Mixer video preset buttons found:', mixerVideoPresetButtons.length);
             mixerVideoPresetButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const preset = button.getAttribute('data-preset');
@@ -846,7 +835,6 @@ class RecordManager {
         // Mixer video brightness slider
         const mixerVideoBrightness = document.getElementById('mixerVideoBrightness');
         if (mixerVideoBrightness) {
-            // // console.log('✅ Mixer video brightness slider found, adding event listener');
             mixerVideoBrightness.addEventListener('input', () => {
                 const value = parseInt(mixerVideoBrightness.value);
                 
@@ -869,7 +857,6 @@ class RecordManager {
         // Mixer video contrast slider
         const mixerVideoContrast = document.getElementById('mixerVideoContrast');
         if (mixerVideoContrast) {
-            // // console.log('✅ Mixer video contrast slider found, adding event listener');
             mixerVideoContrast.addEventListener('input', () => {
                 const value = parseInt(mixerVideoContrast.value);
                 
@@ -892,7 +879,6 @@ class RecordManager {
         // Mixer video saturation slider
         const mixerVideoSaturation = document.getElementById('mixerVideoSaturation');
         if (mixerVideoSaturation) {
-            // // console.log('✅ Mixer video saturation slider found, adding event listener');
             mixerVideoSaturation.addEventListener('input', () => {
                 const value = parseInt(mixerVideoSaturation.value);
                 
@@ -915,7 +901,6 @@ class RecordManager {
         // Mixer video hue rotation slider
         const mixerVideoHueRotate = document.getElementById('mixerVideoHueRotate');
         if (mixerVideoHueRotate) {
-            // // console.log('✅ Mixer video hue rotation slider found, adding event listener');
             mixerVideoHueRotate.addEventListener('input', () => {
                 const value = parseInt(mixerVideoHueRotate.value);
                 
@@ -938,7 +923,6 @@ class RecordManager {
         // Mixer video grayscale slider
         const mixerVideoGrayscale = document.getElementById('mixerVideoGrayscale');
         if (mixerVideoGrayscale) {
-            // // console.log('✅ Mixer video grayscale slider found, adding event listener');
             mixerVideoGrayscale.addEventListener('input', () => {
                 const value = parseInt(mixerVideoGrayscale.value);
                 
@@ -961,7 +945,6 @@ class RecordManager {
         // Mixer video fade time slider
         const mixerVideoFadeTime = document.getElementById('mixerVideoFadeTime');
         if (mixerVideoFadeTime) {
-            // // console.log('✅ Mixer video fade time slider found, adding event listener');
             mixerVideoFadeTime.addEventListener('input', () => {
                 const value = parseFloat(mixerVideoFadeTime.value);
                 
@@ -983,7 +966,6 @@ class RecordManager {
         // Mixer video sepia slider
         const mixerVideoSepia = document.getElementById('mixerVideoSepia');
         if (mixerVideoSepia) {
-            // // console.log('✅ Mixer video sepia slider found, adding event listener');
             mixerVideoSepia.addEventListener('input', () => {
                 const value = parseInt(mixerVideoSepia.value);
                 
@@ -1006,7 +988,6 @@ class RecordManager {
         // Mixer video blur slider
         const mixerVideoBlur = document.getElementById('mixerVideoBlur');
         if (mixerVideoBlur) {
-            // // console.log('✅ Mixer video blur slider found, adding event listener');
             mixerVideoBlur.addEventListener('input', () => {
                 const value = parseInt(mixerVideoBlur.value);
                 
@@ -1029,7 +1010,6 @@ class RecordManager {
         // Mixer video vignette slider
         const mixerVideoVignette = document.getElementById('mixerVideoVignette');
         if (mixerVideoVignette) {
-            // // console.log('✅ Mixer video vignette slider found, adding event listener');
             mixerVideoVignette.addEventListener('input', () => {
                 const value = parseInt(mixerVideoVignette.value);
                 
@@ -1052,7 +1032,6 @@ class RecordManager {
         // Mixer video posterize slider
         const mixerVideoPosterize = document.getElementById('mixerVideoPosterize');
         if (mixerVideoPosterize) {
-            // // console.log('✅ Mixer video posterize slider found, adding event listener');
             mixerVideoPosterize.addEventListener('input', () => {
                 const value = parseInt(mixerVideoPosterize.value);
                 
@@ -1075,7 +1054,6 @@ class RecordManager {
         // Mixer video invert toggle button
         const mixerVideoInvert = document.getElementById('mixerVideoInvert');
         if (mixerVideoInvert) {
-            // // console.log('✅ Mixer video invert toggle found, adding event listener');
             mixerVideoInvert.addEventListener('click', () => {
                 if (this.visualizer) {
                     this.visualizer.videoInvert = !this.visualizer.videoInvert;
@@ -1098,7 +1076,6 @@ class RecordManager {
         // Mixer video mirror toggle button (duplicate header implementation exactly)
         const mixerVideoMirror = document.getElementById('mixerVideoMirror');
         if (mixerVideoMirror) {
-            // // console.log('✅ Mixer video mirror toggle found, adding event listener');
             mixerVideoMirror.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1125,7 +1102,6 @@ class RecordManager {
         // Mixer video pulse toggle button (duplicate header implementation exactly)
         const mixerVideoPulse = document.getElementById('mixerVideoPulse');
         if (mixerVideoPulse) {
-            // // console.log('✅ Mixer video pulse toggle found, adding event listener');
             mixerVideoPulse.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1156,7 +1132,6 @@ class RecordManager {
         // Mixer video pulse rate slider (duplicate header implementation exactly)
         const mixerVideoPulseRate = document.getElementById('mixerVideoPulseRate');
         if (mixerVideoPulseRate) {
-            // // console.log('✅ Mixer video pulse rate slider found, adding event listener');
             mixerVideoPulseRate.addEventListener('input', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1181,7 +1156,6 @@ class RecordManager {
         // Mixer video file loop button (syncs with header)
         const mixerVideoFileLoopBtn = document.getElementById('mixerVideoFileLoopBtn');
         if (mixerVideoFileLoopBtn) {
-            // // console.log('✅ Mixer video file loop button found, adding event listener');
             mixerVideoFileLoopBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1214,7 +1188,6 @@ class RecordManager {
         // Mixer video file mute button (syncs with header)
         const mixerVideoFileMuteBtn = document.getElementById('mixerVideoFileMuteBtn');
         if (mixerVideoFileMuteBtn) {
-            // // console.log('✅ Mixer video file mute button found, adding event listener');
             mixerVideoFileMuteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1242,7 +1215,6 @@ class RecordManager {
         // Mixer video file delete button
         const mixerVideoFileDeleteBtn = document.getElementById('mixerVideoFileDeleteBtn');
         if (mixerVideoFileDeleteBtn) {
-            // // console.log('✅ Mixer video file delete button found, adding event listener');
             mixerVideoFileDeleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1291,7 +1263,6 @@ class RecordManager {
         // Mixer video clear input button
         const mixerVideoClearInputBtn = document.getElementById('mixerVideoClearInputBtn');
         if (mixerVideoClearInputBtn) {
-            // // console.log('✅ Mixer video clear input button found, adding event listener');
             mixerVideoClearInputBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3702,7 +3673,6 @@ class RecordManager {
     debugBackgroundImageState() {
         if (!this.visualizer) return;
         
-        // // console.log('🔍 BACKGROUND IMAGE DEBUG SUMMARY:', {
         //     'Image Data': this.visualizer.backgroundImage ? `Present (${this.visualizer.backgroundImage.length} chars)` : 'Missing',
         //     'Enabled': this.visualizer.backgroundImageEnabled,
         //     'Opacity': this.visualizer.backgroundImageOpacity + '%',
@@ -5166,7 +5136,6 @@ class RecordManager {
             headerMuteBtn.classList.toggle('active', muted);
             
         } else {
-            console.log('ℹ️ Header video file buttons not found (panel may be closed)');
         }
     }
 

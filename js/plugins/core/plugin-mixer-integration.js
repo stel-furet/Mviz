@@ -118,7 +118,6 @@ class PluginMixerIntegration {
      * Remove a plugin's channel strip from the mixer
      */
     removePluginChannelStrip(pluginName) {
-        console.log(`🔌 Removing channel strip for plugin: ${pluginName}`);
         
         const channelStrip = this.channelStrips.get(pluginName);
         if (!channelStrip) {
@@ -137,7 +136,6 @@ class PluginMixerIntegration {
         // Recalculate z-indexes for remaining plugins
         this.recalculateZIndexes();
         
-        console.log(`🔌 Channel strip removed successfully for: ${pluginName}`);
         return true;
     }
     
@@ -1422,11 +1420,9 @@ class PluginMixerIntegration {
         
         // Check if localStorage was loaded
         const savedData = localStorage.getItem('freque-channel-order');
-        console.log('🔍 DEBUG STORAGE: localStorage data exists:', !!savedData);
         
         // Show all canvases that exist in the DOM
         const allCanvases = document.querySelectorAll('canvas');
-        console.log('🔍 DEBUG CANVASES: Found', allCanvases.length, 'canvas elements in DOM');
         allCanvases.forEach((canvas, i) => {
             console.log(`  Canvas ${i+1}: id="${canvas.id}", zIndex="${canvas.style.zIndex}", parent="${canvas.parentElement?.id || 'no-id'}"`)
         });
@@ -1531,7 +1527,6 @@ class PluginMixerIntegration {
             console.log(`  ${header} (${channelType || pluginName || 'unknown'}): expected=${expectedZIndex}, found=${elementType} z-index=${actualZIndex}`);
         });
         
-        console.log('🔍 Z-INDEX DEBUG: End of initial values');
     }
     
     /**
@@ -1792,7 +1787,6 @@ class PluginMixerIntegration {
             console.log(`  ${header} (${channelType || pluginName || 'unknown'}): assigned=${assignedZIndex}, actual=${actualZIndex} ${status}`);
         });
         
-        console.log('🔄 Z-INDEX DEBUG: End of updated values');
     }
     
     /**
@@ -2046,7 +2040,6 @@ class PluginMixerIntegration {
     clearSavedChannelOrder() {
         try {
             localStorage.removeItem('freque-channel-order');
-            console.log('🔌 Cleared saved channel order from localStorage');
         } catch (error) {
             console.error('🔌 Failed to clear saved channel order:', error);
         }
@@ -2057,7 +2050,6 @@ class PluginMixerIntegration {
      */
     resetToDefaultOrder() {
         this.clearSavedChannelOrder();
-        console.log('🔌 Resetting to default order - please refresh the page');
     }
     
     /**
@@ -2066,9 +2058,7 @@ class PluginMixerIntegration {
     debugChannelOrder() {
         const savedData = localStorage.getItem('freque-channel-order');
         if (savedData) {
-            console.log('🔌 Current localStorage data:', JSON.parse(savedData));
         } else {
-            console.log('🔌 No localStorage data found');
         }
         
         const currentOrder = Array.from(document.querySelectorAll('.mixer-channels .channel-strip')).map(strip => ({
@@ -2077,7 +2067,6 @@ class PluginMixerIntegration {
             dataPlugin: strip.getAttribute('data-plugin'),
             classes: strip.className
         }));
-        console.log('🔌 Current DOM order:', currentOrder);
     }
     
     /**
