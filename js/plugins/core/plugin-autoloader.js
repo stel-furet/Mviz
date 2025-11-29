@@ -251,7 +251,65 @@ class PluginAutoLoader {
             // Not JSON, continue with regex results
         }
         
-        return pluginFiles.sort();
+        // Sort plugins by saved z-index order from localStorage
+        // Plugins in saved order load first (in their saved positions)
+        // New plugins load last (alphabetically) and get highest z-index
+        return this.sortPluginsByStoredOrder(pluginFiles);
+    }
+    
+    /**
+     * Sort plugins by stored z-index order from localStorage
+     * Plugins in saved order load first (preserving their positions)
+     * New plugins load last (alphabetically) so they get highest z-index
+     */
+    sortPluginsByStoredOrder(pluginFiles) {
+        try {
+            const savedData = localStorage.getItem('freque-channel-order');
+            if (!savedData) {
+                // No saved order, fall back to alphabetical
+                return pluginFiles.sort();
+            }
+            
+            const orderData = JSON.parse(savedData);
+            if (!orderData.channelOrder || !Array.isArray(orderData.channelOrder)) {
+                return pluginFiles.sort();
+            }
+            
+            // Extract plugin names from saved order (filter for plugin entries only)
+            const savedPluginOrder = orderData.channelOrder
+                .filter(item => item.plugin)
+                .map(item => item.plugin);
+            
+            // Separate plugins into saved (known) and new (unknown)
+            const savedPlugins = [];
+            const newPlugins = [];
+            
+            pluginFiles.forEach(file => {
+                // Extract plugin name from file path (e.g., "js/plugins/nebula-freque-plugin.js" -> "nebula")
+                const match = file.match(/([^\/]+)-freque-plugin\.js$/);
+                const pluginName = match ? match[1] : null;
+                
+                if (pluginName && savedPluginOrder.includes(pluginName)) {
+                    savedPlugins.push({ file, pluginName, order: savedPluginOrder.indexOf(pluginName) });
+                } else {
+                    newPlugins.push(file);
+                }
+            });
+            
+            // Sort saved plugins by their saved order
+            savedPlugins.sort((a, b) => a.order - b.order);
+            
+            // Sort new plugins alphabetically
+            newPlugins.sort();
+            
+            // Return: saved plugins first (in order), then new plugins (alphabetically)
+            // New plugins load LAST so they get inserted closest to Kaleidoscope
+            return [...savedPlugins.map(p => p.file), ...newPlugins];
+            
+        } catch (error) {
+            // On any error, fall back to alphabetical
+            return pluginFiles.sort();
+        }
     }
     
     /**
