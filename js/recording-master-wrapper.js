@@ -174,41 +174,12 @@ class RecordingMasterWrapper {
         if (!this.recordManager || !this.recordManager.isRecording) return;
         
         // Call the original compositeFrame method
+        // This already handles crop canvas via updateCropCanvas() at the end
         if (this.recordManager.compositeFrame) {
             this.recordManager.compositeFrame();
         }
         
-        // Handle crop canvas if needed
-        if (this.recordManager.shouldCrop && this.recordManager.cropCanvas && this.recordManager.cropCtx) {
-            this.compositeCropFrame();
-        }
-    }
-    
-    /**
-     * Composite crop frame for recording
-     */
-    compositeCropFrame() {
-        const recordManager = this.recordManager;
-        
-        if (!recordManager.compositeCanvas || !recordManager.cropCanvas) return;
-        
-        const cropCtx = recordManager.cropCtx;
-        const cropCanvas = recordManager.cropCanvas;
-        const compositeCanvas = recordManager.compositeCanvas;
-        
-        // Clear crop canvas
-        cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-        
-        // Get crop area from recording rectangle
-        const rect = recordManager.getRecordingArea();
-        if (!rect) return;
-        
-        // Draw cropped portion from composite canvas
-        cropCtx.drawImage(
-            compositeCanvas,
-            rect.x, rect.y, rect.width, rect.height, // Source
-            0, 0, cropCanvas.width, cropCanvas.height // Destination
-        );
+        // Note: updateCropCanvas() is called by compositeFrame(), so no need for separate crop handling
     }
     
     /**

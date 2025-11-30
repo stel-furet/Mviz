@@ -5458,8 +5458,53 @@ class RecordManager {
     }
     
     setupCropCanvas() {
-        // Check if we should crop based on recording area settings
-        this.shouldCrop = this.showRecordingArea && 
+        // Always calculate cropArea when aspectRatio is not 'window'
+        // showRecordingArea only controls overlay visibility, not cropping
+        if (this.aspectRatio !== 'window') {
+            const dimensions = this.calculateRecordingAreaDimensions();
+            if (dimensions) {
+                // Use overlay position if it exists and is positioned, otherwise use calculated position
+                if (this.recordingAreaOverlay && this.recordingAreaOverlay.style.display !== 'none') {
+                    // Overlay exists and is visible - use its current position
+                    const overlayRect = this.recordingAreaOverlay.getBoundingClientRect();
+                    const canvas = this.visualizer.audioMotion?.canvas;
+                    if (canvas) {
+                        const canvasRect = canvas.getBoundingClientRect();
+                        // Convert overlay screen position to canvas-relative position
+                        this.cropArea = {
+                            x: overlayRect.left - canvasRect.left,
+                            y: overlayRect.top - canvasRect.top,
+                            width: dimensions.width,
+                            height: dimensions.height
+                        };
+                    } else {
+                        // Fallback to calculated position
+                        this.cropArea = {
+                            x: dimensions.x,
+                            y: dimensions.y,
+                            width: dimensions.width,
+                            height: dimensions.height
+                        };
+                    }
+                } else if (this.cropArea.width > 0 && this.cropArea.height > 0) {
+                    // Overlay hidden but cropArea already set (from previous positioning) - keep existing position
+                    // Just update width/height in case aspect ratio changed
+                    this.cropArea.width = dimensions.width;
+                    this.cropArea.height = dimensions.height;
+                } else {
+                    // No overlay or no previous position - use calculated (centered) position
+                    this.cropArea = {
+                        x: dimensions.x,
+                        y: dimensions.y,
+                        width: dimensions.width,
+                        height: dimensions.height
+                    };
+                }
+            }
+        }
+        
+        // shouldCrop is based on aspectRatio, not showRecordingArea
+        this.shouldCrop = this.aspectRatio !== 'window' && 
                          this.cropArea.width > 0 && 
                          this.cropArea.height > 0;
         
@@ -5467,12 +5512,37 @@ class RecordManager {
             return;
         }
         
-        // Create crop canvas with crop dimensions
-        this.cropCanvas = document.createElement('canvas');
-        this.cropCanvas.width = this.cropArea.width;
-        this.cropCanvas.height = this.cropArea.height;
-        this.cropCtx = this.cropCanvas.getContext('2d');
+        // Calculate crop canvas size based on recording resolution and selected aspect ratio
+        // The crop canvas should maintain the selected aspect ratio at the recording resolution
+        const recordingDims = this.getRecordingDimensions();
         
+        // Get aspect ratio from selection (not from screen pixel dimensions)
+        let targetAspect;
+        switch (this.aspectRatio) {
+            case '16:9': targetAspect = 16/9; break;
+            case '9:16': targetAspect = 9/16; break;
+            case '1:1': targetAspect = 1; break;
+            case '4:3': targetAspect = 4/3; break;
+            default: targetAspect = this.cropArea.width / this.cropArea.height; // Fallback
+        }
+        
+        // Size crop canvas to maintain aspect ratio within recording resolution
+        let cropCanvasWidth, cropCanvasHeight;
+        if (recordingDims.width / recordingDims.height > targetAspect) {
+            // Recording is wider than crop aspect ratio - fit to height
+            cropCanvasHeight = recordingDims.height;
+            cropCanvasWidth = cropCanvasHeight * targetAspect;
+        } else {
+            // Recording is taller than crop aspect ratio - fit to width
+            cropCanvasWidth = recordingDims.width;
+            cropCanvasHeight = cropCanvasWidth / targetAspect;
+        }
+        
+        // Create crop canvas with calculated dimensions
+        this.cropCanvas = document.createElement('canvas');
+        this.cropCanvas.width = Math.round(cropCanvasWidth);
+        this.cropCanvas.height = Math.round(cropCanvasHeight);
+        this.cropCtx = this.cropCanvas.getContext('2d');
     }
     
     startCompositing() {
@@ -5658,7 +5728,7 @@ class RecordManager {
         this.cropCtx.fillStyle = '#000000';
         this.cropCtx.fillRect(0, 0, this.cropCanvas.width, this.cropCanvas.height);
         
-        // Convert screen coordinates to canvas pixel coordinates
+        // Convert screen coordinates to composite canvas pixel coordinates
         const canvas = this.visualizer.audioMotion?.canvas;
         if (!canvas) {
             return;
@@ -5668,18 +5738,37 @@ class RecordManager {
         const scaleX = this.compositeCanvas.width / canvasRect.width;
         const scaleY = this.compositeCanvas.height / canvasRect.height;
         
-        // Convert crop area from screen coordinates to canvas pixel coordinates
+        // Convert crop area position from screen coordinates to composite canvas coordinates
         const cropX = this.cropArea.x * scaleX;
         const cropY = this.cropArea.y * scaleY;
-        const cropWidth = this.cropArea.width * scaleX;
-        const cropHeight = this.cropArea.height * scaleY;
         
+        // Calculate crop region size in composite canvas coordinates
+        // Use the aspect ratio to determine the crop region size, not screen pixel dimensions
+        let targetAspect;
+        switch (this.aspectRatio) {
+            case '16:9': targetAspect = 16/9; break;
+            case '9:16': targetAspect = 9/16; break;
+            case '1:1': targetAspect = 1; break;
+            case '4:3': targetAspect = 4/3; break;
+            default: targetAspect = this.cropArea.width / this.cropArea.height; // Fallback
+        }
+        
+        // Calculate crop region size in composite canvas coordinates
+        // Fit to height (same as calculateRecordingAreaDimensions logic)
+        const cropHeight = this.compositeCanvas.height;
+        const cropWidth = cropHeight * targetAspect;
+        
+        // Ensure crop region doesn't exceed composite canvas bounds
+        const finalCropX = Math.max(0, Math.min(cropX, this.compositeCanvas.width - cropWidth));
+        const finalCropY = Math.max(0, Math.min(cropY, this.compositeCanvas.height - cropHeight));
+        const finalCropWidth = Math.min(cropWidth, this.compositeCanvas.width - finalCropX);
+        const finalCropHeight = Math.min(cropHeight, this.compositeCanvas.height - finalCropY);
         
         // Copy cropped region from composite canvas to crop canvas
         this.cropCtx.drawImage(
             this.compositeCanvas,
-            cropX, cropY, cropWidth, cropHeight,
-            0, 0, this.cropCanvas.width, this.cropCanvas.height
+            finalCropX, finalCropY, finalCropWidth, finalCropHeight, // Source region in composite canvas
+            0, 0, this.cropCanvas.width, this.cropCanvas.height // Destination (crop canvas)
         );
     }
     
@@ -6272,16 +6361,53 @@ class RecordManager {
     }
 
     updateRecordingAreaOverlay() {
-        
-        if (!this.showRecordingArea || this.aspectRatio === 'window') {
-            this.hideRecordingAreaOverlay();
-            return;
+        // Always calculate cropArea when aspectRatio is set (for recording)
+        // showRecordingArea only controls overlay visibility
+        let dimensions = null;
+        if (this.aspectRatio !== 'window') {
+            dimensions = this.calculateRecordingAreaDimensions();
+            if (dimensions) {
+                // Always store cropArea (needed for recording, even if overlay is hidden)
+                // Use existing cropArea position if it was previously set (e.g., from dragging)
+                if (this.cropArea.width > 0 && this.cropArea.height > 0 && 
+                    this.recordingAreaOverlay && this.recordingAreaOverlay.style.display !== 'none') {
+                    // Overlay exists and was positioned - preserve x, y, update width/height
+                    this.cropArea.width = dimensions.width;
+                    this.cropArea.height = dimensions.height;
+                } else {
+                    // No previous position or overlay hidden - use calculated (centered) position
+                    this.cropArea = {
+                        x: dimensions.x,
+                        y: dimensions.y,
+                        width: dimensions.width,
+                        height: dimensions.height
+                    };
+                }
+                
+                // Update shouldCrop if recording is active
+                if (this.isRecording) {
+                    this.shouldCrop = this.cropArea.width > 0 && this.cropArea.height > 0;
+                    // Recreate crop canvas if needed
+                    if (this.shouldCrop && !this.cropCanvas) {
+                        this.setupCropCanvas();
+                    }
+                }
+            }
         }
         
-        const dimensions = this.calculateRecordingAreaDimensions();
-        if (!dimensions) {
+        // Only show/hide overlay based on showRecordingArea
+        if (!this.showRecordingArea || this.aspectRatio === 'window') {
             this.hideRecordingAreaOverlay();
-            return;
+            return; // Overlay hidden, but cropArea is still set above
+        }
+        
+        // Show overlay (cropArea is already calculated above)
+        if (!dimensions) {
+            dimensions = this.calculateRecordingAreaDimensions();
+            if (!dimensions) {
+                this.hideRecordingAreaOverlay();
+                return;
+            }
         }
         
         // Create overlay if it doesn't exist
@@ -6295,36 +6421,33 @@ class RecordManager {
             this.addDragFunctionality();
         }
         
-        // Position the overlay
+        // Position overlay (use existing cropArea position if overlay was previously positioned)
         const overlay = this.recordingAreaOverlay;
-        overlay.style.left = (dimensions.canvasRect.left + dimensions.x) + 'px';
-        overlay.style.top = (dimensions.canvasRect.top + dimensions.y) + 'px';
-        overlay.style.width = dimensions.width + 'px';
-        overlay.style.height = dimensions.height + 'px';
+        const canvas = this.visualizer.audioMotion?.canvas;
+        if (canvas) {
+            const canvasRect = canvas.getBoundingClientRect();
+            overlay.style.left = (canvasRect.left + this.cropArea.x) + 'px';
+            overlay.style.top = (canvasRect.top + this.cropArea.y) + 'px';
+        } else {
+            overlay.style.left = (dimensions.canvasRect.left + dimensions.x) + 'px';
+            overlay.style.top = (dimensions.canvasRect.top + dimensions.y) + 'px';
+        }
+        overlay.style.width = this.cropArea.width + 'px';
+        overlay.style.height = this.cropArea.height + 'px';
         overlay.style.display = 'block';
         
         // Update dimensions text
         const dimensionsText = overlay.querySelector('.dimensions-text');
         if (dimensionsText) {
-            dimensionsText.textContent = `${Math.round(dimensions.width)}×${Math.round(dimensions.height)}`;
+            dimensionsText.textContent = `${Math.round(this.cropArea.width)}×${Math.round(this.cropArea.height)}`;
         }
-        
-        // Store current crop area
-        this.cropArea = {
-            x: dimensions.x,
-            y: dimensions.y,
-            width: dimensions.width,
-            height: dimensions.height
-        };
     }
 
     toggleRecordingAreaOverlay(show) {
         this.showRecordingArea = show;
-        if (show) {
-            this.updateRecordingAreaOverlay();
-        } else {
-            this.hideRecordingAreaOverlay();
-        }
+        // Always update to calculate cropArea (even when hiding overlay)
+        // This ensures cropArea is set for recording even when overlay is hidden
+        this.updateRecordingAreaOverlay();
     }
 
     hideRecordingAreaOverlay() {
@@ -6343,7 +6466,26 @@ class RecordManager {
     }
 
     centerRecordingArea() {
-        // Recalculate and update overlay position
+        // Force recalculation of centered position (ignore existing position)
+        if (this.aspectRatio !== 'window') {
+            const dimensions = this.calculateRecordingAreaDimensions();
+            if (dimensions) {
+                // Force centered position (ignore any existing cropArea position)
+                this.cropArea = {
+                    x: dimensions.x,
+                    y: dimensions.y,
+                    width: dimensions.width,
+                    height: dimensions.height
+                };
+                
+                // Update crop canvas if recording is active
+                if (this.isRecording && this.shouldCrop && !this.cropCanvas) {
+                    this.setupCropCanvas();
+                }
+            }
+        }
+        
+        // Update overlay to show centered position
         this.updateRecordingAreaOverlay();
     }
 
