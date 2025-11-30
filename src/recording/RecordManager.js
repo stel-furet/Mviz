@@ -6367,15 +6367,42 @@ class RecordManager {
         if (this.aspectRatio !== 'window') {
             dimensions = this.calculateRecordingAreaDimensions();
             if (dimensions) {
-                // Always store cropArea (needed for recording, even if overlay is hidden)
-                // Use existing cropArea position if it was previously set (e.g., from dragging)
-                if (this.cropArea.width > 0 && this.cropArea.height > 0 && 
-                    this.recordingAreaOverlay && this.recordingAreaOverlay.style.display !== 'none') {
-                    // Overlay exists and was positioned - preserve x, y, update width/height
-                    this.cropArea.width = dimensions.width;
-                    this.cropArea.height = dimensions.height;
+                // Check if we have a previous cropArea with valid dimensions
+                const hasPreviousCropArea = this.cropArea.width > 0 && this.cropArea.height > 0;
+                
+                if (hasPreviousCropArea) {
+                    // Calculate center of previous cropArea
+                    const oldCenterX = this.cropArea.x + this.cropArea.width / 2;
+                    const oldCenterY = this.cropArea.y + this.cropArea.height / 2;
+                    
+                    // Position new cropArea so its center matches the old center
+                    const newX = oldCenterX - dimensions.width / 2;
+                    const newY = oldCenterY - dimensions.height / 2;
+                    
+                    // Constrain to canvas bounds
+                    const canvas = this.visualizer.audioMotion?.canvas;
+                    if (canvas) {
+                        const canvasRect = canvas.getBoundingClientRect();
+                        const constrainedX = Math.max(0, Math.min(newX, canvasRect.width - dimensions.width));
+                        const constrainedY = Math.max(0, Math.min(newY, canvasRect.height - dimensions.height));
+                        
+                        this.cropArea = {
+                            x: constrainedX,
+                            y: constrainedY,
+                            width: dimensions.width,
+                            height: dimensions.height
+                        };
+                    } else {
+                        // Fallback to calculated position if canvas not available
+                        this.cropArea = {
+                            x: dimensions.x,
+                            y: dimensions.y,
+                            width: dimensions.width,
+                            height: dimensions.height
+                        };
+                    }
                 } else {
-                    // No previous position or overlay hidden - use calculated (centered) position
+                    // No previous position - use calculated (centered) position
                     this.cropArea = {
                         x: dimensions.x,
                         y: dimensions.y,
