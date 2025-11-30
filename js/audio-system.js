@@ -18,6 +18,7 @@ class InfiniteZoomVisualization {
         this.currentZoom = 0;
         this.objects = [];
         this.lastBeatTime = 0;
+        this.lastUpdateTime = 0; // Track last update time for deltaTime calculation
         
         // Beat reaction
         this.beatReact = false;
@@ -136,6 +137,21 @@ class InfiniteZoomVisualization {
     update(audioFeatures = null) {
         if (!this.isActive) return;
         
+        // Calculate deltaTime for frame-rate independent movement
+        const currentTime = performance.now();
+        let deltaTime = 1.0; // Default to 1.0 (60fps equivalent) if first frame
+        
+        if (this.lastUpdateTime > 0) {
+            // Calculate deltaTime in seconds, normalized to 60fps
+            // deltaTime = 1.0 means 60fps, 2.0 means 30fps, 0.5 means 120fps
+            const deltaMs = currentTime - this.lastUpdateTime;
+            deltaTime = (deltaMs / 1000) * 60; // Convert to seconds, then normalize to 60fps
+            // Clamp deltaTime to prevent huge jumps (e.g., if tab was hidden)
+            deltaTime = Math.min(deltaTime, 2.0); // Max 2x (30fps equivalent)
+        }
+        
+        this.lastUpdateTime = currentTime;
+        
         // Debug logging
         if (this.beatReact) {
         }
@@ -143,21 +159,21 @@ class InfiniteZoomVisualization {
         // Always call audio response FIRST to calculate new speeds
         this.updateAudioResponse(audioFeatures);
         
-        // Update zoom
+        // Update zoom (time-based for consistent speed regardless of frame rate)
         const oldZoom = this.currentZoom;
-        this.currentZoom += this.zoomSpeed;
+        this.currentZoom += this.zoomSpeed * deltaTime;
         if (this.beatReact && this.zoomSpeed !== 0) {
         }
         
-        // Update rotation
+        // Update rotation (time-based for consistent speed regardless of frame rate)
         const oldRotation = this.currentRotation;
-        this.currentRotation += this.rotationSpeed * 0.01; // Scale rotation speed
+        this.currentRotation += this.rotationSpeed * 0.01 * deltaTime; // Scale rotation speed
         if (this.beatReact && this.rotationSpeed !== 0) {
         }
         
-        // Update object positions based on zoom direction
+        // Update object positions based on zoom direction (time-based)
         this.objects.forEach(obj => {
-            obj.depth -= this.zoomSpeed * 50;
+            obj.depth -= this.zoomSpeed * 50 * deltaTime;
             
             // Dynamic recycling thresholds based on zoom speed (Option 2)
             let recycleThresholdClose, recycleThresholdFar, newDepthMin, newDepthMax;
