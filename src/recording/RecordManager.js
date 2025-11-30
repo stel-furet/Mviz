@@ -23,6 +23,11 @@ class RecordManager {
         this.animationFrame = null;
         this.saveLocation = null;
         
+        // Audio recording nodes - keep alive during recording
+        this.audioDestination = null;
+        this.audioGainNode = null;
+        this.audioSourceConnections = []; // Track all audio source connections
+        
         // Recording settings - Unified Quality System
         this.qualityPreset = 'professional'; // Default to professional quality
         this.frameRate = 60; // Default to 60 FPS for professional quality
@@ -5372,6 +5377,11 @@ class RecordManager {
             // Setup crop canvas if needed
             this.setupCropCanvas();
             
+            // Enable master control for recording (auto-enable)
+            if (window.recordingMasterWrapper) {
+                window.recordingMasterWrapper.enableMasterControl();
+            }
+            
             // Start compositing to ensure first frame is ready
             this.startCompositing();
             
@@ -5466,12 +5476,14 @@ class RecordManager {
     }
     
     startCompositing() {
-        const composite = () => {
-            if (!this.isRecording) return;
-            this.compositeFrame();
-            this.animationFrame = requestAnimationFrame(composite);
-        };
-        composite();
+        // Master Animation Controller handles compositing via recordingMasterWrapper
+        // This method is overridden by the wrapper when master control is enabled
+        // If master control is not enabled, this is a no-op (MAL is required)
+        if (window.recordingMasterWrapper && window.recordingMasterWrapper.isMasterControlled()) {
+            // Wrapper will handle compositing via master controller
+            return;
+        }
+        // No fallback - MAL is critical infrastructure
     }
     
     compositeFrame() {
@@ -5542,107 +5554,95 @@ class RecordManager {
                     this.compositeCtx.globalAlpha = 1;
                 }
             } else {
-            // Kaleidoscope NOT active - draw sources individually
+            // Kaleidoscope NOT active - draw sources individually in z-index order
             
-            // Draw video background if present and not in kaleidoscope
-            if (this.visualizer.videoElement && 
-                (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
-                this.visualizer.videoElement.readyState >= 2) {
-                const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
+            // Get all active canvases sorted by z-index (respects visual stacking order)
+            const sortedCanvases = this.visualizer.getActiveCanvasesInZIndexOrder();
+            
+            // Draw each canvas in z-index order (lowest to highest = back to front)
+            sortedCanvases.forEach(canvasInfo => {
+                // Check if should draw separately (not captured via kaleidoscope)
+                if (!canvasInfo.shouldDrawSeparately()) {
+                    return; // Skip if captured via kaleidoscope
+                }
+                
+                const canvas = canvasInfo.canvas;
+                
+                // Visibility check: skip if canvas is hidden or has zero opacity
+                if (canvas.style && canvas.style.display === 'none') {
+                    return; // Canvas is hidden
+                }
+                
+                // Check canvas validity
+                if (!canvas || (canvas.width && canvas.width === 0) || (canvas.height && canvas.height === 0)) {
+                    return; // Invalid canvas dimensions
+                }
+                
+                // Handle video elements separately (uses letterboxing)
+                if (canvasInfo.isVideo) {
+                    const opacity = parseFloat(canvas.style.opacity) || 1;
+                    if (opacity > 0 && canvas.readyState >= 2) {
+                        this.compositeCtx.globalAlpha = opacity;
+                        this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
+                        this.compositeCtx.globalAlpha = 1;
+                    }
+                    return;
+                }
+                
+                // Handle regular canvas elements
+                this.compositeCtx.save();
+                
+                // Apply opacity from canvas info or canvas style
+                let opacity = 1.0;
+                if (canvasInfo.opacity !== undefined) {
+                    opacity = canvasInfo.opacity; // Use from canvasInfo (e.g., Fluid Dynamics)
+                } else if (canvas.style && canvas.style.opacity) {
+                    opacity = parseFloat(canvas.style.opacity) || 1.0;
+                }
+                
                 if (opacity > 0) {
                     this.compositeCtx.globalAlpha = opacity;
-                    this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
-                    this.compositeCtx.globalAlpha = 1;
-                }
-            }
-            
-            // Draw AudioMotion if active
-            if (this.visualizer.audioMotion && this.visualizer.audioMotion.canvas && this.visualizer.visualizationEnabled) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.audioMotion.canvas, 0, 0, width, height);
-                }
-            }
-            
-            // Draw Infinite Zoom if active and not captured via kaleidoscope
-            if (this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && this.visualizer.infiniteZoom.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
-                }
-            }
-            
-            // Draw WebGL visualization if active and not captured via kaleidoscope
-            if (this.visualizer.webglEnabled && this.visualizer.webglVisualization && this.visualizer.webglVisualization.isActive && this.visualizer.webglVisualization.canvas) {
-                // Check WebGL support before attempting to draw
-                if (!this.visualizer.webglVisualization.webglSupported) {
-                } else {
-                    const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
-                    if (shouldDrawSeparately) {
-                        this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
-                    }
-                }
-            }
-            
-            // Draw Fluid Dynamics if active and not captured via kaleidoscope
-            if (this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && this.visualizer.fluidDynamics.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
-                if (shouldDrawSeparately) {
-                    // Apply Fluid Dynamics opacity setting
-                    this.compositeCtx.save();
-                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
-                    this.compositeCtx.globalAlpha = fluidOpacity;
                     
-                    this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
-                    this.compositeCtx.restore();
-                }
-            }
-            
-            // Draw Plugin canvases if active and not captured via kaleidoscope
-            if (window.pluginManager) {
-                const allPlugins = window.pluginManager.getAllPlugins();
-                allPlugins.forEach(plugin => {
-                    if (plugin.canvas && plugin.isActive) {
-                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
-                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
-                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            const renderCtx = plugin.getRenderingContext();
-                            
-                            this.compositeCtx.save();
-                            
-                            // Apply opacity (generic)
-                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
-                                this.compositeCtx.globalAlpha = renderCtx.opacity;
-                            }
-                            
-                            // Apply blend mode (generic)
-                            if (renderCtx.blendMode) {
-                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
-                            }
-                            
-                            // Pre-render hook (generic)
-                            if (plugin.beforeComposite) {
-                                plugin.beforeComposite(this.compositeCtx, width, height);
-                            }
-                            
-                            // Custom composite or default drawImage (generic)
-                            const customDrawn = plugin.customComposite ? 
-                                plugin.customComposite(this.compositeCtx, width, height) : false;
-                            
-                            if (!customDrawn) {
-                                this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
-                            }
-                            
-                            // Post-render hook (generic)
-                            if (plugin.afterComposite) {
-                                plugin.afterComposite(this.compositeCtx);
-                            }
-                            
-                            this.compositeCtx.restore();
+                    // Handle plugins with custom composite methods
+                    if (canvasInfo.type === 'plugin' && canvasInfo.plugin) {
+                        const plugin = canvasInfo.plugin;
+                        const renderCtx = plugin.getRenderingContext();
+                        
+                        // Apply blend mode if specified
+                        if (renderCtx.blendMode) {
+                            this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                        }
+                        
+                        // Pre-render hook
+                        if (plugin.beforeComposite) {
+                            plugin.beforeComposite(this.compositeCtx, width, height);
+                        }
+                        
+                        // Custom composite or default drawImage
+                        const customDrawn = plugin.customComposite ? 
+                            plugin.customComposite(this.compositeCtx, width, height) : false;
+                        
+                        if (!customDrawn) {
+                            this.compositeCtx.drawImage(canvas, 0, 0, width, height);
+                        }
+                        
+                        // Post-render hook
+                        if (plugin.afterComposite) {
+                            plugin.afterComposite(this.compositeCtx);
+                        }
+                    } else {
+                        // Standard canvas drawing
+                        // Special handling for WebGL - check support
+                        if (canvasInfo.type === 'webgl' && canvasInfo.webglSupported === false) {
+                            // Skip if WebGL not supported
+                        } else {
+                            this.compositeCtx.drawImage(canvas, 0, 0, width, height);
                         }
                     }
-                });
-            }
+                }
+                
+                this.compositeCtx.restore();
+            });
         }
         
         // Update crop canvas if cropping is enabled
@@ -6123,11 +6123,26 @@ class RecordManager {
             }
             
             const audioCtx = audioMotion.audioCtx;
-            const destination = audioCtx.createMediaStreamDestination();
             
-            // Create a gain node to tap the audio
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.value = 1.0;
+            // Reuse existing destination if recording is active, otherwise create new
+            if (!this.audioDestination || !this.isRecording) {
+                this.audioDestination = audioCtx.createMediaStreamDestination();
+                this.audioGainNode = audioCtx.createGain();
+                this.audioGainNode.gain.value = 1.0;
+                this.audioGainNode.connect(this.audioDestination);
+                this.audioSourceConnections = []; // Reset connections
+            }
+            
+            // Reconnect audio sources if they've changed (e.g., after visualization mode switch)
+            // Disconnect old connections first
+            this.audioSourceConnections.forEach(connection => {
+                try {
+                    connection.disconnect(this.audioGainNode);
+                } catch (e) {
+                    // Ignore disconnect errors
+                }
+            });
+            this.audioSourceConnections = [];
             
             // Connect all available audio sources to capture everything
             let hasAudioSource = false;
@@ -6135,18 +6150,19 @@ class RecordManager {
             // Connect playlist/live audio if available
             if (audioMotion.source) {
                 try {
-                    audioMotion.source.connect(gainNode);
+                    audioMotion.source.connect(this.audioGainNode);
+                    this.audioSourceConnections.push(audioMotion.source);
                     hasAudioSource = true;
                 } catch (e) {
                     console.error('Error connecting AudioMotion source:', e);
                 }
-            } else {
             }
             
             // Also connect video audio if available (can be simultaneous with playlist)
             if (this.visualizer.videoAudioGain) {
                 try {
-                    this.visualizer.videoAudioGain.connect(gainNode);
+                    this.visualizer.videoAudioGain.connect(this.audioGainNode);
+                    this.audioSourceConnections.push(this.visualizer.videoAudioGain);
                     hasAudioSource = true;
                 } catch (e) {
                     console.error('Error connecting video audio:', e);
@@ -6154,8 +6170,7 @@ class RecordManager {
             }
             
             if (hasAudioSource) {
-                gainNode.connect(destination);
-                return destination.stream;
+                return this.audioDestination.stream;
             }
             
             // Fallback: try to capture from the current audio element directly
@@ -6164,14 +6179,14 @@ class RecordManager {
                     // Try to get or create an audio source node
                     let source = this.visualizer.audio._audioSourceNode;
                     if (!source) {
-                        source = audioCtx.createMediaElementAudioSourceNode(this.visualizer.audio);
+                        source = audioCtx.createMediaElementSource(this.visualizer.audio);
                         this.visualizer.audio._audioSourceNode = source;
                     }
                     
-                    source.connect(gainNode);
-                    gainNode.connect(destination);
+                    source.connect(this.audioGainNode);
+                    this.audioSourceConnections.push(source);
                     hasAudioSource = true;
-                    return destination.stream;
+                    return this.audioDestination.stream;
                 } catch (e) {
                 }
             }
@@ -6185,7 +6200,7 @@ class RecordManager {
                     silentGain.gain.value = 0; // Silent
                     
                     oscillator.connect(silentGain);
-                    silentGain.connect(destination);
+                    silentGain.connect(this.audioDestination);
                     oscillator.start();
                     
                     // Stop the oscillator after a short time to avoid continuous generation
@@ -6197,7 +6212,7 @@ class RecordManager {
                         }
                     }, 100);
                     
-                    return destination.stream;
+                    return this.audioDestination.stream;
                 } catch (e) {
                 }
             }
@@ -6405,6 +6420,81 @@ class RecordManager {
         });
     }
     
+    /**
+     * Reconnect audio sources during recording (called when visualization mode changes)
+     * This ensures audio continues to be recorded even after mode switches
+     * Uses seamless reconnection to prevent audio drops
+     */
+    reconnectAudioDuringRecording() {
+        if (!this.isRecording || !this.audioGainNode || !this.audioDestination) {
+            return; // Not recording or audio nodes not set up
+        }
+        
+        const audioMotion = this.visualizer.audioMotion;
+        if (!audioMotion || !audioMotion.audioCtx) {
+            return;
+        }
+        
+        // Build list of sources that should be connected
+        const desiredSources = [];
+        if (audioMotion.source) {
+            desiredSources.push(audioMotion.source);
+        }
+        if (this.visualizer.videoAudioGain) {
+            desiredSources.push(this.visualizer.videoAudioGain);
+        }
+        
+        // CRITICAL: Verify and reconnect ALL desired sources
+        // Use a more aggressive approach - always try to connect, and handle errors gracefully
+        desiredSources.forEach(source => {
+            const isInArray = this.audioSourceConnections.includes(source);
+            
+            if (!isInArray) {
+                // Source not in our array - definitely need to connect
+                try {
+                    source.connect(this.audioGainNode);
+                    this.audioSourceConnections.push(source);
+                } catch (e) {
+                    // Connection failed - might be already connected or source is invalid
+                    // Try to add anyway in case it's a new source object
+                    console.warn('Failed to connect audio source for recording:', e);
+                }
+            } else {
+                // Source is in our array, but connection might have been broken
+                // Try to reconnect to ensure it's still connected
+                try {
+                    // Disconnect first (if connected) then reconnect
+                    try {
+                        source.disconnect(this.audioGainNode);
+                    } catch (e) {
+                        // Not connected - that's fine, we'll connect it now
+                    }
+                    source.connect(this.audioGainNode);
+                } catch (e) {
+                    // Reconnection failed - connection might still be intact
+                    // This is okay, we'll try again on next reconnection
+                }
+            }
+        });
+        
+        // Only disconnect sources that are no longer needed (after connecting new ones)
+        const sourcesToDisconnect = this.audioSourceConnections.filter(
+            connection => !desiredSources.includes(connection)
+        );
+        
+        sourcesToDisconnect.forEach(connection => {
+            try {
+                connection.disconnect(this.audioGainNode);
+                const index = this.audioSourceConnections.indexOf(connection);
+                if (index > -1) {
+                    this.audioSourceConnections.splice(index, 1);
+                }
+            } catch (e) {
+                // Ignore disconnect errors
+            }
+        });
+    }
+    
     stopRecording() {
         if (!this.isRecording) return;
         
@@ -6416,16 +6506,37 @@ class RecordManager {
             this.timerInterval = null;
         }
         
-        // Stop animation frame
+        // Stop animation frame (legacy - should not be needed with master control)
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
             this.animationFrame = null;
+        }
+        
+        // Disable master control
+        if (window.recordingMasterWrapper) {
+            window.recordingMasterWrapper.stopCompositing();
         }
         
         // Stop media recorder
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
         }
+        
+        // Clean up audio recording nodes
+        if (this.audioSourceConnections) {
+            this.audioSourceConnections.forEach(connection => {
+                try {
+                    if (this.audioGainNode) {
+                        connection.disconnect(this.audioGainNode);
+                    }
+                } catch (e) {
+                    // Ignore disconnect errors
+                }
+            });
+            this.audioSourceConnections = [];
+        }
+        this.audioDestination = null;
+        this.audioGainNode = null;
         
         // Clean up temporary canvases
         this.tempVideoCanvas = null;

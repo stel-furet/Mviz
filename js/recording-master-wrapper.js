@@ -41,7 +41,7 @@ class RecordingMasterWrapper {
     
     register() {
         const success = window.masterAnimationController.registerSystem('recording', {
-            priority: window.masterAnimationController.PRIORITIES.RECORDING, // Priority 2
+            priority: 12, // Render after all visualizations (plugins at 11+) to ensure everything is ready
             targetFPS: 60, // Run at 60fps to handle both 30fps and 60fps recording
             isActive: false, // Start inactive, will be activated when recording starts
             isPlugin: false,
@@ -68,7 +68,7 @@ class RecordingMasterWrapper {
         this.legacyMode = false;
         
         // Get references to recording systems
-        this.recordManager = window.visualizer;
+        this.recordManager = window.visualizer?.recordManager;
         this.liveDisplayManager = window.multiDisplayManager;
         
         // Store original methods

@@ -342,14 +342,16 @@ class LiveDisplayManager {
         
     }
     
-    // IDENTICAL to RecordManager.startCompositing()
+    // Master Animation Controller handles compositing via recordingMasterWrapper
     startCompositing() {
-        const composite = () => {
-            if (!this.isStreaming) return;
-            this.compositeFrame();
-            this.animationFrame = requestAnimationFrame(composite);
-        };
-        composite();
+        // Master Animation Controller handles compositing via recordingMasterWrapper
+        // This method is overridden by the wrapper when master control is enabled
+        // If master control is not enabled, this is a no-op (MAL is required)
+        if (window.recordingMasterWrapper && window.recordingMasterWrapper.isMasterControlled()) {
+            // Wrapper will handle compositing via master controller
+            return;
+        }
+        // No fallback - MAL is critical infrastructure
     }
     
         // IDENTICAL to RecordManager.compositeFrame()
@@ -427,111 +429,117 @@ class LiveDisplayManager {
                             this.compositeCtx.globalAlpha = 1;
                     }
                 } else {
-            // Kaleidoscope NOT active - draw sources individually
+            // Kaleidoscope NOT active - draw sources individually in z-index order
             
-            // Draw video background if present and capture enabled
-            if (this.displaySettings && this.displaySettings.captureVideo &&
-                this.visualizer.videoElement && 
-                (this.visualizer.videoMode === 'camera' || this.visualizer.videoMode === 'file') &&
-                this.visualizer.videoElement.readyState >= 2) {
-                    const opacity = parseFloat(this.visualizer.videoElement.style.opacity) || 1;
-                    if (opacity > 0) {
+            // Get all active canvases sorted by z-index (respects visual stacking order)
+            const sortedCanvases = this.visualizer.getActiveCanvasesInZIndexOrder();
+            
+            // Draw each canvas in z-index order (lowest to highest = back to front)
+            sortedCanvases.forEach(canvasInfo => {
+                // Check if should draw separately (not captured via kaleidoscope)
+                if (!canvasInfo.shouldDrawSeparately()) {
+                    return; // Skip if captured via kaleidoscope
+                }
+                
+                const canvas = canvasInfo.canvas;
+                
+                // Visibility check: skip if canvas is hidden or has zero opacity
+                if (canvas.style && canvas.style.display === 'none') {
+                    return; // Canvas is hidden
+                }
+                
+                // Check canvas validity
+                if (!canvas || (canvas.width && canvas.width === 0) || (canvas.height && canvas.height === 0)) {
+                    return; // Invalid canvas dimensions
+                }
+                
+                // Check displaySettings for this canvas type (LiveDisplayManager specific)
+                if (this.displaySettings) {
+                    if (canvasInfo.isVideo && !this.displaySettings.captureVideo) {
+                        return; // Video capture disabled
+                    }
+                    if (canvasInfo.type === 'audioMotion' && !this.displaySettings.captureVisualization) {
+                        return; // Visualization capture disabled
+                    }
+                    if (canvasInfo.type === 'infiniteZoom' && !this.displaySettings.captureInfiniteZoom) {
+                        return; // Infinite Zoom capture disabled
+                    }
+                    if (canvasInfo.type === 'webgl' && !this.displaySettings.captureWebGL) {
+                        return; // WebGL capture disabled
+                    }
+                    if (canvasInfo.type === 'fluidDynamics' && !this.displaySettings.captureFluidDynamics) {
+                        return; // Fluid Dynamics capture disabled
+                    }
+                    if (canvasInfo.type === 'plugin' && !this.displaySettings.captureVisualization) {
+                        return; // Plugin capture disabled (uses captureVisualization setting)
+                    }
+                }
+                
+                // Handle video elements separately (uses letterboxing)
+                if (canvasInfo.isVideo) {
+                    const opacity = parseFloat(canvas.style.opacity) || 1;
+                    if (opacity > 0 && canvas.readyState >= 2) {
                         this.compositeCtx.globalAlpha = opacity;
                         this.drawVideoWithProperLetterboxing(sharedDrawX, sharedDrawY, sharedDrawWidth, sharedDrawHeight);
                         this.compositeCtx.globalAlpha = 1;
+                    }
+                    return;
                 }
-            }
-            
-            // Draw AudioMotion if active and capture enabled
-            if (this.displaySettings && this.displaySettings.captureVisualization &&
-                this.visualizer.audioMotion && this.visualizer.audioMotion.canvas && this.visualizer.visualizationEnabled) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.audioMotion.canvas, 0, 0, width, height);
+                
+                // Handle regular canvas elements
+                this.compositeCtx.save();
+                
+                // Apply opacity from canvas info or canvas style
+                let opacity = 1.0;
+                if (canvasInfo.opacity !== undefined) {
+                    opacity = canvasInfo.opacity; // Use from canvasInfo (e.g., Fluid Dynamics)
+                } else if (canvas.style && canvas.style.opacity) {
+                    opacity = parseFloat(canvas.style.opacity) || 1.0;
                 }
-            }
-            
-            // Draw Infinite Zoom if active and not captured via kaleidoscope (if capture infinite zoom is enabled)
-            if (this.displaySettings && this.displaySettings.captureInfiniteZoom && 
-                this.visualizer.infiniteZoom && this.visualizer.infiniteZoom.isActive && 
-                this.visualizer.infiniteZoom.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToInfiniteZoom;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.infiniteZoom.canvas, 0, 0, width, height);
-                }
-            }
-            
-            // Draw WebGL visualization if active and not captured via kaleidoscope (if capture WebGL is enabled)
-            if (this.displaySettings && this.displaySettings.captureWebGL && 
-                this.visualizer.webglEnabled && this.visualizer.webglVisualization && 
-                this.visualizer.webglVisualization.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToWebGL;
-                if (shouldDrawSeparately) {
-                    this.compositeCtx.drawImage(this.visualizer.webglVisualization.canvas, 0, 0, width, height);
-                }
-            }
-            
-            // Draw Fluid Dynamics if active and not captured via kaleidoscope (if capture fluid dynamics is enabled)
-            if (this.displaySettings && this.displaySettings.captureFluidDynamics && 
-                this.visualizer.fluidDynamics && this.visualizer.fluidDynamics.isActive && 
-                this.visualizer.fluidDynamics.canvas) {
-                const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer.kaleidoscopeApplyToViz || !this.visualizer.kaleidoscopeApplyToFluidDynamics;
-                if (shouldDrawSeparately) {
-                    // Apply Fluid Dynamics opacity setting
-                    this.compositeCtx.save();
-                    const fluidOpacity = this.visualizer.fluidDynamics.opacity || 1.0;
-                    this.compositeCtx.globalAlpha = fluidOpacity;
+                
+                if (opacity > 0) {
+                    this.compositeCtx.globalAlpha = opacity;
                     
-                    this.compositeCtx.drawImage(this.visualizer.fluidDynamics.canvas, 0, 0, width, height);
-                    this.compositeCtx.restore();
-                }
-            }
-            
-            // Draw Plugin canvases if active and not captured via kaleidoscope (if capture visualization is enabled)
-            if (this.displaySettings && this.displaySettings.captureVisualization && window.pluginManager) {
-                const allPlugins = window.pluginManager.getAllPlugins();
-                allPlugins.forEach(plugin => {
-                    if (plugin.canvas && plugin.isActive) {
-                        const stateVarName = `kaleidoscopeApplyTo${plugin.pluginName.charAt(0).toUpperCase() + plugin.pluginName.slice(1)}`;
-                        const shouldDrawSeparately = !this.visualizer.kaleidoscopeEnabled || !this.visualizer[stateVarName];
-                        if (shouldDrawSeparately && plugin.canvas.width > 0 && plugin.canvas.height > 0) {
-                            const renderCtx = plugin.getRenderingContext();
-                            
-                            this.compositeCtx.save();
-                            
-                            // Apply opacity (generic)
-                            if (renderCtx.opacity !== undefined && renderCtx.opacity !== 1.0) {
-                                this.compositeCtx.globalAlpha = renderCtx.opacity;
-                            }
-                            
-                            // Apply blend mode (generic)
-                            if (renderCtx.blendMode) {
-                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
-                            }
-                            
-                            // Pre-render hook (generic)
-                            if (plugin.beforeComposite) {
-                                plugin.beforeComposite(this.compositeCtx, width, height);
-                            }
-                            
-                            // Custom composite or default drawImage (generic)
-                            const customDrawn = plugin.customComposite ? 
-                                plugin.customComposite(this.compositeCtx, width, height) : false;
-                            
-                            if (!customDrawn) {
-                                this.compositeCtx.drawImage(plugin.canvas, 0, 0, width, height);
-                            }
-                            
-                            // Post-render hook (generic)
-                            if (plugin.afterComposite) {
-                                plugin.afterComposite(this.compositeCtx);
-                            }
-                            
-                            this.compositeCtx.restore();
+                    // Handle plugins with custom composite methods
+                    if (canvasInfo.type === 'plugin' && canvasInfo.plugin) {
+                        const plugin = canvasInfo.plugin;
+                        const renderCtx = plugin.getRenderingContext();
+                        
+                        // Apply blend mode if specified
+                        if (renderCtx.blendMode) {
+                            this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                        }
+                        
+                        // Pre-render hook
+                        if (plugin.beforeComposite) {
+                            plugin.beforeComposite(this.compositeCtx, width, height);
+                        }
+                        
+                        // Custom composite or default drawImage
+                        const customDrawn = plugin.customComposite ? 
+                            plugin.customComposite(this.compositeCtx, width, height) : false;
+                        
+                        if (!customDrawn) {
+                            this.compositeCtx.drawImage(canvas, 0, 0, width, height);
+                        }
+                        
+                        // Post-render hook
+                        if (plugin.afterComposite) {
+                            plugin.afterComposite(this.compositeCtx);
+                        }
+                    } else {
+                        // Standard canvas drawing
+                        // Special handling for WebGL - check support
+                        if (canvasInfo.type === 'webgl' && canvasInfo.webglSupported === false) {
+                            // Skip if WebGL not supported
+                        } else {
+                            this.compositeCtx.drawImage(canvas, 0, 0, width, height);
                         }
                     }
-                });
-            }
+                }
+                
+                this.compositeCtx.restore();
+            });
         }
     }
     
@@ -673,6 +681,11 @@ class LiveDisplayManager {
             
             // Create composite canvas (same as Record)
             await this.setupCompositeCanvas();
+            
+            // Enable master control for live display (auto-enable)
+            if (window.recordingMasterWrapper) {
+                window.recordingMasterWrapper.enableMasterControl();
+            }
             
             // Start compositing (same as Record) - this needs to happen before capturing the stream
             this.startCompositing();
@@ -930,10 +943,19 @@ class LiveDisplayManager {
         
         this.isStreaming = false;
         
-        // Stop compositing
+        // Stop compositing (legacy - should not be needed with master control)
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
             this.animationFrame = null;
+        }
+        
+        // Disable master control if this was the last active display
+        if (window.recordingMasterWrapper) {
+            // Only stop if no other displays are streaming
+            const hasOtherStreaming = this.visualizer?.multiDisplayManager?.displays?.size > 0;
+            if (!hasOtherStreaming) {
+                window.recordingMasterWrapper.stopCompositing();
+            }
         }
         
         // Close WebRTC connection

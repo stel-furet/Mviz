@@ -9365,6 +9365,44 @@ https://rogueamoeba.com/loopback/
             }
         }
         
+        // CRITICAL FIX: Reconnect audio BEFORE setOptions to ensure connection is maintained
+        // This prevents audio drops when visualization mode changes during recording
+        if (this.recordManager && this.recordManager.isRecording) {
+            if (this.recordManager.reconnectAudioDuringRecording) {
+                this.recordManager.reconnectAudioDuringRecording();
+            }
+        }
+
+        if (this.audioMotion && modeIndex >= 0 && modeIndex < this.visualizationModes.length) {
+            const config = {
+                ...this.visualizationModes[modeIndex]
+            };
+            // DON'T apply brightness boost to standard presets - they're already tuned
+
+            try {
+                this.audioMotion.setOptions(config);
+            } catch (error) {
+                console.warn(`Could not set visualization mode ${modeIndex}:`, error);
+            }
+        }
+        
+        // CRITICAL FIX: Reconnect audio AFTER setOptions to catch any connection changes
+        // This ensures audio continues even if setOptions modifies audio connections
+        if (this.recordManager && this.recordManager.isRecording) {
+            // Reconnect immediately after setOptions
+            if (this.recordManager.reconnectAudioDuringRecording) {
+                this.recordManager.reconnectAudioDuringRecording();
+            }
+            
+            // Also reconnect on next frame to catch any async changes
+            requestAnimationFrame(() => {
+                if (this.recordManager && this.recordManager.isRecording && 
+                    this.recordManager.reconnectAudioDuringRecording) {
+                    this.recordManager.reconnectAudioDuringRecording();
+                }
+            });
+        }
+        
         // Update mixer viz mode select
         if (window.multiDisplayManager && window.multiDisplayManager.updateMixerAMVizModeSelect) {
             window.multiDisplayManager.updateMixerAMVizModeSelect();

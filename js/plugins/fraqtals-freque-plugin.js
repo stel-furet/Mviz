@@ -265,6 +265,23 @@ class FraqtalsPlugin extends FrequePluginBase {
     }
     
     /**
+     * Override MAL registration to use priority 1.5 (between AudioMotion and Recording)
+     * This ensures fraqtals renders before recording captures it, fixing timing issues
+     */
+    registerWithMAL() {
+        if (window.masterAnimationController) {
+            window.masterAnimationController.registerSystem(this.pluginName, {
+                priority: 1.5, // Render before Recording (2) but after AudioMotion (1)
+                targetFPS: this.targetFPS,
+                update: (deltaTime, timestamp, sharedAudioData) => this.update(deltaTime, timestamp, sharedAudioData),
+                render: (deltaTime, timestamp, sharedAudioData) => this.render(deltaTime, timestamp, sharedAudioData),
+                cleanup: () => this.cleanup(),
+                errorHandler: (error) => this.handleError(error)
+            });
+        }
+    }
+    
+    /**
      * Custom composite: Handle WebGL canvas capture ourselves to ensure it's ready
      * This prevents flickering when recording or streaming to displays
      */
