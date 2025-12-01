@@ -1174,6 +1174,13 @@ class SpectrumAnalyzer {
     }
 
     draw() {
+        // CRITICAL FIX: Don't draw if officialAudioMotion is active
+        // They share the same canvas, so only one should draw at a time
+        // This is defense-in-depth in case draw() is called directly
+        if (window.visualizer && window.visualizer.useOfficialAudioMotion && window.visualizer.officialAudioMotion) {
+            return; // Official AudioMotion is handling the canvas
+        }
+        
         const width = this.canvas.width;
         const height = this.canvas.height;
 

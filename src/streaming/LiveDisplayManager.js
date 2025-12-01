@@ -65,12 +65,19 @@ class LiveDisplayManager {
                 
                 if (settings.resolution !== undefined && settings.resolution !== this.displaySettings.resolution) {
                     this.displaySettings.resolution = settings.resolution;
+                    // Also update this.resolution to keep them in sync
+                    this.resolution = settings.resolution;
                     streamSettingsChanged = true;
                 }
                 
                 if (settings.frameRate !== undefined && settings.frameRate !== this.displaySettings.frameRate) {
                     this.displaySettings.frameRate = settings.frameRate;
                     streamSettingsChanged = true;
+                    
+                    // Update recording wrapper frame rate if streaming
+                    if (this.isStreaming && window.recordingMasterWrapper) {
+                        window.recordingMasterWrapper.masterStartCompositing();
+                    }
                 }
                 
                 if (settings.videoQuality !== undefined && settings.videoQuality !== this.displaySettings.videoQuality) {
@@ -115,7 +122,7 @@ class LiveDisplayManager {
                 letterboxColor: '#000000',
                 mirrorBackground: false,
                 mirrorBackgroundBlur: 20,
-                resolution: '1080p',
+                resolution: '4k', // Default to 4K for high quality
                 frameRate: 60, // Default to 60 FPS for professional quality
                 videoQuality: 'auto'
             };
@@ -176,6 +183,13 @@ class LiveDisplayManager {
                     this.audioQuality = settings.audioQuality || 'auto';
                     this.customFilename = settings.customFilename || 'MV_PRO_Display';
                     this.matchVisualizationAspect = settings.matchVisualizationAspect !== undefined ? settings.matchVisualizationAspect : true;
+                    
+                    // Sync displaySettings.resolution with this.resolution
+                    if (settings.resolution) {
+                        this.displaySettings.resolution = settings.resolution;
+                    } else if (!this.displaySettings.resolution || this.displaySettings.resolution === '1080p') {
+                        this.displaySettings.resolution = '4k'; // Default to 4K if not set or still at old default
+                    }
                 }
             } catch (e) {
             }
@@ -345,9 +359,12 @@ class LiveDisplayManager {
     // Master Animation Controller handles compositing via recordingMasterWrapper
     startCompositing() {
         // Master Animation Controller handles compositing via recordingMasterWrapper
-        // This method is overridden by the wrapper when master control is enabled
-        // If master control is not enabled, this is a no-op (MAL is required)
+        // Activate the recording system in MAL when live display starts streaming
         if (window.recordingMasterWrapper && window.recordingMasterWrapper.isMasterControlled()) {
+            // Activate the recording system if not already active (needed for live displays)
+            if (window.recordingMasterWrapper && !window.recordingMasterWrapper.isActive) {
+                window.recordingMasterWrapper.masterStartCompositing();
+            }
             // Wrapper will handle compositing via master controller
             return;
         }
@@ -361,7 +378,9 @@ class LiveDisplayManager {
             const { width, height } = this.compositeCanvas;
             
             // Apply quality-based canvas smoothing for optimal rendering
-            const is4K = this.resolution === '4k';
+            // Use displaySettings.resolution to match getRecordingDimensions()
+            const resolution = this.displaySettings?.resolution || '4k';
+            const is4K = resolution === '4k';
             
             if (is4K) {
                 // High-quality Lanczos upscaling for 4K live displays
@@ -677,24 +696,39 @@ class LiveDisplayManager {
                 return;
             }
             
-            this.isStreaming = true;
-            
             // Create composite canvas (same as Record)
             await this.setupCompositeCanvas();
             
             // Enable master control for live display (auto-enable)
             if (window.recordingMasterWrapper) {
                 window.recordingMasterWrapper.enableMasterControl();
+                // Update frame rate in wrapper to include this display's frame rate
+                window.recordingMasterWrapper.masterStartCompositing();
             }
             
             // Start compositing (same as Record) - this needs to happen before capturing the stream
             this.startCompositing();
             
-            // Wait a moment for the first frame to be drawn
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Wait for first frame to be confirmed drawn (critical for 4K)
+            // Use requestAnimationFrame to ensure first frame is ready
+            await new Promise(resolve => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        // Additional delay for 4K rendering (dynamic based on resolution)
+                        const resolution = this.displaySettings?.resolution || '4k';
+                        const is4K = resolution === '4k';
+                        const delay = is4K ? 200 : 100;
+                        setTimeout(resolve, delay);
+                    });
+                });
+            });
+            
+            // Only set isStreaming = true after first frame is ready
+            // This ensures toggle states are accurate
+            this.isStreaming = true;
             
             // Get stream from composite canvas with frame rate from displaySettings
-            const frameRate = this.displaySettings.frameRate || 30;
+            const frameRate = this.displaySettings.frameRate || 60; // Default to 60fps for smooth 4K
             this.stream = this.compositeCanvas.captureStream(frameRate);
             
             // Debug stream properties
@@ -724,6 +758,9 @@ class LiveDisplayManager {
             
             
         } catch (err) {
+            console.error(`LiveDisplay ${this.displayId} startStreaming error:`, err);
+            // Reset state on error to ensure toggle states are accurate
+            this.isStreaming = false;
             this.stopStreaming();
         }
     }

@@ -343,6 +343,11 @@ class MultiDisplayManager {
         const displayManager = new LiveDisplayManager(this.visualizer, displayId);
         this.displayManagers.set(displayId, displayManager);
         
+        // Override startCompositing if master control is enabled
+        if (window.recordingMasterWrapper && window.recordingMasterWrapper.isMasterControlled()) {
+            window.recordingMasterWrapper.overrideLiveDisplayManagers();
+        }
+        
         // Create DisplayInstance for window management
         const display = new DisplayInstance(displayId, this.visualizer, displayManager);
         this.displays.set(displayId, display);

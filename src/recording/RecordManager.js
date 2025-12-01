@@ -5641,8 +5641,8 @@ class RecordManager {
                 // Visibility check: skip if canvas is hidden or has zero opacity
                 if (canvas.style && canvas.style.display === 'none') {
                     return; // Canvas is hidden
-                }
-                
+            }
+            
                 // Check canvas validity
                 if (!canvas || (canvas.width && canvas.width === 0) || (canvas.height && canvas.height === 0)) {
                     return; // Invalid canvas dimensions
@@ -5660,7 +5660,7 @@ class RecordManager {
                 }
                 
                 // Handle regular canvas elements
-                this.compositeCtx.save();
+                    this.compositeCtx.save();
                 
                 // Apply opacity from canvas info or canvas style
                 let opacity = 1.0;
@@ -5676,30 +5676,30 @@ class RecordManager {
                     // Handle plugins with custom composite methods
                     if (canvasInfo.type === 'plugin' && canvasInfo.plugin) {
                         const plugin = canvasInfo.plugin;
-                        const renderCtx = plugin.getRenderingContext();
-                        
+                            const renderCtx = plugin.getRenderingContext();
+                            
                         // Apply blend mode if specified
-                        if (renderCtx.blendMode) {
-                            this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
-                        }
-                        
+                            if (renderCtx.blendMode) {
+                                this.compositeCtx.globalCompositeOperation = renderCtx.blendMode;
+                            }
+                            
                         // Pre-render hook
-                        if (plugin.beforeComposite) {
-                            plugin.beforeComposite(this.compositeCtx, width, height);
-                        }
-                        
+                            if (plugin.beforeComposite) {
+                                plugin.beforeComposite(this.compositeCtx, width, height);
+                            }
+                            
                         // Custom composite or default drawImage
-                        const customDrawn = plugin.customComposite ? 
-                            plugin.customComposite(this.compositeCtx, width, height) : false;
-                        
-                        if (!customDrawn) {
+                            const customDrawn = plugin.customComposite ? 
+                                plugin.customComposite(this.compositeCtx, width, height) : false;
+                            
+                            if (!customDrawn) {
                             this.compositeCtx.drawImage(canvas, 0, 0, width, height);
-                        }
-                        
+                            }
+                            
                         // Post-render hook
-                        if (plugin.afterComposite) {
-                            plugin.afterComposite(this.compositeCtx);
-                        }
+                            if (plugin.afterComposite) {
+                                plugin.afterComposite(this.compositeCtx);
+                            }
                     } else {
                         // Standard canvas drawing
                         // Special handling for WebGL - check support
@@ -5710,9 +5710,9 @@ class RecordManager {
                         }
                     }
                 }
-                
-                this.compositeCtx.restore();
-            });
+                            
+                            this.compositeCtx.restore();
+                });
         }
         
         // Update crop canvas if cropping is enabled
@@ -6431,9 +6431,9 @@ class RecordManager {
         // Show overlay (cropArea is already calculated above)
         if (!dimensions) {
             dimensions = this.calculateRecordingAreaDimensions();
-            if (!dimensions) {
-                this.hideRecordingAreaOverlay();
-                return;
+        if (!dimensions) {
+            this.hideRecordingAreaOverlay();
+            return;
             }
         }
         
@@ -6456,8 +6456,8 @@ class RecordManager {
             overlay.style.left = (canvasRect.left + this.cropArea.x) + 'px';
             overlay.style.top = (canvasRect.top + this.cropArea.y) + 'px';
         } else {
-            overlay.style.left = (dimensions.canvasRect.left + dimensions.x) + 'px';
-            overlay.style.top = (dimensions.canvasRect.top + dimensions.y) + 'px';
+        overlay.style.left = (dimensions.canvasRect.left + dimensions.x) + 'px';
+        overlay.style.top = (dimensions.canvasRect.top + dimensions.y) + 'px';
         }
         overlay.style.width = this.cropArea.width + 'px';
         overlay.style.height = this.cropArea.height + 'px';
@@ -6474,7 +6474,7 @@ class RecordManager {
         this.showRecordingArea = show;
         // Always update to calculate cropArea (even when hiding overlay)
         // This ensures cropArea is set for recording even when overlay is hidden
-        this.updateRecordingAreaOverlay();
+            this.updateRecordingAreaOverlay();
     }
 
     hideRecordingAreaOverlay() {

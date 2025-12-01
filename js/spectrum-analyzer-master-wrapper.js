@@ -162,7 +162,17 @@ class SpectrumAnalyzerMasterWrapper {
                 return;
             }
             
-            // Execute main drawing logic
+            // CRITICAL FIX: Don't draw custom audioMotion if officialAudioMotion is active
+            // They share the same canvas, so only one should draw at a time
+            // When useOfficialAudioMotion is true, officialAudioMotion handles rendering
+            if (visualizer.useOfficialAudioMotion && visualizer.officialAudioMotion) {
+                // Official AudioMotion is active - don't draw custom audioMotion
+                // Just handle additional visualizations (Infinite Zoom, Fluid, etc.)
+                this.handleAdditionalVisualizations();
+                return;
+            }
+            
+            // Execute main drawing logic (only when NOT using officialAudioMotion)
             if (this.spectrumAnalyzer.draw) {
                 this.spectrumAnalyzer.draw();
             }

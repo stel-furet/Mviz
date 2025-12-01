@@ -77,12 +77,29 @@ class RecordingMasterWrapper {
             this.recordManager.startCompositing = this.masterStartCompositing.bind(this);
         }
         
-        // Override LiveDisplayManager compositing if available
-        if (this.liveDisplayManager && this.liveDisplayManager.startCompositing) {
-            this.originalLiveStartCompositing = this.liveDisplayManager.startCompositing.bind(this.liveDisplayManager);
-            this.liveDisplayManager.startCompositing = this.masterStartCompositing.bind(this);
-        }
+        // Override startCompositing on all existing LiveDisplayManager instances
+        // multiDisplayManager.displayManagers contains the actual LiveDisplayManager instances
+        this.overrideLiveDisplayManagers();
         
+    }
+    
+    /**
+     * Override startCompositing on all LiveDisplayManager instances
+     * Called when master control is enabled and when new displays are created
+     */
+    overrideLiveDisplayManagers() {
+        if (!this.liveDisplayManager || !this.liveDisplayManager.displayManagers) return;
+        
+        for (const [displayId, displayManager] of this.liveDisplayManager.displayManagers) {
+            if (displayManager && displayManager.startCompositing) {
+                // Store original if not already stored
+                if (!this.originalLiveStartCompositing) {
+                    this.originalLiveStartCompositing = displayManager.startCompositing.bind(displayManager);
+                }
+                // Override to activate system when streaming starts
+                displayManager.startCompositing = this.masterStartCompositing.bind(this);
+            }
+        }
     }
     
     /**
@@ -121,11 +138,25 @@ class RecordingMasterWrapper {
             window.masterAnimationController.setSystemActive('recording', true);
         }
         
-        // Update target frame rate based on recording settings
+        // Update target frame rate - use highest needed (recording or live displays)
+        let maxFrameRate = 30; // Default minimum
+        
+        // Check recording frame rate
         if (this.recordManager && this.recordManager.frameRate) {
-            this.targetFrameRate = this.recordManager.frameRate;
+            maxFrameRate = Math.max(maxFrameRate, this.recordManager.frameRate);
         }
         
+        // Check live display frame rates (use highest)
+        if (this.liveDisplayManager && this.liveDisplayManager.displayManagers) {
+            for (const [displayId, displayManager] of this.liveDisplayManager.displayManagers) {
+                if (displayManager && displayManager.isStreaming && displayManager.displaySettings) {
+                    const displayFrameRate = displayManager.displaySettings.frameRate || 60;
+                    maxFrameRate = Math.max(maxFrameRate, displayFrameRate);
+                }
+            }
+        }
+        
+        this.targetFrameRate = maxFrameRate;
     }
     
     /**
@@ -137,16 +168,23 @@ class RecordingMasterWrapper {
         // Store shared audio data (PERFORMANCE OPTIMIZATION)
         this.sharedAudioData = sharedAudioData;
         
-        // Frame rate control for recording
-        const targetInterval = 1000 / this.targetFrameRate;
-        const timeSinceLastComposite = timestamp - this.lastCompositeTime;
+        // Frame rate control ONLY for recording (not for live displays)
+        // Live displays composite every frame - MAL already runs at 60fps which is perfect for smooth 4K
+        const isRecording = this.recordManager && this.recordManager.isRecording;
         
-        if (timeSinceLastComposite < targetInterval) {
-            return; // Skip this frame
+        // Only throttle if recording is active (live displays composite every frame for maximum smoothness)
+        if (isRecording) {
+            const targetInterval = 1000 / this.targetFrameRate;
+            const timeSinceLastComposite = timestamp - this.lastCompositeTime;
+            
+            if (timeSinceLastComposite < targetInterval) {
+                return; // Skip this frame for recording
+            }
+            
+            this.lastCompositeTime = timestamp;
         }
         
         this.lastUpdateTime = timestamp;
-        this.lastCompositeTime = timestamp;
     }
     
     /**
@@ -184,22 +222,30 @@ class RecordingMasterWrapper {
     
     /**
      * Composite live display frames
+     * NOTE: No frame rate throttling here - MAL already runs at 60fps (targetFPS: 60)
+     * Live displays should composite every frame for maximum smoothness at 4K
      */
     compositeLiveDisplayFrames() {
         if (!this.liveDisplayManager) return;
         
-        // Get all active displays
-        const displays = this.liveDisplayManager.displays;
-        if (!displays) return;
+        // Get all active display managers (not DisplayInstance objects)
+        // multiDisplayManager has both:
+        // - displays: Map of DisplayInstance objects
+        // - displayManagers: Map of LiveDisplayManager objects
+        const displayManagers = this.liveDisplayManager.displayManagers;
+        if (!displayManagers) return;
         
-        // Composite each active display
-        for (const [displayId, displayManager] of displays) {
-            if (displayManager && displayManager.isStreaming && displayManager.compositeFrame) {
-                try {
-                    displayManager.compositeFrame();
-                } catch (error) {
-                    console.error(`Live Display ${displayId} composite error:`, error);
-                }
+        // Composite each active display - no throttling, let MAL handle frame rate
+        // MAL runs at 60fps which is perfect for smooth 4K live displays
+        for (const [displayId, displayManager] of displayManagers) {
+            if (!displayManager || !displayManager.isStreaming || !displayManager.compositeFrame) {
+                continue;
+            }
+            
+            try {
+                displayManager.compositeFrame();
+            } catch (error) {
+                console.error(`Live Display ${displayId} composite error:`, error);
             }
         }
     }
@@ -212,7 +258,6 @@ class RecordingMasterWrapper {
         if (window.masterAnimationController) {
             window.masterAnimationController.setSystemActive('recording', false);
         }
-        
     }
     
     /**
